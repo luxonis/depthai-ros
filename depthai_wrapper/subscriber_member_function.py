@@ -66,14 +66,17 @@ class DepthAISubscriber(Node):
 
         self.configMan = DepthConfigManager(self.args)
 
+        # "." is not allowed in topic names so we replaced "." with "_" on the server.
+        self.targetDev = self.args['device_id'].replace(".", "_")
+
         # get nn2depth params, if necessary.
         if self.args['draw_bb_depth']:
-            nn2depth = self.get_nn2depth_sync(self.args['device_id'])
+            nn2depth = self.get_nn2depth_sync(self.targetDev)
             print(nn2depth)
 
 
         # subscribe to topics
-        self.previewSubName = 'preview'+self.args['device_id']
+        self.previewSubName = 'preview'+self.targetDev
         self.previewSub = self.create_subscription(
             UInt8MultiArray,
             self.previewSubName,
@@ -81,7 +84,7 @@ class DepthAISubscriber(Node):
             10)
         self.previewSub  # prevent unused variable warning
 
-        self.leftSubName = 'left'+self.args['device_id']
+        self.leftSubName = 'left'+self.targetDev
         self.leftSub = self.create_subscription(
             UInt8MultiArray,
             self.leftSubName,
@@ -89,7 +92,7 @@ class DepthAISubscriber(Node):
             10)
         self.leftSub  # prevent unused variable warning
 
-        self.rightSubName = 'right'+self.args['device_id']
+        self.rightSubName = 'right'+self.targetDev
         self.rightSub = self.create_subscription(
             UInt8MultiArray,
             self.rightSubName,
@@ -97,7 +100,7 @@ class DepthAISubscriber(Node):
             10)
         self.rightSub  # prevent unused variable warning
 
-        self.disparitySubName = 'disparity'+self.args['device_id']
+        self.disparitySubName = 'disparity'+self.targetDev
         self.disparitySub = self.create_subscription(
             UInt8MultiArray,
             self.disparitySubName,
@@ -105,7 +108,7 @@ class DepthAISubscriber(Node):
             10)
         self.disparitySub  # prevent unused variable warning
 
-        self.depthSubName = 'depth'+self.args['device_id']
+        self.depthSubName = 'depth'+self.targetDev
         self.depthSub = self.create_subscription(
             UInt8MultiArray,
             self.depthSubName,
@@ -113,7 +116,7 @@ class DepthAISubscriber(Node):
             10)
         self.depthSub  # prevent unused variable warning
 
-        self.d2hSubName = 'd2h'+self.args['device_id']
+        self.d2hSubName = 'd2h'+self.targetDev
         self.d2hSub = self.create_subscription(
             String,
             self.d2hSubName,
@@ -121,7 +124,7 @@ class DepthAISubscriber(Node):
             10)
         self.depthSub  # prevent unused variable warning
 
-        self.metaSubName = 'meta'+self.args['device_id']
+        self.metaSubName = 'meta'+self.targetDev
         self.metaSub = self.create_subscription(
             String,
             self.metaSubName,

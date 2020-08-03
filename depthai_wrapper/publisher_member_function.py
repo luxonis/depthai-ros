@@ -125,7 +125,7 @@ class DepthAIPublisher(Node):
         # setup a param for sharing the depth mapping for this particular device.
         nn2depth = device.get_nn_to_depth_bbox_mapping()
         nn2depthStr = json.dumps(nn2depth)
-        self.nn2depthParamName = "nn2depth"+self.args['device_id']
+        self.nn2depthParamName = "nn2depth"+self.targetDev
         paramDefault = ""
         paramDesc = ParameterDescriptor(type=ParameterType.PARAMETER_STRING,
                                               description="Used ")
@@ -346,26 +346,28 @@ class DepthAIPublisher(Node):
         # This json file is sent to DepthAI. It communicates what options you'd like to enable and what model you'd like to run.
         self.config = configMan.jsonConfig
 
+        self.targetDev = self.args['device_id'].replace(".", "_")
+
         # setup publishers
-        self.previewPublisher = self.create_publisher(UInt8MultiArray, 'preview'+self.args['device_id'], 10)
+        self.previewPublisher = self.create_publisher(UInt8MultiArray, 'preview'+self.targetDev, 10)
         self.previewmsg = UInt8MultiArray()
 
-        self.leftPublisher = self.create_publisher(UInt8MultiArray, 'left'+self.args['device_id'], 10)
+        self.leftPublisher = self.create_publisher(UInt8MultiArray, 'left'+self.targetDev, 10)
         self.leftmsg = UInt8MultiArray()
 
-        self.rightPublisher = self.create_publisher(UInt8MultiArray, 'right'+self.args['device_id'], 10)
+        self.rightPublisher = self.create_publisher(UInt8MultiArray, 'right'+self.targetDev, 10)
         self.rightmsg = UInt8MultiArray()
 
-        self.disparityPublisher = self.create_publisher(UInt8MultiArray, 'disparity'+self.args['device_id'], 10)
+        self.disparityPublisher = self.create_publisher(UInt8MultiArray, 'disparity'+self.targetDev, 10)
         self.disparitymsg = UInt8MultiArray()
 
-        self.depthPublisher = self.create_publisher(UInt8MultiArray, 'depth'+self.args['device_id'], 10)
+        self.depthPublisher = self.create_publisher(UInt8MultiArray, 'depth'+self.targetDev, 10)
         self.depthmsg = UInt8MultiArray()
 
-        self.d2hPublisher = self.create_publisher(String, 'd2h'+self.args['device_id'], 10)
+        self.d2hPublisher = self.create_publisher(String, 'd2h'+self.targetDev, 10)
         self.d2hmsg = String()
 
-        self.nnResultPublisher = self.create_publisher(String, 'meta'+self.args['device_id'], 10)
+        self.nnResultPublisher = self.create_publisher(String, 'meta'+self.targetDev, 10)
         self.nnmsg = String()
 
         # Create a list of enabled streams ()
