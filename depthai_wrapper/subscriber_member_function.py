@@ -22,21 +22,23 @@ from depthai_helpers.config_manager import DepthConfigManager
 from depthai_helpers.arg_manager import SharedArgs, CliArgs
 
 from rclpy.node import Node
+from rcl_interfaces.msg import Parameter
 from rcl_interfaces.msg import ParameterDescriptor
 from rcl_interfaces.msg import ParameterType
+from rcl_interfaces.msg import ParameterValue
+from rcl_interfaces.srv import SetParameters, GetParameters, ListParameters
+
+
 
 from std_msgs.msg import String, UInt8MultiArray
 
 
 class DepthAISubscriber(Node):
     meta = []
+
     def __init__(self):
         # note the topic name will change if a device is specified. the name will be <stream>+<device_id>. eg preview3.
         super().__init__('depthai_subscriber')
-
-        # TODO: have the publisher tell us what kind if network to decode for.
-        from depthai_helpers.mobilenet_ssd_handler import decode_mobilenet_ssd, show_mobilenet_ssd
-        show_nn=show_mobilenet_ssd
 
         # setup our params
         self.paramName = "cliArgs"
@@ -59,37 +61,260 @@ class DepthAISubscriber(Node):
 
         # parse params
         cliArgs = CliArgs()
-        args = vars(cliArgs.parse_args())
-        print(args)
+        self.args = vars(cliArgs.parse_args())
+        print(self.args)
 
-        self.configMan = DepthConfigManager(args)
+        self.configMan = DepthConfigManager(self.args)
 
-        self.previewsub = self.create_subscription(
+        # get nn2depth params, if necessary.
+        if self.args['draw_bb_depth']:
+            nn2depth = self.get_nn2depth_sync(self.args['device_id'])
+            print(nn2depth)
+
+
+        # subscribe to topics
+        self.previewSubName = 'preview'+self.args['device_id']
+        self.previewSub = self.create_subscription(
             UInt8MultiArray,
-            'preview'+args['device_id'],
+            self.previewSubName,
             self.preview_callback,
             10)
-        self.previewsub  # prevent unused variable warning
+        self.previewSub  # prevent unused variable warning
 
-        self.metasub = self.create_subscription(
+        self.leftSubName = 'left'+self.args['device_id']
+        self.leftSub = self.create_subscription(
+            UInt8MultiArray,
+            self.leftSubName,
+            self.left_callback,
+            10)
+        self.leftSub  # prevent unused variable warning
+
+        self.rightSubName = 'right'+self.args['device_id']
+        self.rightSub = self.create_subscription(
+            UInt8MultiArray,
+            self.rightSubName,
+            self.right_callback,
+            10)
+        self.rightSub  # prevent unused variable warning
+
+        self.disparitySubName = 'disparity'+self.args['device_id']
+        self.disparitySub = self.create_subscription(
+            UInt8MultiArray,
+            self.disparitySubName,
+            self.disparity_callback,
+            10)
+        self.disparitySub  # prevent unused variable warning
+
+        self.depthSubName = 'depth'+self.args['device_id']
+        self.depthSub = self.create_subscription(
+            UInt8MultiArray,
+            self.depthSubName,
+            self.depth_callback,
+            10)
+        self.depthSub  # prevent unused variable warning
+
+        self.d2hSubName = 'd2h'+self.args['device_id']
+        self.d2hSub = self.create_subscription(
             String,
-            'meta'+args['device_id'],
+            self.d2hSubName,
+            self.d2h_callback,
+            10)
+        self.depthSub  # prevent unused variable warning
+
+        self.metaSubName = 'meta'+self.args['device_id']
+        self.metaSub = self.create_subscription(
+            String,
+            self.metaSubName,
             self.meta_callback,
             10)
-        self.metasub  # prevent unused variable warning
+        self.metaSub  # prevent unused variable warning
+
+
+    def get_nn2depth_sync(self, device_id):
+        req = GetParameters.Request()
+        req.names = ['nn2depth' + device_id]
+        client = self.create_client(GetParameters, '/depthai_publisher/get_parameters')
+        while not client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service not available, nn2depth specified so depthai_wrapper needs to be running before starting a listener.')
+
+        self.future = client.call_async(req)
+        rclpy.spin_until_future_complete(self,self.future)
+        if self.future.done():
+            try:
+                response = self.future.result()
+            except Exception as e:
+                self.get_logger().info(
+                    'Service call failed %r' % (e,))
+            else:
+                return response.values[0].string_value
+
+        return ""
+
+
 
     def preview_callback(self, msg):
         serializedFrame = bytearray(msg.data)
         frame = pickle.loads(serializedFrame)
 
         nn_frame = self.configMan.show_nn(self.meta, frame, labels=self.configMan.labels, config=self.configMan.jsonConfig)
+        cv2.imshow(self.previewSubName, nn_frame)
+        key = cv2.waitKey(1)
 
-        cv2.imshow("preview", nn_frame)
+    def left_callback(self, msg):
+        self.left_right_disparity_callback(msg, self.leftSubName)
+
+    def right_callback(self, msg):
+        self.left_right_disparity_callback(msg, self.rightSubName)
+
+    def disparity_callback(self, msg):
+        self.left_right_disparity_callback(msg, self.disparitySubName)
+
+    def left_right_disparity_callback(self, msg, streamName):
+        serializedFrame = bytearray(msg.data)
+        if len(serializedFrame) > 0:
+            frame = pickle.loads(serializedFrame)
+
+            if self.args['draw_bb_depth']:
+                print('draw_bb_depth')
+                camera = self.args['cnn_camera']
+                if streamName == 'disparity':
+                    if camera == 'left_right':
+                        camera = 'right'
+                elif camera != 'rgb':
+                    camera = packet.getMetadata().getCameraName()
+                self.configMan.show_nn(self.meta, frame, labels=self.configMan.labels, config=self.configMan.jsonConfig)
+
+            cv2.imshow(streamName, frame)
+            key = cv2.waitKey(1)
+
+    def depth_callback(self, msg):
+        serializedFrame = bytearray(msg.data)
+        frame = pickle.loads(serializedFrame)
+
+        if len(frame.shape) == 2:
+            if frame.dtype == np.uint8: # grayscale
+                cv2.putText(frame, self.depthSubName, (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255))
+            else: # uint16
+                frame = (65535 // frame).astype(np.uint8)
+                #colorize depth map, comment out code below to obtain grayscale
+                frame = cv2.applyColorMap(frame, cv2.COLORMAP_HOT)
+                # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
+                cv2.putText(frame, self.depthSubName, (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 1.0, 255)
+        else: # bgr
+            cv2.putText(frame, self.depthSubName, (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255))
+
+        if self.args['draw_bb_depth']:
+            print('draw_bb_depth')
+            camera = self.args['cnn_camera']
+            if camera == 'left_right':
+                camera = 'right'
+            self.configMan.show_nn(nnet_prev["entries_prev"][camera], frame, labels=labels, config=config, nn2depth=nn2depth)
+        cv2.imshow(self.depthSubName, frame)
         key = cv2.waitKey(1)
 
 
+    def d2h_callback(self, msg):
+        dict_ = json.loads(msg.data)
+        print('meta_d2h Temp',
+            ' CSS:' + '{:6.2f}'.format(dict_['sensors']['temperature']['css']),
+            ' MSS:' + '{:6.2f}'.format(dict_['sensors']['temperature']['mss']),
+            ' UPA:' + '{:6.2f}'.format(dict_['sensors']['temperature']['upa0']),
+            ' DSS:' + '{:6.2f}'.format(dict_['sensors']['temperature']['upa1']))
+
     def meta_callback(self, msg):
         self.meta = json.loads(msg.data)
+
+
+
+
+
+
+
+
+
+
+
+
+        """
+        if packetData is None:
+            print('Invalid packet data!')
+        elif packet.stream_name == 'previewout':
+            nn_frame = self.configMan.show_nn(self.meta, frame, labels=self.configMan.labels, config=self.configMan.jsonConfig)
+            cv2.imshow("preview", nn_frame)
+        elif packet.stream_name == 'left' or packet.stream_name == 'right' or packet.stream_name == 'disparity':
+            frame_bgr = packetData
+            publishFrame(frame)
+
+            cv2.putText(frame_bgr, packet.stream_name, (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 0))
+            cv2.putText(frame_bgr, "fps: " + str(frame_count_prev[window_name]), (25, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 0))
+            if args['draw_bb_depth']:
+                camera = args['cnn_camera']
+                if packet.stream_name == 'disparity':
+                    if camera == 'left_right':
+                        camera = 'right'
+                elif camera != 'rgb':
+                    camera = packet.getMetadata().getCameraName()
+                show_nn(nnet_prev["entries_prev"][camera], frame_bgr, labels=labels, config=config, nn2depth=nn2depth)
+
+            cv2.imshow(window_name, frame_bgr)
+        elif packet.stream_name.startswith('depth'):
+            frame = packetData
+
+            if len(frame.shape) == 2:
+                if frame.dtype == np.uint8: # grayscale
+                    cv2.putText(frame, packet.stream_name, (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255))
+                    cv2.putText(frame, "fps: " + str(frame_count_prev[window_name]), (25, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255))
+                else: # uint16
+                    frame = (65535 // frame).astype(np.uint8)
+                    #colorize depth map, comment out code below to obtain grayscale
+                    frame = cv2.applyColorMap(frame, cv2.COLORMAP_HOT)
+                    # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
+                    cv2.putText(frame, packet.stream_name, (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 1.0, 255)
+                    cv2.putText(frame, "fps: " + str(frame_count_prev[window_name]), (25, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, 255)
+            else: # bgr
+                cv2.putText(frame, packet.stream_name, (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255))
+                cv2.putText(frame, "fps: " + str(frame_count_prev[window_name]), (25, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, 255)
+
+            if args['draw_bb_depth']:
+                camera = args['cnn_camera']
+                if camera == 'left_right':
+                    camera = 'right'
+                show_nn(nnet_prev["entries_prev"][camera], frame, labels=labels, config=config, nn2depth=nn2depth)
+            cv2.imshow(window_name, frame)
+
+        elif packet.stream_name == 'jpegout':
+            jpg = packetData
+            mat = cv2.imdecode(jpg, cv2.IMREAD_COLOR)
+            cv2.imshow('jpegout', mat)
+
+        elif packet.stream_name == 'video':
+            videoFrame = packetData
+            videoFrame.tofile(video_file)
+            #mjpeg = packetData
+            #mat = cv2.imdecode(mjpeg, cv2.IMREAD_COLOR)
+            #cv2.imshow('mjpeg', mat)
+
+        elif packet.stream_name == 'meta_d2h':
+            str_ = packet.getDataAsStr()
+            dict_ = json.loads(str_)
+
+            print('meta_d2h Temp',
+                ' CSS:' + '{:6.2f}'.format(dict_['sensors']['temperature']['css']),
+                ' MSS:' + '{:6.2f}'.format(dict_['sensors']['temperature']['mss']),
+                ' UPA:' + '{:6.2f}'.format(dict_['sensors']['temperature']['upa0']),
+                ' DSS:' + '{:6.2f}'.format(dict_['sensors']['temperature']['upa1']))
+        elif packet.stream_name == 'object_tracker':
+            tracklets = packet.getObjectTracker()
+
+        frame_count[window_name] += 1
+        """
+
+
+
+
+
+
+
 
 
 
