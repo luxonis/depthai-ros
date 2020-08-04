@@ -46,10 +46,10 @@ ros2 run depthai_wrapper talker --ros-args -p cliArgs:="-dev list"
 
 8. Run the depthai_wrapper talker. This will create topics you can subscribe to and get depthai results. Not all topics are complete but I think you probably only care about the meta topic and maybe the preview. Both of those should work. Note that you can use the stock mobilenet_ssd if you leave off “-cnn kartDetection”.
 ```
-ros2 run depthai_wrapper talker --ros-args -p cliArgs:="-dev <devId> -cnn kartDetection"
+ros2 run depthai_wrapper talker --ros-args -p cliArgs:="-dev <devId>"
 ```
 
 9. Run the demo listener if you want an example of how to receive our topics.
 ```
-ros2 run depthai_wrapper demoListen --ros-args -p cliArgs:="-dev <devId> -cnn kartDetection"
+ros2 run depthai_wrapper demoListen --ros-args -p cliArgs:="-dev <devId>"
 ```
