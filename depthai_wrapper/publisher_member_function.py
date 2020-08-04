@@ -14,6 +14,9 @@
 
 import rclpy
 import threading
+import msgpack
+import msgpack_numpy as m
+import numpy as np
 
 from rclpy.node import Node
 from std_msgs.msg import ByteMultiArray, String, UInt8MultiArray
@@ -28,7 +31,6 @@ import sys
 # pull in the depthai stuff.
 import depthai
 import cv2
-import pickle
 import json
 
 from time import time, sleep, monotonic
@@ -296,7 +298,7 @@ class DepthAIPublisher(Node):
             key = cv2.waitKey(1)
 
     def publishFrame(self, frame, publisher, msg):
-        serializedFrame = pickle.dumps(frame)
+        serializedFrame = msgpack.packb(frame, default=m.encode)
         intarr = list(serializedFrame)
 
         #start = time()

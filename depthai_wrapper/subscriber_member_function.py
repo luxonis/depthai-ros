@@ -15,8 +15,11 @@
 import rclpy
 import sys
 import cv2
-import pickle
 import json
+
+import msgpack
+import msgpack_numpy as m
+import numpy as np
 
 from depthai_helpers.config_manager import DepthConfigManager
 from depthai_helpers.arg_manager import SharedArgs, CliArgs
@@ -157,7 +160,7 @@ class DepthAISubscriber(Node):
 
     def preview_callback(self, msg):
         serializedFrame = bytearray(msg.data)
-        frame = pickle.loads(serializedFrame)
+        frame = msgpack.unpackb(serializedFrame, object_hook=m.decode)
 
         nn_frame = self.configMan.show_nn(self.meta, frame, labels=self.configMan.labels, config=self.configMan.jsonConfig)
         cv2.imshow(self.previewSubName, nn_frame)
