@@ -74,8 +74,8 @@ class DepthAISubscriber(Node):
 
         # get nn2depth params, if necessary.
         if self.args['draw_bb_depth']:
-            nn2depth = self.get_nn2depth_sync(self.targetDev)
-            print(nn2depth)
+            self.nn2depth = self.get_nn2depth_sync(self.targetDev)
+            print(self.nn2depth)
 
 
         # subscribe to topics
@@ -178,10 +178,9 @@ class DepthAISubscriber(Node):
     def left_right_disparity_callback(self, msg, streamName):
         serializedFrame = bytearray(msg.data)
         if len(serializedFrame) > 0:
-            frame = pickle.loads(serializedFrame)
+            frame = msgpack.unpackb(serializedFrame, object_hook=m.decode)
 
             if self.args['draw_bb_depth']:
-                print('draw_bb_depth')
                 camera = self.args['cnn_camera']
                 if streamName == 'disparity':
                     if camera == 'left_right':
@@ -195,7 +194,7 @@ class DepthAISubscriber(Node):
 
     def depth_callback(self, msg):
         serializedFrame = bytearray(msg.data)
-        frame = pickle.loads(serializedFrame)
+        frame = msgpack.unpackb(serializedFrame, object_hook=m.decode)
 
         if len(frame.shape) == 2:
             if frame.dtype == np.uint8: # grayscale
@@ -210,11 +209,10 @@ class DepthAISubscriber(Node):
             cv2.putText(frame, self.depthSubName, (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255))
 
         if self.args['draw_bb_depth']:
-            print('draw_bb_depth')
             camera = self.args['cnn_camera']
             if camera == 'left_right':
                 camera = 'right'
-            self.configMan.show_nn(nnet_prev["entries_prev"][camera], frame, labels=labels, config=config, nn2depth=nn2depth)
+            self.configMan.show_nn(self.meta, frame, labels=self.configMan.labels, config=self.configMan.jsonConfig, nn2depth=self.nn2depth)
         cv2.imshow(self.depthSubName, frame)
         key = cv2.waitKey(1)
 
@@ -229,95 +227,6 @@ class DepthAISubscriber(Node):
 
     def meta_callback(self, msg):
         self.meta = json.loads(msg.data)
-
-
-
-
-
-
-
-
-
-
-
-
-        """
-        if packetData is None:
-            print('Invalid packet data!')
-        elif packet.stream_name == 'previewout':
-            nn_frame = self.configMan.show_nn(self.meta, frame, labels=self.configMan.labels, config=self.configMan.jsonConfig)
-            cv2.imshow("preview", nn_frame)
-        elif packet.stream_name == 'left' or packet.stream_name == 'right' or packet.stream_name == 'disparity':
-            frame_bgr = packetData
-            publishFrame(frame)
-
-            cv2.putText(frame_bgr, packet.stream_name, (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 0))
-            cv2.putText(frame_bgr, "fps: " + str(frame_count_prev[window_name]), (25, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 0))
-            if args['draw_bb_depth']:
-                camera = args['cnn_camera']
-                if packet.stream_name == 'disparity':
-                    if camera == 'left_right':
-                        camera = 'right'
-                elif camera != 'rgb':
-                    camera = packet.getMetadata().getCameraName()
-                show_nn(nnet_prev["entries_prev"][camera], frame_bgr, labels=labels, config=config, nn2depth=nn2depth)
-
-            cv2.imshow(window_name, frame_bgr)
-        elif packet.stream_name.startswith('depth'):
-            frame = packetData
-
-            if len(frame.shape) == 2:
-                if frame.dtype == np.uint8: # grayscale
-                    cv2.putText(frame, packet.stream_name, (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255))
-                    cv2.putText(frame, "fps: " + str(frame_count_prev[window_name]), (25, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255))
-                else: # uint16
-                    frame = (65535 // frame).astype(np.uint8)
-                    #colorize depth map, comment out code below to obtain grayscale
-                    frame = cv2.applyColorMap(frame, cv2.COLORMAP_HOT)
-                    # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
-                    cv2.putText(frame, packet.stream_name, (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 1.0, 255)
-                    cv2.putText(frame, "fps: " + str(frame_count_prev[window_name]), (25, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, 255)
-            else: # bgr
-                cv2.putText(frame, packet.stream_name, (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255))
-                cv2.putText(frame, "fps: " + str(frame_count_prev[window_name]), (25, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, 255)
-
-            if args['draw_bb_depth']:
-                camera = args['cnn_camera']
-                if camera == 'left_right':
-                    camera = 'right'
-                show_nn(nnet_prev["entries_prev"][camera], frame, labels=labels, config=config, nn2depth=nn2depth)
-            cv2.imshow(window_name, frame)
-
-        elif packet.stream_name == 'jpegout':
-            jpg = packetData
-            mat = cv2.imdecode(jpg, cv2.IMREAD_COLOR)
-            cv2.imshow('jpegout', mat)
-
-        elif packet.stream_name == 'video':
-            videoFrame = packetData
-            videoFrame.tofile(video_file)
-            #mjpeg = packetData
-            #mat = cv2.imdecode(mjpeg, cv2.IMREAD_COLOR)
-            #cv2.imshow('mjpeg', mat)
-
-        elif packet.stream_name == 'meta_d2h':
-            str_ = packet.getDataAsStr()
-            dict_ = json.loads(str_)
-
-            print('meta_d2h Temp',
-                ' CSS:' + '{:6.2f}'.format(dict_['sensors']['temperature']['css']),
-                ' MSS:' + '{:6.2f}'.format(dict_['sensors']['temperature']['mss']),
-                ' UPA:' + '{:6.2f}'.format(dict_['sensors']['temperature']['upa0']),
-                ' DSS:' + '{:6.2f}'.format(dict_['sensors']['temperature']['upa1']))
-        elif packet.stream_name == 'object_tracker':
-            tracklets = packet.getObjectTracker()
-
-        frame_count[window_name] += 1
-        """
-
-
-
-
 
 
 

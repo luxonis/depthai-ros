@@ -43,54 +43,6 @@ from depthai_helpers.object_tracker_handler import show_tracklets
 from depthai_helpers.config_manager import DepthConfigManager
 from depthai_helpers.arg_manager import SharedArgs, CliArgs
 
-from depthai_helpers.mobilenet_ssd_handler import decode_mobilenet_ssd_convert_json
-
-"""
-class Ros2Args(SharedArgs):
-    args = []
-    ros2Node = None
-    ros2ParamDict = {}
-    ros2TypeDict = {
-        "bool":ParameterType.PARAMETER_BOOL,
-        "int":ParameterType.PARAMETER_INTEGER,
-        "float":ParameterType.PARAMETER_DOUBLE,
-        "double":ParameterType.PARAMETER_DOUBLE,
-        "str":ParameterType.PARAMETER_STRING, 
-        "byteArray":ParameterType.PARAMETER_BYTE_ARRAY,
-        "boolArray":ParameterType.PARAMETER_BOOL_ARRAY,
-        "intArray":ParameterType.PARAMETER_INTEGER_ARRAY,
-        "floatArray":ParameterType.PARAMETER_DOUBLE_ARRAY,
-        "doubleArray":ParameterType.PARAMETER_DOUBLE_ARRAY,
-        "strArray":ParameterType.PARAMETER_STRING_ARRAY
-        }
-
-    def __init__(self, ros2Node):
-        super().__init__()
-        self.ros2Node = ros2Node
-
-    def printArgs(self):
-        print(self.args.longName)
-
-    def initializeParams(self):
-        #TODO: use actual params to setup the package. 
-        # ROS2 doesn't really have a None option for arguments and our CLI arg parser relies on this. 
-        # We'll need to substitute None with placeholders here and translate back?
-        # For now we'll just take the cli arguments as a parameter, make a sys.argv out of it and run argparse.
-        for arg in self.args:
-            cleanLongName = arg.longName.strip('-')
-            print(cleanLongName)
-            print(arg.ros2Type)
-
-            paramDesc = ParameterDescriptor(type=self.ros2TypeDict[arg.ros2Type],
-                                                  description=arg.help)
-            self.ros2Node.declare_parameter(cleanLongName, arg.default, paramDesc)
-
-            self.ros2ParamDict[cleanLongName] = rclpy.parameter.Parameter(
-                cleanLongName,
-                rclpy.Parameter.Type.STRING,
-                arg.default
-            )
-"""
 
 
 #-------------------------------------------------------
@@ -196,12 +148,8 @@ class DepthAIPublisher(Node):
                 camera = 'rgb'
                 if meta != None:
                     camera = meta.getCameraName()
-                nnet_prev["nnet_source"][camera] = nnet_packet
-                nnet_prev["entries_prev"][camera] = self.decode_nn(nnet_packet, config=self.config)
 
-                #TODO: Is there a reason we aren't returning json instead of having custom decode_nn methods for each network?
-                # Gonna do this the dirty way for now...
-                serializedEntry = decode_mobilenet_ssd_convert_json(self.decode_nn(nnet_packet, config=self.config))
+                serializedEntry = self.decode_nn_json(nnet_packet, config=self.config)
 
                 self.nnmsg.data = str(serializedEntry)
                 self.nnResultPublisher.publish(self.nnmsg)
@@ -249,30 +197,7 @@ class DepthAIPublisher(Node):
                     frame = packetData
                     self.publishFrame(frame, self.depthPublisher, self.depthmsg)
 
-                    """
-                    if len(frame.shape) == 2:
-                        if frame.dtype == np.uint8: # grayscale
-                            cv2.putText(frame, packet.stream_name, (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255))
-                            cv2.putText(frame, "fps: " + str(frame_count_prev[window_name]), (25, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255))
-                        else: # uint16
-                            frame = (65535 // frame).astype(np.uint8)
-                            #colorize depth map, comment out code below to obtain grayscale
-                            frame = cv2.applyColorMap(frame, cv2.COLORMAP_HOT)
-                            # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
-                            cv2.putText(frame, packet.stream_name, (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 1.0, 255)
-                            cv2.putText(frame, "fps: " + str(frame_count_prev[window_name]), (25, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, 255)
-                    else: # bgr
-                        cv2.putText(frame, packet.stream_name, (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255))
-                        cv2.putText(frame, "fps: " + str(frame_count_prev[window_name]), (25, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, 255)
-
-                    if args['draw_bb_depth']:
-                        camera = args['cnn_camera']
-                        if camera == 'left_right':
-                            camera = 'right'
-                        show_nn(nnet_prev["entries_prev"][camera], frame, labels=labels, config=config, nn2depth=nn2depth)
-                    cv2.imshow(window_name, frame)
-                    """
-
+                # TODO: maybe just publish the filepath?
                 elif packet.stream_name == 'jpegout':
                     jpg = packetData
                     mat = cv2.imdecode(jpg, cv2.IMREAD_COLOR)
@@ -342,6 +267,7 @@ class DepthAIPublisher(Node):
         self.cmd_file, self.debug_mode = configMan.getCommandFile()
         self.usb2_mode = configMan.getUsb2Mode()
         self.decode_nn = configMan.decode_nn
+        self.decode_nn_json = configMan.decode_nn_json
         self.show_nn = configMan.show_nn
         self.labels = configMan.labels
 
