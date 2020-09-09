@@ -37,6 +37,7 @@ git clone git@github.com:luxonis/depthai_ros2.git
 ```
 cd <your-ros-workspace>
 colcon build --packages-select depthai_wrapper
+. install/setup.bash
 ```
 
 7. Get a list of attached devices. You’ll want to pay attention to the “on USB port: <devId>” part. We’ll use that to select a DepthAI device. You can skip this if you have a single DepthAI board. Just don't pass the -dev cli arg in the subseqent commands.
