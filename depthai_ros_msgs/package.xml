@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>depthai_ros_msgs</name>
+  <version>1.0.0</version>
+  <description>Package to keep interface independent of the driver</description>
+
+  <maintainer email="kunal.tyagi@rapyuta-robotics.com">Kunal Tyagi</maintainer>
+
+  <license>MPLv2</license>
+
+  <author>Kunal Tyagi</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>message_generation</build_depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+
+  <depend>vision_msgs</depend>
+  <exec_depend>message_runtime</exec_depend>
+</package>
