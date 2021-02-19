@@ -32,10 +32,9 @@ find_package(catkin REQUIRED COMPONENTS
 add_subdirectory(${DEPTHAI_CORE} depthai-core)
 
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES depthai_examples
-#  CATKIN_DEPENDS depthai_ros_msgs roscpp sensor_msgs std_msgs
-#  DEPENDS system_lib
+ INCLUDE_DIRS include
+ LIBRARIES depthai_examples
+ CATKIN_DEPENDS depthai_ros_msgs roscpp sensor_msgs std_msgs camera_info_manager
 )
 
 ###########
@@ -45,7 +44,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  # include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
