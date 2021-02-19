@@ -5,19 +5,19 @@
 #include <cstdio>
 // #include "utility.hpp"
 #include "sensor_msgs/Image.h"
-#include <camera_info_manager.h>
+#include <camera_info_manager/camera_info_manager.h>
 
 // Inludes common necessary includes for development using depthai library
 #include "depthai/depthai.hpp"
 
-const std::unordered_map<int, std::string> encoding_enum_map({
-        {dai::RawImgFrame::Type::YUV422i        : "yuv422"    },
-        {dai::RawImgFrame::Type::RGBA8888       : "rgba8"     },
-        {dai::RawImgFrame::Type::RGB888i        : "rgb8"      },
-        {dai::RawImgFrame::Type::BGR888i        : "bgr8"      },
-        {dai::RawImgFrame::Type::GRAY8          : "8UC1"      },
-        {dai::RawImgFrame::Type::RAW8           : "8UC1"      },
-        {dai::RawImgFrame::Type::RAW16          : "16UC1"     }
+ std::unordered_map<dai::RawImgFrame::Type, std::string> encoding_enum_map({
+        {dai::RawImgFrame::Type::YUV422i        , "yuv422"    },
+        {dai::RawImgFrame::Type::RGBA8888       , "rgba8"     },
+        {dai::RawImgFrame::Type::RGB888i        , "rgb8"      },
+        {dai::RawImgFrame::Type::BGR888i        , "bgr8"      },
+        {dai::RawImgFrame::Type::GRAY8          , "8UC1"      },
+        {dai::RawImgFrame::Type::RAW8           , "8UC1"      },
+        {dai::RawImgFrame::Type::RAW16          , "16UC1"     }
         // {dai::RawImgFrame::Type::NV12           : "CV_bridge" },
     });
 
@@ -25,24 +25,34 @@ const std::unordered_map<int, std::string> encoding_enum_map({
 void converter(std::shared_ptr<dai::ImgFrame> inData, ros::Publisher &pub, std::string frameName){
 
     sensor_msgs::ImagePtr imageMsg;
-    if (encoding_enum_map.find(inData->getType()) == encoding_enum_enum.end())
-        throw std::runtime_error("Encoding value node found %d", inData->getType());
+    if (encoding_enum_map.find(inData->getType()) == encoding_enum_map.end())
+        throw std::runtime_error("Encoding value node found ");
 
-    imageMsg->encoding        = encoding_enum_map[inData->getType()];
+    // auto tstamp = inData->getTimestamp();
+    // int32_t sec = std::chrono::duration_cast<std::chrono::seconds>(tstamp).count();
+    // int32_t nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(tstamp).count() % 1000000000UL;
+
+    // setting the header
     imageMsg->header.seq      = inData->getSequenceNum();
-    imageMsg->header.stamp    = inData->getTimestamp();
+    imageMsg->header.stamp    = ros::Time::now();
     imageMsg->header.frame_id = frameName;
-
-    imageMsg->height = inData->getHeight();
-    imageMsg->width  = inData->getWidth();
-    imageMsg->step   = sizeof(uint8_t) * inData->getWidth();
-    imageMsg->data   = inData->getData().data();
-
+    // copying the data to ros msg
+    imageMsg->encoding        = encoding_enum_map[inData->getType()];
+    imageMsg->height            = inData->getHeight();
+    imageMsg->width             = inData->getWidth();
+    imageMsg->step              = sizeof(uint8_t) * inData->getWidth();
+    // imageMsg->data   = (void*)(i/nData->getData().data());
+    size_t size = imageMsg->step * imageMsg->height;
+    imageMsg->data.resize(size);
+    unsigned char* imageMsg_ptr = reinterpret_cast<unsigned char*>(&imageMsg->data[0]);
+    unsigned char* daiImgData = reinterpret_cast<unsigned char*>(inData->getData().data());
+    
+    memcpy(imageMsg_ptr, daiImgData, size);
     pub.publish(imageMsg);
 }
 
 
-int main(){
+int main(int argc, char** argv){
 
     using namespace std;
     ros::init(argc, argv, "stereo_node");
@@ -52,7 +62,7 @@ int main(){
     bool lrcheck;
     bool extended;
     bool subpixel;
-    std::string cameraName;
+    std::string deviceName;
     std::string camera_param_uri;
     int bad_params = 0;
 
@@ -61,7 +71,7 @@ int main(){
     bad_params += !pnh.getParam("lrcheck", lrcheck);
     bad_params += !pnh.getParam("extended", extended);
     bad_params += !pnh.getParam("subpixel", subpixel);
-    bad_params += !pnh.getParam("cameraName", cameraName);
+    bad_params += !pnh.getParam("deviceName", deviceName);
     bad_params += !pnh.getParam("camera_param_uri", camera_param_uri);
 
     // TODO - split this example into two separate examples
@@ -149,12 +159,10 @@ int main(){
     auto leftQueue = d.getOutputQueue("left", 30, false);
     auto rightQueue = d.getOutputQueue("right", 30, false);
 
-    auto leftQueue = d.getOutputQueue("left", 8, false);
-    auto rightQueue = d.getOutputQueue("right", 8, false);
-    auto dispQueue = withDepth ? d.getOutputQueue("disparity", 8, false) : nullptr;
-    auto depthQueue = withDepth ? d.getOutputQueue("depth", 8, false) : nullptr;
-    auto rectifLeftQueue = withDepth ? d.getOutputQueue("rectified_left", 8, false) : nullptr;
-    auto rectifRightQueue = withDepth ? d.getOutputQueue("rectified_right", 8, false) : nullptr;
+    auto dispQueue = withDepth ? d.getOutputQueue("disparity", 30, false) : nullptr;
+    auto depthQueue = withDepth ? d.getOutputQueue("depth", 30, false) : nullptr;
+    auto rectifLeftQueue = withDepth ? d.getOutputQueue("rectified_left", 30, false) : nullptr;
+    auto rectifRightQueue = withDepth ? d.getOutputQueue("rectified_right", 30, false) : nullptr;
     
     bool latched_cam_info = true;
     ros::Publisher leftPub          = pnh.advertise<sensor_msgs::Image>("left/image", 30);    
@@ -170,48 +178,50 @@ int main(){
     ros::Publisher rectiLeftPub     = pnh.advertise<sensor_msgs::Image>("right/image_rect", 30);    
     ros::Publisher rectiRightPub    = pnh.advertise<sensor_msgs::Image>("left/image_rect", 30);    
 
-    const auto uri = camera_param_uri + camera_name + "/" + "left.yaml";
-    camera_info_manager::CameraInfoManager left_cam_manager  =std::make_unique<camera_info_manager::CameraInfoManager>(ros::NodeHandle{nh, name}, name, uri);
-    const auto left_camera_info = std::make_unique<sensor_msgs::CameraInfo>(left_cam_manager->getCameraInfo());
+    std::string uri = camera_param_uri +"/" + "left.yaml";
+    std::string name = "left";
+    camera_info_manager::CameraInfoManager left_cam_manager(pnh, name, uri);
+    auto left_camera_info = left_cam_manager.getCameraInfo();
     leftCamInfoPub.publish(left_camera_info);
 
-    const auto uri = camera_param_uri + camera_name + "/" + "right.yaml";
-    camera_info_manager::CameraInfoManager right_cam_manager  =std::make_unique<camera_info_manager::CameraInfoManager>(ros::NodeHandle{nh, name}, name, uri);
-    const auto right_camera_info = std::make_unique<sensor_msgs::CameraInfo>(right_cam_manager->getCameraInfo());
+    uri = camera_param_uri + "/" + "right.yaml";
+    name = "right";
+    camera_info_manager::CameraInfoManager right_cam_manager(pnh, name, uri);
+    auto right_camera_info = right_cam_manager.getCameraInfo();
     rightCamInfoPub.publish(right_camera_info);
     
 // camera_info_manager::CameraInfoManager left_cam_manager  =std::make_unique<camera_info_manager::CameraInfoManager>(ros::NodeHandle{nh, name}, name, uri);
     
     while (1) {
         auto left = leftQueue->get<dai::ImgFrame>();
-        std::string frameName = cameraName + "_left_camera_optical_frame"; 
+        std::string frameName = deviceName + "_left_camera_optical_frame"; 
         converter(left, leftPub, frameName);
 
         auto right = rightQueue->get<dai::ImgFrame>();
-        std::string frameName = cameraName + "_right_camera_optical_frame"; 
+        frameName = deviceName + "_right_camera_optical_frame"; 
         converter(right, rightPub, frameName);
         
         if (withDepth) {
             // Note: in some configurations (if depth is enabled), disparity may output garbage data
             auto disparity = dispQueue->get<dai::ImgFrame>();
             
-            std::string frameName = cameraName + "_right_camera_optical_frame"; 
+            frameName = deviceName + "_right_camera_optical_frame"; 
             converter(disparity, dispPub, frameName);
           
 
             if (outputDepth) {
                 auto depth = depthQueue->get<dai::ImgFrame>();
-                std::string frameName = cameraName + "_right_camera_optical_frame"; 
+                frameName = deviceName + "_right_camera_optical_frame"; 
                 converter(depth, depthPub, frameName);
             }
 
             if (outputRectified) {
                 auto rectifL = rectifLeftQueue->get<dai::ImgFrame>();
-                std::string frameName = cameraName + "_left_camera_optical_frame"; 
+                frameName = deviceName + "_left_camera_optical_frame"; 
                 converter(rectifL, rectiLeftPub, frameName);
 
                 auto rectifR = rectifRightQueue->get<dai::ImgFrame>();
-                std::string frameName = cameraName + "_right_camera_optical_frame"; 
+                frameName = deviceName + "_right_camera_optical_frame"; 
                 converter(rectifL, rectiLeftPub, frameName);
             }
         }
