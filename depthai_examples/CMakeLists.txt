@@ -27,15 +27,23 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   std_msgs
+
 )
+
+set(_opencv_version 4)
+find_package(OpenCV 4 QUIET)
+if(NOT OpenCV_FOUND)
+  message(STATUS "Did not find OpenCV 4, trying OpenCV 3")
+  set(_opencv_version 3)
+endif()
 
 add_subdirectory(${DEPTHAI_CORE} depthai-core)
 
 catkin_package(
  INCLUDE_DIRS include
- LIBRARIES depthai_examples
- CATKIN_DEPENDS depthai_ros_msgs roscpp sensor_msgs std_msgs camera_info_manager
-)
+ LIBRARIES ${PROJECT_NAME}
+ CATKIN_DEPENDS depthai_ros_msgs roscpp sensor_msgs std_msgs camera_info_manager 
+ )
 
 ###########
 ## Build ##
@@ -46,8 +54,9 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
-
+message((${OpenCV_INCLUDE_DIRS}))
 add_executable(stereo_node
   src/stereo_publisher.cpp
 )
