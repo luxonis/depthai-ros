@@ -56,18 +56,34 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )
-message((${OpenCV_INCLUDE_DIRS}))
+
+add_library(${PROJECT_NAME}
+  lib/stereo_pipeline.cpp
+)
+
+add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS} depthai-core
+)
+
+target_link_libraries(${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+  depthai-core
+)
+
+
 add_executable(stereo_node
   src/stereo_publisher.cpp
 )
 
 add_dependencies(stereo_node
   ${catkin_EXPORTED_TARGETS} 
-  ${${PROJECT_NAME}_EXPORTED_TARGETS} 
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${PROJECT_NAME} 
 )
 
 target_link_libraries(stereo_node 
   ${catkin_LIBRARIES}
+  ${PROJECT_NAME}
   depthai-core
 )
 
