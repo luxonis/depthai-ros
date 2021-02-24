@@ -9,7 +9,7 @@ class MobileNetDetectionExample{
     MobileNetDetectionExample() = default;
     ~MobileNetDetectionExample() = default;
 
-    void initDepthaiDev();
+    void initDepthaiDev(std::string nnPath);
 
     std::vector<std::shared_ptr<dai::DataOutputQueue>> getExposedImageStreams();
     std::vector<std::shared_ptr<dai::DataOutputQueue>> getExposedNnetStreams();

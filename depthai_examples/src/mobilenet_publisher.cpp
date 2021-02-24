@@ -14,7 +14,7 @@
 
 int main(int argc, char** argv){
 
-    ros::init(argc, argv, "rgb_node");
+    ros::init(argc, argv, "mobilenet_node");
     ros::NodeHandle pnh("~");
     
     std::string deviceName;
@@ -30,10 +30,11 @@ int main(int argc, char** argv){
     }
 
     
-    RgbCameraPipelineExample rgbPipeline;
-    rgbPipeline.initDepthaiDev();
-    std::vector<std::shared_ptr<dai::DataOutputQueue>> imageDataQueues = rgbPipeline.getExposedImageStreams();
-    
+    MobileNetDetectionExample detectionPipeline;
+    detectionPipeline.initDepthaiDev();
+    std::vector<std::shared_ptr<dai::DataOutputQueue>> imageDataQueues = detectionPipeline.getExposedImageStreams();
+    std::vector<std::shared_ptr<dai::DataOutputQueue>> nNetDataQueues = detectionPipeline.getExposedNnetStreams();;
+
     std::vector<ros::Publisher> imgPubList;
     std::vector<std::string> frameNames;
 
@@ -43,6 +44,14 @@ int main(int argc, char** argv){
                 frameNames.push_back(deviceName + "_rgb_camera_optical_frame");
         }
     }
+
+    for (auto op_que : nNetDataQueues){
+        if (op_que->getName().find("video") != std::string::npos){
+                imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("color/image", 30));
+                frameNames.push_back(deviceName + "_rgb_camera_optical_frame");
+        }
+    }
+
 
     bool latched_cam_info = true;
     ros::Publisher colorCamInfoPub   = pnh.advertise<sensor_msgs::CameraInfo>("color/camera_info", 30, latched_cam_info);    

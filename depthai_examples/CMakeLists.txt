@@ -27,7 +27,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   std_msgs
-
+  cv_bridge
+  vision_msgs
 )
 
 set(_opencv_version 4)
@@ -43,6 +44,8 @@ catkin_package(
  INCLUDE_DIRS include
  LIBRARIES ${PROJECT_NAME}
  CATKIN_DEPENDS depthai_ros_msgs roscpp sensor_msgs std_msgs camera_info_manager 
+ DEPENDS
+ OpenCV
  )
 
 ###########
@@ -59,6 +62,8 @@ include_directories(
 
 add_library(${PROJECT_NAME}
   lib/stereo_pipeline.cpp
+  lib/rgb_pipeline.cpp
+  lib/nn_pipeline.cpp
 )
 
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS}
@@ -70,22 +75,42 @@ target_link_libraries(${PROJECT_NAME}
   depthai-core
 )
 
+macro(dai_add_node node_name node_src)
+    add_executable("${node_name}" "${node_src}")
+    
+    add_dependencies("${node_name}"
+      ${catkin_EXPORTED_TARGETS} 
+      ${${PROJECT_NAME}_EXPORTED_TARGETS}
+      ${PROJECT_NAME} 
+    )
 
-add_executable(stereo_node
-  src/stereo_publisher.cpp
-)
+    target_link_libraries("${node_name}" 
+    ${catkin_LIBRARIES}
+    ${PROJECT_NAME}
+    depthai-core
+    )
+    
+endmacro() 
 
-add_dependencies(stereo_node
-  ${catkin_EXPORTED_TARGETS} 
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${PROJECT_NAME} 
-)
 
-target_link_libraries(stereo_node 
-  ${catkin_LIBRARIES}
-  ${PROJECT_NAME}
-  depthai-core
-)
+dai_add_node(stereo_node src/stereo_publisher.cpp)
+dai_add_node(rgb_node src/rgb_publisher.cpp)
+
+# add_executable(stereo_node
+#   src/stereo_publisher.cpp
+# )
+
+# add_dependencies(stereo_node
+#   ${catkin_EXPORTED_TARGETS} 
+#   ${${PROJECT_NAME}_EXPORTED_TARGETS}
+#   ${PROJECT_NAME} 
+# )
+
+# target_link_libraries(stereo_node 
+#   ${catkin_LIBRARIES}
+#   ${PROJECT_NAME}
+#   depthai-core
+# )
 
 #############
 ## Testing ##

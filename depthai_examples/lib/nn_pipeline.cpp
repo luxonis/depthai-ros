@@ -3,11 +3,9 @@
 #include "depthai/depthai.hpp"
 
 
+void MobileNetDetectionExample::initDepthaiDev(std::string nnPath){
 
-
-
-void MobileNetDetectionExample::initDepthaiDev(){
-
+    bool syncNN = true;
     auto colorCam = _p.create<dai::node::ColorCamera>();
     auto xlinkOut = _p.create<dai::node::XLinkOut>();
     auto detectionNetwork = _p.create<dai::node::MobileNetDetectionNetwork>();
