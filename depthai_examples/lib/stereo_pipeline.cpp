@@ -25,8 +25,8 @@ void StereoExampe::initDepthaiDev(){
     xoutLeft->setStreamName("left");
     xoutRight->setStreamName("right");
     if (withDepth) {
-        xoutDisp->   setStreamName("disparity");
-        xoutDepth->  setStreamName("depth");
+        xoutDisp   ->setStreamName("disparity");
+        xoutDepth  ->setStreamName("depth");
         xoutRectifL->setStreamName("rectified_left");
         xoutRectifR->setStreamName("rectified_right");
     }
