@@ -30,7 +30,7 @@
             <geometry>
                 <mesh filename="package://depthai_examples/urdf/models/${model}.dae" />
             </geometry>
-            <material name="zed_mat">
+            <material name="mat">
                 <color rgba="0.8 0.8 0.8 0.8"/>
             </material>
         </visual>
