@@ -7,10 +7,15 @@
 #include "sensor_msgs/Image.h"
 #include "depthai/depthai.hpp"
 #include <vision_msgs/Detection2DArray.h>
+#include <depthai_ros_msgs/DetectionDaiArray.h>
 
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
 
+// namespace std {
+//     template< class T, class U >
+//     inline constexpr bool is_same_v = is_same<T, U>::value;
+// }
 namespace dai {
 using timePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration>;
 
@@ -27,6 +32,20 @@ std::unordered_map<dai::RawImgFrame::Type, std::string> encoding_enum_map({
         // {dai::RawImgFrame::Type::NV12           : "CV_bridge" },
     });
 
+
+
+template<typename Msg, 
+std::enable_if_t<std::is_same<Msg, depthai_ros_msgs::DetectionDai>::value, bool> = true>
+void detectionMsgHelper(Msg& rosDetection, dai::ImgDetection& daiDetection){
+    rosDetection.position.x = daiDetection.xdepth;
+    rosDetection.position.y = daiDetection.ydepth;
+    rosDetection.position.z = daiDetection.zdepth;
+}
+
+template<typename Msg, 
+std::enable_if_t<not std::is_same<Msg, depthai_ros_msgs::DetectionDai>::value, bool> = true>
+void detectionMsgHelper(Msg& rosDetection, dai::ImgDetection& daiDetection){
+}
 
 
 void planarToInterleaved(const std::vector<uint8_t>& srcData, std::vector<uint8_t>& destData, int w, int h , int numPlanes, int bpp){
@@ -126,9 +145,9 @@ void rosImageBridge(std::shared_ptr<dai::ImgFrame> inData, std::string frameName
     }
     return;
 }
-
-
-void rosDetectionBridge(std::shared_ptr<dai::ImgDetections> inNetData, timePoint tStamp, unsigned int sequenceNum , std::string frameName, vision_msgs::Detection2DArray& opDetectionMsg, int w, int h, std::string trackingId = "", bool isTracking = false, bool normalized = false){
+// vision_msgs::Detection2DArray/
+template <typename T>
+void rosDetectionBridge(std::shared_ptr<dai::ImgDetections> inNetData, timePoint tStamp, unsigned int sequenceNum , std::string frameName, T& opDetectionMsg, int w, int h, std::string trackingId = "", bool isTracking = false, bool normalized = false){
 
     if(inNetData->detections.size() == 0)
         throw std::runtime_error("Make sure to send the detections with size greater than 0");
@@ -150,7 +169,6 @@ void rosDetectionBridge(std::shared_ptr<dai::ImgDetections> inNetData, timePoint
 
     // TODO(Sachin): check if this works fine for normalized detection publishing
     for(int i = 0; i < inNetData->detections.size(); ++i){
-        vision_msgs::Detection2D &local_object =  opDetectionMsg.detections[i];
         int xMin, yMin, xMax, yMax;
         if (normalized){
             xMin = inNetData->detections[i].xmin; 
@@ -170,22 +188,21 @@ void rosDetectionBridge(std::shared_ptr<dai::ImgDetections> inNetData, timePoint
         float xCenter = xMin + xSize / 2;
         float yCenter = yMin + ySize / 2;
 
-        local_object.results.resize(1);
-        local_object.results[0].id    = std::to_string(inNetData->detections[i].label);
-        local_object.results[0].score = inNetData->detections[i].confidence;
+        opDetectionMsg.detections[i].results.resize(1);
+        opDetectionMsg.detections[i].results[0].id    = std::to_string(inNetData->detections[i].label);
+        opDetectionMsg.detections[i].results[0].score = inNetData->detections[i].confidence;
 
-        local_object.bbox.center.x = xCenter;
-        local_object.bbox.center.y = yCenter;
-        local_object.bbox.size_x   = xSize;
-        local_object.bbox.size_y   = ySize;
-        local_object.is_tracking = isTracking;
+        opDetectionMsg.detections[i].bbox.center.x = xCenter;
+        opDetectionMsg.detections[i].bbox.center.y = yCenter;
+        opDetectionMsg.detections[i].bbox.size_x   = xSize;
+        opDetectionMsg.detections[i].bbox.size_y   = ySize;
+        opDetectionMsg.detections[i].is_tracking   = isTracking;
         
         if(isTracking){
-            local_object.tracking_id = trackingId;
+            opDetectionMsg.detections[i].tracking_id = trackingId;
         }
+        detectionMsgHelper(opDetectionMsg.detections[i], inNetData->detections[i]);
     }
 }
-
-
 
 };
