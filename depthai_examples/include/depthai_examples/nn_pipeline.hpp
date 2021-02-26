@@ -6,6 +6,9 @@
 class MobileNetDetectionExample{
 
     public:
+
+    static const std::vector<std::string> label_map ;
+
     MobileNetDetectionExample() = default;
     ~MobileNetDetectionExample() = default;
 

@@ -15,9 +15,8 @@ find_package (catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files (
   FILES
-  BoundingBoxDai.msg
-  Object.msg
-  Objects.msg
+  DetectionDai.msg
+  DetectionDaiArray.msg
   AutoFocusCtrl.msg
 )
 

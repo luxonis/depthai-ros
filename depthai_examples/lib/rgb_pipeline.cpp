@@ -11,7 +11,7 @@ void RgbCameraPipelineExample::initDepthaiDev(){
     
     colorCam->setPreviewSize(300, 300);
     colorCam->setResolution(dai::ColorCameraProperties::SensorResolution::THE_1080_P);
-    colorCam->setInterleaved(true);
+    colorCam->setInterleaved(false);
 
     // Link plugins CAM -> XLINK
     colorCam->video.link(xlinkOut->input);

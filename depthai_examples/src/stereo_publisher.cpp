@@ -103,7 +103,7 @@ int main(int argc, char** argv){
         for(int i = 0; i < imageDataQueues.size(); ++i){
             if(imgPubList[i].getNumSubscribers() == 0) continue;
             auto imgData = imageDataQueues[i]->get<dai::ImgFrame>();
-            std::cout << "id num ->" << i << imageDataQueues[i]->getName() << std::endl;
+            // std::cout << "id num ->" << i << imageDataQueues[i]->getName() << std::endl;
             sensor_msgs::Image imageMsg;
             dai::rosImageBridge(imgData, frameNames[i], imageMsg);
             imgPubList[i].publish(imageMsg);

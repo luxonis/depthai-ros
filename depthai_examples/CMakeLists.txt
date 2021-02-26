@@ -75,6 +75,13 @@ target_link_libraries(${PROJECT_NAME}
   depthai-core
 )
 
+hunter_private_data(
+    URL "https://artifacts.luxonis.com/artifactory/luxonis-depthai-data-local/network/mobilenet-ssd_openvino_2021.2_6shave.blob"
+    SHA1 "f0e14978b3f77a4f93b9f969cd39e58bb7aef490"
+    FILE "mobilenet-ssd_openvino_2021.2_6shave.blob"
+    LOCATION mobilenet_blob
+)
+
 macro(dai_add_node node_name node_src)
     add_executable("${node_name}" "${node_src}")
     
@@ -95,6 +102,8 @@ endmacro()
 
 dai_add_node(stereo_node src/stereo_publisher.cpp)
 dai_add_node(rgb_node src/rgb_publisher.cpp)
+dai_add_node(mobilenet_node src/mobilenet_publisher.cpp)
+target_compile_definitions(mobilenet_node PRIVATE BLOB_PATH="${mobilenet_blob}")
 
 # add_executable(stereo_node
 #   src/stereo_publisher.cpp

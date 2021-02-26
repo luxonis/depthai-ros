@@ -1,56 +1,18 @@
-# DepthAI ROS2 Wrapper
+# DepthAI ROS1 
 
-This is an attempt at basic DepthAI to ROS2 interface. It's largely leveraging the existing depthai python demo on https://github.com/luxonis/depthai. 
+This repo contains ROS1 based messages and simple examples on creating ros1 nodes using DepthAI-gen2 - https://github.com/luxonis/depthai. 
 
-Also note that this example depends on changes on the develop_merge_config_manager branch of https://github.com/luxonis/depthai.
-
+Please note that this version is still under construction and prone to issues. Feel free to create an issue on GitHub or ping us on our discord channel.
 ## Setup Instructions
-1. Clone our DepthAI github.
+1. Clone this repository into ros workspace along with it's submodules.
 
-`git clone git@github.com:luxonis/depthai.git`
+2. Do not use the vision_msgs from the installed packages. Clone the new version from [here](https://github.com/ros-perception/vision_msgs) which has been recently updated. 
 
-2. Switch to the develop_merge_config_manager branch and install DepthAI dependencies. 
-```
-cd depthai
-git checkout develop_merge_config_manager
-python3 -m pip install -r requirements.txt
-```
+3. Build the packages in this repository using `catkin_make_isolated`. P.S: Do not use `catkin_make` on these packages it will throw an error. 
 
-3. Add the depthai directory to PYTHONPATH. You can also add it to your .bashrc file to skip this each time you open a new shell.
-```
-export PYTHONPATH=$PYTHONPATH:<depthai-dir>
-```
 
-4. Setup ros for this shell.
-```
-source /opt/ros/eloquent/setup.bash
-cd <your-ros-workspace>
-```
-
-5. Pull down the DepthAI ros2 package from github.
-```
-cd <your-ros-workspace>/src/
-git clone git@github.com:luxonis/depthai_ros2.git
-```
-
-6. Build the ros2 package
-```
-cd <your-ros-workspace>
-colcon build --packages-select depthai_wrapper
-. install/setup.bash
-```
-
-7. Get a list of attached devices. You’ll want to pay attention to the “on USB port: <devId>” part. We’ll use that to select a DepthAI device. You can skip this if you have a single DepthAI board. Just don't pass the -dev cli arg in the subseqent commands.
-```
-ros2 run depthai_wrapper talker --ros-args -p cliArgs:="-dev list"
-```
-
-8. Run the depthai_wrapper talker. This will create topics you can subscribe to and get depthai results. Not all topics are complete but I think you probably only care about the meta topic and maybe the preview. Both of those should work. Note that you can use the stock mobilenet_ssd if you leave off “-cnn kartDetection”.
-```
-ros2 run depthai_wrapper talker --ros-args -p cliArgs:="-dev <devId>"
-```
-
-9. Run the demo listener if you want an example of how to receive our topics.
-```
-ros2 run depthai_wrapper demoListen --ros-args -p cliArgs:="-dev <devId>"
-```
+## Available ROS node Examples
+- Stereo Node (Do not use any extended features like subpixel/lrchecks they are prone to error in convertion which needs to be fixed on the device side)[]
+- RGB node (Publishes 1080p rgb stream)
+- Mobilenet publisher
+Take a look at the launch files of the examples [here](./depthai_examples/launch)
