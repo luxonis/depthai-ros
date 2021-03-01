@@ -75,6 +75,7 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS}
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   depthai-core
+${OpenCV_LIBRARIES}
 )
 
 hunter_private_data(
