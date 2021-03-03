@@ -6,7 +6,7 @@ Please note that this version is still under construction and prone to issues. F
 ## Setup Instructions
 1. Clone this repository into ros workspace along with it's submodules.
 
-2. Do not use the vision_msgs from the installed packages. Clone the new version from [here](https://github.com/ros-perception/vision_msgs) which has been recently updated. 
+2. Do not use the vision_msgs from the installed packages. Clone the new version from [here](https://github.com/ros-perception/vision_msgs) which has been recently updated(branch: `noetic-devel`). `noetic-devel` works on melodic too. (Not tested on kinetic but should work)
 
 3. Build the packages in this repository using `catkin_make_isolated`. P.S: Do not use `catkin_make` on these packages it will throw an error. 
 
