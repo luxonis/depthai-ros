@@ -89,6 +89,12 @@ int main(int argc, char** argv){
     camera_info_manager::CameraInfoManager right_cam_manager(ros::NodeHandle{pnh, name}, name, right_uri);
     auto right_camera_info = right_cam_manager.getCameraInfo();
     rightCamInfoPub.publish(right_camera_info);
+
+    const std::string stereo_uri = camera_param_uri + "/" + "right.yaml";
+    name = "stereo";
+    camera_info_manager::CameraInfoManager stereo_cam_manager(ros::NodeHandle{pnh, name}, name, stereo_uri);
+    auto stereo_camera_info = stereo_cam_manager.getCameraInfo();
+    stereoCamInfoPub.publish(stereo_camera_info);
     // Till here------------------------------------->
 
 
