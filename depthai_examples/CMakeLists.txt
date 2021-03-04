@@ -12,9 +12,11 @@ HunterGate (
     SHA1 "062a19ab13ce8dffa9a882b6ce3e43bdabdf75d3"
     FILEPATH ${DEPTHAI_CORE}/cmake/Hunter/config.cmake # Add depthai-core config  (hunter limitation)
 )
-# add_compile_options(-std=c++11)
+
 project(depthai_examples)
-add_compile_options(-std=c++14)
+# add_compile_options(-std=c++14)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
 
@@ -73,6 +75,7 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS}
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   depthai-core
+${OpenCV_LIBRARIES}
 )
 
 hunter_private_data(
