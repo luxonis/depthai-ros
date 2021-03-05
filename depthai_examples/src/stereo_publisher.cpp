@@ -39,8 +39,8 @@ int main(int argc, char** argv){
     
     std::vector<ros::Publisher> imgPubList;
     std::vector<std::string> frameNames;
-    std::vector<dai::rosBridge::BridgePublisher> bridgePublishers;
-    std::vector<dai::rosBridge::ImageConverter> converters;
+    // std::vector<dai::rosBridge::BridgePublisher> bridgePublishers;
+    // std::vector<dai::rosBridge::ImageConverter> converters;
     
     bool latched_cam_info = true;
     ros::Publisher leftCamInfoPub   = pnh.advertise<sensor_msgs::CameraInfo>("left/camera_info", 30, latched_cam_info);    
@@ -77,8 +77,8 @@ int main(int argc, char** argv){
         if (op_que->getName().find("rect") != std::string::npos){
             if (op_que->getName().find("left") != std::string::npos)
             {   
-                converters.push_back(dai::rosBridge::ImageConverter(deviceName + "_left_camera_optical_frame", _frameName)
-                bridgePublishers.push_back(dai::rosBridge::BridgePublisher(op_que, pnh, "left/image_rect", converters[converters.size - 1].toRosMsg, 30, false);
+                // converters.push_back(dai::rosBridge::ImageConverter(deviceName + "_left_camera_optical_frame", _frameName)
+                // bridgePublishers.push_back(dai::rosBridge::BridgePublisher(op_que, pnh, "left/image_rect", converters[converters.size - 1].toRosMsg, 30, false);
                 // frameNames.push_back(deviceName + "_left_camera_optical_frame");
             }
             if (op_que->getName().find("right") != std::string::npos)

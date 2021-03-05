@@ -1,8 +1,8 @@
 #include "depthai/depthai.hpp"
 #include "sensor_msgs/Image.h"
+#include <depthai_bridge/ImageConverter.hpp>
 #include <depthai_ros_msgs/DetectionDaiArray.h>
 #include <vision_msgs/Detection2DArray.h>
-#include <depthai_bridge/ImageConverter.hpp>
 
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
@@ -26,6 +26,6 @@ private:
   int _width, _height;
   const std::string _frameName;
   bool _normalized;
-};
 
-} // namespace dai::rosBridge
+};
+}   // namespace dai::rosBridge

@@ -54,6 +54,4 @@ BridgePublisher<RosMsg, SimMsg>::~BridgePublisher(){
 // (so I need to create async spinner for that or multithreaded nodehandle??), 
 // ANd what about the callbacks ?
 
-
-
 } // namespace dai::rosBridge
