@@ -22,9 +22,8 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(
 
 template <class RosMsg, class SimMsg> 
 void BridgePublisher<RosMsg, SimMsg>::startPublisherThread(){
-    
+
     _readingThread = std::thread([&](){
-    
         while(ros::ok()){
             auto daiDataPtr = _daiMessageQueue->tryGet();
 

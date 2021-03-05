@@ -39,7 +39,7 @@ int main(int argc, char** argv){
     
     std::vector<ros::Publisher> imgPubList;
     std::vector<std::string> frameNames;
-    // std::vector<dai::rosBridge::BridgePublisher> bridgePublishers;
+    // std::vector<dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame>> bridgePublishers;
     // std::vector<dai::rosBridge::ImageConverter> converters;
     
     bool latched_cam_info = true;
@@ -73,13 +73,18 @@ int main(int argc, char** argv){
         throw std::runtime_error("Not enough publishers were created for the number of streams from the device");
     }
 
+    dai::rosBridge::ImageConverter converter("z");
+    dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame> bridgePublish(imageDataQueues[0], pnh, std::string("left/image_rect"), std::bind(&dai::rosBridge::ImageConverter::toRosMsg, &converter, _1, _2) , 30, false);
+
     for (auto op_que : imageDataQueues){
         if (op_que->getName().find("rect") != std::string::npos){
             if (op_que->getName().find("left") != std::string::npos)
             {   
                 // converters.push_back(dai::rosBridge::ImageConverter(deviceName + "_left_camera_optical_frame", _frameName)
                 // bridgePublishers.push_back(dai::rosBridge::BridgePublisher(op_que, pnh, "left/image_rect", converters[converters.size - 1].toRosMsg, 30, false);
-                // frameNames.push_back(deviceName + "_left_camera_optical_frame");
+                frameNames.push_back(deviceName + "_left_camera_optical_frame");
+                imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("left/image_rect", 30));
+
             }
             if (op_que->getName().find("right") != std::string::npos)
             {
@@ -116,7 +121,7 @@ int main(int argc, char** argv){
             auto imgData = imageDataQueues[i]->get<dai::ImgFrame>();
             // std::cout << "id num ->" << i << imageDataQueues[i]->getName() << std::endl;
             sensor_msgs::Image imageMsg;
-            dai::rosImageBridge(imgData, frameNames[i], imageMsg);
+            // dai::rosImageBridge(imgData, frameNames[i], imageMsg);
             imgPubList[i].publish(imageMsg);
         }
         ros::spinOnce();
