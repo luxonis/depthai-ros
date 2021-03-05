@@ -46,7 +46,7 @@ add_subdirectory(${DEPTHAI_CORE} depthai-core)
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES ${PROJECT_NAME}
- CATKIN_DEPENDS depthai_ros_msgs roscpp sensor_msgs std_msgs camera_info_manager 
+ CATKIN_DEPENDS depthai_ros_msgs roscpp sensor_msgs std_msgs camera_info_manager depthai_bridge
  DEPENDS
  OpenCV
  )
@@ -57,6 +57,10 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
+message(STATUS "Include directoires ------------->")
+message(STATUS "libraries directoires ------------->")
+message(${catkin_INCLUDE_DIRS})
+message(${catkin_LIBRARIES})
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
@@ -76,7 +80,7 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS}
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   depthai-core
-${OpenCV_LIBRARIES}
+  ${OpenCV_LIBRARIES}
 )
 
 hunter_private_data(

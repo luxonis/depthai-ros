@@ -7,6 +7,7 @@
 #include "sensor_msgs/Image.h"
 #include <camera_info_manager/camera_info_manager.h>
 #include <depthai_examples/stereo_pipeline.hpp>
+#include <functional>
 
 // #include <depthai_examples/daiUtility.hpp>
 // Inludes common necessary includes for development using depthai library
@@ -15,7 +16,7 @@
 #include <depthai_bridge/BridgePublisher.hpp>
 #include <depthai_bridge/ImageConverter.hpp>
 
-
+// using namespace std::placeholders;
 int main(int argc, char** argv){
 
     ros::init(argc, argv, "stereo_node");
@@ -74,7 +75,15 @@ int main(int argc, char** argv){
     }
 
     dai::rosBridge::ImageConverter converter("z");
-    dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame> bridgePublish(imageDataQueues[0], pnh, std::string("left/image_rect"), std::bind(&dai::rosBridge::ImageConverter::toRosMsg, &converter, _1, _2) , 30, false);
+    dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame> bridgePublish(imageDataQueues[0],
+                                                                                     pnh, 
+                                                                                     std::string("left/image_rect"),
+                                                                                     std::bind(&dai::rosBridge::ImageConverter::toRosMsg, 
+                                                                                     &converter, 
+                                                                                     std::placeholders::_1, 
+                                                                                     std::placeholders::_2) , 
+                                                                                     30, 
+                                                                                     false);
 
     for (auto op_que : imageDataQueues){
         if (op_que->getName().find("rect") != std::string::npos){
@@ -84,7 +93,6 @@ int main(int argc, char** argv){
                 // bridgePublishers.push_back(dai::rosBridge::BridgePublisher(op_que, pnh, "left/image_rect", converters[converters.size - 1].toRosMsg, 30, false);
                 frameNames.push_back(deviceName + "_left_camera_optical_frame");
                 imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("left/image_rect", 30));
-
             }
             if (op_que->getName().find("right") != std::string::npos)
             {
@@ -111,8 +119,6 @@ int main(int argc, char** argv){
             }
         }
     }
-
-
     // std::cout << "Waiting for " << imageDataQueues.size() << std::endl;
     
     while(ros::ok()){

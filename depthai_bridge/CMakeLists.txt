@@ -25,7 +25,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ## is used, also find other catkin packages
 
 
-find_package(ament_cmake QUIET)
+# find_package(ament_cmake QUIET)
 
 set(_opencv_version 4)
 find_package(OpenCV 4 QUIET)
@@ -35,30 +35,30 @@ if(NOT OpenCV_FOUND)
 endif()
 
 
-if ( ament_cmake_FOUND )
+# if ( ament_cmake_FOUND )
 
-    # Not adding -DUSING_ROS since xml_parsing.cpp hasn't been ported to ROS2
+#     # Not adding -DUSING_ROS since xml_parsing.cpp hasn't been ported to ROS2
 
-    find_package(depthai_ros_msgs REQUIRED)
-    find_package(rclcpp REQUIRED)
-    find_package(sensor_msgs REQUIRED)
-    find_package(std_msgs REQUIRED)
-    find_package(vision_msgs REQUIRED)
+#     find_package(depthai_ros_msgs REQUIRED)
+#     find_package(rclcpp REQUIRED)
+#     find_package(sensor_msgs REQUIRED)
+#     find_package(std_msgs REQUIRED)
+#     find_package(vision_msgs REQUIRED)
 
-    message(STATUS "------------------------------------------")
-    message(STATUS "Depthai bridge is being built using AMENT.")
-    message(STATUS "------------------------------------------")
+#     message(STATUS "------------------------------------------")
+#     message(STATUS "Depthai bridge is being built using AMENT.")
+#     message(STATUS "------------------------------------------")
 
-    list(APPEND DEPENDENCY_PUBLIC_LIBRARIES 
-    [depthai_ros_msgs, 
-    rclcpp, 
-    sensor_msgs, 
-    std_msgs, 
-    vision_msgs])
+#     list(APPEND DEPENDENCY_PUBLIC_LIBRARIES 
+#     [depthai_ros_msgs, 
+#     rclcpp, 
+#     sensor_msgs, 
+#     std_msgs, 
+#     vision_msgs])
 
-    set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
+#     set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
 
-elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
+# elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
 
     set(catkin_FOUND 1)
     # add_definitions( -DUSING_ROS )
@@ -92,7 +92,7 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
 
     list(APPEND DEPENDENCY_PUBLIC_LIBRARIES ${catkin_LIBRARIES})
     set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
-endif()
+# endif()
 
 add_subdirectory(${DEPTHAI_CORE} depthai-core)
 
@@ -103,11 +103,15 @@ include_directories(
   ${Boost_INCLUDE_DIRS}
 )
 
-add_library(${PROJECT_NAME} SHARED
-    src/ImageConverter.cpp
-    src/DetectionConverter.cpp
-    src/BridgePublisher.cpp
+FILE(GLOB LIB_SRC
+   "src/*.cpp"
 )
+
+## Declare a C++ library
+add_library(${PROJECT_NAME}  
+${LIB_SRC}
+)
+
 
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS} depthai-core
@@ -143,10 +147,10 @@ target_link_libraries(${PROJECT_NAME}
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-)
+# include_directories(
+#   include
+#   ${catkin_INCLUDE_DIRS}
+# )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}

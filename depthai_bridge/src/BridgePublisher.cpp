@@ -10,7 +10,7 @@ namespace dai::rosBridge {
 template <class RosMsg, class SimMsg> 
 BridgePublisher<RosMsg, SimMsg>::BridgePublisher(
     std::shared_ptr<dai::DataOutputQueue> daiMessageQueue, ros::NodeHandle &nh,
-    std::string rosTopic, ConvertFunc &converter, int queueSize, bool isMsgPtr)
+    std::string rosTopic, ConvertFunc converter, int queueSize, bool isMsgPtr)
     : _daiMessageQueue(daiMessageQueue), _nh(nh), _converter(converter),
       _rosTopic(rosTopic), _isMsgPtr(isMsgPtr) {
         
@@ -38,16 +38,14 @@ void BridgePublisher<RosMsg, SimMsg>::startPublisherThread(){
               _converter(daiDataPtr, opMsg);
               _rosPublisher.publish(opMsg);
             }
-
         }
-    
     });
 }
 
-template <class RosMsg, class SimMsg> 
-BridgePublisher<RosMsg, SimMsg>::~BridgePublisher(){
-  _readingThread.join();
-}
+// template <class RosMsg, class SimMsg> 
+// BridgePublisher<RosMsg, SimMsg>::~BridgePublisher(){
+//   _readingThread.join();
+// }
 
 // TODO(sachin): alternative methods to publish would be using walltimer here 
 // (so I need to create async spinner for that or multithreaded nodehandle??), 
