@@ -70,7 +70,7 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>vision_msgs</exec_depend>
   <exec_depend>camera_info_manager</exec_depend>
-
+  <depend>depthai_bridge</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

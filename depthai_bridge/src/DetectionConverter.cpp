@@ -1,9 +1,9 @@
-#include "depthai_bridge/DetectionConverter.hpp"
+#include <depthai_bridge/DetectionConverter.hpp>
 
-namespace dai::ros {
+namespace dai::rosBridge {
 
 template <
-    typename Msg,
+    class Msg,
     std::enable_if_t<std::is_same<Msg, depthai_ros_msgs::DetectionDai>::value,
                      bool> = true>
 void detectionMsgHelper(Msg &rosDetection, dai::ImgDetection &daiDetection) {
@@ -12,20 +12,25 @@ void detectionMsgHelper(Msg &rosDetection, dai::ImgDetection &daiDetection) {
   rosDetection.position.z = daiDetection.zdepth;
 }
 
-template <typename Msg,
+template <class Msg,
           std::enable_if_t<
               not std::is_same<Msg, depthai_ros_msgs::DetectionDai>::value,
               bool> = true>
 void detectionMsgHelper(Msg &rosDetection, dai::ImgDetection &daiDetection) {}
 
-DetectionConverter::DetectionConverter(std::string frameName, int width,
-                                       int height, T& rosMsg, bool normalized = false)
+
+// -----------------------------DetectionConverter class below----------------------------------- //
+
+template <class rosMsg>
+DetectionConverter<rosMsg>::DetectionConverter(std::string frameName, int width,
+                                       int height,  bool normalized)
     : _frameName(frameName), _width(width), _height(height),
       _normalized(normalized), _sequenceNum(0) {}
 
-DetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData,
-                             T &opDetectionMsg, timePoint tStamp,
-                             uint32_t sequenceNum = -1) {
+template <class rosMsg>
+void DetectionConverter<rosMsg>::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData,
+                             rosMsg &opDetectionMsg, TimePoint tStamp,
+                             int32_t sequenceNum) {
 
     toRosMsg(inNetData, opDetectionMsg);
     if (sequenceNum != -1)
@@ -43,8 +48,9 @@ DetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData,
     opDetectionMsg.header.frame_id = _frameName;
   }
 
-  DetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData,
-                               T & opDetectionMsg) {
+template <class rosMsg>
+void DetectionConverter<rosMsg>::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData,
+                               rosMsg &opDetectionMsg) {
 
     // if (inNetData->detections.size() == 0)
     //   throw std::runtime_error(
@@ -67,10 +73,10 @@ DetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData,
         xMax = inNetData->detections[i].xmax;
         yMax = inNetData->detections[i].ymax;
       } else {
-        xMin = inNetData->detections[i].xmin * w;
-        yMin = inNetData->detections[i].ymin * h;
-        xMax = inNetData->detections[i].xmax * w;
-        yMax = inNetData->detections[i].ymax * h;
+        xMin = inNetData->detections[i].xmin * _width;
+        yMin = inNetData->detections[i].ymin * _height;
+        xMax = inNetData->detections[i].xmax * _width;
+        yMax = inNetData->detections[i].ymax * _height;
       }
 
       float xSize = xMax - xMin;
@@ -88,7 +94,7 @@ DetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData,
       opDetectionMsg.detections[i].bbox.center.y = yCenter;
       opDetectionMsg.detections[i].bbox.size_x = xSize;
       opDetectionMsg.detections[i].bbox.size_y = ySize;
-      opDetectionMsg.detections[i].is_tracking = _isTracking;
+      // opDetectionMsg.detections[i].is_tracking = _isTracking;
 
       // if (isTracking) {
       // opDetectionMsg.detections[i].tracking_id = trackingId;
@@ -99,9 +105,10 @@ DetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData,
     _sequenceNum++;
   }
 
-  rosMsg::SharedPtr ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData){
-    rosMsg::SharedPtr ptr = boost::make_shared<rosMsg>();
-    toRosMsg(inData, *ptr);
+template <class rosMsg>
+boost::shared_ptr<rosMsg> DetectionConverter<rosMsg>::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData){
+    boost::shared_ptr<rosMsg> ptr = boost::make_shared<rosMsg>();
+    toRosMsg(inNetData, *ptr);
     return ptr;
   }
 
@@ -113,4 +120,4 @@ DetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData,
    * feel that feature is good to have...
    */
 
-} // namespace dai::ros
+} // namespace dai::rosBridge

@@ -1,4 +1,18 @@
 cmake_minimum_required(VERSION 3.0.2)
+
+get_filename_component (DEPTHAI_CORE "${CMAKE_CURRENT_LIST_DIR}/../external/depthai-core" REALPATH)
+include ("${DEPTHAI_CORE}/cmake/HunterGate.cmake")
+
+set (CMAKE_POSITION_INDEPENDENT_CODE ON)
+set (HUNTER_CONFIGURATION_TYPES "Release" CACHE STRING "Hunter dependencies list of build configurations")
+
+HunterGate (
+    URL "https://github.com/cpp-pm/hunter/archive/v0.23.258.tar.gz"
+    SHA1 "062a19ab13ce8dffa9a882b6ce3e43bdabdf75d3"
+    FILEPATH ${DEPTHAI_CORE}/cmake/Hunter/config.cmake # Add depthai-core config  (hunter limitation)
+)
+
+
 project(depthai_bridge)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -10,9 +24,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 
-add_subdirectory(${DEPTHAI_CORE} depthai-core)
 
 find_package(ament_cmake QUIET)
+
+set(_opencv_version 4)
+find_package(OpenCV 4 QUIET)
+if(NOT OpenCV_FOUND)
+  message(STATUS "Did not find OpenCV 4, trying OpenCV 3")
+  set(_opencv_version 3)
+endif()
+
 
 if ( ament_cmake_FOUND )
 
@@ -41,14 +62,17 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
 
     set(catkin_FOUND 1)
     # add_definitions( -DUSING_ROS )
+    # message(STATUS "------------------------------------------")
+    
     find_package(catkin REQUIRED COMPONENTS  
-      depthai_ros_msgs
       roscpp
       sensor_msgs
       std_msgs
       vision_msgs
+      depthai_ros_msgs
     )
     # find_package(GTest)
+    find_package(Boost REQUIRED)
 
     message(STATUS "------------------------------------------")
     message(STATUS "Depthai bridge is being built using CATKIN.")
@@ -57,7 +81,7 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
     catkin_package(
       INCLUDE_DIRS include
       LIBRARIES ${PROJECT_NAME}
-      CATKIN_DEPENDS depthai_ros_msgs roscpp sensor_msgs std_msgs camera_info_manager vision_msgs 
+      CATKIN_DEPENDS depthai_ros_msgs roscpp sensor_msgs std_msgs vision_msgs 
     )
 
     # catkin_package(
@@ -70,25 +94,19 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
     set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
 endif()
 
+add_subdirectory(${DEPTHAI_CORE} depthai-core)
+
 include_directories(
   include
   ${BUILD_TOOL_INCLUDE_DIRS}
-  # ${OpenCV_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
 )
 
 add_library(${PROJECT_NAME} SHARED
-    src/alignment_util.cpp
-    src/map_grid.cpp
-    src/goal_dist.cpp
-    src/path_dist.cpp
-    src/goal_align.cpp
-    src/path_align.cpp
-    src/base_obstacle.cpp
-    src/obstacle_footprint.cpp
-    src/oscillation.cpp
-    src/prefer_forward.cpp
-    src/rotate_to_goal.cpp
-    src/twirling.cpp
+    src/ImageConverter.cpp
+    src/DetectionConverter.cpp
+    src/BridgePublisher.cpp
 )
 
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS}
@@ -98,6 +116,8 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS}
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   depthai-core
+  ${OpenCV_LIBRARIES}
+  ${Boost_LIBRARY_DIRS}
 )
 
 # ament_export_include_directories(include)

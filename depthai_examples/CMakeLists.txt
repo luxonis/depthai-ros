@@ -12,7 +12,7 @@ HunterGate (
     SHA1 "062a19ab13ce8dffa9a882b6ce3e43bdabdf75d3"
     FILEPATH ${DEPTHAI_CORE}/cmake/Hunter/config.cmake # Add depthai-core config  (hunter limitation)
 )
-
+# add_compile_options(-std=c++11)
 project(depthai_examples)
 # add_compile_options(-std=c++14)
 set(CMAKE_CXX_STANDARD 14)
@@ -31,6 +31,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   cv_bridge
   vision_msgs
+  depthai_bridge
 )
 
 set(_opencv_version 4)

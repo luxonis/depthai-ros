@@ -1,12 +1,16 @@
 #include <depthai_bridge/BridgePublisher.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/shared_ptr.hpp>
 #include <thread>
 
-namespace dai::ros {
+namespace dai::rosBridge {
+
+
 
 template <class RosMsg, class SimMsg> 
 BridgePublisher<RosMsg, SimMsg>::BridgePublisher(
     std::shared_ptr<dai::DataOutputQueue> daiMessageQueue, ros::NodeHandle &nh,
-    std::string rosTopic, ConvertFunc converter, int queueSize, bool isMsgPtr = False)
+    std::string rosTopic, ConvertFunc &converter, int queueSize, bool isMsgPtr)
     : _daiMessageQueue(daiMessageQueue), _nh(nh), _converter(converter),
       _rosTopic(rosTopic), _isMsgPtr(isMsgPtr) {
         
@@ -17,22 +21,23 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(
 }
 
 template <class RosMsg, class SimMsg> 
-BridgePublisher<RosMsg, SimMsg>::startPublisherThread(){
+void BridgePublisher<RosMsg, SimMsg>::startPublisherThread(){
     
     _readingThread = std::thread([&](){
     
-        while(ros:ok()){
-            auto daiDataPtr = _daiMessageQueue.tryGet();
+        while(ros::ok()){
+            auto daiDataPtr = _daiMessageQueue->tryGet();
 
-            if(isMsgPtr){
-              RosMsg::SharedPtr opMsgPtr = boost::make_shared<RosMsg>();
+            if(_isMsgPtr){
+              // RosMsg::SharedPtr 
+              boost::shared_ptr<RosMsg> opMsgPtr = boost::make_shared<RosMsg>();
               _converter(daiDataPtr, *opMsgPtr);
-              _rosPublisher.publish(opMsgPtr)
+              _rosPublisher.publish(opMsgPtr);
             }
             else{
-              RosMsg::SharedPtr opMsg;
+              RosMsg opMsg;
               _converter(daiDataPtr, opMsg);
-              _rosPublisher.publish(opMsgPtr)
+              _rosPublisher.publish(opMsg);
             }
 
         }
@@ -41,7 +46,7 @@ BridgePublisher<RosMsg, SimMsg>::startPublisherThread(){
 }
 
 template <class RosMsg, class SimMsg> 
-BridgePublisher<RosMsg, SimMsg>::BridgePublisher(){
+BridgePublisher<RosMsg, SimMsg>::~BridgePublisher(){
   _readingThread.join();
 }
 
@@ -51,4 +56,4 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(){
 
 
 
-} // namespace dai::ros
+} // namespace dai::rosBridge

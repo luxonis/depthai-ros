@@ -7,13 +7,16 @@
 #include "sensor_msgs/Image.h"
 #include <camera_info_manager/camera_info_manager.h>
 #include <depthai_examples/stereo_pipeline.hpp>
-#include <depthai_examples/daiUtility.hpp>
+
+// #include <depthai_examples/daiUtility.hpp>
 // Inludes common necessary includes for development using depthai library
 #include "depthai/depthai.hpp"
 
+#include <depthai_bridge/BridgePublisher.hpp>
+#include <depthai_bridge/ImageConverter.hpp>
+
 
 int main(int argc, char** argv){
-
 
     ros::init(argc, argv, "stereo_node");
     ros::NodeHandle pnh("~");
@@ -30,47 +33,15 @@ int main(int argc, char** argv){
         throw std::runtime_error("Couldn't find one of the parameters");
     }
 
-    
     StereoExampe stero_pipeline;
     stero_pipeline.initDepthaiDev();
     std::vector<std::shared_ptr<dai::DataOutputQueue>> imageDataQueues = stero_pipeline.getExposedImageStreams();
     
     std::vector<ros::Publisher> imgPubList;
     std::vector<std::string> frameNames;
-
-    for (auto op_que : imageDataQueues){
-        if (op_que->getName().find("rect") != std::string::npos){
-            if (op_que->getName().find("left") != std::string::npos)
-            {    
-                imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("left/image_rect", 30));
-                frameNames.push_back(deviceName + "_left_camera_optical_frame");
-            }
-            if (op_que->getName().find("right") != std::string::npos)
-            {
-                imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("right/image_rect", 30));
-                frameNames.push_back(deviceName + "_right_camera_optical_frame");
-            }
-        }
-        else{
-            if (op_que->getName().find("left") != std::string::npos){
-                imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("left/image", 30));
-                frameNames.push_back(deviceName + "_left_camera_optical_frame");
-            }
-            else if (op_que->getName().find("right") != std::string::npos){
-                imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("right/image", 30));
-                frameNames.push_back(deviceName + "_right_camera_optical_frame");
-            }
-            else if (op_que->getName().find("depth") != std::string::npos){
-                imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("stereo/depth", 30));
-                frameNames.push_back(deviceName + "_right_camera_optical_frame");
-            }
-            else if (op_que->getName().find("disparity") != std::string::npos){
-                imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("stereo/disparity", 30));
-                frameNames.push_back(deviceName + "_right_camera_optical_frame");
-            }
-        }
-    }
-
+    std::vector<dai::rosBridge::BridgePublisher> bridgePublishers;
+    std::vector<dai::rosBridge::ImageConverter> converters;
+    
     bool latched_cam_info = true;
     ros::Publisher leftCamInfoPub   = pnh.advertise<sensor_msgs::CameraInfo>("left/camera_info", 30, latched_cam_info);    
     ros::Publisher rightCamInfoPub  = pnh.advertise<sensor_msgs::CameraInfo>("right/camera_info", 30, latched_cam_info);    
@@ -102,7 +73,41 @@ int main(int argc, char** argv){
         throw std::runtime_error("Not enough publishers were created for the number of streams from the device");
     }
 
-    
+    for (auto op_que : imageDataQueues){
+        if (op_que->getName().find("rect") != std::string::npos){
+            if (op_que->getName().find("left") != std::string::npos)
+            {   
+                converters.push_back(dai::rosBridge::ImageConverter(deviceName + "_left_camera_optical_frame", _frameName)
+                bridgePublishers.push_back(dai::rosBridge::BridgePublisher(op_que, pnh, "left/image_rect", converters[converters.size - 1].toRosMsg, 30, false);
+                // frameNames.push_back(deviceName + "_left_camera_optical_frame");
+            }
+            if (op_que->getName().find("right") != std::string::npos)
+            {
+                imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("right/image_rect", 30));
+                frameNames.push_back(deviceName + "_right_camera_optical_frame");
+            }
+        }
+        else{
+            if (op_que->getName().find("left") != std::string::npos){
+                imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("left/image", 30));
+                frameNames.push_back(deviceName + "_left_camera_optical_frame");
+            }
+            else if (op_que->getName().find("right") != std::string::npos){
+                imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("right/image", 30));
+                frameNames.push_back(deviceName + "_right_camera_optical_frame");
+            }
+            else if (op_que->getName().find("depth") != std::string::npos){
+                imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("stereo/depth", 30));
+                frameNames.push_back(deviceName + "_right_camera_optical_frame");
+            }
+            else if (op_que->getName().find("disparity") != std::string::npos){
+                imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("stereo/disparity", 30));
+                frameNames.push_back(deviceName + "_right_camera_optical_frame");
+            }
+        }
+    }
+
+
     // std::cout << "Waiting for " << imageDataQueues.size() << std::endl;
     
     while(ros::ok()){

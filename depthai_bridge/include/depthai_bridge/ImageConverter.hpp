@@ -8,17 +8,17 @@
 #include "depthai/depthai.hpp"
 #include <opencv2/opencv.hpp>
 
-namespace dai::ros {
+namespace dai::rosBridge {
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration>;
 
 class ImageConverter{
 
     public:
-    ImageFrame() = default;
-    ImageFrame(const std::string frameName, bool interleaved = true);
-    ImageFrame(bool interleaved);
+    // ImageConverter() = default;
+    ImageConverter(const std::string frameName, bool interleaved = true);
+    ImageConverter(bool interleaved);
     
-    void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, sensor_msgs::Image& opMsg);
+    void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, sensor_msgs::Image& outImageMsg);
     sensor_msgs::ImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
 
     void toDaiMsg(sensor_msgs::Image& inMsg, std::shared_ptr<dai::ImgFrame> outData);
@@ -30,21 +30,24 @@ class ImageConverter{
 
 
      private:
-    std::unordered_map<dai::RawImgFrame::Type, std::string> encodingEnumMap({
-        {dai::RawImgFrame::Type::YUV422i        , "yuv422"               },
-        {dai::RawImgFrame::Type::RGBA8888       , "rgba8"                },
-        {dai::RawImgFrame::Type::RGB888i        , "rgb8"                 },
-        {dai::RawImgFrame::Type::BGR888i        , "bgr8"                 },
-        {dai::RawImgFrame::Type::GRAY8          , "8UC1"                 },
-        {dai::RawImgFrame::Type::RAW8           , "mono8"                },
-        {dai::RawImgFrame::Type::RAW16          , "mono16"               },
-        {dai::RawImgFrame::Type::NV12           , "NV12"                 } 
-        // {dai::RawImgFrame::Type::NV12           : "CV_bridge" },
-    });
+        static std::unordered_map<dai::RawImgFrame::Type, std::string> encodingEnumMap;
+        static std::unordered_map<dai::RawImgFrame::Type, std::string> planarEncodingEnumMap;
 
-    std::unordered_map<dai::RawImgFrame::Type, std::string> planarEncodingEnumMap({
-                {dai::RawImgFrame::Type::BGR888p  , "3_1_bgr8"      },
-            });
+    // std::unordered_map<dai::RawImgFrame::Type, std::string> encodingEnumMap({
+    //     {dai::RawImgFrame::Type::YUV422i        , "yuv422"               },
+    //     {dai::RawImgFrame::Type::RGBA8888       , "rgba8"                },
+    //     {dai::RawImgFrame::Type::RGB888i        , "rgb8"                 },
+    //     {dai::RawImgFrame::Type::BGR888i        , "bgr8"                 },
+    //     {dai::RawImgFrame::Type::GRAY8          , "8UC1"                 },
+    //     {dai::RawImgFrame::Type::RAW8           , "mono8"                },
+    //     {dai::RawImgFrame::Type::RAW16          , "mono16"               },
+    //     {dai::RawImgFrame::Type::NV12           , "NV12"                 } 
+    //     // {dai::RawImgFrame::Type::NV12           : "CV_bridge" },
+    // });
+
+    // std::unordered_map<dai::RawImgFrame::Type, std::string> planarEncodingEnumMap({
+    //             {dai::RawImgFrame::Type::BGR888p  , "3_1_bgr8"      }
+    //         });
     
 
     // dai::RawImgFrame::Type _srcType;
@@ -56,4 +59,4 @@ class ImageConverter{
 
 };
 
-}   // namespace dai::ros
+}   // namespace dai::rosBridge

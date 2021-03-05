@@ -9,17 +9,17 @@
 
 #include "ros/ros.h"
 
-namespace dai::ros {
+namespace dai::rosBridge {
 
 template <class RosMsg, class SimMsg> 
 class BridgePublisher {
 public:
-  using ConvertFunc = std::function<void(shared_ptr<SimMsg> , RosMsg &)>;
+  using ConvertFunc = std::function<void (std::shared_ptr<SimMsg> , RosMsg &)>;
   // using ConvertFuncPtr = std::function<void (const RosMsg &, SimMsg &)>;
 
   BridgePublisher(std::shared_ptr<dai::DataOutputQueue> daiMessageQueue,
                   ros::NodeHandle &nh, std::string rosTopic,
-                  ConvertFunc converter, bool isMsgPtr = False);
+                  ConvertFunc &converter, int queueSize, bool isMsgPtr = false);
 
   void startPublisherThread();
   ~BridgePublisher();
@@ -33,5 +33,5 @@ private:
   std::thread _readingThread;
   bool _isMsgPtr;
   std::string _rosTopic;
-}
-} // namespace dai::ros
+};
+} // namespace dai::rosBridge
