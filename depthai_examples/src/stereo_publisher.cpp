@@ -84,7 +84,8 @@ int main(int argc, char** argv){
                                                                                      std::placeholders::_2) , 
                                                                                      30);
 
-    bridgePublish.startPublisherThread();
+    // bridgePublish.startPublisherThread();
+    bridgePublish.addPubisherCallback();
 
     // for (auto op_que : imageDataQueues){
     //     if (op_que->getName().find("rect") != std::string::npos){

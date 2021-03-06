@@ -24,10 +24,19 @@ public:
                   ros::NodeHandle &nh, std::string rosTopic,
                   ConvertFunc converter, int queueSize);
 
+  
+  void addPubisherCallback();
+
   void startPublisherThread();
   ~BridgePublisher();
   
 private:
+  /** 
+   * adding this callback will allow you to still be able to consume 
+   * the data for other processing using get() function .
+   */
+  void daiCallback(std::string name, std::shared_ptr<ADatatype> data);
+  
   std::shared_ptr<dai::DataOutputQueue> _daiMessageQueue;
   ConvertFunc _converter;
   
@@ -35,6 +44,8 @@ private:
   ros::Publisher _rosPublisher;
   std::thread _readingThread;
   std::string _rosTopic;
+  bool isCallbackAdded = false;
+
 };
 
 
@@ -44,23 +55,47 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(
     std::string rosTopic, ConvertFunc converter, int queueSize)
     : _daiMessageQueue(daiMessageQueue), _nh(nh), _converter(converter),
       _rosTopic(rosTopic){
-          _rosPublisher = _nh.advertise<RosMsg>(rosTopic, queueSize);
+    _rosPublisher = _nh.advertise<RosMsg>(rosTopic, queueSize);
 }
 
 template <class RosMsg, class SimMsg> 
 void BridgePublisher<RosMsg, SimMsg>::startPublisherThread(){
+  if(isCallbackAdded){
+    std::runtime_error("addPubisherCallback() function adds a callback to the"
+                       "depthai which handles the publishing so no need to start" 
+                       "the thread using startPublisherThread() ");
+  }
 
-    _readingThread = std::thread([&](){
-        while(ros::ok()){
-          auto daiDataPtr = _daiMessageQueue->tryGet<SimMsg>();
-          if(daiDataPtr == nullptr) continue;
+  _readingThread = std::thread([&](){
+    while(ros::ok()){
+      auto daiDataPtr = _daiMessageQueue->tryGet<SimMsg>();
+      if(daiDataPtr == nullptr) continue;
 
-          RosMsg opMsg;
-          _converter(daiDataPtr, opMsg);
-          _rosPublisher.publish(opMsg);
-            
-        }
-    });
+      RosMsg opMsg;
+      _converter(daiDataPtr, opMsg);
+      _rosPublisher.publish(opMsg);
+        
+    }
+  });
+}
+
+
+template <class RosMsg, class SimMsg> 
+void BridgePublisher<RosMsg, SimMsg>::daiCallback(std::string name, std::shared_ptr<ADatatype> data){
+
+  auto daiDataPtr = std::dynamic_pointer_cast<SimMsg>(data);
+
+  RosMsg opMsg;
+  _converter(daiDataPtr, opMsg);
+  _rosPublisher.publish(opMsg);
+      
+}
+
+template <class RosMsg, class SimMsg> 
+void BridgePublisher<RosMsg, SimMsg>::addPubisherCallback(){
+
+  _daiMessageQueue->addCallback(std::bind(&BridgePublisher<RosMsg, SimMsg>::daiCallback, this, std::placeholders::_1, std::placeholders::_2));
+  isCallbackAdded = true;
 }
 
 

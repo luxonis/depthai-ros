@@ -3,7 +3,7 @@
 #include <boost/shared_ptr.hpp>
 #include <thread>
 
-namespace dai::rosBridge {
+// namespace dai::rosBridge {
 
 
 
@@ -51,4 +51,4 @@ namespace dai::rosBridge {
 // (so I need to create async spinner for that or multithreaded nodehandle??), 
 // ANd what about the callbacks ?
 
-} // namespace dai::rosBridge
+// } // namespace dai::rosBridge
