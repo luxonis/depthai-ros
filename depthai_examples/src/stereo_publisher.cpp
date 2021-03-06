@@ -75,9 +75,9 @@ int main(int argc, char** argv){
     // }
 
     dai::rosBridge::ImageConverter converter(deviceName + "_left_camera_optical_frame");
-    dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame> bridgePublish(imageDataQueues[0],
+    dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame> leftPublish(imageDataQueues[0],
                                                                                      pnh, 
-                                                                                     std::string("left/image_rect"),
+                                                                                     std::string("left/image"),
                                                                                      std::bind(&dai::rosBridge::ImageConverter::toRosMsg, 
                                                                                      &converter, 
                                                                                      std::placeholders::_1, 
@@ -85,7 +85,21 @@ int main(int argc, char** argv){
                                                                                      30);
 
     // bridgePublish.startPublisherThread();
-    bridgePublish.addPubisherCallback();
+    leftPublish.addPubisherCallback();
+
+    dai::rosBridge::ImageConverter rightconverter(deviceName + "_right_camera_optical_frame");
+    dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame> rightPublish(imageDataQueues[1],
+                                                                                     pnh, 
+                                                                                     std::string("right/image"),
+                                                                                     std::bind(&dai::rosBridge::ImageConverter::toRosMsg, 
+                                                                                     &rightconverter, 
+                                                                                     std::placeholders::_1, 
+                                                                                     std::placeholders::_2) , 
+                                                                                     30);
+
+    // bridgePublish.startPublisherThread();
+    rightPublish.addPubisherCallback();
+
 
     // for (auto op_que : imageDataQueues){
     //     if (op_que->getName().find("rect") != std::string::npos){

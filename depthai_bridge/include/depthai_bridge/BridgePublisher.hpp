@@ -24,7 +24,8 @@ public:
                   ros::NodeHandle &nh, std::string rosTopic,
                   ConvertFunc converter, int queueSize);
 
-  
+  BridgePublisher(const BridgePublisher& other);
+
   void addPubisherCallback();
 
   void startPublisherThread();
@@ -59,6 +60,17 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(
 }
 
 template <class RosMsg, class SimMsg> 
+BridgePublisher<RosMsg, SimMsg>::BridgePublisher(const BridgePublisher& other){
+  _daiMessageQueue = other._daiMessageQueue;
+  _nh = other._nh;
+  _converter = other._converter;
+  _rosTopic = other._rosTopic;
+  _rosPublisher = ros::Publisher(other._rosPublisher);
+
+}
+
+
+template <class RosMsg, class SimMsg> 
 void BridgePublisher<RosMsg, SimMsg>::startPublisherThread(){
   if(isCallbackAdded){
     std::runtime_error("addPubisherCallback() function adds a callback to the"
@@ -69,11 +81,15 @@ void BridgePublisher<RosMsg, SimMsg>::startPublisherThread(){
   _readingThread = std::thread([&](){
     while(ros::ok()){
       auto daiDataPtr = _daiMessageQueue->tryGet<SimMsg>();
-      if(daiDataPtr == nullptr) continue;
+      if(daiDataPtr == nullptr) {
+       std::cout << "No data found!!!";
+        continue;
+      }
 
       RosMsg opMsg;
       _converter(daiDataPtr, opMsg);
-      _rosPublisher.publish(opMsg);
+
+      if(_rosPublisher.getNumSubscribers() > 0) _rosPublisher.publish(opMsg);
         
     }
   });
@@ -87,7 +103,7 @@ void BridgePublisher<RosMsg, SimMsg>::daiCallback(std::string name, std::shared_
 
   RosMsg opMsg;
   _converter(daiDataPtr, opMsg);
-  _rosPublisher.publish(opMsg);
+  if(_rosPublisher.getNumSubscribers() > 0) _rosPublisher.publish(opMsg);
       
 }
 
