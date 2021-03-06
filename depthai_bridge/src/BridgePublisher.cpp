@@ -7,40 +7,40 @@ namespace dai::rosBridge {
 
 
 
-template <class RosMsg, class SimMsg> 
-BridgePublisher<RosMsg, SimMsg>::BridgePublisher(
-    std::shared_ptr<dai::DataOutputQueue> daiMessageQueue, ros::NodeHandle &nh,
-    std::string rosTopic, ConvertFunc converter, int queueSize, bool isMsgPtr)
-    : _daiMessageQueue(daiMessageQueue), _nh(nh), _converter(converter),
-      _rosTopic(rosTopic), _isMsgPtr(isMsgPtr) {
+// template <class RosMsg, class SimMsg> 
+// BridgePublisher<RosMsg, SimMsg>::BridgePublisher(
+//     std::shared_ptr<dai::DataOutputQueue> daiMessageQueue, ros::NodeHandle &nh,
+//     std::string rosTopic, ConvertFunc converter, int queueSize, bool isMsgPtr)
+//     : _daiMessageQueue(daiMessageQueue), _nh(nh), _converter(converter),
+//       _rosTopic(rosTopic), _isMsgPtr(isMsgPtr) {
         
-        if(isMsgPtr)
-          _rosPublisher = _nh.advertise<RosMsg::SharedPtr>(rosTopic, queueSize);
-        else
-          _rosPublisher = _nh.advertise<RosMsg>(rosTopic, queueSize);
-}
+//         if(isMsgPtr)
+//           _rosPublisher = _nh.advertise<RosMsg::SharedPtr>(rosTopic, queueSize);
+//         else
+//           _rosPublisher = _nh.advertise<RosMsg>(rosTopic, queueSize);
+// }
 
-template <class RosMsg, class SimMsg> 
-void BridgePublisher<RosMsg, SimMsg>::startPublisherThread(){
+// template <class RosMsg, class SimMsg> 
+// void BridgePublisher<RosMsg, SimMsg>::startPublisherThread(){
 
-    _readingThread = std::thread([&](){
-        while(ros::ok()){
-            auto daiDataPtr = _daiMessageQueue->tryGet();
+//     _readingThread = std::thread([&](){
+//         while(ros::ok()){
+//             auto daiDataPtr = _daiMessageQueue->tryGet();
 
-            if(_isMsgPtr){
-              // RosMsg::SharedPtr 
-              boost::shared_ptr<RosMsg> opMsgPtr = boost::make_shared<RosMsg>();
-              _converter(daiDataPtr, *opMsgPtr);
-              _rosPublisher.publish(opMsgPtr);
-            }
-            else{
-              RosMsg opMsg;
-              _converter(daiDataPtr, opMsg);
-              _rosPublisher.publish(opMsg);
-            }
-        }
-    });
-}
+//             if(_isMsgPtr){
+//               // RosMsg::SharedPtr 
+//               boost::shared_ptr<RosMsg> opMsgPtr = boost::make_shared<RosMsg>();
+//               _converter(daiDataPtr, *opMsgPtr);
+//               _rosPublisher.publish(opMsgPtr);
+//             }
+//             else{
+//               RosMsg opMsg;
+//               _converter(daiDataPtr, opMsg);
+//               _rosPublisher.publish(opMsg);
+//             }
+//         }
+//     });
+// }
 
 // template <class RosMsg, class SimMsg> 
 // BridgePublisher<RosMsg, SimMsg>::~BridgePublisher(){

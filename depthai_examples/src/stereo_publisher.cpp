@@ -70,11 +70,11 @@ int main(int argc, char** argv){
     // Till here------------------------------------->
 
 
-    if (imageDataQueues.size() != imgPubList.size()) {
-        throw std::runtime_error("Not enough publishers were created for the number of streams from the device");
-    }
+    // if (imageDataQueues.size() != imgPubList.size()) {
+    //     throw std::runtime_error("Not enough publishers were created for the number of streams from the device");
+    // }
 
-    dai::rosBridge::ImageConverter converter("z");
+    dai::rosBridge::ImageConverter converter(deviceName + "_left_camera_optical_frame");
     dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame> bridgePublish(imageDataQueues[0],
                                                                                      pnh, 
                                                                                      std::string("left/image_rect"),
@@ -82,57 +82,59 @@ int main(int argc, char** argv){
                                                                                      &converter, 
                                                                                      std::placeholders::_1, 
                                                                                      std::placeholders::_2) , 
-                                                                                     30, 
-                                                                                     false);
+                                                                                     30);
 
-    for (auto op_que : imageDataQueues){
-        if (op_que->getName().find("rect") != std::string::npos){
-            if (op_que->getName().find("left") != std::string::npos)
-            {   
-                // converters.push_back(dai::rosBridge::ImageConverter(deviceName + "_left_camera_optical_frame", _frameName)
-                // bridgePublishers.push_back(dai::rosBridge::BridgePublisher(op_que, pnh, "left/image_rect", converters[converters.size - 1].toRosMsg, 30, false);
-                frameNames.push_back(deviceName + "_left_camera_optical_frame");
-                imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("left/image_rect", 30));
-            }
-            if (op_que->getName().find("right") != std::string::npos)
-            {
-                imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("right/image_rect", 30));
-                frameNames.push_back(deviceName + "_right_camera_optical_frame");
-            }
-        }
-        else{
-            if (op_que->getName().find("left") != std::string::npos){
-                imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("left/image", 30));
-                frameNames.push_back(deviceName + "_left_camera_optical_frame");
-            }
-            else if (op_que->getName().find("right") != std::string::npos){
-                imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("right/image", 30));
-                frameNames.push_back(deviceName + "_right_camera_optical_frame");
-            }
-            else if (op_que->getName().find("depth") != std::string::npos){
-                imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("stereo/depth", 30));
-                frameNames.push_back(deviceName + "_right_camera_optical_frame");
-            }
-            else if (op_que->getName().find("disparity") != std::string::npos){
-                imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("stereo/disparity", 30));
-                frameNames.push_back(deviceName + "_right_camera_optical_frame");
-            }
-        }
-    }
-    // std::cout << "Waiting for " << imageDataQueues.size() << std::endl;
+    bridgePublish.startPublisherThread();
+
+    // for (auto op_que : imageDataQueues){
+    //     if (op_que->getName().find("rect") != std::string::npos){
+    //         if (op_que->getName().find("left") != std::string::npos)
+    //         {   
+    //             // converters.push_back(dai::rosBridge::ImageConverter(deviceName + "_left_camera_optical_frame", _frameName)
+    //             // bridgePublishers.push_back(dai::rosBridge::BridgePublisher(op_que, pnh, "left/image_rect", converters[converters.size - 1].toRosMsg, 30, false);
+    //             frameNames.push_back(deviceName + "_left_camera_optical_frame");
+    //             imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("left/image_rect", 30));
+    //         }
+    //         if (op_que->getName().find("right") != std::string::npos)
+    //         {
+    //             imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("right/image_rect", 30));
+    //             frameNames.push_back(deviceName + "_right_camera_optical_frame");
+    //         }
+    //     }
+    //     else{
+    //         if (op_que->getName().find("left") != std::string::npos){
+    //             imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("left/image", 30));
+    //             frameNames.push_back(deviceName + "_left_camera_optical_frame");
+    //         }
+    //         else if (op_que->getName().find("right") != std::string::npos){
+    //             imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("right/image", 30));
+    //             frameNames.push_back(deviceName + "_right_camera_optical_frame");
+    //         }
+    //         else if (op_que->getName().find("depth") != std::string::npos){
+    //             imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("stereo/depth", 30));
+    //             frameNames.push_back(deviceName + "_right_camera_optical_frame");
+    //         }
+    //         else if (op_que->getName().find("disparity") != std::string::npos){
+    //             imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("stereo/disparity", 30));
+    //             frameNames.push_back(deviceName + "_right_camera_optical_frame");
+    //         }
+    //     }
+    // }
+    // // std::cout << "Waiting for " << imageDataQueues.size() << std::endl;
     
-    while(ros::ok()){
-        for(int i = 0; i < imageDataQueues.size(); ++i){
-            if(imgPubList[i].getNumSubscribers() == 0) continue;
-            auto imgData = imageDataQueues[i]->get<dai::ImgFrame>();
-            // std::cout << "id num ->" << i << imageDataQueues[i]->getName() << std::endl;
-            sensor_msgs::Image imageMsg;
-            // dai::rosImageBridge(imgData, frameNames[i], imageMsg);
-            imgPubList[i].publish(imageMsg);
-        }
-        ros::spinOnce();
-    }
+    // while(ros::ok()){
+    //     for(int i = 0; i < imageDataQueues.size(); ++i){
+    //         if(imgPubList[i].getNumSubscribers() == 0) continue;
+    //         auto imgData = imageDataQueues[i]->get<dai::ImgFrame>();
+    //         // std::cout << "id num ->" << i << imageDataQueues[i]->getName() << std::endl;
+    //         sensor_msgs::Image imageMsg;
+    //         // dai::rosImageBridge(imgData, frameNames[i], imageMsg);
+    //         imgPubList[i].publish(imageMsg);
+    //     }
+    //     ros::spinOnce();
+    // }
 
+    ros::spin();
 
     return 0;
 }

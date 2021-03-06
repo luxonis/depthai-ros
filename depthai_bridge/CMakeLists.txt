@@ -104,7 +104,7 @@ include_directories(
 )
 
 FILE(GLOB LIB_SRC
-   "src/*.cpp"
+   "src/*Converter.cpp"
 )
 
 ## Declare a C++ library
