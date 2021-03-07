@@ -95,7 +95,6 @@ void BridgePublisher<RosMsg, SimMsg>::startPublisherThread(){
   });
 }
 
-
 template <class RosMsg, class SimMsg> 
 void BridgePublisher<RosMsg, SimMsg>::daiCallback(std::string name, std::shared_ptr<ADatatype> data){
 

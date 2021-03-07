@@ -97,57 +97,23 @@ int main(int argc, char** argv){
                                                                                      std::placeholders::_2) , 
                                                                                      30);
 
-    // bridgePublish.startPublisherThread();
     rightPublish.addPubisherCallback();
 
+    // dai::rosBridge::ImageConverter depthConverter(deviceName + "_right_camera_optical_frame");
+    dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame> depthPublish(imageDataQueues[2],
+                                                                                     pnh, 
+                                                                                     std::string("stereo/depth"),
+                                                                                     std::bind(&dai::rosBridge::ImageConverter::toRosMsg, 
+                                                                                     &rightconverter, // since the converter has the same frame name
+                                                                                                      // and image type is also same we can reuse it
+                                                                                     std::placeholders::_1, 
+                                                                                     std::placeholders::_2) , 
+                                                                                     30);
 
-    // for (auto op_que : imageDataQueues){
-    //     if (op_que->getName().find("rect") != std::string::npos){
-    //         if (op_que->getName().find("left") != std::string::npos)
-    //         {   
-    //             // converters.push_back(dai::rosBridge::ImageConverter(deviceName + "_left_camera_optical_frame", _frameName)
-    //             // bridgePublishers.push_back(dai::rosBridge::BridgePublisher(op_que, pnh, "left/image_rect", converters[converters.size - 1].toRosMsg, 30, false);
-    //             frameNames.push_back(deviceName + "_left_camera_optical_frame");
-    //             imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("left/image_rect", 30));
-    //         }
-    //         if (op_que->getName().find("right") != std::string::npos)
-    //         {
-    //             imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("right/image_rect", 30));
-    //             frameNames.push_back(deviceName + "_right_camera_optical_frame");
-    //         }
-    //     }
-    //     else{
-    //         if (op_que->getName().find("left") != std::string::npos){
-    //             imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("left/image", 30));
-    //             frameNames.push_back(deviceName + "_left_camera_optical_frame");
-    //         }
-    //         else if (op_que->getName().find("right") != std::string::npos){
-    //             imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("right/image", 30));
-    //             frameNames.push_back(deviceName + "_right_camera_optical_frame");
-    //         }
-    //         else if (op_que->getName().find("depth") != std::string::npos){
-    //             imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("stereo/depth", 30));
-    //             frameNames.push_back(deviceName + "_right_camera_optical_frame");
-    //         }
-    //         else if (op_que->getName().find("disparity") != std::string::npos){
-    //             imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("stereo/disparity", 30));
-    //             frameNames.push_back(deviceName + "_right_camera_optical_frame");
-    //         }
-    //     }
-    // }
-    // // std::cout << "Waiting for " << imageDataQueues.size() << std::endl;
-    
-    // while(ros::ok()){
-    //     for(int i = 0; i < imageDataQueues.size(); ++i){
-    //         if(imgPubList[i].getNumSubscribers() == 0) continue;
-    //         auto imgData = imageDataQueues[i]->get<dai::ImgFrame>();
-    //         // std::cout << "id num ->" << i << imageDataQueues[i]->getName() << std::endl;
-    //         sensor_msgs::Image imageMsg;
-    //         // dai::rosImageBridge(imgData, frameNames[i], imageMsg);
-    //         imgPubList[i].publish(imageMsg);
-    //     }
-    //     ros::spinOnce();
-    // }
+    depthPublish.addPubisherCallback();
+
+    // We can add the rectified frames also similar to these publishers. 
+    // Left them out so that users can play with it by adding and removing
 
     ros::spin();
 
