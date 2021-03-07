@@ -112,7 +112,7 @@ void BridgePublisher<RosMsg, SimMsg>::daiCallback(std::string name, std::shared_
       
   //     }  
 
-  std::cout << daiDataPtr->getHeight() << " " << daiDataPtr->getWidth() << " " << daiDataPtr->getData().size() << std::endl;
+  // std::cout << daiDataPtr->getHeight() << " " << daiDataPtr->getWidth() << " " << daiDataPtr->getData().size() << std::endl;
   if(_rosPublisher.getNumSubscribers() > 0){
         RosMsg opMsg;
         _converter(daiDataPtr, opMsg);

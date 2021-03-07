@@ -43,7 +43,7 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
     throw std::runtime_error("Encoding value node found ");
 
   auto tstamp = inData->getTimestamp();
-  std::cout << "time ->  " << encodingEnumMap[inData->getType()] << "  " <<
+  // std::cout << "time ->  " << encodingEnumMap[inData->getType()] << "  " <<
   (int)inData->getType() << std::endl;
   int32_t sec = std::chrono::duration_cast<std::chrono::seconds>(
                     tstamp.time_since_epoch())
