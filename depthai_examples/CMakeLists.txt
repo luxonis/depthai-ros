@@ -71,6 +71,7 @@ add_library(${PROJECT_NAME}
   lib/stereo_pipeline.cpp
   lib/rgb_pipeline.cpp
   lib/nn_pipeline.cpp
+  lib/rgb_stereo_pipeline.cpp
 )
 
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS}
@@ -111,6 +112,8 @@ endmacro()
 dai_add_node(stereo_node src/stereo_publisher.cpp)
 dai_add_node(rgb_node src/rgb_publisher.cpp)
 dai_add_node(mobilenet_node src/mobilenet_publisher.cpp)
+dai_add_node(rgb_stereo_node src/rgb_stereo_node.cpp)
+
 target_compile_definitions(mobilenet_node PRIVATE BLOB_PATH="${mobilenet_blob}")
 
 # add_executable(stereo_node

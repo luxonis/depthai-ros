@@ -80,16 +80,20 @@ void BridgePublisher<RosMsg, SimMsg>::startPublisherThread(){
 
   _readingThread = std::thread([&](){
     while(ros::ok()){
+      // auto daiDataPtr = _daiMessageQueue->get<SimMsg>();
       auto daiDataPtr = _daiMessageQueue->tryGet<SimMsg>();
+
       if(daiDataPtr == nullptr) {
-       std::cout << "No data found!!!";
+      //  std::cout << "No data found!!!" <<std::endl;
         continue;
       }
 
-      RosMsg opMsg;
-      _converter(daiDataPtr, opMsg);
+      if(_rosPublisher.getNumSubscribers() > 0){
+        RosMsg opMsg;
+        _converter(daiDataPtr, opMsg);
 
-      if(_rosPublisher.getNumSubscribers() > 0) _rosPublisher.publish(opMsg);
+        _rosPublisher.publish(opMsg);
+      }
         
     }
   });
@@ -97,12 +101,27 @@ void BridgePublisher<RosMsg, SimMsg>::startPublisherThread(){
 
 template <class RosMsg, class SimMsg> 
 void BridgePublisher<RosMsg, SimMsg>::daiCallback(std::string name, std::shared_ptr<ADatatype> data){
-
+  // std::cout << "In callback " << name << std::endl;
   auto daiDataPtr = std::dynamic_pointer_cast<SimMsg>(data);
+  // if(daiDataPtr == nullptr) {
+  //      std::cout << "No data found!!!" <<std::endl;
+  //       // continue;
+  //     }
+  //     else{
+  //       std::cout << "Heh   data found..............................................!!!" << std::endl;
+      
+  //     }  
 
-  RosMsg opMsg;
-  _converter(daiDataPtr, opMsg);
-  if(_rosPublisher.getNumSubscribers() > 0) _rosPublisher.publish(opMsg);
+  std::cout << daiDataPtr->getHeight() << " " << daiDataPtr->getWidth() << " " << daiDataPtr->getData().size() << std::endl;
+  if(_rosPublisher.getNumSubscribers() > 0){
+        RosMsg opMsg;
+        _converter(daiDataPtr, opMsg);
+        _rosPublisher.publish(opMsg);
+  }
+
+  // RosMsg opMsg;
+  // _converter(daiDataPtr, opMsg);
+  // if(_rosPublisher.getNumSubscribers() > 0) _rosPublisher.publish(opMsg);
       
 }
 

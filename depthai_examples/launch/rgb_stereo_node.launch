@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- <args for urdf/> -->
+    <arg name="camera_model"         default="BW1098OAK" /> <!-- 'zed' or 'zedm' -->
+    <arg name="camera_name"          default="oak" />
+
+    <arg name="base_frame"           default="oak-d_frame" />
+
+    <arg name="cam_pos_x"             default="0.0" /> <!-- Position respect to base frame (i.e. "base_link) -->
+    <arg name="cam_pos_y"             default="0.0" /> <!-- Position respect to base frame (i.e. "base_link) -->
+    <arg name="cam_pos_z"             default="0.0" /> <!-- Position respect to base frame (i.e. "base_link) -->
+    <arg name="cam_roll"              default="1.5708" /> <!-- Orientation respect to base frame (i.e. "base_link) -->
+    <arg name="cam_pitch"             default="0.0" /> <!-- Orientation respect to base frame (i.e. "base_link) -->
+    <arg name="cam_yaw"               default="1.5708" /> <!-- Orientation respect to base frame (i.e. "base_link) -->
+
+    <!-- args for stereo node -->
+    <!-- <arg name="outputDepth"           default="true" /> 
+    <arg name="outputRectified"       default="true" /> 
+    <arg name="lrcheck"               default="true" /> 
+    <arg name="extended"              default="false" /> 
+    <arg name="subpixel"              default="false" />  -->
+    <arg name="camera_param_uri"      default="package://depthai_examples/params/camera" />
+
+    <param name="$(arg camera_name)_description"
+               command="$(find xacro)/xacro '$(find depthai_examples)/urdf/depthai_descr.urdf'
+                        camera_name:=$(arg camera_name)
+                        camera_model:=$(arg camera_model)
+                        base_frame:=$(arg base_frame)
+                        cam_pos_x:=$(arg cam_pos_x)
+                        cam_pos_y:=$(arg cam_pos_y)
+                        cam_pos_z:=$(arg cam_pos_z)
+                        cam_roll:=$(arg cam_roll)
+                        cam_pitch:=$(arg cam_pitch)
+                        cam_yaw:=$(arg cam_yaw)"/>
+
+    <node name="$(arg camera_name)_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" required="true">
+            <remap from="robot_description" to="$(arg camera_name)_description" /></node>            
+
+    <node name="rgb_stereo_publisher" pkg="depthai_examples" type="rgb_stereo_node" output="screen" required="true">
+        <param name="camera_name" value="$(arg camera_name)"/>
+        <param name="camera_param_uri" value="$(arg camera_param_uri)"/>
+    </node>            
+
+
+ <!-- <param name="outputDepth" value="$(arg outputDepth)"/>
+        <param name="outputRectified" value="$(arg outputRectified)"/>
+        <param name="lrcheck" value="$(arg lrcheck)"/>
+        <param name="extended" value="$(arg extended)"/>
+        <param name="subpixel" value="$(arg subpixel)"/> -->
+
+</launch>

@@ -43,8 +43,8 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
     throw std::runtime_error("Encoding value node found ");
 
   auto tstamp = inData->getTimestamp();
-  // std::cout << "time ->  " << encoding_enum_map[inData->getType()] << "  " <<
-  // (int)inData->getType() << std::endl;
+  std::cout << "time ->  " << encodingEnumMap[inData->getType()] << "  " <<
+  (int)inData->getType() << std::endl;
   int32_t sec = std::chrono::duration_cast<std::chrono::seconds>(
                     tstamp.time_since_epoch())
                     .count();
@@ -81,9 +81,9 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
       encoding_info.push_back(s);
     // outImageMsg.header        = imgHeader;
     outImageMsg.encoding = encoding_info[3];
-    outImageMsg.height = inData->getHeight();
-    outImageMsg.width = inData->getWidth();
-    outImageMsg.step = inData->getData().size() / inData->getHeight();
+    outImageMsg.height   = inData->getHeight();
+    outImageMsg.width    = inData->getWidth();
+    outImageMsg.step     = inData->getData().size() / inData->getHeight();
     outImageMsg.is_bigendian = true;
     size_t size = inData->getData().size();
     outImageMsg.data.resize(size);
