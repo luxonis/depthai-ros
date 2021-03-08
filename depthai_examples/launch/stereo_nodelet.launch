@@ -35,14 +35,14 @@
     <node pkg="nodelet" type="nodelet" name="depth_image_convertion_nodelet"
         args="load depth_image_proc/convert_metric nodelet_manager">
         <remap from="image_raw" to="/stereo_publisher/stereo/depth"/>    
-        <remap from="image" to="/stereo/image"/>
+        <remap from="image" to="/stereo_publisher/stereo/image"/>
     </node>
 
 
     <node pkg="nodelet" type="nodelet" name="depth_image_to_pointcloud_nodelet"
         args="load depth_image_proc/point_cloud_xyz nodelet_manager">
         <remap from="camera_info" to="/stereo_publisher/stereo/camera_info"/>
-        <remap from="image_rect" to="/stereo/image"/>    
+        <remap from="image_rect" to="/stereo_publisher/stereo/image"/>    
         <remap from="points" to="/stereo/points"/>
     </node>
 
