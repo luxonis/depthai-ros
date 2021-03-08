@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package format="2">
+<package format="3">
   <name>depthai_examples</name>
   <version>0.0.0</version>
   <description>The depthai_examples package</description>
@@ -75,10 +75,17 @@
   <exec_depend>depthai_bridge</exec_depend>
   <!-- <depend>depthai_bridge</depend> -->
   <depend>cv_bridge</depend>
-
-  <!-- The export tag contains other, unspecified, tags -->
+  
+  <build_depend>nodelet</build_depend>
+  <exec_depend>nodelet</exec_depend>
   <export>
-    <!-- Other tools can request additional information be placed here -->
-
+    <nodelet plugin="${prefix}/nodelet_plugins.xml" />
   </export>
+  
+  <!-- The export tag contains other, unspecified, tags -->
+  <!-- <export>
+    Other tools can request additional information be placed here
+
+  </export> -->
+
 </package>

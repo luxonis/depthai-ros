@@ -68,7 +68,8 @@
   <exec_depend>roscpp</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
-  
+  <depend>camera_info_manager</depend>
+
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

@@ -65,6 +65,7 @@ endif()
     # message(STATUS "------------------------------------------")
     
     find_package(catkin REQUIRED COMPONENTS  
+      camera_info_manager
       roscpp
       sensor_msgs
       std_msgs
@@ -81,7 +82,7 @@ endif()
     catkin_package(
       INCLUDE_DIRS include
       LIBRARIES ${PROJECT_NAME}
-      CATKIN_DEPENDS depthai_ros_msgs roscpp sensor_msgs std_msgs vision_msgs 
+      CATKIN_DEPENDS depthai_ros_msgs camera_info_manager roscpp sensor_msgs std_msgs vision_msgs 
     )
 
     # catkin_package(

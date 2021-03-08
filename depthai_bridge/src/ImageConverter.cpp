@@ -18,9 +18,9 @@ namespace dai::rosBridge {
             {dai::RawImgFrame::Type::RGBA8888       , "rgba8"                },
             {dai::RawImgFrame::Type::RGB888i        , "rgb8"                 },
             {dai::RawImgFrame::Type::BGR888i        , "bgr8"                 },
-            {dai::RawImgFrame::Type::GRAY8          , "8UC1"                 },
-            {dai::RawImgFrame::Type::RAW8           , "mono8"                },
-            {dai::RawImgFrame::Type::RAW16          , "mono16"               },
+            {dai::RawImgFrame::Type::GRAY8          , "mono8"                 },
+            {dai::RawImgFrame::Type::RAW8           , "8UC1"                },
+            {dai::RawImgFrame::Type::RAW16          , "16UC1"               },
             {dai::RawImgFrame::Type::NV12           , "NV12"                 } 
             // {dai::RawImgFrame::Type::NV12           : "CV_bridge" },
         };
@@ -44,7 +44,7 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
 
   auto tstamp = inData->getTimestamp();
   // std::cout << "time ->  " << encodingEnumMap[inData->getType()] << "  " <<
-  (int)inData->getType() << std::endl;
+  // (int)inData->getType() << std::endl;
   int32_t sec = std::chrono::duration_cast<std::chrono::seconds>(
                     tstamp.time_since_epoch())
                     .count();
@@ -58,7 +58,7 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
   outImageMsg.header.seq = inData->getSequenceNum();
   outImageMsg.header.stamp = ros::Time(sec, nsec);
   outImageMsg.header.frame_id = _frameName;
-
+    // std::cout << outImageMsg.header.stamp << " stamp1 " << std::endl;
   // if(encoding_enum_map[inData->getType()] == "NV12"){
   //     //TODO(sachin): Replace cv_mat->cvbridge with handling raw convertions
   //     //

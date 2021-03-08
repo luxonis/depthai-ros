@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<launch>
+       
+    <!-- <param name="$(arg camera_name)_description"
+               command="$(find xacro)/xacro '$(find depthai_examples)/urdf/depthai_descr.urdf'
+                        camera_name:=$(arg camera_name)
+                        camera_model:=$(arg camera_model)
+                        base_frame:=$(arg base_frame)
+                        cam_pos_x:=$(arg cam_pos_x)
+                        cam_pos_y:=$(arg cam_pos_y)
+                        cam_pos_z:=$(arg cam_pos_z)
+                        cam_roll:=$(arg cam_roll)
+                        cam_pitch:=$(arg cam_pitch)
+                        cam_yaw:=$(arg cam_yaw)"/>
+
+
+    <node name="$(arg camera_name)_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" required="true">
+            <remap from="robot_description" to="$(arg camera_name)_description" /></node>             -->
+
+    <!-- <node name="stereo_publisher" pkg="depthai_examples" type="stereo_node" output="screen" required="true">
+        <param name="camera_name" value="$(arg camera_name)"/>
+        <param name="camera_param_uri" value="$(arg camera_param_uri)"/>
+    </node>             -->
+
+
+    <node pkg="nodelet" type="nodelet" name="nodelet_manager"  args="manager" output="screen"/>
+    
+    <!-- <node pkg="nodelet" type="nodelet" name="nodelet_manager"  args="manager" output="screen">
+        <param name="camera_name" value="$(arg camera_name)"/>
+        <param name="camera_param_uri" value="$(arg camera_param_uri)"/>
+    </node> -->
+
+    <!-- <node name="stereo_nodelet" pkg="nodelet" type="nodelet" args="load depthai_examples/StereoNodelet nodelet_manager" output="screen" required="true"/> -->
+
+    <node pkg="nodelet" type="nodelet" name="depth_image_convertion_nodelet"
+        args="load depth_image_proc/convert_metric nodelet_manager">
+        <remap from="image_raw" to="/stereo_publisher/stereo/depth"/>    
+        <remap from="image" to="/stereo/image"/>
+    </node>
+
+
+    <node pkg="nodelet" type="nodelet" name="depth_image_to_pointcloud_nodelet"
+        args="load depth_image_proc/point_cloud_xyz nodelet_manager">
+        <remap from="camera_info" to="/stereo_publisher/stereo/camera_info"/>
+        <remap from="image_rect" to="/stereo/image"/>    
+        <remap from="points" to="/stereo/points"/>
+    </node>
+
+    <!-- Rviz configuration -->
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find depthai_examples)/rviz/stereo_nodelet.rviz" />
+
+</launch>
