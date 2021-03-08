@@ -52,7 +52,7 @@ namespace depthai_examples{
             
 
         
-            dai::rosBridge::ImageConverter converter(deviceName + "_left_camera_optical_frame");
+            dai::rosBridge::ImageConverter converter(deviceName + "_left_camera_optical_frame", true);
             dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame> leftPublish(imageDataQueues[0],
                                                                                             pnh, 
                                                                                             std::string("left/image"),
@@ -67,7 +67,7 @@ namespace depthai_examples{
             // bridgePublish.startPublisherThread();
             leftPublish.addPubisherCallback();
 
-            dai::rosBridge::ImageConverter rightconverter(deviceName + "_right_camera_optical_frame");
+            dai::rosBridge::ImageConverter rightconverter(deviceName + "_right_camera_optical_frame", true);
             dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame> rightPublish(imageDataQueues[1],
                                                                                             pnh, 
                                                                                             std::string("right/image"),

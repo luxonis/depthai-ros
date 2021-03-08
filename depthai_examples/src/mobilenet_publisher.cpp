@@ -11,6 +11,10 @@
 #include <camera_info_manager/camera_info_manager.h>
 #include <vision_msgs/Detection2DArray.h>
 
+#include <depthai_bridge/BridgePublisher.hpp>
+#include <depthai_bridge/ImageConverter.hpp>
+#include <depthai_bridge/DetectionConverter.hpp>
+
 // Inludes common necessary includes for development using depthai library
 #include "depthai/depthai.hpp"
 
@@ -39,68 +43,41 @@ int main(int argc, char** argv){
     std::vector<std::shared_ptr<dai::DataOutputQueue>> imageDataQueues = detectionPipeline.getExposedImageStreams();
     std::vector<std::shared_ptr<dai::DataOutputQueue>> nNetDataQueues = detectionPipeline.getExposedNnetStreams();;
 
-    std::vector<ros::Publisher> imgPubList;
-    std::vector<ros::Publisher> nNetPubList;
-    std::vector<std::string> frameNames;
+    // std::vector<ros::Publisher> imgPubList;
+    // std::vector<ros::Publisher> nNetPubList;
+    // std::vector<std::string> frameNames;
 
-    for (auto op_que : imageDataQueues){
-        if (op_que->getName().find("preview") != std::string::npos){
-                imgPubList.push_back(pnh.advertise<sensor_msgs::Image>("color/image", 30));
-                frameNames.push_back(deviceName + "_rgb_camera_optical_frame");
-        }
-    }
+    std::string color_uri = camera_param_uri + "/" + "color.yaml";
 
-    for (auto op_que : nNetDataQueues){
-        if (op_que->getName().find("detections") != std::string::npos){
-                nNetPubList.push_back(pnh.advertise<vision_msgs::Detection2DArray>("color/mobilenet_detections", 30));
-                // frameNames.push_back(deviceName + "_rgb_camera_optical_frame");
-        }
-    }
+    dai::rosBridge::ImageConverter rgbConverter(deviceName + "_rgb_camera_optical_frame", false);
+    dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame> rgbPublish(imageDataQueues[0],
+                                                                                     pnh, 
+                                                                                     std::string("color/preview"),
+                                                                                     std::bind(&dai::rosBridge::ImageConverter::toRosMsg, 
+                                                                                     &rgbConverter, // since the converter has the same frame name
+                                                                                                      // and image type is also same we can reuse it
+                                                                                     std::placeholders::_1, 
+                                                                                     std::placeholders::_2) , 
+                                                                                     30,
+                                                                                     color_uri,
+                                                                                     "color");
 
-    bool latched_cam_info = true;
-    ros::Publisher colorCamInfoPub = pnh.advertise<sensor_msgs::CameraInfo>("color/camera_info", 30, latched_cam_info);    
 
-    // this part would be removed once we have calibration-api
-    const std::string color_uri = camera_param_uri +"/" + "color.yaml";
-    std::string name = "color";
-    camera_info_manager::CameraInfoManager color_cam_manager(ros::NodeHandle{pnh, name}, name, color_uri);
-    auto color_camera_info = color_cam_manager.getCameraInfo();
-    colorCamInfoPub.publish(color_camera_info);
-    ROS_INFO("Publishing camera info of color camera........");
-    // ROS_INFO("%s\n", nnPath.data().c_str());
-    ROS_INFO_STREAM(nnPath);
+    // dai::rosBridge::DetectionConverter<vision_msgs::Detection2DArray> detConverter(deviceName + "_rgb_camera_optical_frame", 300, 300, false);
+    // dai::rosBridge::BridgePublisher<vision_msgs::Detection2DArray, dai::ImgDetections> detectionPublish(nNetDataQueues[0],
+    //                                                                                  pnh, 
+    //                                                                                  std::string("color/mobilenet_detections"),
+    //                                                                                  std::bind(static_cast<void(dai::rosBridge::DetectionConverter<vision_msgs::Detection2DArray>::*)(std::shared_ptr<dai::ImgDetections>, 
+    //                                                                                  vision_msgs::Detection2DArray&)>(&dai::rosBridge::DetectionConverter<vision_msgs::Detection2DArray>::toRosMsg), 
+    //                                                                                  &detConverter,
+    //                                                                                  std::placeholders::_1, 
+    //                                                                                  std::placeholders::_2) , 
+    //                                                                                  30);
 
-    // Till here-------------------------------------> //
+    rgbPublish.startPublisherThread();
+    // detectionPublish.startPublisherThread();
 
-    if (imageDataQueues.size() != imgPubList.size()) {
-        throw std::runtime_error("Not enough publishers were created for the number of streams from the device");
-    }
-
-    while(ros::ok()){
-
-        for(int i = 0; i < imageDataQueues.size(); ++i){
-            auto imgData = imageDataQueues[i]->get<dai::ImgFrame>();
-            // std::cout << "id num ->" << i << imageDataQueues[i]->getName() << std::endl;
-            auto nnData = nNetDataQueues[i]->get<dai::ImgDetections>();
-            
-            // Image publisher
-            sensor_msgs::Image imageMsg;
-            dai::rosImageBridge(imgData, frameNames[i], imageMsg);
-            if(imgPubList[i].getNumSubscribers() != 0)
-                imgPubList[i].publish(imageMsg);
-
-            // detection publisher
-            vision_msgs::Detection2DArray detectionMsg;
-            // std::cout << nnData->detections.size() << " " << imgData->getSequenceNum() << std::endl;
-            // std::cout << imgData->getWidth()  << " width -- height " << imgData->getHeight() << std::endl;
-            if(nnData->detections.size()) 
-                dai::rosDetectionBridge(nnData, imgData->getTimestamp(), imgData->getSequenceNum(), frameNames[i], detectionMsg, imgData->getWidth(), imgData->getHeight());
-            if(nNetPubList[i].getNumSubscribers())
-                nNetPubList[i].publish(detectionMsg);
-        }
-        ros::spinOnce();
-    }
-
+    ros::spin();
 
     return 0;
 }

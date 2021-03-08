@@ -15,7 +15,7 @@ class ImageConverter{
 
     public:
     // ImageConverter() = default;
-    ImageConverter(const std::string frameName, bool interleaved = true);
+    ImageConverter(const std::string frameName, bool interleaved);
     ImageConverter(bool interleaved);
     
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, sensor_msgs::Image& outImageMsg);
@@ -51,7 +51,7 @@ class ImageConverter{
     
 
     // dai::RawImgFrame::Type _srcType;
-    bool _daiInterleaved = true;
+    bool _daiInterleaved;
     // bool c
     const std::string _frameName = "";
     void planarToInterleaved(const std::vector<uint8_t>& srcData, std::vector<uint8_t>& destData, int w, int h , int numPlanes, int bpp);

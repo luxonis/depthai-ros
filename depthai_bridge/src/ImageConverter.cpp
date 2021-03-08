@@ -18,15 +18,15 @@ namespace dai::rosBridge {
             {dai::RawImgFrame::Type::RGBA8888       , "rgba8"                },
             {dai::RawImgFrame::Type::RGB888i        , "rgb8"                 },
             {dai::RawImgFrame::Type::BGR888i        , "bgr8"                 },
-            {dai::RawImgFrame::Type::GRAY8          , "mono8"                 },
-            {dai::RawImgFrame::Type::RAW8           , "8UC1"                },
-            {dai::RawImgFrame::Type::RAW16          , "16UC1"               },
+            {dai::RawImgFrame::Type::GRAY8          , "mono8"                },
+            {dai::RawImgFrame::Type::RAW8           , "8UC1"                 },
+            {dai::RawImgFrame::Type::RAW16          , "16UC1"                },
             {dai::RawImgFrame::Type::NV12           , "NV12"                 } 
             // {dai::RawImgFrame::Type::NV12           : "CV_bridge" },
         };
 
 std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::planarEncodingEnumMap = {
-                                    {dai::RawImgFrame::Type::BGR888p  , "3_1_bgr8"}
+                                    {dai::RawImgFrame::Type::BGR888p  , "3_1_bgr8"} // 3_1_bgr8 represents 3 planes/channels and 1 byte per pixel in BGR format
                                 };
 
 ImageConverter::ImageConverter(bool interleaved)
@@ -39,8 +39,20 @@ ImageConverter::ImageConverter(const std::string frameName,
 void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
                               sensor_msgs::Image &outImageMsg) {
 
-  if (encodingEnumMap.find(inData->getType()) == encodingEnumMap.end())
-    throw std::runtime_error("Encoding value node found ");
+  if (_daiInterleaved && encodingEnumMap.find(inData->getType()) == encodingEnumMap.end()){
+      if (planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end())
+        throw std::runtime_error("Encoding value found for planar dataformat but object was created with 'interleaved = true'. ");
+      else
+        throw std::runtime_error("Encoding value not found. ");
+  } 
+    
+
+  if (!_daiInterleaved && planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end()){
+      if (encodingEnumMap.find(inData->getType()) == encodingEnumMap.end())
+        throw std::runtime_error("Encoding value found for Interleaved dataformat but object was created with 'Interleaved = false'. ");
+      else
+        throw std::runtime_error("Encoding convertion not found. ");
+  } 
 
   auto tstamp = inData->getTimestamp();
   // std::cout << "time ->  " << encodingEnumMap[inData->getType()] << "  " <<
@@ -71,7 +83,7 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
   //     cvRgbImg.toImageMsg(outImageMsg);
   // }
   // else
-  if (encodingEnumMap[inData->getType()].find("planar") != std::string::npos) {
+  if (!_daiInterleaved) {
 
     std::istringstream f(encodingEnumMap[inData->getType()]);
     std::vector<std::string> encoding_info;
@@ -80,7 +92,7 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
     while (getline(f, s, '_'))
       encoding_info.push_back(s);
     // outImageMsg.header        = imgHeader;
-    outImageMsg.encoding = encoding_info[3];
+    outImageMsg.encoding = encoding_info[2];
     outImageMsg.height   = inData->getHeight();
     outImageMsg.width    = inData->getWidth();
     outImageMsg.step     = inData->getData().size() / inData->getHeight();
@@ -88,8 +100,8 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
     size_t size = inData->getData().size();
     outImageMsg.data.resize(size);
     planarToInterleaved(inData->getData(), outImageMsg.data, outImageMsg.width,
-                        outImageMsg.height, std::stoi(encoding_info[1]),
-                        std::stoi(encoding_info[2]));
+                        outImageMsg.height, std::stoi(encoding_info[0]),
+                        std::stoi(encoding_info[1]));
   } else {
     // copying the data to ros msg
     // outImageMsg.header       = imgHeader;
@@ -100,7 +112,7 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
     outImageMsg.step = inData->getData().size() / inData->getHeight();
     // std::cout << inData->getData().size() << "..." << inData->getHeight() <<
     // std::endl;
-    if (outImageMsg.encoding == "mono16")
+    if (outImageMsg.encoding == "16UC1")
       outImageMsg.is_bigendian = false;
     else
       outImageMsg.is_bigendian = true;
@@ -152,8 +164,8 @@ void ImageConverter::toDaiMsg(sensor_msgs::Image &inMsg,
 
     std::vector<std::uint8_t> opData(inMsg.data.size());
     interleavedToPlanar(inMsg.data, opData, inMsg.height, inMsg.width,
-                        std::stoi(encoding_info[1]),
-                        std::stoi(encoding_info[2]));
+                        std::stoi(encoding_info[0]),
+                        std::stoi(encoding_info[1]));
     outData->setData(opData);
   }
 
