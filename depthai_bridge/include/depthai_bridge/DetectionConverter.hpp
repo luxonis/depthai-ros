@@ -9,19 +9,14 @@
 
 namespace dai::rosBridge {
 
-template <
-    class Msg,
-    std::enable_if_t<std::is_same<Msg, depthai_ros_msgs::DetectionDai>::value, bool> = true>
-void detectionMsgHelper(Msg &rosDetection, dai::ImgDetection &daiDetection) {
-  rosDetection.position.x = daiDetection.xdepth;
-  rosDetection.position.y = daiDetection.ydepth;
-  rosDetection.position.z = daiDetection.zdepth;
+void detectionMsgHelper(depthai_ros_msgs::DetectionDai& rosDetection, dai::ImgDetection& daiDetection){
+    rosDetection.position.x = daiDetection.xdepth;
+    rosDetection.position.y = daiDetection.ydepth;
+    rosDetection.position.z = daiDetection.zdepth;
 }
 
-template <class Msg,
-          std::enable_if_t< not std::is_same<Msg, depthai_ros_msgs::DetectionDai>::value, bool> = true>
-void detectionMsgHelper(Msg &rosDetection, dai::ImgDetection &daiDetection) {}
-
+void detectionMsgHelper(vision_msgs::Detection2D& rosDetection, dai::ImgDetection& daiDetection){
+}
 
 template <class rosMsg> class DetectionConverter {
 public:
@@ -125,6 +120,7 @@ void DetectionConverter<rosMsg>::toRosMsg(std::shared_ptr<dai::ImgDetections> in
       // }
       detectionMsgHelper(opDetectionMsg.detections[i],
                          inNetData->detections[i]);
+
     }
     _sequenceNum++;
   }

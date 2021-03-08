@@ -63,19 +63,19 @@ int main(int argc, char** argv){
                                                                                      "color");
 
 
-    // dai::rosBridge::DetectionConverter<vision_msgs::Detection2DArray> detConverter(deviceName + "_rgb_camera_optical_frame", 300, 300, false);
-    // dai::rosBridge::BridgePublisher<vision_msgs::Detection2DArray, dai::ImgDetections> detectionPublish(nNetDataQueues[0],
-    //                                                                                  pnh, 
-    //                                                                                  std::string("color/mobilenet_detections"),
-    //                                                                                  std::bind(static_cast<void(dai::rosBridge::DetectionConverter<vision_msgs::Detection2DArray>::*)(std::shared_ptr<dai::ImgDetections>, 
-    //                                                                                  vision_msgs::Detection2DArray&)>(&dai::rosBridge::DetectionConverter<vision_msgs::Detection2DArray>::toRosMsg), 
-    //                                                                                  &detConverter,
-    //                                                                                  std::placeholders::_1, 
-    //                                                                                  std::placeholders::_2) , 
-    //                                                                                  30);
+    dai::rosBridge::DetectionConverter<vision_msgs::Detection2DArray> detConverter(deviceName + "_rgb_camera_optical_frame", 300, 300, false);
+    dai::rosBridge::BridgePublisher<vision_msgs::Detection2DArray, dai::ImgDetections> detectionPublish(nNetDataQueues[0],
+                                                                                     pnh, 
+                                                                                     std::string("color/mobilenet_detections"),
+                                                                                     std::bind(static_cast<void(dai::rosBridge::DetectionConverter<vision_msgs::Detection2DArray>::*)(std::shared_ptr<dai::ImgDetections>, 
+                                                                                     vision_msgs::Detection2DArray&)>(&dai::rosBridge::DetectionConverter<vision_msgs::Detection2DArray>::toRosMsg), 
+                                                                                     &detConverter,
+                                                                                     std::placeholders::_1, 
+                                                                                     std::placeholders::_2) , 
+                                                                                     30);
 
     rgbPublish.startPublisherThread();
-    // detectionPublish.startPublisherThread();
+    detectionPublish.startPublisherThread();
 
     ros::spin();
 
