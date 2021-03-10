@@ -21,7 +21,7 @@ class ImageConverter{
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, sensor_msgs::Image& outImageMsg);
     sensor_msgs::ImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
 
-    void toDaiMsg(sensor_msgs::Image& inMsg, std::shared_ptr<dai::ImgFrame> outData);
+    void toDaiMsg(const sensor_msgs::Image& inMsg, dai::ImgFrame& outData);
 
     /** TODO(sachin): Add support for ros msg to cv mat since we have some 
      *  encodings which cv supports but ros doesn't    

@@ -47,8 +47,8 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
   } 
     
 
-  if (!_daiInterleaved && planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end()){
-      if (encodingEnumMap.find(inData->getType()) == encodingEnumMap.end())
+  if (!_daiInterleaved && planarEncodingEnumMap.find(inData->getType()) == planarEncodingEnumMap.end()){
+      if (encodingEnumMap.find(inData->getType()) != encodingEnumMap.end())
         throw std::runtime_error("Encoding value found for Interleaved dataformat but object was created with 'Interleaved = false'. ");
       else
         throw std::runtime_error("Encoding convertion not found. ");
@@ -85,13 +85,12 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
   // else
   if (!_daiInterleaved) {
 
-    std::istringstream f(encodingEnumMap[inData->getType()]);
+    std::istringstream f(planarEncodingEnumMap[inData->getType()]);
     std::vector<std::string> encoding_info;
     std::string s;
 
     while (getline(f, s, '_'))
       encoding_info.push_back(s);
-    // outImageMsg.header        = imgHeader;
     outImageMsg.encoding = encoding_info[2];
     outImageMsg.height   = inData->getHeight();
     outImageMsg.width    = inData->getWidth();
@@ -132,8 +131,8 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
 }
 
 // TODO(sachin): Not tested
-void ImageConverter::toDaiMsg(sensor_msgs::Image &inMsg,
-                              std::shared_ptr<dai::ImgFrame> outData) {
+void ImageConverter::toDaiMsg(const sensor_msgs::Image &inMsg,
+                              dai::ImgFrame& outData) {
 
   std::unordered_map<dai::RawImgFrame::Type, std::string>::iterator
       revEncodingIter;
@@ -147,7 +146,7 @@ void ImageConverter::toDaiMsg(sensor_msgs::Image &inMsg,
       std::runtime_error("Unable to find DAI encoding for the corresponding "
                          "sensor_msgs::image.encoding stream");
 
-    outData->setData(inMsg.data);
+    outData.setData(inMsg.data);
   } else {
     revEncodingIter = std::find_if(
         encodingEnumMap.begin(), encodingEnumMap.end(),
@@ -166,7 +165,7 @@ void ImageConverter::toDaiMsg(sensor_msgs::Image &inMsg,
     interleavedToPlanar(inMsg.data, opData, inMsg.height, inMsg.width,
                         std::stoi(encoding_info[0]),
                         std::stoi(encoding_info[1]));
-    outData->setData(opData);
+    outData.setData(opData);
   }
 
   /** FIXME(sachin) : is this time convertion correct ???
@@ -176,11 +175,11 @@ void ImageConverter::toDaiMsg(sensor_msgs::Image &inMsg,
    **/
   TimePoint ts(std::chrono::seconds((int)inMsg.header.stamp.toSec()) +
                std::chrono::nanoseconds(inMsg.header.stamp.toNSec()));
-  outData->setTimestamp(ts);
-  outData->setSequenceNum(inMsg.header.seq);
-  outData->setWidth(inMsg.width);
-  outData->setHeight(inMsg.height);
-  outData->setType(revEncodingIter->first);
+  outData.setTimestamp(ts);
+  outData.setSequenceNum(inMsg.header.seq);
+  outData.setWidth(inMsg.width);
+  outData.setHeight(inMsg.height);
+  outData.setType(revEncodingIter->first);
 }
 
 sensor_msgs::ImagePtr

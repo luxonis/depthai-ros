@@ -52,7 +52,7 @@ int main(int argc, char** argv){
     dai::rosBridge::ImageConverter rgbConverter(deviceName + "_rgb_camera_optical_frame", false);
     dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame> rgbPublish(imageDataQueues[0],
                                                                                      pnh, 
-                                                                                     std::string("color/preview"),
+                                                                                     std::string("color/image"),
                                                                                      std::bind(&dai::rosBridge::ImageConverter::toRosMsg, 
                                                                                      &rgbConverter, // since the converter has the same frame name
                                                                                                       // and image type is also same we can reuse it
@@ -74,8 +74,10 @@ int main(int argc, char** argv){
                                                                                      std::placeholders::_2) , 
                                                                                      30);
 
-    rgbPublish.startPublisherThread();
-    detectionPublish.startPublisherThread();
+    // rgbPublish.startPublisherThread();
+    detectionPublish.startPublisherThread(); // addPubisherCallback works only when the dataqueue is non blocking.
+    rgbPublish.addPubisherCallback();
+    // detectionPublish.addPubisherCallback();
 
     ros::spin();
 

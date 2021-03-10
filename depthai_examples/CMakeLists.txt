@@ -32,6 +32,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   vision_msgs
   depthai_bridge
+  message_filters
 )
 
 set(_opencv_version 4)
@@ -46,7 +47,7 @@ add_subdirectory(${DEPTHAI_CORE} depthai-core)
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES ${PROJECT_NAME}
- CATKIN_DEPENDS depthai_ros_msgs roscpp sensor_msgs std_msgs camera_info_manager depthai_bridge vision_msgs cv_bridge
+ CATKIN_DEPENDS depthai_ros_msgs roscpp sensor_msgs std_msgs camera_info_manager depthai_bridge vision_msgs cv_bridge message_filters
  DEPENDS
  OpenCV
  )
@@ -57,9 +58,9 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-message(STATUS "Include directoires ------------->")
-message(STATUS "libraries directoires ------------->")
-message(${catkin_INCLUDE_DIRS})
+# message(STATUS "Include directoires ------------->")
+# message(STATUS "libraries directoires ------------->")
+# message(${catkin_INCLUDE_DIRS})
 message(${catkin_LIBRARIES})
 include_directories(
   include
@@ -67,12 +68,11 @@ include_directories(
   ${OpenCV_INCLUDE_DIRS}
 )
 
-add_library(${PROJECT_NAME}
-  lib/stereo_pipeline.cpp
-  lib/rgb_pipeline.cpp
-  lib/nn_pipeline.cpp
-  lib/rgb_stereo_pipeline.cpp
+FILE(GLOB EXAMPLE_LIB
+   "lib/*.cpp"
 )
+
+add_library(${PROJECT_NAME} ${EXAMPLE_LIB})
 
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS} depthai-core
@@ -129,6 +129,7 @@ dai_add_node(stereo_node src/stereo_publisher.cpp)
 dai_add_node(rgb_node src/rgb_publisher.cpp)
 dai_add_node(mobilenet_node src/mobilenet_publisher.cpp)
 dai_add_node(rgb_stereo_node src/rgb_stereo_node.cpp)
+dai_add_node(stereo_mimic_node src/stereo_mimic_node.cpp)
 
 target_compile_definitions(mobilenet_node PRIVATE BLOB_PATH="${mobilenet_blob}")
 

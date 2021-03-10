@@ -75,6 +75,7 @@
   <exec_depend>depthai_bridge</exec_depend>
   <!-- <depend>depthai_bridge</depend> -->
   <depend>cv_bridge</depend>
+  <depend>message_filters</depend>
   
   <build_depend>nodelet</build_depend>
   <exec_depend>nodelet</exec_depend>

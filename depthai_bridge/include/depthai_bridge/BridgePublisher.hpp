@@ -108,14 +108,16 @@ void BridgePublisher<RosMsg, SimMsg>::startPublisherThread(){
         
         _converter(daiDataPtr, opMsg);
         _rosPublisher.publish(opMsg);
+        
+        if(_isImageMessage && _cameraInfoPublisher.getNumSubscribers() > 0){
+          auto localCameraInfo = _camInfoManager->getCameraInfo();
+          localCameraInfo.header.stamp = opMsg.header.stamp;
+          _cameraInfoPublisher.publish(localCameraInfo);  
+        }
       }
-
-      if(_isImageMessage && _cameraInfoPublisher.getNumSubscribers() > 0){
-        auto localCameraInfo = _camInfoManager->getCameraInfo();
-        localCameraInfo.header.stamp = opMsg.header.stamp;
-        _cameraInfoPublisher.publish(localCameraInfo);  
-      }
-      
+    
+      if(_rosPublisher.getNumSubscribers() == 0 && _cameraInfoPublisher.getNumSubscribers() > 0)
+        ROS_WARN("cameraInfo publishes only after subscribing to image topic also" );
         
     }
   });
@@ -134,19 +136,26 @@ void BridgePublisher<RosMsg, SimMsg>::daiCallback(std::string name, std::shared_
       
   //     }  
 
-  // std::cout << daiDataPtr->getHeight() << " " << daiDataPtr->getWidth() << " " << daiDataPtr->getData().size() << std::endl;
+  std::cout << daiDataPtr->getHeight() << " " << daiDataPtr->getWidth() << " " << daiDataPtr->getData().size() << " " << _rosPublisher.getNumSubscribers() <<std::endl;
+  
   RosMsg opMsg;
   if(_rosPublisher.getNumSubscribers() > 0){
+    std::cout << "before  " << opMsg.height << " " << opMsg.width << " " << opMsg.data.size() << std::endl;
     _converter(daiDataPtr, opMsg);
+      std::cout << opMsg.height << " " << opMsg.width << " " << opMsg.data.size() << std::endl;
+
     _rosPublisher.publish(opMsg);
+    
+    if(_isImageMessage && _cameraInfoPublisher.getNumSubscribers() > 0){
+      auto localCameraInfo = _camInfoManager->getCameraInfo();
+      // std::cout << opMsg.header.stamp << "stamp " << std::endl;
+      localCameraInfo.header.stamp = opMsg.header.stamp;
+      _cameraInfoPublisher.publish(localCameraInfo);  
+    }
   }
 
-  if(_isImageMessage && _cameraInfoPublisher.getNumSubscribers() > 0){
-    auto localCameraInfo = _camInfoManager->getCameraInfo();
-    // std::cout << opMsg.header.stamp << "stamp " << std::endl;
-    localCameraInfo.header.stamp = opMsg.header.stamp;
-    _cameraInfoPublisher.publish(localCameraInfo);  
-  }
+  if(_rosPublisher.getNumSubscribers() == 0 && _cameraInfoPublisher.getNumSubscribers() > 0)
+    ROS_WARN("cameraInfo publishes only after subscribing to image topic also");
       
 }
 

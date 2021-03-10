@@ -38,8 +38,8 @@ int main(int argc, char** argv){
     stero_pipeline.initDepthaiDev();
     std::vector<std::shared_ptr<dai::DataOutputQueue>> imageDataQueues = stero_pipeline.getExposedImageStreams();
     
-    std::vector<ros::Publisher> imgPubList;
-    std::vector<std::string> frameNames;
+    // std::vector<ros::Publisher> imgPubList;
+    // std::vector<std::string> frameNames;
     
     // this part would be removed once we have calibration-api
     std::string left_uri = camera_param_uri +"/" + "left.yaml";
