@@ -135,14 +135,12 @@ void BridgePublisher<RosMsg, SimMsg>::daiCallback(std::string name, std::shared_
   //       std::cout << "Heh   data found..............................................!!!" << std::endl;
       
   //     }  
-
-  std::cout << daiDataPtr->getHeight() << " " << daiDataPtr->getWidth() << " " << daiDataPtr->getData().size() << " " << _rosPublisher.getNumSubscribers() <<std::endl;
   
   RosMsg opMsg;
   if(_rosPublisher.getNumSubscribers() > 0){
-    std::cout << "before  " << opMsg.height << " " << opMsg.width << " " << opMsg.data.size() << std::endl;
+    // std::cout << "before  " << opMsg.height << " " << opMsg.width << " " << opMsg.data.size() << std::endl;
     _converter(daiDataPtr, opMsg);
-      std::cout << opMsg.height << " " << opMsg.width << " " << opMsg.data.size() << std::endl;
+      // std::cout << opMsg.height << " " << opMsg.width << " " << opMsg.data.size() << std::endl;
 
     _rosPublisher.publish(opMsg);
     
