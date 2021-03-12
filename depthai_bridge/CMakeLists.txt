@@ -4,13 +4,13 @@ get_filename_component (DEPTHAI_CORE "${CMAKE_CURRENT_LIST_DIR}/../external/dept
 include ("${DEPTHAI_CORE}/cmake/HunterGate.cmake")
 
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
-set (HUNTER_CONFIGURATION_TYPES "Release" CACHE STRING "Hunter dependencies list of build configurations")
+# set (HUNTER_CONFIGURATION_TYPES "Release" CACHE STRING "Hunter dependencies list of build configurations")
 
-HunterGate (
-    URL "https://github.com/cpp-pm/hunter/archive/v0.23.258.tar.gz"
-    SHA1 "062a19ab13ce8dffa9a882b6ce3e43bdabdf75d3"
-    FILEPATH ${DEPTHAI_CORE}/cmake/Hunter/config.cmake # Add depthai-core config  (hunter limitation)
-)
+# HunterGate (
+#     URL "https://github.com/cpp-pm/hunter/archive/v0.23.258.tar.gz"
+#     SHA1 "062a19ab13ce8dffa9a882b6ce3e43bdabdf75d3"
+#     FILEPATH ${DEPTHAI_CORE}/cmake/Hunter/config.cmake # Add depthai-core config  (hunter limitation)
+# )
 
 
 project(depthai_bridge)
@@ -78,10 +78,14 @@ endif()
     message(STATUS "------------------------------------------")
     message(STATUS "Depthai bridge is being built using CATKIN.")
     message(STATUS "------------------------------------------")
+    # add_subdirectory(${DEPTHAI_CORE} depthai-core)
+    find_package(depthai REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake")
+    # find_package(XLink REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake")
+    # find_package(depthai REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake")
 
     catkin_package(
       INCLUDE_DIRS include
-      LIBRARIES ${PROJECT_NAME}
+      LIBRARIES ${PROJECT_NAME} depthai-core
       CATKIN_DEPENDS depthai_ros_msgs camera_info_manager roscpp sensor_msgs std_msgs vision_msgs 
     )
 
@@ -95,13 +99,15 @@ endif()
     set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
 # endif()
 
-add_subdirectory(${DEPTHAI_CORE} depthai-core)
+# set(DAI_LIBRARIES "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib")
+# set(DAI_INCLUDE_LIBRARIES "/home/sachin/Desktop/luxonis/depthai-core/build/install/include")
 
 include_directories(
   include
   ${BUILD_TOOL_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
+  ${depthai}
 )
 
 FILE(GLOB LIB_SRC
@@ -112,15 +118,15 @@ FILE(GLOB LIB_SRC
 add_library(${PROJECT_NAME}  
 ${LIB_SRC}
 )
-
-
+message("----------------------------------------------------------------------")
+message("${CMAKE_MODULE_PATH}")
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS} depthai-core
+  ${catkin_EXPORTED_TARGETS}
 )
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
-  depthai-core
+  depthai::core
   ${OpenCV_LIBRARIES}
   ${Boost_LIBRARY_DIRS}
 )
