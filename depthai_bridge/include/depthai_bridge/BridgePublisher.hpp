@@ -28,6 +28,8 @@ public:
 
   void addPubisherCallback();
 
+  void publishHelper(std::shared_ptr<SimMsg> inData);
+
   void startPublisherThread();
   ~BridgePublisher();
   
@@ -103,21 +105,8 @@ void BridgePublisher<RosMsg, SimMsg>::startPublisherThread(){
       //  std::cout << "No data found!!!" <<std::endl;
         continue;
       }
-      RosMsg opMsg;
-      if(_rosPublisher.getNumSubscribers() > 0){        
-        _converter(daiDataPtr, opMsg);
-        _rosPublisher.publish(opMsg);
-        
-        if(_isImageMessage && _cameraInfoPublisher.getNumSubscribers() > 0){
-          auto localCameraInfo = _camInfoManager->getCameraInfo();
-          localCameraInfo.header.stamp = opMsg.header.stamp;
-          _cameraInfoPublisher.publish(localCameraInfo);  
-        }
-      }
-    
-      if(_rosPublisher.getNumSubscribers() == 0 && _cameraInfoPublisher.getNumSubscribers() > 0)
-        ROS_WARN("cameraInfo publishes only after subscribing to image topic also" );
-        
+       publishHelper(daiDataPtr);
+
     }
   });
 }
@@ -126,33 +115,8 @@ template <class RosMsg, class SimMsg>
 void BridgePublisher<RosMsg, SimMsg>::daiCallback(std::string name, std::shared_ptr<ADatatype> data){
   // std::cout << "In callback " << name << std::endl;
   auto daiDataPtr = std::dynamic_pointer_cast<SimMsg>(data);
-  // if(daiDataPtr == nullptr) {
-  //      std::cout << "No data found!!!" <<std::endl;
-  //       // continue;
-  //     }
-  //     else{
-  //       std::cout << "Heh   data found..............................................!!!" << std::endl;
-      
-  //     }  
-  
-  RosMsg opMsg;
-  if(_rosPublisher.getNumSubscribers() > 0){
-    // std::cout << "before  " << opMsg.height << " " << opMsg.width << " " << opMsg.data.size() << std::endl;
-    _converter(daiDataPtr, opMsg);
-      // std::cout << opMsg.height << " " << opMsg.width << " " << opMsg.data.size() << std::endl;
-
-    _rosPublisher.publish(opMsg);
-    
-    if(_isImageMessage && _cameraInfoPublisher.getNumSubscribers() > 0){
-      auto localCameraInfo = _camInfoManager->getCameraInfo();
-      // std::cout << opMsg.header.stamp << "stamp " << std::endl;
-      localCameraInfo.header.stamp = opMsg.header.stamp;
-      _cameraInfoPublisher.publish(localCameraInfo);  
-    }
-  }
-
-  if(_rosPublisher.getNumSubscribers() == 0 && _cameraInfoPublisher.getNumSubscribers() > 0)
-    ROS_WARN("cameraInfo publishes only after subscribing to image topic also");
+  publishHelper(daiDataPtr);
+ 
       
 }
 
@@ -160,6 +124,34 @@ template <class RosMsg, class SimMsg>
 void BridgePublisher<RosMsg, SimMsg>::addPubisherCallback(){
   _daiMessageQueue->addCallback(std::bind(&BridgePublisher<RosMsg, SimMsg>::daiCallback, this, std::placeholders::_1, std::placeholders::_2));
   _isCallbackAdded = true;
+}
+
+template <class RosMsg, class SimMsg> 
+void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDataPtr){
+
+  RosMsg opMsg;
+ if(_rosPublisher.getNumSubscribers() > 0){
+    // std::cout << "before  " << opMsg.height << " " << opMsg.width << " " << opMsg.data.size() << std::endl;
+    _converter(inDataPtr, opMsg);
+      // std::cout << opMsg.height << " " << opMsg.width << " " << opMsg.data.size() << std::endl;
+
+    _rosPublisher.publish(opMsg);
+    
+    if(_isImageMessage && _cameraInfoPublisher.getNumSubscribers() > 0){
+      auto localCameraInfo = _camInfoManager->getCameraInfo();
+      localCameraInfo.header.seq = opMsg.header.seq;
+      localCameraInfo.header.stamp = opMsg.header.stamp;
+      _cameraInfoPublisher.publish(localCameraInfo);  
+    }
+  }
+
+  if(_isImageMessage && _rosPublisher.getNumSubscribers() == 0 && _cameraInfoPublisher.getNumSubscribers() > 0){  
+    _converter(inDataPtr, opMsg);
+    auto localCameraInfo = _camInfoManager->getCameraInfo();
+    localCameraInfo.header.seq = opMsg.header.seq;
+    localCameraInfo.header.stamp = opMsg.header.stamp;
+    _cameraInfoPublisher.publish(localCameraInfo);  
+  }
 }
 
 
