@@ -21,12 +21,13 @@ namespace dai::rosBridge {
             {dai::RawImgFrame::Type::GRAY8          , "mono8"                },
             {dai::RawImgFrame::Type::RAW8           , "8UC1"                 },
             {dai::RawImgFrame::Type::RAW16          , "16UC1"                },
-            {dai::RawImgFrame::Type::NV12           , "NV12"                 } 
             // {dai::RawImgFrame::Type::NV12           : "CV_bridge" },
         };
 
 std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::planarEncodingEnumMap = {
-                                    {dai::RawImgFrame::Type::BGR888p  , "3_1_bgr8"} // 3_1_bgr8 represents 3 planes/channels and 1 byte per pixel in BGR format
+                                    {dai::RawImgFrame::Type::BGR888p, "3_1_bgr8"}, // 3_1_bgr8 represents 3 planes/channels and 1 byte per pixel in BGR format
+                                    {dai::RawImgFrame::Type::NV12   , "nv12"                 } 
+
                                 };
 
 ImageConverter::ImageConverter(bool interleaved)
@@ -46,7 +47,6 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
         throw std::runtime_error("Encoding value not found. ");
   } 
     
-
   if (!_daiInterleaved && planarEncodingEnumMap.find(inData->getType()) == planarEncodingEnumMap.end()){
       if (encodingEnumMap.find(inData->getType()) != encodingEnumMap.end())
         throw std::runtime_error("Encoding value found for Interleaved dataformat but object was created with 'Interleaved = false'. ");
@@ -55,8 +55,6 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
   } 
 
   auto tstamp = inData->getTimestamp();
-  // std::cout << "time ->  " << encodingEnumMap[inData->getType()] << "  " <<
-  // (int)inData->getType() << std::endl;
   int32_t sec = std::chrono::duration_cast<std::chrono::seconds>(
                     tstamp.time_since_epoch())
                     .count();
@@ -65,24 +63,10 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
                      .count() %
                  1000000000UL;
 
-  // setting the header
-  // std_msgs::Header imgHeader;
   outImageMsg.header.seq = inData->getSequenceNum();
   outImageMsg.header.stamp = ros::Time(sec, nsec);
   outImageMsg.header.frame_id = _frameName;
-    // std::cout << outImageMsg.header.stamp << " stamp1 " << std::endl;
-  // if(encoding_enum_map[inData->getType()] == "NV12"){
-  //     //TODO(sachin): Replace cv_mat->cvbridge with handling raw convertions
-  //     //
-  //     ------------------------------------------------------------------------------------
-  //     // cv::Mat nv_frame(inData->getHeight() * 3 / 2, inData->getWidth(),
-  //     CV_8UC1, inData->getData().data()); cv::Mat rgb(inData->getHeight(),
-  //     inData->getWidth(), CV_8UC3); cv::cvtColor(nv_frame, rgb,
-  //     cv::COLOR_YUV2BGR_NV12); cv_bridge::CvImage cvRgbImg(imgHeader,
-  //     sensor_msgs::image_encodings::BGR8, rgb);
-  //     cvRgbImg.toImageMsg(outImageMsg);
-  // }
-  // else
+    
   if (!_daiInterleaved) {
 
     std::istringstream f(planarEncodingEnumMap[inData->getType()]);
@@ -91,17 +75,25 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
 
     while (getline(f, s, '_'))
       encoding_info.push_back(s);
-    outImageMsg.encoding = encoding_info[2];
     outImageMsg.height   = inData->getHeight();
     outImageMsg.width    = inData->getWidth();
-    outImageMsg.step     = inData->getData().size() / inData->getHeight();
+    // FIXME(sachin): This might be wrong for NV12. Fix it
+    outImageMsg.step     = inData->getData().size() / inData->getHeight(); 
     outImageMsg.is_bigendian = true;
     size_t size = inData->getData().size();
     outImageMsg.data.resize(size);
-    planarToInterleaved(inData->getData(), outImageMsg.data, outImageMsg.width,
-                        outImageMsg.height, std::stoi(encoding_info[0]),
-                        std::stoi(encoding_info[1]));
-  } else {
+      if(planarEncodingEnumMap[inData->getType()] == "nv12"){
+        outImageMsg.encoding = planarEncodingEnumMap[inData->getType()];
+        outImageMsg.data = std::move(inData->getData());
+      }
+      else{
+        outImageMsg.encoding = encoding_info[2];
+        planarToInterleaved(inData->getData(), outImageMsg.data, outImageMsg.width,
+                            outImageMsg.height, std::stoi(encoding_info[0]),
+                            std::stoi(encoding_info[1]));
+      }
+    } 
+    else {
     // copying the data to ros msg
     // outImageMsg.header       = imgHeader;
     std::string temp_str(encodingEnumMap[inData->getType()]);
@@ -109,8 +101,6 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
     outImageMsg.height = inData->getHeight();
     outImageMsg.width = inData->getWidth();
     outImageMsg.step = inData->getData().size() / inData->getHeight();
-    // std::cout << inData->getData().size() << "..." << inData->getHeight() <<
-    // std::endl;
     if (outImageMsg.encoding == "16UC1")
       outImageMsg.is_bigendian = false;
     else
@@ -244,8 +234,16 @@ void ImageConverter::interleavedToPlanar(const std::vector<uint8_t> &srcData,
   return;
 }
 
-void ImageConverter::rosMsgtoCvMat(sensor_msgs::Image &inMsg, cv::Mat dest) {
-  std::runtime_error("THis frature is still WIP");
+cv::Mat ImageConverter::rosMsgtoCvMat(sensor_msgs::Image &inMsg) {
+  cv::Mat rgb(inMsg.height, inMsg.width, CV_8UC3);
+  if(inMsg.encoding == "nv12"){
+    cv::Mat nv_frame(inMsg.height * 3 / 2, inMsg.width, CV_8UC1, inMsg.data.data());    
+    cv::cvtColor(nv_frame, rgb, cv::COLOR_YUV2BGR_NV12);
+    return rgb; 
+  }
+  else{
+    std::runtime_error("THis frature is still WIP");
+  }
 }
 
 } // namespace dai::rosBridge

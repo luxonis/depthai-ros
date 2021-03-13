@@ -85,7 +85,7 @@ endif()
 
     catkin_package(
       INCLUDE_DIRS include
-      LIBRARIES ${PROJECT_NAME} depthai-core
+      LIBRARIES ${PROJECT_NAME}
       CATKIN_DEPENDS depthai_ros_msgs camera_info_manager roscpp sensor_msgs std_msgs vision_msgs 
     )
 

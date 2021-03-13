@@ -104,8 +104,7 @@ void BridgePublisher<RosMsg, SimMsg>::startPublisherThread(){
         continue;
       }
       RosMsg opMsg;
-      if(_rosPublisher.getNumSubscribers() > 0){
-        
+      if(_rosPublisher.getNumSubscribers() > 0){        
         _converter(daiDataPtr, opMsg);
         _rosPublisher.publish(opMsg);
         

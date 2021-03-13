@@ -29,7 +29,7 @@ public:
   void toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData,
            rosMsg &opDetectionMsg);
 
-  boost::shared_ptr<rosMsg> toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData);
+  boost::shared_ptr<rosMsg> toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData);
 
 private:
   uint32_t _sequenceNum;
@@ -126,7 +126,7 @@ void DetectionConverter<rosMsg>::toRosMsg(std::shared_ptr<dai::ImgDetections> in
   }
 
 template <class rosMsg>
-boost::shared_ptr<rosMsg> DetectionConverter<rosMsg>::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData){
+boost::shared_ptr<rosMsg> DetectionConverter<rosMsg>::toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData){
     boost::shared_ptr<rosMsg> ptr = boost::make_shared<rosMsg>();
     toRosMsg(inNetData, *ptr);
     return ptr;
