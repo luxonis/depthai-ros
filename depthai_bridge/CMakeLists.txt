@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.2)
 
-get_filename_component (DEPTHAI_CORE "${CMAKE_CURRENT_LIST_DIR}/../external/depthai-core" REALPATH)
-include ("${DEPTHAI_CORE}/cmake/HunterGate.cmake")
+# get_filename_component (DEPTHAI_CORE "${CMAKE_CURRENT_LIST_DIR}/../external/depthai-core" REALPATH)
+# include ("${DEPTHAI_CORE}/cmake/HunterGate.cmake")
 
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 # set (HUNTER_CONFIGURATION_TYPES "Release" CACHE STRING "Hunter dependencies list of build configurations")
@@ -78,9 +78,8 @@ endif()
     message(STATUS "------------------------------------------")
     message(STATUS "Depthai bridge is being built using CATKIN.")
     message(STATUS "------------------------------------------")
-    # add_subdirectory(${DEPTHAI_CORE} depthai-core)
-    find_package(depthai REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake")
-    # find_package(XLink REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake")
+
+    find_package(depthai CONFIG REQUIRED)
     # find_package(depthai REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake")
 
     catkin_package(
