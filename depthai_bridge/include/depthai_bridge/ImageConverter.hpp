@@ -4,7 +4,7 @@
 #include <iostream>
 #include <unordered_map>
 
-#include "sensor_msgs/Image.h"
+#include "sensor_msgs/msgs/Image.h"
 #include "depthai/depthai.hpp"
 #include <opencv2/opencv.hpp>
 
@@ -18,15 +18,15 @@ class ImageConverter{
     ImageConverter(const std::string frameName, bool interleaved);
     ImageConverter(bool interleaved);
     
-    void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, sensor_msgs::Image& outImageMsg);
-    sensor_msgs::ImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
+    void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, sensor_msgs::msg::Image& outImageMsg);
+    sensor_msgs::msg::Image::SharedPtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
 
-    void toDaiMsg(const sensor_msgs::Image& inMsg, dai::ImgFrame& outData);
+    void toDaiMsg(const sensor_msgs::msg::Image& inMsg, dai::ImgFrame& outData);
 
     /** TODO(sachin): Add support for ros msg to cv mat since we have some 
      *  encodings which cv supports but ros doesn't    
     **/
-    cv::Mat rosMsgtoCvMat(sensor_msgs::Image& inMsg);
+    cv::Mat rosMsgtoCvMat(sensor_msgs::msg::Image& inMsg);
 
      private:
         static std::unordered_map<dai::RawImgFrame::Type, std::string> encodingEnumMap;

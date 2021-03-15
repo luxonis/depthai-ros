@@ -1,22 +1,21 @@
 #include "depthai/depthai.hpp"
 #include "sensor_msgs/Image.h"
 #include <depthai_bridge/ImageConverter.hpp>
-#include <depthai_ros_msgs/DetectionDaiArray.h>
-#include <vision_msgs/Detection2DArray.h>
+#include <depthai_ros_msgs/msgs/DetectionDaiArray.h>
+#include <vision_msgs/msgs/Detection2DArray.h>
 
-#include <boost/make_shared.hpp>
-#include <boost/shared_ptr.hpp>
+// #include <boost/make_shared.hpp>
+// #include <boost/shared_ptr.hpp>
 
 namespace dai::rosBridge {
 
-void detectionMsgHelper(depthai_ros_msgs::DetectionDai& rosDetection, dai::ImgDetection& daiDetection){
+void detectionMsgHelper(depthai_ros_msgs::msgs::DetectionDai& rosDetection, dai::ImgDetection& daiDetection){
     rosDetection.position.x = daiDetection.xdepth;
     rosDetection.position.y = daiDetection.ydepth;
     rosDetection.position.z = daiDetection.zdepth;
 }
 
-void detectionMsgHelper(vision_msgs::Detection2D& rosDetection, dai::ImgDetection& daiDetection){
-}
+void detectionMsgHelper(vision_msgs::msgs::Detection2D& rosDetection, dai::ImgDetection& daiDetection){}
 
 template <class rosMsg> class DetectionConverter {
 public:
@@ -29,7 +28,7 @@ public:
   void toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData,
            rosMsg &opDetectionMsg);
 
-  boost::shared_ptr<rosMsg> toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData);
+  std::shared_ptr<rosMsg> toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData);
 
 private:
   uint32_t _sequenceNum;
@@ -127,7 +126,7 @@ void DetectionConverter<rosMsg>::toRosMsg(std::shared_ptr<dai::ImgDetections> in
 
 template <class rosMsg>
 boost::shared_ptr<rosMsg> DetectionConverter<rosMsg>::toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData){
-    boost::shared_ptr<rosMsg> ptr = boost::make_shared<rosMsg>();
+    std::::shared_ptr<rosMsg> ptr = std::make_shared<rosMsg>();
     toRosMsg(inNetData, *ptr);
     return ptr;
   }
