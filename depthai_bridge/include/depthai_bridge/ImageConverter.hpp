@@ -4,7 +4,7 @@
 #include <iostream>
 #include <unordered_map>
 
-#include "sensor_msgs/msgs/Image.h"
+#include "sensor_msgs/msg/image.hpp"
 #include "depthai/depthai.hpp"
 #include <opencv2/opencv.hpp>
 

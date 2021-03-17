@@ -1,7 +1,5 @@
-#include <boost/make_shared.hpp>
 #include <depthai_bridge/ImageConverter.hpp>
-#include <ros/ros.h>
-
+#include "rclcpp/rclcpp.hpp"
 // FIXME(Sachin): Do I need to convert the encodings that are available in dai
 // to only that ros support ? I mean we can publish whatever it is and decode it
 // on the other side but howver maybe we should have option to convert planar to
@@ -38,7 +36,7 @@ ImageConverter::ImageConverter(const std::string frameName,
     : _frameName(frameName), _daiInterleaved(interleaved) {}
 
 void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
-                              sensor_msgs::Image &outImageMsg) {
+                              sensor_msgs::msg::Image &outImageMsg) {
 
   if (_daiInterleaved && encodingEnumMap.find(inData->getType()) == encodingEnumMap.end()){
       if (planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end())
@@ -63,8 +61,7 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
                      .count() %
                  1000000000UL;
 
-  outImageMsg.header.seq = inData->getSequenceNum();
-  outImageMsg.header.stamp = ros::Time(sec, nsec);
+  outImageMsg.header.stamp = rclcpp::Time(sec, nsec);
   outImageMsg.header.frame_id = _frameName;
     
   if (!_daiInterleaved) {
@@ -121,7 +118,7 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
 }
 
 // TODO(sachin): Not tested
-void ImageConverter::toDaiMsg(const sensor_msgs::Image &inMsg,
+void ImageConverter::toDaiMsg(const sensor_msgs::msg::Image &inMsg,
                               dai::ImgFrame& outData) {
 
   std::unordered_map<dai::RawImgFrame::Type, std::string>::iterator
@@ -163,18 +160,18 @@ void ImageConverter::toDaiMsg(const sensor_msgs::Image &inMsg,
    * ImageFrame::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
    *sensor_msgs::Image& opMsg) to cross verify..
    **/
-  TimePoint ts(std::chrono::seconds((int)inMsg.header.stamp.toSec()) +
-               std::chrono::nanoseconds(inMsg.header.stamp.toNSec()));
+  TimePoint ts(std::chrono::seconds((int)inMsg.header.stamp.sec) +
+               std::chrono::nanoseconds(inMsg.header.stamp.nanosec));
   outData.setTimestamp(ts);
-  outData.setSequenceNum(inMsg.header.seq);
   outData.setWidth(inMsg.width);
   outData.setHeight(inMsg.height);
   outData.setType(revEncodingIter->first);
+  return;
 }
 
-sensor_msgs::ImagePtr
+sensor_msgs::msg::Image::SharedPtr 
 ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
-  sensor_msgs::ImagePtr ptr = boost::make_shared<sensor_msgs::Image>();
+  sensor_msgs::msg::Image::SharedPtr ptr = std::make_shared<sensor_msgs::msg::Image>();
   toRosMsg(inData, *ptr);
   return ptr;
 }
@@ -234,7 +231,7 @@ void ImageConverter::interleavedToPlanar(const std::vector<uint8_t> &srcData,
   return;
 }
 
-cv::Mat ImageConverter::rosMsgtoCvMat(sensor_msgs::Image &inMsg) {
+cv::Mat ImageConverter::rosMsgtoCvMat(sensor_msgs::msg::Image &inMsg) {
   cv::Mat rgb(inMsg.height, inMsg.width, CV_8UC3);
   if(inMsg.encoding == "nv12"){
     cv::Mat nv_frame(inMsg.height * 3 / 2, inMsg.width, CV_8UC1, inMsg.data.data());    
@@ -244,6 +241,7 @@ cv::Mat ImageConverter::rosMsgtoCvMat(sensor_msgs::Image &inMsg) {
   else{
     std::runtime_error("THis frature is still WIP");
   }
+  return rgb;
 }
 
 } // namespace dai::rosBridge

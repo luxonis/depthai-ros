@@ -1,9 +1,9 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.5)
 
 
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-project(depthai_bridge)
+project(depthai_bridge VERSION 1.0.0)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -16,13 +16,22 @@ if(NOT OpenCV_FOUND)
   set(_opencv_version 3)
 endif()
 
-find_package(depthai_ros_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(vision_msgs REQUIRED)
 find_package(depthai_ros_msgs REQUIRED)
-find_package(depthai CONFIG REQUIRED)
+find_package(depthai CONFIG REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake/depthai") 
+find_package(depthai_ros_msgs REQUIRED)
+
+set(dependencies
+rclcpp
+sensor_msgs
+std_msgs
+vision_msgs
+depthai_ros_msgs
+depthai_ros_msgs 
+)
 
 
 include_directories(
@@ -43,8 +52,9 @@ ${LIB_SRC}
 ament_target_dependencies(${PROJECT_NAME}
   ${dependencies}
 )
+target_link_libraries(${PROJECT_NAME} depthai::core)
 
-install(TARGETS {PROJECT_NAME}
+install(TARGETS depthai_bridge
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin

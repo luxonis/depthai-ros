@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
+cmake_minimum_required (VERSION 3.5)  # CMake version in Ubuntu 18.04 LTS
 
 project (depthai_ros_msgs VERSION 1.0.0)
 
