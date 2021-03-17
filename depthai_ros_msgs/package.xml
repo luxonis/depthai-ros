@@ -4,18 +4,26 @@
   <version>1.0.0</version>
   <description>Package to keep interface independent of the driver</description>
 
-  <maintainer email="kunal.tyagi@rapyuta-robotics.com">Kunal Tyagi</maintainer>
+  <maintainer email="sachin.guruswamy@gmail.com">Sachin Guruswamy</maintainer>
 
-  <license>MPLv2</license>
+  <license>TODO</license>
 
-  <author>Kunal Tyagi</author>
+  <author>Sachin Guruswamy</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <build_depend>message_generation</build_depend>
-  <depend>sensor_msgs</depend>
+  <depend>rclcpp</depend>
   <depend>std_msgs</depend>
-
+  <depend>builtin_interfaces</depend>
+  <depend>rosidl_default_generators</depend>
+  <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
   <depend>vision_msgs</depend>
-  <exec_depend>message_runtime</exec_depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+
 </package>

@@ -1,31 +1,13 @@
 cmake_minimum_required(VERSION 3.0.2)
 
-# get_filename_component (DEPTHAI_CORE "${CMAKE_CURRENT_LIST_DIR}/../external/depthai-core" REALPATH)
-# include ("${DEPTHAI_CORE}/cmake/HunterGate.cmake")
 
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
-# set (HUNTER_CONFIGURATION_TYPES "Release" CACHE STRING "Hunter dependencies list of build configurations")
-
-# HunterGate (
-#     URL "https://github.com/cpp-pm/hunter/archive/v0.23.258.tar.gz"
-#     SHA1 "062a19ab13ce8dffa9a882b6ce3e43bdabdf75d3"
-#     FILEPATH ${DEPTHAI_CORE}/cmake/Hunter/config.cmake # Add depthai-core config  (hunter limitation)
-# )
-
 
 project(depthai_bridge)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
-
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
-
-
-# find_package(ament_cmake QUIET)
+find_package(ament_cmake REQUIRED)
 
 set(_opencv_version 4)
 find_package(OpenCV 4 QUIET)
@@ -34,79 +16,19 @@ if(NOT OpenCV_FOUND)
   set(_opencv_version 3)
 endif()
 
+find_package(depthai_ros_msgs REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(vision_msgs REQUIRED)
+find_package(depthai_ros_msgs REQUIRED)
+find_package(depthai CONFIG REQUIRED)
 
-# if ( ament_cmake_FOUND )
-
-#     # Not adding -DUSING_ROS since xml_parsing.cpp hasn't been ported to ROS2
-
-#     find_package(depthai_ros_msgs REQUIRED)
-#     find_package(rclcpp REQUIRED)
-#     find_package(sensor_msgs REQUIRED)
-#     find_package(std_msgs REQUIRED)
-#     find_package(vision_msgs REQUIRED)
-
-#     message(STATUS "------------------------------------------")
-#     message(STATUS "Depthai bridge is being built using AMENT.")
-#     message(STATUS "------------------------------------------")
-
-#     list(APPEND DEPENDENCY_PUBLIC_LIBRARIES 
-#     [depthai_ros_msgs, 
-#     rclcpp, 
-#     sensor_msgs, 
-#     std_msgs, 
-#     vision_msgs])
-
-#     set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
-
-# elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
-
-    set(catkin_FOUND 1)
-    # add_definitions( -DUSING_ROS )
-    # message(STATUS "------------------------------------------")
-    
-    find_package(catkin REQUIRED COMPONENTS  
-      camera_info_manager
-      roscpp
-      sensor_msgs
-      std_msgs
-      vision_msgs
-      depthai_ros_msgs
-    )
-    # find_package(GTest)
-    find_package(Boost REQUIRED)
-
-    message(STATUS "------------------------------------------")
-    message(STATUS "Depthai bridge is being built using CATKIN.")
-    message(STATUS "------------------------------------------")
-
-    find_package(depthai CONFIG REQUIRED)
-    # find_package(depthai REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake")
-
-    catkin_package(
-      INCLUDE_DIRS include
-      LIBRARIES ${PROJECT_NAME}
-      CATKIN_DEPENDS depthai_ros_msgs camera_info_manager roscpp sensor_msgs std_msgs vision_msgs 
-    )
-
-    # catkin_package(
-    #     INCLUDE_DIRS include # do not include "3rdparty" here
-    #     LIBRARIES ${BEHAVIOR_TREE_LIBRARY}
-    #     CATKIN_DEPENDS roslib
-    #   )
-
-    list(APPEND DEPENDENCY_PUBLIC_LIBRARIES ${catkin_LIBRARIES})
-    set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
-# endif()
-
-# set(DAI_LIBRARIES "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib")
-# set(DAI_INCLUDE_LIBRARIES "/home/sachin/Desktop/luxonis/depthai-core/build/install/include")
 
 include_directories(
   include
-  ${BUILD_TOOL_INCLUDE_DIRS}
+  ${ament_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIRS}
-  ${depthai}
 )
 
 FILE(GLOB LIB_SRC
@@ -117,18 +39,36 @@ FILE(GLOB LIB_SRC
 add_library(${PROJECT_NAME}  
 ${LIB_SRC}
 )
-message("----------------------------------------------------------------------")
-message("${CMAKE_MODULE_PATH}")
-add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
+
+ament_target_dependencies(${PROJECT_NAME}
+  ${dependencies}
 )
 
-target_link_libraries(${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-  depthai::core
-  ${OpenCV_LIBRARIES}
-  ${Boost_LIBRARY_DIRS}
+install(TARGETS {PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
 )
+
+install(DIRECTORY include/
+  DESTINATION include/
+)
+
+ament_export_include_directories(include)
+ament_export_libraries({PROJECT_NAME})
+ament_export_dependencies(${dependencies})
+
+ament_package()
+# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS}
+#   ${catkin_EXPORTED_TARGETS}
+# )
+
+# target_link_libraries(${PROJECT_NAME}
+#   ${catkin_LIBRARIES}
+#   depthai::core
+#   ${OpenCV_LIBRARIES}
+#   ${Boost_LIBRARY_DIRS}
+# )
 
 # ament_export_include_directories(include)
 # ament_export_libraries(${PROJECT_NAME})
