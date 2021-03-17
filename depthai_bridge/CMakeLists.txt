@@ -22,14 +22,12 @@ find_package(std_msgs REQUIRED)
 find_package(vision_msgs REQUIRED)
 find_package(depthai_ros_msgs REQUIRED)
 find_package(depthai CONFIG REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake/depthai") 
-find_package(depthai_ros_msgs REQUIRED)
 
 set(dependencies
 rclcpp
 sensor_msgs
 std_msgs
 vision_msgs
-depthai_ros_msgs
 depthai_ros_msgs 
 )
 
