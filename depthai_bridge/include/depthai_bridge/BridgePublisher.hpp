@@ -4,8 +4,8 @@
 
 #include "depthai/depthai.hpp"
 #include <thread>
-#include <camera_info_manager/camera_info_manager.h>
-
+#include <camera_info_manager/camera_info_manager.hpp>
+#include "sensor_msgs/msg/camera_info.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 namespace dai::rosBridge {
@@ -17,7 +17,7 @@ public:
 
   BridgePublisher(std::shared_ptr<dai::DataOutputQueue> daiMessageQueue,
                   std::shared_ptr<rclcpp::Node> node, std::string rosTopic,
-                  ConvertFunc converter, int queueSize, 
+                  ConvertFunc converter, 
                   rclcpp::QoS qosSetting = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable(), 
                   std::string cameraParamUri = "", std::string cameraName = "");
 
@@ -41,30 +41,29 @@ private:
   ConvertFunc _converter;
   
   std::shared_ptr<rclcpp::Node> _node;
-  rclcpp::Publisher<RosMsg>::SharedPtr _rosPublisher;
   rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr _cameraInfoPublisher;
   std::thread _readingThread;
-  std::string _rosTopic;
+  std::string _rosTopic, _cameraInfoTopic;
   std::unique_ptr<camera_info_manager::CameraInfoManager> _camInfoManager;
   bool _isCallbackAdded = false;
   bool _isImageMessage = false; // used to enable camera info manager
+  typename rclcpp::Publisher<RosMsg>::SharedPtr _rosPublisher;
   
 };
-
 
 template <class RosMsg, class SimMsg> 
 BridgePublisher<RosMsg, SimMsg>::BridgePublisher(
     std::shared_ptr<dai::DataOutputQueue> daiMessageQueue, std::shared_ptr<rclcpp::Node> node,
-    std::string rosTopic, ConvertFunc converter, int queueSize, rclcpp::QoS qosSetting, std::string cameraParamUri, std::string cameraName)
+    std::string rosTopic, ConvertFunc converter, rclcpp::QoS qosSetting, std::string cameraParamUri, std::string cameraName)
     : _daiMessageQueue(daiMessageQueue), _node(node), _converter(converter),
       _rosTopic(rosTopic){
   
-  _rosPublisher = _node->create_publisher(rosTopic, qosSetting);
-
+  _rosPublisher = _node->create_publisher<RosMsg>(_rosTopic, qosSetting);
   if(!cameraParamUri.empty() && !cameraName.empty()){
     _isImageMessage = true;
-    _camInfoManager = std::make_unique<camera_info_manager::CameraInfoManager>(ros::NodeHandle{_nh, cameraName}, cameraName, cameraParamUri);
-    _cameraInfoPublisher = _node->create_publisher(cameraName + "/camera_info", qosSetting);
+    _camInfoManager = std::make_unique<camera_info_manager::CameraInfoManager>(_node.get(), cameraName, cameraParamUri);
+    _cameraInfoTopic = cameraName + "/camera_info";
+    _cameraInfoPublisher = _node->create_publisher<sensor_msgs::msg::CameraInfo>(cameraName, qosSetting);
   }
 }
 
@@ -94,7 +93,7 @@ void BridgePublisher<RosMsg, SimMsg>::startPublisherThread(){
   }
 
   _readingThread = std::thread([&](){
-    while(ros::ok()){
+    while(rclcpp::ok()){
       // auto daiDataPtr = _daiMessageQueue->get<SimMsg>();
       auto daiDataPtr = _daiMessageQueue->tryGet<SimMsg>();
 
@@ -127,27 +126,25 @@ template <class RosMsg, class SimMsg>
 void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDataPtr){
 
   RosMsg opMsg;
- if(_rosPublisher.getNumSubscribers() > 0){
+ if(_node->count_subscribers(_rosTopic) > 0){
     // std::cout << "before  " << opMsg.height << " " << opMsg.width << " " << opMsg.data.size() << std::endl;
     _converter(inDataPtr, opMsg);
       // std::cout << opMsg.height << " " << opMsg.width << " " << opMsg.data.size() << std::endl;
 
-    _rosPublisher.publish(opMsg);
+    _rosPublisher->publish(opMsg);
     
-    if(_isImageMessage && _cameraInfoPublisher.getNumSubscribers() > 0){
+    if(_isImageMessage && _node->count_subscribers(_cameraInfoTopic) > 0){
       auto localCameraInfo = _camInfoManager->getCameraInfo();
-      localCameraInfo.header.seq = opMsg.header.seq;
       localCameraInfo.header.stamp = opMsg.header.stamp;
-      _cameraInfoPublisher.publish(localCameraInfo);  
+      _cameraInfoPublisher->publish(localCameraInfo);  
     }
   }
 
-  if(_isImageMessage && _rosPublisher.getNumSubscribers() == 0 && _cameraInfoPublisher.getNumSubscribers() > 0){  
+  if(_isImageMessage && _node->count_subscribers(_rosTopic) == 0 && _node->count_subscribers(_cameraInfoTopic) > 0){  
     _converter(inDataPtr, opMsg);
     auto localCameraInfo = _camInfoManager->getCameraInfo();
-    localCameraInfo.header.seq = opMsg.header.seq;
-    localCameraInfo.header.stamp = opMsg.header.stamp;
-    _cameraInfoPublisher.publish(localCameraInfo);  
+    // localCameraInfo.header.stamp = opMsg.header.stamp;
+    _cameraInfoPublisher->publish(localCameraInfo);  
   }
 }
 
