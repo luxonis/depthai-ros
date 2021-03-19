@@ -1,18 +1,22 @@
-# DepthAI ROS1 
-
-This repo contains ROS1 based messages and simple examples on creating ros1 nodes using DepthAI-gen2 - https://github.com/luxonis/depthai-python. 
-
-Please note that this version is still under construction and prone to issues. Feel free to create an issue on GitHub or ping us on our discord channel.
-## Setup Instructions
-1. Clone this repository into ros workspace along with it's submodules.
-
-2. Do not use the vision_msgs from the installed packages. Clone the new version from [here](https://github.com/ros-perception/vision_msgs) which has been recently updated(branch: `noetic-devel`). `noetic-devel` works on melodic too. (Not tested on kinetic but should work)
-
-3. Build the packages in this repository using `catkin_make_isolated`. P.S: Do not use `catkin_make` on these packages it will throw an error. 
+# depthai-ros(Gen2)
+noetic-devel branch also works on melodic(tested). Might also work on kinetic too.
 
 
-## Available ROS node Examples
-- Stereo Node (Do not use any extended features like subpixel/lrchecks they are prone to error in convertion which needs to be fixed on the device side)[]
-- RGB node (Publishes 1080p rgb stream)
-- Mobilenet publisher
-Take a look at the launch files of the examples [here](./depthai_examples/launch)
+## Getting Started
+### Setting up procedure
+
+1. `cd ~`
+2. `git clone https://github.com/luxonis/depthai-core.git --branch develop`
+3. `cd ~/depthai-core`
+4. `mkdir build`
+5. `cmake .. -D BUILD_SHARED_LIBS=ON`
+6. `cmake --build . --parallel --config Release --target install`   
+7. `cd ~`
+8. `mkdir -p ros_ws/src`
+9. `cd ros_ws/src`
+10. `git clone https://github.com/luxonis/depthai-ros.git --branch noetic-devel`
+11. `git clone https://github.com/luxonis/depthai-ros-examples.git --branch noetic-devel`
+12. `git clone https://github.com/ros-perception/vision_msgs.git --branch noetic-devel`
+13. `cd ~/ros_ws`
+14. `source /opt/ros/<ros-distro>/setup.zsh`     
+15. `catkin_make_isolated --cmake-args -D depthai_DIR=${depthai-core insall directory}/lib/cmake/depthai`
