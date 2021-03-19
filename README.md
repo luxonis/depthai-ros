@@ -1,6 +1,6 @@
 # DepthAI ROS1 
 
-This repo contains ROS1 based messages and simple examples on creating ros1 nodes using DepthAI-gen2 - https://github.com/luxonis/depthai. 
+This repo contains ROS1 based messages and simple examples on creating ros1 nodes using DepthAI-gen2 - https://github.com/luxonis/depthai-python. 
 
 Please note that this version is still under construction and prone to issues. Feel free to create an issue on GitHub or ping us on our discord channel.
 ## Setup Instructions
