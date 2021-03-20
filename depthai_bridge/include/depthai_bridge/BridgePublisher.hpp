@@ -4,8 +4,8 @@
 
 #include "depthai/depthai.hpp"
 #include "sensor_msgs/Image.h"
-#include <depthai_ros_msgs/DetectionDaiArray.h>
-#include <vision_msgs/Detection2DArray.h>
+// #include <depthai_ros_msgs/DetectionDaiArray.h>
+// #include <vision_msgs/Detection2DArray.h>
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 #include <thread>

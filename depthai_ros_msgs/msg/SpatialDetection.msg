@@ -1,6 +1,6 @@
 
 # Class probabilities
-vision_msgs/ObjectHypothesis[] result
+vision_msgs/ObjectHypothesis[] results
 
 # 2D bounding box surrounding the object.
 vision_msgs/BoundingBox2D bbox

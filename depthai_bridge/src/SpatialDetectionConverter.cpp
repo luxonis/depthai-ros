@@ -1,54 +1,16 @@
-#include "depthai/depthai.hpp"
-#include "sensor_msgs/Image.h"
-#include <depthai_bridge/ImageConverter.hpp>
-#include <depthai_ros_msgs/DetectionDaiArray.h>
-#include <vision_msgs/Detection2DArray.h>
-
 #include <boost/make_shared.hpp>
-#include <boost/shared_ptr.hpp>
+#include <depthai_bridge/SpatialDetectionConverter.hpp>
+#include <ros/ros.h>
 
-namespace dai::rosBridge {
+namespace dai::rosBridge{
 
-void detectionMsgHelper(depthai_ros_msgs::DetectionDai& rosDetection, dai::ImgDetection& daiDetection){
-    rosDetection.position.x = daiDetection.xdepth;
-    rosDetection.position.y = daiDetection.ydepth;
-    rosDetection.position.z = daiDetection.zdepth;
-}
-
-void detectionMsgHelper(vision_msgs::Detection2D& rosDetection, dai::ImgDetection& daiDetection){
-}
-
-template <class rosMsg> class DetectionConverter {
-public:
-  // DetectionConverter() = default;
-  DetectionConverter(std::string frameName, int width, int height, bool normalized = false);
-
-  void toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData,
-           rosMsg &opDetectionMsg, TimePoint tStamp, int32_t sequenceNum = -1);
-
-  void toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData,
-           rosMsg &opDetectionMsg);
-
-  boost::shared_ptr<rosMsg> toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData);
-
-private:
-  uint32_t _sequenceNum;
-  int _width, _height;
-  const std::string _frameName;
-  bool _normalized;
-};
-
-// -----------------------------DetectionConverter class below----------------------------------- //
-
-template <class rosMsg>
-DetectionConverter<rosMsg>::DetectionConverter(std::string frameName, int width,
+SpatialDetectionConverter::SpatialDetectionConverter(std::string frameName, int width,
                                        int height,  bool normalized)
     : _frameName(frameName), _width(width), _height(height),
       _normalized(normalized), _sequenceNum(0) {}
 
-template <class rosMsg>
-void DetectionConverter<rosMsg>::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData,
-                             rosMsg &opDetectionMsg, TimePoint tStamp,
+void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData,
+                             depthai_ros_msgs::SpatialDetectionArray &opDetectionMsg, TimePoint tStamp,
                              int32_t sequenceNum) {
 
     toRosMsg(inNetData, opDetectionMsg);
@@ -67,9 +29,8 @@ void DetectionConverter<rosMsg>::toRosMsg(std::shared_ptr<dai::ImgDetections> in
     opDetectionMsg.header.frame_id = _frameName;
   }
 
-template <class rosMsg>
-void DetectionConverter<rosMsg>::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData,
-                               rosMsg &opDetectionMsg) {
+void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData,
+                               depthai_ros_msgs::SpatialDetectionArray &opDetectionMsg) {
 
     // if (inNetData->detections.size() == 0)
     //   throw std::runtime_error(
@@ -115,29 +76,19 @@ void DetectionConverter<rosMsg>::toRosMsg(std::shared_ptr<dai::ImgDetections> in
       opDetectionMsg.detections[i].bbox.size_y = ySize;
       // opDetectionMsg.detections[i].is_tracking = _isTracking;
 
-      // if (isTracking) {
-      // opDetectionMsg.detections[i].tracking_id = trackingId;
-      // }
-      detectionMsgHelper(opDetectionMsg.detections[i],
-                         inNetData->detections[i]);
+      // converting mm to meters since per ros rep-103 lenght should always be in meters
+      opDetectionMsg.detections[i].position.x = inNetData->detections[i].spatialCoordinates.x/1000;
+      opDetectionMsg.detections[i].position.y = inNetData->detections[i].spatialCoordinates.y/1000;
+      opDetectionMsg.detections[i].position.z = inNetData->detections[i].spatialCoordinates.z/1000;
 
     }
     _sequenceNum++;
   }
 
-template <class rosMsg>
-boost::shared_ptr<rosMsg> DetectionConverter<rosMsg>::toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData){
-    boost::shared_ptr<rosMsg> ptr = boost::make_shared<rosMsg>();
+depthai_ros_msgs::SpatialDetectionArray::Ptr SpatialDetectionConverter::toRosMsgPtr(std::shared_ptr<dai::SpatialImgDetections> inNetData){
+    depthai_ros_msgs::SpatialDetectionArray::Ptr ptr = boost::make_shared<depthai_ros_msgs::SpatialDetectionArray>();
     toRosMsg(inNetData, *ptr);
     return ptr;
   }
 
-  /** TODO(sachin): Do we need to have ros msg -> dai bounding box ?
-   * is there any situation where we would need to have xlinkin to take bounding
-   * box as input. One scenario would to take this as input and use ImageManip
-   * node to crop the roi of the image. Since it is not available yet. Leaving
-   * it out for now to speed up on other tasks feel free to raise a issue if you
-   * feel that feature is good to have...
-   */
-
-}   // namespace dai::rosBridge
+}  // namespace dai::rosBridge
