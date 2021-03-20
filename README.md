@@ -24,7 +24,7 @@ noetic-devel branch also works on melodic(tested). Might also work on kinetic to
 
 
 ## Testing results
-- ImageCOnverter - Tested using `roslaunch depthai_examples stereo_node.launch` && `roslaunch depthai_examples stereo_nodelet.launch` && `roslaunch depthai_examples rgb_publisher.launch`'
+- ImageConverter - Tested using `roslaunch depthai_examples stereo_node.launch` && `roslaunch depthai_examples stereo_nodelet.launch` && `roslaunch depthai_examples rgb_publisher.launch`'
 - ImgDetectionCnverter - tested using `roslaunch depthai_examples mobile_publisher.launch`
 - SpatialImgDetectionConverter - Not tested yet. (Will add an example on this soon) 
 
