@@ -26,6 +26,8 @@ public:
 
   BridgePublisher(const BridgePublisher& other);
 
+  // void setCameraInfoFrameId(std::string frameId);
+  
   void addPubisherCallback();
 
   void publishHelper(std::shared_ptr<SimMsg> inData);
@@ -47,7 +49,7 @@ private:
   ros::Publisher _rosPublisher;
   ros::Publisher _cameraInfoPublisher;
   std::thread _readingThread;
-  std::string _rosTopic;
+  std::string _rosTopic, _camInfoFrameId;
   std::unique_ptr<camera_info_manager::CameraInfoManager> _camInfoManager;
   bool _isCallbackAdded = false;
   bool _isImageMessage = false; // used to enable camera info manager
@@ -84,7 +86,6 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(const BridgePublisher& other){
     _camInfoManager = std::make_unique<camera_info_manager::CameraInfoManager>(std::move(other._camInfoManager));
     _cameraInfoPublisher = ros::Publisher(other._cameraInfoPublisher);
   }
-
 }
 
 
@@ -116,8 +117,6 @@ void BridgePublisher<RosMsg, SimMsg>::daiCallback(std::string name, std::shared_
   // std::cout << "In callback " << name << std::endl;
   auto daiDataPtr = std::dynamic_pointer_cast<SimMsg>(data);
   publishHelper(daiDataPtr);
- 
-      
 }
 
 template <class RosMsg, class SimMsg> 
@@ -130,17 +129,22 @@ template <class RosMsg, class SimMsg>
 void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDataPtr){
 
   RosMsg opMsg;
+  if (_camInfoFrameId.empty()){
+    _converter(inDataPtr, opMsg);
+    _camInfoFrameId = opMsg.header.frame_id;
+  }
+    
  if(_rosPublisher.getNumSubscribers() > 0){
     // std::cout << "before  " << opMsg.height << " " << opMsg.width << " " << opMsg.data.size() << std::endl;
     _converter(inDataPtr, opMsg);
       // std::cout << opMsg.height << " " << opMsg.width << " " << opMsg.data.size() << std::endl;
-
     _rosPublisher.publish(opMsg);
     
     if(_isImageMessage && _cameraInfoPublisher.getNumSubscribers() > 0){
       auto localCameraInfo = _camInfoManager->getCameraInfo();
       localCameraInfo.header.seq = opMsg.header.seq;
       localCameraInfo.header.stamp = opMsg.header.stamp;
+      localCameraInfo.header.frame_id = opMsg.header.frame_id;
       _cameraInfoPublisher.publish(localCameraInfo);  
     }
   }
@@ -150,6 +154,7 @@ void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDa
     auto localCameraInfo = _camInfoManager->getCameraInfo();
     localCameraInfo.header.seq = opMsg.header.seq;
     localCameraInfo.header.stamp = opMsg.header.stamp;
+    localCameraInfo.header.frame_id = _camInfoFrameId;
     _cameraInfoPublisher.publish(localCameraInfo);  
   }
 }
