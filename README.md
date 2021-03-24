@@ -6,7 +6,7 @@ noetic-devel branch also works on melodic(tested). Might also work on kinetic to
 ### Setting up procedure
 
 1. `cd ~`
-2. `git clone https://github.com/luxonis/depthai-core.git --branch develop`
+2. `git clone --recursive https://github.com/luxonis/depthai-core.git --branch develop`
 3. `cd ~/depthai-core`
 4. `mkdir build`
 5. `cd build`
