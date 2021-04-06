@@ -8,9 +8,8 @@ find_package(vision_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/AutoFocusCtrl.msg"
-  "msg/DetectionDai.msg"
-  "msg/DetectionDaiArray.msg"
-  "srv/TriggerNamed.srv"
+  "msg/SpatialDetection.msg"
+  "msg/SpatialDetectionArray.msg"
   DEPENDENCIES builtin_interfaces geometry_msgs std_msgs vision_msgs
 )
 
