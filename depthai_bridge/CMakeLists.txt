@@ -7,6 +7,8 @@ project(depthai_bridge VERSION 1.0.0)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 find_package(ament_cmake REQUIRED)
 
 set(_opencv_version 4)
