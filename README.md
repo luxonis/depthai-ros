@@ -25,7 +25,9 @@ The following setup procedure assumes you have cmake version >= 3.10.2 and OpenC
 13. `git clone https://github.com/ros-perception/vision_msgs.git --branch noetic-devel`
 14. `cd ~/ros_ws`
 15. `source /opt/ros/<ros-distro>/setup.bash` or `source /opt/ros/<ros-distro>/setup.zsh` if using zsh instead of bash
-16. `catkin_make_isolated --cmake-args -D depthai_DIR=~/depthai-core/build/install/lib/cmake/depthai`
+16. `catkin_make_isolated --cmake-args -Ddepthai_DIR=~/depthai-core/build/install/lib/cmake/depthai` (Melodic)
+17. `catkin_make_isolated --cmake-args -D depthai_DIR=~/depthai-core/build/install/lib/cmake/depthai` (Noetic)
+
 
 ### Executing an example
 
