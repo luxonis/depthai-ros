@@ -5,5 +5,5 @@ mkdir build
 cd build
 cmake .. -DBUILD_SHARED_LIBS=ON
 cd ..
-cmake -S . -B build -D CMAKE_INSTALL_PREFIX=/usr/local
-cmake --build build --parallel --target install
+cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/usr/local
+cmake --build build --target install
