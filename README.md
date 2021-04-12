@@ -1,17 +1,22 @@
 # depthai-ros(Gen2)
 noetic-devel branch also works on melodic(tested). Might also work on kinetic too.
 
+## Dependencies and USB-rules setup
+Install the dependencies described [here](https://docs.luxonis.com/projects/api/en/latest/install/#ubuntu)
+followed by `pythn3 -m pip install opencv-python` (This should install C++ lib opencv version greater than 4.0.0 which is required here. 
+
 
 ## Getting Started
 ### Setting up procedure
+The following setup procedure assumes you have cmake version >= 3.10.2 and OpenCV version >= 4.0.0
 
 1. `cd ~`
 2. `git clone --recursive https://github.com/luxonis/depthai-core.git --branch develop`
 3. `cd ~/depthai-core`
 4. `mkdir build`
 5. `cd build`
-6. `cmake .. -D BUILD_SHARED_LIBS=ON`
-7. `cmake --build . --parallel --config Release --target install`   
+6. `cmake .. -DBUILD_SHARED_LIBS=ON`
+7. `cmake --build . --config Release --target install`   
 8. `cd ~`
 9. `mkdir -p ros_ws/src`
 10. `cd ros_ws/src`
