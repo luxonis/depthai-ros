@@ -3,7 +3,7 @@ noetic-devel branch also works on melodic(tested). Might also work on kinetic to
 
 ## Dependencies and USB-rules setup
 Install the dependencies described [here](https://docs.luxonis.com/projects/api/en/latest/install/#ubuntu)
-followed by `pythn3 -m pip install opencv-python` (This should install C++ lib opencv version greater than 4.0.0 which is required here. 
+followed by `python3 -m pip install opencv-python` (This should install C++ lib opencv version greater than 4.0.0 which is required here. 
 
 
 ## Getting Started
