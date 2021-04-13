@@ -28,7 +28,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # find_package(ament_cmake QUIET)
 
 set(_opencv_version 4)
-find_package(OpenCV 4 QUIET)
+find_package(OpenCV 4 QUIET COMPONENTS core)
 if(NOT OpenCV_FOUND)
   message(STATUS "Did not find OpenCV 4, trying OpenCV 3")
   set(_opencv_version 3)
@@ -126,7 +126,7 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS}
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   depthai::core
-  ${OpenCV_LIBRARIES}
+  opencv_core
   ${Boost_LIBRARY_DIRS}
 )
 
