@@ -30,8 +30,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(_opencv_version 4)
 find_package(OpenCV 4 QUIET COMPONENTS core)
 if(NOT OpenCV_FOUND)
-  message(STATUS "Did not find OpenCV 4, trying OpenCV 3")
+  message(STATUS "----------------Did not find OpenCV 4, trying OpenCV 3--------------")
   set(_opencv_version 3)
+  find_package(OpenCV 3 QUIET COMPONENTS core)
 endif()
 
 
