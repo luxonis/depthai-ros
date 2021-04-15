@@ -32,7 +32,7 @@ find_package(OpenCV 4 QUIET COMPONENTS core)
 if(NOT OpenCV_FOUND)
   message(STATUS "----------------Did not find OpenCV 4, trying OpenCV 3--------------")
   set(_opencv_version 3)
-  find_package(OpenCV 3 QUIET COMPONENTS core)
+  find_package(OpenCV 3 REQUIRED COMPONENTS core)
 endif()
 
 
