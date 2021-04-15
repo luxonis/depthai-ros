@@ -12,7 +12,7 @@ sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-deve
 ```
 
 if you don't have rosdep installed and not initialized please execute the following steps:
-1. `sudo apt install python-rosdep2` or `sudo apt install python3-rosdep`
+1. `sudo apt install python-rosdep2`(melodic) or `sudo apt install python3-rosdep`
 2. `sudo rosdep init`
 3. `rosdep update`
 
@@ -22,10 +22,12 @@ install the following vcstool
 
 1. `mkdir -p <directory_for_workspaces>/src`
 2. `cd <directory_for_workspaces>`
-3. `vcs import src < wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/underlay.repos`
-4. `rosdep install --from-paths src --ignore-src -r -y`
-5. `source /opt/ros/<ros-distro>/setup.zsh`
-6. `catkin_make`
+3. `wget https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/underlay.repos`
+4. `vcs import src < underlay.repos`
+5. `rosdep install --from-paths src --ignore-src -r -y`
+6. `source /opt/ros/<ros-distro>/setup.bash`
+7. `catkin_make`
+8. `source devel/setup.bash` 
 
 
 <!-- 
