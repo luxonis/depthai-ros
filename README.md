@@ -8,7 +8,7 @@ noetic-devel branch also works on melodic(tested). Might also work on kinetic to
 The following script will install depthai-core and update usb rules and install depthai devices
 
 ```
-sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_requirements.sh | bash
+sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencies.sh | bash
 ```
 
 if you don't have rosdep installed and not initialized please execute the following steps:
