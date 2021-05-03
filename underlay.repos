@@ -7,7 +7,3 @@ repositories:
     type: git
     url: https://github.com/luxonis/depthai-ros-examples.git
     version: noetic-devel
-  ros-perception/vision_msgs:
-    type: git
-    url: https://github.com/ros-perception/vision_msgs.git
-    version: noetic-devel

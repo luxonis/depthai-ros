@@ -7,6 +7,7 @@ find_package (catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   vision_msgs
+  geometry_msgs
 )
 
 ################################################
@@ -29,12 +30,12 @@ add_service_files (
 ## Generate added messages and services with any dependencies listed here
 generate_messages (
   DEPENDENCIES
-  sensor_msgs std_msgs vision_msgs
+  sensor_msgs std_msgs vision_msgs geometry_msgs
 )
 
 ###################################
 ## catkin specific configuration ##
 ###################################
 catkin_package (
-  CATKIN_DEPENDS message_runtime sensor_msgs std_msgs
+  CATKIN_DEPENDS message_runtime sensor_msgs std_msgs vision_msgs geometry_msgs
 )
