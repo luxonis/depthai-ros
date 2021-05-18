@@ -6,7 +6,7 @@
 The following script will install depthai-core and update usb rules and install depthai devices
 
 ```
-sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencis.sh | bash
+sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/foxy-devel/install_dependencis.sh | bash
 ```
 
 if you don't haave opencv installed then try `sudo apt install libopencv-dev`
@@ -23,7 +23,7 @@ The following setup procedure assumes you have cmake version >= 3.10.2 and OpenC
 
 1. `mkdir -p <directory_for_workspaces>/src`
 2. `cd <directory_for_workspaces>`
-3. `wget https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/underlay.repos`
+3. `wget https://raw.githubusercontent.com/luxonis/depthai-ros/foxy-devel/underlay.repos`
 4. `vcs import src < underlay.repos`
 5. `rosdep install -y -r -q --from-paths src --ignore-src --rosdistro <add your distro>`
 6. `source /opt/ros/<ros-distro>/setup.bash`
