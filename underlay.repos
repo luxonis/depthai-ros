@@ -1,0 +1,10 @@
+
+repositories:
+  luxonis/depthai-ros:
+    type: git
+    url: https://github.com/luxonis/depthai-ros.git
+    version: foxy-devel
+  luxonis/depthai-ros-examples:
+    type: git
+    url: https://github.com/luxonis/depthai-ros-examples.git
+    version: foxy-wip
