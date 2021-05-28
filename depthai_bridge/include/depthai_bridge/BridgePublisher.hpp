@@ -10,7 +10,7 @@
 #include <boost/shared_ptr.hpp>
 #include <thread>
 #include <camera_info_manager/camera_info_manager.h>
-
+#include <image_transport/image_transport.h>
 #include "ros/ros.h"
 
 namespace dai::rosBridge {
@@ -48,6 +48,8 @@ private:
   ros::NodeHandle _nh;
   ros::Publisher _rosPublisher;
   ros::Publisher _cameraInfoPublisher;
+  image_transport::ImageTransport _it;
+  image_transport::Publisher _imagePublisher;
   std::thread _readingThread;
   std::string _rosTopic, _camInfoFrameId;
   std::unique_ptr<camera_info_manager::CameraInfoManager> _camInfoManager;

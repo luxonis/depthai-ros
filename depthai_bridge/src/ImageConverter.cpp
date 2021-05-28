@@ -19,16 +19,21 @@ namespace dai::rosBridge {
             {dai::RawImgFrame::Type::RGB888i        , "rgb8"                 },
             {dai::RawImgFrame::Type::BGR888i        , "bgr8"                 },
             {dai::RawImgFrame::Type::GRAY8          , "mono8"                },
-            {dai::RawImgFrame::Type::RAW8           , "mono8"                 },
+            {dai::RawImgFrame::Type::RAW8           , "mono8"                },
             {dai::RawImgFrame::Type::RAW16          , "16UC1"                },
             // {dai::RawImgFrame::Type::NV12           : "CV_bridge" },
+            {dai::RawImgFrame::Type::BGR888p, "bgr888p"}, // 3_1_bgr8 represents 3 planes/channels and 1 byte per pixel in BGR format
+            {dai::RawImgFrame::Type::RGB888p, "rgb888p"},
+            {dai::RawImgFrame::Type::NV12   , "nv12"    },
+            {dai::RawImgFrame::Type::YUV420p, "YUV420"  } 
         };
-
+// TODO(sachin) : Move Planare to encodingEnumMap and use default planar namings. And convertt those that are not supported in ROS using ImageTransport in the bridge.
 std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::planarEncodingEnumMap = {
                                     {dai::RawImgFrame::Type::BGR888p, "3_1_bgr8"}, // 3_1_bgr8 represents 3 planes/channels and 1 byte per pixel in BGR format
-                                    {dai::RawImgFrame::Type::NV12   , "nv12"                 } 
-
-                                };
+                                    {dai::RawImgFrame::Type::RGB888p, "3_1_rgb8"},
+                                    {dai::RawImgFrame::Type::NV12   , "nv12"    },
+                                    {dai::RawImgFrame::Type::YUV420p, "YUV420"  } 
+                                  };
 
 ImageConverter::ImageConverter(bool interleaved)
     : _daiInterleaved(interleaved) {}
