@@ -7,6 +7,6 @@ cd build
 cmake .. -DBUILD_SHARED_LIBS=ON
 cd ..
 cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/usr/local
-cmake --build build --target install
+sudo cmake --build build --target install
 cd /tmp
 rm -r depthai-core
