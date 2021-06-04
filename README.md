@@ -1,11 +1,6 @@
 # depthai-ros(Gen2)
 noetic-devel branch also works on melodic(tested). Might also work on kinetic too.
 
-## Dependencies and USB-rules setup
-Install the dependencies described [here](https://docs.luxonis.com/projects/api/en/latest/install/#ubuntu)
-followed by `python3 -m pip install opencv-python` (This should install C++ lib opencv version greater than 4.0.0 which is required here. 
-
-
 ## Getting Started
 
 ### Install Dependencies
@@ -14,6 +9,8 @@ The following script will install depthai-core and update usb rules and install 
 ```
 sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencis.sh | bash
 ```
+if you don't haave opencv installed then try `sudo apt install libopencv-dev`
+
 
 if you don't have rosdep installed and not initialized please execute the following steps:
 1. `sudo apt install python-rosdep2`(melodic) or `sudo apt install python3-rosdep`
