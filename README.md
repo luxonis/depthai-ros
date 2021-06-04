@@ -7,7 +7,7 @@ noetic-devel branch also works on melodic(tested). Might also work on kinetic to
 The following script will install depthai-core and update usb rules and install depthai devices
 
 ```
-sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencis.sh | bash
+sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencis.sh | sudo bash
 ```
 if you don't haave opencv installed then try `sudo apt install libopencv-dev`
 
