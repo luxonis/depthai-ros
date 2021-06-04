@@ -5,6 +5,6 @@ git clone --recursive https://github.com/luxonis/depthai-core.git --branch ros2-
 cd depthai-core
 mkdir build
 cmake -S . -B build -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/usr/local
-sudo cmake --build build --target install
+cmake --build build --target install
 cd /tmp
 rm -r depthai-core
