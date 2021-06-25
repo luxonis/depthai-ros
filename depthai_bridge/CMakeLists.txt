@@ -69,6 +69,7 @@ endif()
       camera_info_manager
       roscpp
       sensor_msgs
+      stereo_msgs
       std_msgs
       vision_msgs
       depthai_ros_msgs
