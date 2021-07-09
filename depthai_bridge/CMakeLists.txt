@@ -73,6 +73,7 @@ endif()
       std_msgs
       vision_msgs
       depthai_ros_msgs
+      image_transport
     )
     # find_package(GTest)
     find_package(Boost REQUIRED)
@@ -87,7 +88,7 @@ endif()
     catkin_package(
       INCLUDE_DIRS include
       LIBRARIES ${PROJECT_NAME}
-      CATKIN_DEPENDS depthai_ros_msgs camera_info_manager roscpp sensor_msgs std_msgs vision_msgs 
+      CATKIN_DEPENDS depthai_ros_msgs camera_info_manager roscpp sensor_msgs std_msgs vision_msgs image_transport
     )
 
     # catkin_package(
