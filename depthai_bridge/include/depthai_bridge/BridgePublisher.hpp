@@ -17,7 +17,7 @@
 
 namespace dai::rosBridge {
 
-template <class RosMsg>
+/* template <class RosMsg>
 ros::Publisher advertise(ros::NodeHandle& nh, image_transport::ImageTransport& it, std::string rosTopic, int queueSize, std::false_type){
   return nh.advertise<RosMsg>(rosTopic, queueSize);
 }
@@ -26,6 +26,7 @@ template <class RosMsg>
 image_transport::Publisher advertise(ros::NodeHandle& nh, image_transport::ImageTransport& it, std::string rosTopic, int queueSize, std::true_type){
   return it.advertise(rosTopic, queueSize);
 }
+ */
 
 template <class RosMsg, class SimMsg> class BridgePublisher {
   // using CustomPublisher = typename std::conditional<std::is_same<RosMsg,
@@ -43,6 +44,10 @@ private:
    * the data for other processing using get() function .
    */
   void daiCallback(std::string name, std::shared_ptr<ADatatype> data);
+  
+  image_transport::Publisher advertise(ros::NodeHandle& nh, image_transport::ImageTransport& it, std::string rosTopic, int queueSize, std::true_type);
+  
+  ros::Publisher advertise(ros::NodeHandle& nh, image_transport::ImageTransport& it, std::string rosTopic, int queueSize, std::false_type);
 
   std::shared_ptr<dai::DataOutputQueue> _daiMessageQueue;
   ConvertFunc _converter;
@@ -76,7 +81,6 @@ BridgePublisher(std::shared_ptr<dai::DataOutputQueue> daiMessageQueue,
 
 };
 
-
 template <class RosMsg, class SimMsg>
 BridgePublisher<RosMsg, SimMsg>::BridgePublisher(std::shared_ptr<dai::DataOutputQueue> daiMessageQueue,
                   ros::NodeHandle nh, std::string rosTopic,
@@ -94,8 +98,7 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(std::shared_ptr<dai::DataOutput
       _cameraInfoPublisher = _nh.advertise<sensor_msgs::CameraInfo>(
           cameraName + "/camera_info", queueSize);
     } 
-    _rosPublisher = advertise<RosMsg>(_nh, _it, rosTopic, queueSize, std::is_same<RosMsg, sensor_msgs::Image>{});
-    
+    _rosPublisher = advertise(_nh, _it, rosTopic, queueSize, std::is_same<RosMsg, sensor_msgs::Image>{});
   }
 
 template <class RosMsg, class SimMsg>
@@ -143,6 +146,16 @@ void BridgePublisher<RosMsg, SimMsg>::daiCallback(
   // std::cout << "In callback " << name << std::endl;
   auto daiDataPtr = std::dynamic_pointer_cast<SimMsg>(data);
   publishHelper(daiDataPtr);
+}
+
+template <class RosMsg, class SimMsg>
+ros::Publisher BridgePublisher<RosMsg, SimMsg>::advertise(ros::NodeHandle& nh, image_transport::ImageTransport& it, std::string rosTopic, int queueSize, std::false_type){
+  return nh.advertise<RosMsg>(rosTopic, queueSize);
+}
+
+template <class RosMsg, class SimMsg>
+image_transport::Publisher BridgePublisher<RosMsg, SimMsg>::advertise(ros::NodeHandle& nh, image_transport::ImageTransport& it, std::string rosTopic, int queueSize, std::true_type){
+  return it.advertise(rosTopic, queueSize);
 }
 
 template <class RosMsg, class SimMsg>
