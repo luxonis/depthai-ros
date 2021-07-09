@@ -16,7 +16,7 @@
 #include <thread>
 
 namespace dai::rosBridge {
-  
+
 
 template <class RosMsg, class SimMsg> class BridgePublisher {
   // using CustomPublisher = typename std::conditional<std::is_same<RosMsg,
@@ -52,7 +52,7 @@ private:
 
 public:
   template <typename Msg = RosMsg,
-    typename = std::enable_if<std::is_same<Msg, sensor_msgs::Image>::value>::type>
+   std::enable_if_t<std::is_same<Msg, sensor_msgs::Image>::value, int> = 1>
   BridgePublisher(std::shared_ptr<dai::DataOutputQueue> daiMessageQueue,
                   ros::NodeHandle nh, std::string rosTopic,
                   ConvertFunc converter, int queueSize,
@@ -76,7 +76,7 @@ public:
   }
 
   template <typename Msg = RosMsg,
-    typename = std::enable_if<!std::is_same<Msg, sensor_msgs::Image>::value>::type>
+    std::enable_if_t<std::is_same<Msg, sensor_msgs::Image>::value, int> = 0>
   BridgePublisher(std::shared_ptr<dai::DataOutputQueue> daiMessageQueue,
                   ros::NodeHandle nh, std::string rosTopic,
                   ConvertFunc converter, int queueSize,
