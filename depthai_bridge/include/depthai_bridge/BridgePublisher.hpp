@@ -51,9 +51,10 @@ private:
   bool _isImageMessage = false; // used to enable camera info manager
 
 public:
-  
+  template <typename Msg = RosMsg,
+    typename = std::enable_if<std::is_same<Msg, sensor_msgs::Image>::value>::type>
   BridgePublisher(std::shared_ptr<dai::DataOutputQueue> daiMessageQueue,
-                  ros::NodeHandle &nh, std::string rosTopic,
+                  ros::NodeHandle nh, std::string rosTopic,
                   ConvertFunc converter, int queueSize,
                   std::string cameraParamUri = "", std::string cameraName = "")
       : _daiMessageQueue(daiMessageQueue), _nh(nh), _converter(converter),
@@ -74,6 +75,29 @@ public:
     
   }
 
+  template <typename Msg = RosMsg,
+    typename = std::enable_if<!std::is_same<Msg, sensor_msgs::Image>::value>::type>
+  BridgePublisher(std::shared_ptr<dai::DataOutputQueue> daiMessageQueue,
+                  ros::NodeHandle nh, std::string rosTopic,
+                  ConvertFunc converter, int queueSize,
+                  std::string cameraParamUri = "", std::string cameraName = "")
+      : _daiMessageQueue(daiMessageQueue), _nh(nh), _converter(converter),
+        _itPtr(new image_transport::ImageTransport(_nh)), _rosTopic(rosTopic) {
+    std::cout << "Print type of custom Tyoe: " << typeid(CustomPublisher).name()
+              << std::endl;
+
+    if (!cameraParamUri.empty() && !cameraName.empty()) {
+      _isImageMessage = true;
+      _camInfoManager =
+          std::make_unique<camera_info_manager::CameraInfoManager>(
+              ros::NodeHandle{_nh, cameraName}, cameraName, cameraParamUri);
+      // _rosPublisher = _itPtr.advertise(rosTopic, queueSize);
+      _cameraInfoPublisher = _nh.advertise<sensor_msgs::CameraInfo>(
+          cameraName + "/camera_info", queueSize);
+    } 
+      _rosPublisher = _nh.advertise<RosMsg>(rosTopic, queueSize);
+
+  }
   // BridgePublisher(const BridgePublisher& other);
 
   // void setCameraInfoFrameId(std::string frameId);
