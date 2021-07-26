@@ -6,6 +6,7 @@
 
 #include "sensor_msgs/Image.h"
 #include "sensor_msgs/CameraInfo.h"
+#include "depthai-shared/common/CameraBoardSocket.hpp"
 
 #include "depthai/depthai.hpp"
 #include <opencv2/opencv.hpp>

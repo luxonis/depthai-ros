@@ -1,4 +1,6 @@
+#include <tuple>
 #include <boost/make_shared.hpp>
+#include <boost/range/algorithm.hpp>
 #include <depthai_bridge/ImageConverter.hpp>
 #include <ros/ros.h>
 
@@ -248,38 +250,43 @@ cv::Mat ImageConverter::rosMsgtoCvMat(sensor_msgs::Image &inMsg) {
   }
   else{
     std::runtime_error("THis frature is still WIP");
+    return rgb;
   }
 }
 
 sensor_msgs::CameraInfo ImageConverter::calibrationToCameraInfo(dai::CalibrationHandler calibHandler, dai::CameraBoardSocket cameraId, int width, int height, Point2f topLeftPixelId, Point2f bottomRightPixelId){
   
-  std::vector<std::vector<float>> defIntrinscs, distCoeffs; 
+  std::vector<std::vector<float>> camIntrinsics;
+  std::vector<float> distCoeffs, flatIntrinsics; 
   int defWidth, defHeight;
   sensor_msgs::CameraInfo cameraData;
-
-  std::tie<defIntrinscs, defWidth, defHeight> = calibHandler.getDefaultIntrinsics(cameraId);
+  std::tie (std::ignore, defWidth, defHeight) = calibHandler.getDefaultIntrinsics(cameraId);
   
   if (width == -1){
     cameraData.width = static_cast<uint32_t>(defWidth); 
   }
   else{
-    cameraData.width = static_cast<uint32_t>(width) 
+    cameraData.width = static_cast<uint32_t>(width); 
   }
 
   if (height == -1){
     cameraData.height = static_cast<uint32_t>(defHeight); 
   }
   else{
-    cameraData.height = static_cast<uint32_t>(height) 
+    cameraData.height = static_cast<uint32_t>(height); 
   }
 
-  defIntrinscs = calibHandler.getCameraIntrinsics(cameraId, cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);
-  cameraData.K = defIntrinscs;
   // TODO(sachin): Add the Projection matrix and rotation matrix after confirming whether first camera is left or right as per documentation 
+  camIntrinsics = calibHandler.getCameraIntrinsics(cameraId, cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);
   
-  distCoeffs = calibHandler.getDistortionCoefficients(cameraId);
+  flatIntrinsics.resize(9);
+  for (int i =0;i < 3; i++) {
+    std::copy(camIntrinsics[i].begin(), camIntrinsics[i].end(), flatIntrinsics.begin() + 3 * i);
+  }
+  std::copy(flatIntrinsics.begin(), flatIntrinsics.end(), cameraData.K.begin());
+  
   // TODO(sachin): plumb_bob takes only 5 parameters. Should I change from Plum_bob? if so which model represents best ?  
-  cameraData.D = distCoeffs
+  distCoeffs = calibHandler.getDistortionCoefficients(cameraId);
   std::copy(distCoeffs.begin(), distCoeffs.begin() + 5, cameraData.D.begin());
 
   return cameraData;
