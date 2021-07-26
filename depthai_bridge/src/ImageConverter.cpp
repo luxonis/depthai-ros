@@ -251,4 +251,39 @@ cv::Mat ImageConverter::rosMsgtoCvMat(sensor_msgs::Image &inMsg) {
   }
 }
 
+sensor_msgs::CameraInfo ImageConverter::calibrationToCameraInfo(dai::CalibrationHandler calibHandler, dai::CameraBoardSocket cameraId, int width, int height, Point2f topLeftPixelId, Point2f bottomRightPixelId){
+  
+  std::vector<std::vector<float>> defIntrinscs, distCoeffs; 
+  int defWidth, defHeight;
+  sensor_msgs::CameraInfo cameraData;
+
+  std::tie<defIntrinscs, defWidth, defHeight> = calibHandler.getDefaultIntrinsics(cameraId);
+  
+  if (width == -1){
+    cameraData.width = static_cast<uint32_t>(defWidth); 
+  }
+  else{
+    cameraData.width = static_cast<uint32_t>(width) 
+  }
+
+  if (height == -1){
+    cameraData.height = static_cast<uint32_t>(defHeight); 
+  }
+  else{
+    cameraData.height = static_cast<uint32_t>(height) 
+  }
+
+  defIntrinscs = calibHandler.getCameraIntrinsics(cameraId, cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);
+  cameraData.K = defIntrinscs;
+  // TODO(sachin): Add the Projection matrix and rotation matrix after confirming whether first camera is left or right as per documentation 
+  
+  distCoeffs = calibHandler.getDistortionCoefficients(cameraId);
+  // TODO(sachin): plumb_bob takes only 5 parameters. Should I change from Plum_bob? if so which model represents best ?  
+  cameraData.D = distCoeffs
+  std::copy(distCoeffs.begin(), distCoeffs.begin() + 5, cameraData.D.begin());
+
+  return cameraData;
+}
+
+
 } // namespace dai::rosBridge

@@ -5,6 +5,8 @@
 #include <unordered_map>
 
 #include "sensor_msgs/Image.h"
+#include "sensor_msgs/CameraInfo.h"
+
 #include "depthai/depthai.hpp"
 #include <opencv2/opencv.hpp>
 
@@ -27,6 +29,8 @@ class ImageConverter{
      *  encodings which cv supports but ros doesn't    
     **/
     cv::Mat rosMsgtoCvMat(sensor_msgs::Image& inMsg);
+
+    sensor_msgs::CameraInfo calibrationToCameraInfo(dai::CalibrationHandler calibHandler, dai::CameraBoardSocket cameraId, int width = -1, int height = -1, Point2f topLeftPixelId = Point2f(), Point2f bottomRightPixelId = Point2f());
 
      private:
         static std::unordered_map<dai::RawImgFrame::Type, std::string> encodingEnumMap;
