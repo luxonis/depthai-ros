@@ -257,10 +257,11 @@ cv::Mat ImageConverter::rosMsgtoCvMat(sensor_msgs::Image &inMsg) {
 sensor_msgs::CameraInfo ImageConverter::calibrationToCameraInfo(dai::CalibrationHandler calibHandler, dai::CameraBoardSocket cameraId, int width, int height, Point2f topLeftPixelId, Point2f bottomRightPixelId){
   
   std::vector<std::vector<float>> camIntrinsics;
-  std::vector<float> distCoeffs, flatIntrinsics; 
+  std::vector<float> distCoeffs; 
+  std::vector<double> flatIntrinsics, distCoeffsDouble; 
   int defWidth, defHeight;
   sensor_msgs::CameraInfo cameraData;
-  std::tie (std::ignore, defWidth, defHeight) = calibHandler.getDefaultIntrinsics(cameraId);
+  std::tie(std::ignore, defWidth, defHeight) = calibHandler.getDefaultIntrinsics(cameraId);
   
   if (width == -1){
     cameraData.width = static_cast<uint32_t>(defWidth); 
@@ -285,10 +286,16 @@ sensor_msgs::CameraInfo ImageConverter::calibrationToCameraInfo(dai::Calibration
   }
   std::copy(flatIntrinsics.begin(), flatIntrinsics.end(), cameraData.K.begin());
   
+  /*   for(auto i : cameraData.K){
+      std::cout << "val <-<" << i << std::endl;
+    }
+  */
   // TODO(sachin): plumb_bob takes only 5 parameters. Should I change from Plum_bob? if so which model represents best ?  
   distCoeffs = calibHandler.getDistortionCoefficients(cameraId);
-  std::copy(distCoeffs.begin(), distCoeffs.begin() + 5, cameraData.D.begin());
 
+  for(size_t i = 0; i < 5; i++){
+    cameraData.D.push_back(static_cast<double>(distCoeffs[i]));
+  }
   return cameraData;
 }
 
