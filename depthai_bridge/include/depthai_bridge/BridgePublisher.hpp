@@ -136,13 +136,21 @@ void BridgePublisher<RosMsg, SimMsg>::startPublisherThread() {
   }
 
   _readingThread = std::thread([&]() {
+    int messageCounter = 0;
     while (ros::ok()) {
       // auto daiDataPtr = _daiMessageQueue->get<SimMsg>();
       auto daiDataPtr = _daiMessageQueue->tryGet<SimMsg>();
-
       if (daiDataPtr == nullptr) {
-        ROS_WARN_STREAM_NAMED(LOG_TAG, "Missing Incoming message from Depthai Queue.");
+        messageCounter++;
+        if(messageCounter > 2000000){
+          ROS_WARN_STREAM_NAMED(LOG_TAG, "Missing " << messageCounter << " number of Incoming message from Depthai Queue " << _daiMessageQueue->getName());
+          messageCounter = 0;
+        }
         continue;
+      }
+
+      if (messageCounter != 0){
+            messageCounter = 0;
       }
       publishHelper(daiDataPtr);
     }
