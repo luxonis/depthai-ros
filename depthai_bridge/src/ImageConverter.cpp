@@ -256,7 +256,7 @@ cv::Mat ImageConverter::rosMsgtoCvMat(sensor_msgs::Image &inMsg) {
 
 sensor_msgs::CameraInfo ImageConverter::calibrationToCameraInfo(dai::CalibrationHandler calibHandler, dai::CameraBoardSocket cameraId, int width, int height, Point2f topLeftPixelId, Point2f bottomRightPixelId){
   
-  std::vector<std::vector<float>> camIntrinsics;
+  std::vector<std::vector<float>> camIntrinsics, rectifiedRotation;
   std::vector<float> distCoeffs; 
   std::vector<double> flatIntrinsics, distCoeffsDouble; 
   int defWidth, defHeight;
@@ -286,16 +286,42 @@ sensor_msgs::CameraInfo ImageConverter::calibrationToCameraInfo(dai::Calibration
   }
   std::copy(flatIntrinsics.begin(), flatIntrinsics.end(), cameraData.K.begin());
   
-  /*   for(auto i : cameraData.K){
-      std::cout << "val <-<" << i << std::endl;
-    }
-  */
   // TODO(sachin): plumb_bob takes only 5 parameters. Should I change from Plum_bob? if so which model represents best ?  
   distCoeffs = calibHandler.getDistortionCoefficients(cameraId);
 
   for(size_t i = 0; i < 5; i++){
     cameraData.D.push_back(static_cast<double>(distCoeffs[i]));
   }
+
+  // Setting Projection matrix if the cameras are stereo pair
+  if (calibHandler.getStereoRightCameraId() != dai::CameraBoardSocket::AUTO && calibHandler.getStereoLeftCameraId() != dai::CameraBoardSocket::AUTO){
+    if (calibHandler.getStereoRightCameraId() == cameraId || calibHandler.getStereoLeftCameraId() == cameraId){
+
+      std::vector<std::vector<float>> stereoIntrinsics = calibHandler.getCameraIntrinsics(calibHandler.getStereoRightCameraId(), cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);
+      std::vector<double> stereoFlatIntrinsics(12), flatRectifiedRotation(9);
+      for (int i =0; i < 3; i++) {
+        std::copy(stereoIntrinsics[i].begin(), stereoIntrinsics[i].end(), stereoFlatIntrinsics.begin() + 4 * i);
+        stereoFlatIntrinsics[(4 * i) + 3] = 0;
+      }
+
+      if (calibHandler.getStereoLeftCameraId() == cameraId){
+        stereoFlatIntrinsics[3] = stereoFlatIntrinsics[0] * calibHandler.getCameraExtrinsics(calibHandler.getStereoLeftCameraId(), calibHandler.getStereoRightCameraId())[0][3];
+        rectifiedRotation = calibHandler.getStereoLeftRectificationRotation();
+      }
+      else{
+        rectifiedRotation = calibHandler.getStereoRightRectificationRotation();
+      }   
+
+      for (int i =0; i < 3; i++) {
+        std::copy(rectifiedRotation[i].begin(), rectifiedRotation[i].end(), flatRectifiedRotation.begin() + 3 * i);
+      }
+
+      std::copy(stereoFlatIntrinsics.begin(), stereoFlatIntrinsics.end(), cameraData.P.begin());  
+      std::copy(flatRectifiedRotation.begin(), flatRectifiedRotation.end(), cameraData.R.begin());  
+    
+    }  
+  } 
+
   return cameraData;
 }
 
