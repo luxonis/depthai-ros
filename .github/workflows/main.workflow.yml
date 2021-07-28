@@ -1,0 +1,30 @@
+ 
+name: DepthAI ROS CI/CD
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - noetic-CI
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - noetic-CI
+
+jobs:
+
+  style:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Clang-Format lint
+      
+      uses: DoozyX/clang-format-lint-action@v0.12
+      with:
+        source: '.'
+        extensions: 'h,hpp,c,cpp'
+        clangFormatVersion: 10
+
