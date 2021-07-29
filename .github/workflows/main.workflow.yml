@@ -71,6 +71,33 @@ jobs:
           skip-tests: true
       
 
+  build:
+    if: startsWith(github.ref, 'refs/heads/foxy')
+    runs-on: ${{ ubuntu-20.04 }}
+    strategy:
+      matrix:
+        ros_distribution: [foxy, galactic]
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: ${{ matrix.ros_distribution }} build
+        uses: ros-tooling/setup-ros@v0.2
+        with:
+          required-ros-distributions: ${{ matrix.ros_distribution }}
+
+      - name: Installing DepthAi Core
+        run: sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencies.sh | sudo bash
+      
+      - name: Build depthai-bridge ${{ matrix.ros_distribution }}
+        uses: ros-tooling/action-ros-ci@v0.2
+        with:
+          # vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/examples.repos"
+          # package-name: depthai_examples
+          target-ros1-distro: ${{ matrix.ros_distribution }}
+          skip-tests: true
+
+
 
   # build_:
   #   runs-on: ubuntu-18.04
