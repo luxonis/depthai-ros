@@ -27,4 +27,16 @@ jobs:
         source: '.'
         extensions: 'h,hpp,c,cpp'
         clangFormatVersion: 10
+  
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-ros@v0.2
+      with:
+        required-ros-distributions: melodic
+    - uses: actions/action-ros-ci@v0.2
+      with:
+        package-name: depthai_bridge
+        target-ros1-distro: melodic
 
