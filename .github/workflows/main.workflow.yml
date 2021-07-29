@@ -28,7 +28,7 @@ jobs:
         extensions: 'h,hpp,c,cpp'
         clangFormatVersion: 10
   
-  ROS1_build:
+  ROS1 build:
     if: startsWith(github.ref, 'refs/heads/noetic')
     runs-on: ${{ matrix.os }}
     strategy:
@@ -71,7 +71,7 @@ jobs:
           skip-tests: true
       
 
-  ROS2_build:
+  ROS2 build:
     if: startsWith(github.ref, 'refs/heads/foxy')
     runs-on: ubuntu-20.04
     strategy:
