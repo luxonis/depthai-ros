@@ -38,8 +38,8 @@ jobs:
       - run: sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencies.sh | sudo bash
       - uses: ros-tooling/action-ros-ci@v0.2
         with:
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/examples.repos"
-          package-name: depthai_examples
+          # vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/examples.repos"
+          # package-name: depthai_examples
           target-ros1-distro: melodic
           skip-tests: true
 
