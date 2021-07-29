@@ -35,8 +35,10 @@ jobs:
     - uses: ros-tooling/setup-ros@v0.2
       with:
         required-ros-distributions: melodic
+    run: sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencies.sh | sudo bash
     - uses: ros-tooling/action-ros-ci@v0.2
       with:
         package-name: depthai_bridge
         target-ros1-distro: melodic
+        skip-tests: true
 
