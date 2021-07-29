@@ -15,7 +15,7 @@ on:
 jobs:
 
   style:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v2
@@ -28,11 +28,12 @@ jobs:
         extensions: 'h,hpp,c,cpp'
         clangFormatVersion: 10
   
-  build_melodic_package:
+  build ROS1 package:
+   if: startsWith(github.ref, 'refs/heads/noetic')
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-latest]
+        os: [ubuntu-18.04, ubuntu-20.04]
     
     steps:
       - uses: actions/checkout@v2
@@ -44,7 +45,7 @@ jobs:
           required-ros-distributions: melodic
       
       - name: Noetic build
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-20.04'
         uses: ros-tooling/setup-ros@v0.2
         with:
           required-ros-distributions: noetic
@@ -61,7 +62,7 @@ jobs:
           skip-tests: true
 
       - name: Build depthai-bridge noetic
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-20.04'
         uses: ros-tooling/action-ros-ci@v0.2
         with:
           # vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/examples.repos"
