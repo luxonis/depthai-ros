@@ -42,7 +42,6 @@ jobs:
         uses: ros-tooling/setup-ros@v0.2
         with:
           required-ros-distributions: melodic
-          required-ros-distributions: noetic
       
       - name: Noetic build
         if: matrix.os == 'ubuntu-latest'
@@ -60,7 +59,7 @@ jobs:
           # package-name: depthai_examples
           target-ros1-distro: melodic
           skip-tests: true
-          
+
       - name: Build depthai-bridge noetic
         if: matrix.os == 'ubuntu-latest'
         uses: ros-tooling/action-ros-ci@v0.2
