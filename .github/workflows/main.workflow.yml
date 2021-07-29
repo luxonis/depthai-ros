@@ -36,23 +36,40 @@ jobs:
     
     steps:
       - uses: actions/checkout@v2
-      - uses: ros-tooling/setup-ros@v0.2
+      
+      - name: Melodic build
+        if: matrix.os == 'ubuntu-18.04'
+        uses: ros-tooling/setup-ros@v0.2
         with:
-          if: matrix.os == 'ubuntu-18.04'
           required-ros-distributions: melodic
-          if: matrix.os == 'ubuntu-latest'
           required-ros-distributions: noetic
-      - run: sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencies.sh | sudo bash
-      - uses: ros-tooling/action-ros-ci@v0.2
+      
+      - name: Noetic build
+        if: matrix.os == 'ubuntu-latest'
+        uses: ros-tooling/setup-ros@v0.2
+        with:
+          required-ros-distributions: noetic
+      - name: Installing DepthAi Core
+        run: sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencies.sh | sudo bash
+      
+      - name: Build depthai-bridge melodic
+        if: matrix.os == 'ubuntu-18.04'  
+        uses: ros-tooling/action-ros-ci@v0.2
         with:
           # vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/examples.repos"
           # package-name: depthai_examples
-          if: matrix.os == 'ubuntu-18.04'
           target-ros1-distro: melodic
           skip-tests: true
-          if: matrix.os == 'ubuntu-latest'
+          
+      - name: Build depthai-bridge noetic
+        if: matrix.os == 'ubuntu-latest'
+        uses: ros-tooling/action-ros-ci@v0.2
+        with:
+          # vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/examples.repos"
+          # package-name: depthai_examples
           target-ros1-distro: noetic
           skip-tests: true
+      
 
 
   # build_:
