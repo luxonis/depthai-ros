@@ -1,12 +1,11 @@
-#include <ros/ros.h>
-
-#include <depthai/depthai.hpp>
-#include <opencv2/opencv.hpp>
 #include <cv_bridge/cv_bridge.h>
+#include <ros/ros.h>
 
 #include <boost/make_shared.hpp>
 #include <boost/range/algorithm.hpp>
+#include <depthai/depthai.hpp>
 #include <depthai_bridge/ImageConverter.hpp>
+#include <opencv2/opencv.hpp>
 #include <tuple>
 
 // FIXME(Sachin): Do I need to convert the encodings that are available in dai
@@ -20,15 +19,14 @@
 // it planar
 namespace dai::rosBridge {
 
-std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::encodingEnumMap = {
-    {dai::RawImgFrame::Type::YUV422i, "yuv422"},
-    {dai::RawImgFrame::Type::RGBA8888, "rgba8"},
-    {dai::RawImgFrame::Type::RGB888i, "rgb8"},
-    {dai::RawImgFrame::Type::BGR888i, "bgr8"},
-    {dai::RawImgFrame::Type::GRAY8, "mono8"},
-    {dai::RawImgFrame::Type::RAW8, "mono8"},
-    {dai::RawImgFrame::Type::RAW16, "16UC1"},
-    {dai::RawImgFrame::Type::YUV420p, "YUV420"}};
+std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::encodingEnumMap = {{dai::RawImgFrame::Type::YUV422i, "yuv422"},
+                                                                                           {dai::RawImgFrame::Type::RGBA8888, "rgba8"},
+                                                                                           {dai::RawImgFrame::Type::RGB888i, "rgb8"},
+                                                                                           {dai::RawImgFrame::Type::BGR888i, "bgr8"},
+                                                                                           {dai::RawImgFrame::Type::GRAY8, "mono8"},
+                                                                                           {dai::RawImgFrame::Type::RAW8, "mono8"},
+                                                                                           {dai::RawImgFrame::Type::RAW16, "16UC1"},
+                                                                                           {dai::RawImgFrame::Type::YUV420p, "YUV420"}};
 // TODO(sachin) : Move Planare to encodingEnumMap and use default planar namings. And convertt those that are not supported in ROS using ImageTransport in the
 // bridge.
 std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::planarEncodingEnumMap = {
@@ -42,11 +40,10 @@ ImageConverter::ImageConverter(bool interleaved) : _daiInterleaved(interleaved) 
 ImageConverter::ImageConverter(const std::string frameName, bool interleaved) : _frameName(frameName), _daiInterleaved(interleaved) {}
 
 void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, sensor_msgs::Image& outImageMsg) {
-
     auto tstamp = inData->getTimestamp();
     int32_t sec = std::chrono::duration_cast<std::chrono::seconds>(tstamp.time_since_epoch()).count();
     int32_t nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(tstamp.time_since_epoch()).count() % 1000000000UL;
-    
+
     std_msgs::Header header;
     header.seq = inData->getSequenceNum();
     header.stamp = ros::Time(sec, nsec);
@@ -56,7 +53,7 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, sensor_msgs
         cv::Mat inImg = inData->getCvFrame();
         cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, inImg).toImageMsg(outImageMsg);
 
-    } else if(encodingEnumMap.find(inData->getType()) != encodingEnumMap.end()){
+    } else if(encodingEnumMap.find(inData->getType()) != encodingEnumMap.end()) {
         // copying the data to ros msg
         outImageMsg.header = header;
         std::string temp_str(encodingEnumMap[inData->getType()]);
