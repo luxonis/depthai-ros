@@ -1,5 +1,9 @@
 #include <ros/ros.h>
 
+#include <depthai/depthai.hpp>
+#include <opencv2/opencv.hpp>
+#include <cv_bridge/cv_bridge.h>
+
 #include <boost/make_shared.hpp>
 #include <boost/range/algorithm.hpp>
 #include <depthai_bridge/ImageConverter.hpp>
@@ -24,70 +28,37 @@ std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::encoding
     {dai::RawImgFrame::Type::GRAY8, "mono8"},
     {dai::RawImgFrame::Type::RAW8, "mono8"},
     {dai::RawImgFrame::Type::RAW16, "16UC1"},
-    // {dai::RawImgFrame::Type::NV12           : "CV_bridge" },
-    {dai::RawImgFrame::Type::BGR888p, "bgr888p"},  // 3_1_bgr8 represents 3 planes/channels and 1 byte per pixel in BGR format
-    {dai::RawImgFrame::Type::RGB888p, "rgb888p"},
-    {dai::RawImgFrame::Type::NV12, "nv12"},
     {dai::RawImgFrame::Type::YUV420p, "YUV420"}};
 // TODO(sachin) : Move Planare to encodingEnumMap and use default planar namings. And convertt those that are not supported in ROS using ImageTransport in the
 // bridge.
 std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::planarEncodingEnumMap = {
-    {dai::RawImgFrame::Type::BGR888p, "3_1_bgr8"},  // 3_1_bgr8 represents 3 planes/channels and 1 byte per pixel in BGR format
-    {dai::RawImgFrame::Type::RGB888p, "3_1_rgb8"},
-    {dai::RawImgFrame::Type::NV12, "nv12"},
-    {dai::RawImgFrame::Type::YUV420p, "YUV420"}};
+    {dai::RawImgFrame::Type::BGR888p, "rgb8"},  // 3_1_bgr8 represents 3 planes/channels and 1 byte per pixel in BGR format
+    {dai::RawImgFrame::Type::RGB888p, "rgb8"},
+    {dai::RawImgFrame::Type::NV12, "rgb8"},
+    {dai::RawImgFrame::Type::YUV420p, "rgb8"}};
 
 ImageConverter::ImageConverter(bool interleaved) : _daiInterleaved(interleaved) {}
 
 ImageConverter::ImageConverter(const std::string frameName, bool interleaved) : _frameName(frameName), _daiInterleaved(interleaved) {}
 
 void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, sensor_msgs::Image& outImageMsg) {
-    if(_daiInterleaved && encodingEnumMap.find(inData->getType()) == encodingEnumMap.end()) {
-        if(planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end())
-            throw std::runtime_error("Encoding value found for planar dataformat but object was created with 'interleaved = true'. ");
-        else
-            throw std::runtime_error("Encoding value not found. ");
-    }
-
-    if(!_daiInterleaved && planarEncodingEnumMap.find(inData->getType()) == planarEncodingEnumMap.end()) {
-        if(encodingEnumMap.find(inData->getType()) != encodingEnumMap.end())
-            throw std::runtime_error("Encoding value found for Interleaved dataformat but object was created with 'Interleaved = false'. ");
-        else
-            throw std::runtime_error("Encoding convertion not found. ");
-    }
 
     auto tstamp = inData->getTimestamp();
     int32_t sec = std::chrono::duration_cast<std::chrono::seconds>(tstamp.time_since_epoch()).count();
     int32_t nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(tstamp.time_since_epoch()).count() % 1000000000UL;
+    
+    std_msgs::Header header;
+    header.seq = inData->getSequenceNum();
+    header.stamp = ros::Time(sec, nsec);
+    header.frame_id = _frameName;
 
-    outImageMsg.header.seq = inData->getSequenceNum();
-    outImageMsg.header.stamp = ros::Time(sec, nsec);
-    outImageMsg.header.frame_id = _frameName;
+    if(planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end()) {
+        cv::Mat inImg = inData->getCvFrame();
+        cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, inImg).toImageMsg(outImageMsg);
 
-    if(!_daiInterleaved) {
-        std::istringstream f(planarEncodingEnumMap[inData->getType()]);
-        std::vector<std::string> encoding_info;
-        std::string s;
-
-        while(getline(f, s, '_')) encoding_info.push_back(s);
-        outImageMsg.height = inData->getHeight();
-        outImageMsg.width = inData->getWidth();
-        // FIXME(sachin): This might be wrong for NV12. Fix it
-        outImageMsg.step = inData->getData().size() / inData->getHeight();
-        outImageMsg.is_bigendian = true;
-        size_t size = inData->getData().size();
-        outImageMsg.data.resize(size);
-        if(planarEncodingEnumMap[inData->getType()] == "nv12") {
-            outImageMsg.encoding = planarEncodingEnumMap[inData->getType()];
-            outImageMsg.data = std::move(inData->getData());
-        } else {
-            outImageMsg.encoding = encoding_info[2];
-            planarToInterleaved(
-                inData->getData(), outImageMsg.data, outImageMsg.width, outImageMsg.height, std::stoi(encoding_info[0]), std::stoi(encoding_info[1]));
-        }
-    } else {
+    } else if(encodingEnumMap.find(inData->getType()) != encodingEnumMap.end()){
         // copying the data to ros msg
-        // outImageMsg.header       = imgHeader;
+        outImageMsg.header = header;
         std::string temp_str(encodingEnumMap[inData->getType()]);
         outImageMsg.encoding = temp_str;
         outImageMsg.height = inData->getHeight();
@@ -242,7 +213,6 @@ sensor_msgs::CameraInfo ImageConverter::calibrationToCameraInfo(
         cameraData.height = static_cast<uint32_t>(height);
     }
 
-    // TODO(sachin): Add the Projection matrix and rotation matrix after confirming whether first camera is left or right as per documentation
     camIntrinsics = calibHandler.getCameraIntrinsics(cameraId, cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);
 
     flatIntrinsics.resize(9);

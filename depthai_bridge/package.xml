@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>depthai_bridge</name>
-  <version>0.0.0</version>
+  <version>1.0.0</version>
   <description>The depthai_bridge package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
@@ -63,7 +63,6 @@
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>sensor_msgs</build_export_depend>
   <build_export_depend>std_msgs</build_export_depend>
-  <depend>vision_msgs</depend>
   <exec_depend>depthai_ros_msgs</exec_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
@@ -71,7 +70,8 @@
   <depend>camera_info_manager</depend>
   <depend>stereo_msgs</depend>
   <depend>image_transport</depend>
-
+  <depend>cv_bridge</depend>
+  <depend>vision_msgs</depend>
   
   <!-- The export tag contains other, unspecified, tags -->
   <export>

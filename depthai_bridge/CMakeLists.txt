@@ -25,6 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
   vision_msgs
   depthai_ros_msgs
   image_transport
+  cv_bridge
 )
 
 find_package(Boost REQUIRED)
@@ -34,7 +35,7 @@ find_package(depthai CONFIG REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS depthai_ros_msgs camera_info_manager roscpp sensor_msgs std_msgs vision_msgs image_transport
+  CATKIN_DEPENDS depthai_ros_msgs camera_info_manager roscpp sensor_msgs std_msgs vision_msgs image_transport cv_bridge
 )
 
 list(APPEND DEPENDENCY_PUBLIC_LIBRARIES ${catkin_LIBRARIES})
@@ -63,6 +64,7 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS}
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   depthai::core
+  depthai::opencv
   ${Boost_LIBRARY_DIRS}
   opencv_imgproc
   opencv_highgui

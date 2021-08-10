@@ -5,12 +5,12 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - noetic-CI
+      - noetic-devel
     tags:
       - 'v*'
   pull_request:
     branches:
-      - noetic-CI
+      - noetic-devel
 
 jobs:
 
