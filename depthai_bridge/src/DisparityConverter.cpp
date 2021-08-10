@@ -1,6 +1,8 @@
+#include <ros/ros.h>
+
 #include <boost/make_shared.hpp>
 #include <depthai_bridge/DisparityConverter.hpp>
-#include <ros/ros.h>
+
 #include "sensor_msgs/image_encodings.h"
 
 // FIXME(Sachin): Do I need to convert the encodings that are available in dai
@@ -14,7 +16,7 @@
 // it planar
 namespace dai::rosBridge {
 
-/*  
+/*
 std::unordered_map<dai::RawImgFrame::Type, std::string> DisparityConverter::encodingEnumMap = {
             {dai::RawImgFrame::Type::YUV422i        , "yuv422"               },
             {dai::RawImgFrame::Type::RGBA8888       , "rgba8"                },
@@ -28,87 +30,75 @@ std::unordered_map<dai::RawImgFrame::Type, std::string> DisparityConverter::enco
 
 std::unordered_map<dai::RawImgFrame::Type, std::string> DisparityConverter::planarEncodingEnumMap = {
                                     {dai::RawImgFrame::Type::BGR888p, "3_1_bgr8"}, // 3_1_bgr8 represents 3 planes/channels and 1 byte per pixel in BGR format
-                                    {dai::RawImgFrame::Type::NV12   , "nv12"                 } 
+                                    {dai::RawImgFrame::Type::NV12   , "nv12"                 }
 
-                                }; 
+                                };
 */
 
-DisparityConverter::DisparityConverter(const std::string frameName,  float focalLength, float baseline, float minDepth, float maxDepth)
-    : _frameName(frameName), _focalLength(focalLength), _baseline(baseline / 100.0), _minDepth(minDepth / 100.0), _maxDepth(maxDepth / 100.0){}
+DisparityConverter::DisparityConverter(const std::string frameName, float focalLength, float baseline, float minDepth, float maxDepth)
+    : _frameName(frameName), _focalLength(focalLength), _baseline(baseline / 100.0), _minDepth(minDepth / 100.0), _maxDepth(maxDepth / 100.0) {}
 
-void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
-                              stereo_msgs::DisparityImage &outDispImageMsg) {
+void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, stereo_msgs::DisparityImage& outDispImageMsg) {
+    auto tstamp = inData->getTimestamp();
+    int32_t sec = std::chrono::duration_cast<std::chrono::seconds>(tstamp.time_since_epoch()).count();
+    int32_t nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(tstamp.time_since_epoch()).count() % 1000000000UL;
 
+    outDispImageMsg.header.seq = inData->getSequenceNum();
+    outDispImageMsg.header.stamp = ros::Time(sec, nsec);
+    outDispImageMsg.header.frame_id = _frameName;
+    outDispImageMsg.f = _focalLength;
+    outDispImageMsg.T = _baseline;  // TODO(Sachin): Change this units
+    outDispImageMsg.min_disparity = _focalLength * _baseline / _maxDepth;
+    outDispImageMsg.max_disparity = _focalLength * _baseline / _minDepth;
 
-  auto tstamp = inData->getTimestamp();
-  int32_t sec = std::chrono::duration_cast<std::chrono::seconds>(
-                    tstamp.time_since_epoch())
-                    .count();
-  int32_t nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                     tstamp.time_since_epoch())
-                     .count() %
-                 1000000000UL;
-
-  outDispImageMsg.header.seq = inData->getSequenceNum();
-  outDispImageMsg.header.stamp = ros::Time(sec, nsec);
-  outDispImageMsg.header.frame_id = _frameName;
-  outDispImageMsg.f = _focalLength;
-  outDispImageMsg.T = _baseline; // TODO(Sachin): Change this units
-  outDispImageMsg.min_disparity = _focalLength * _baseline / _maxDepth;
-  outDispImageMsg.max_disparity = _focalLength * _baseline / _minDepth;
-  
-  sensor_msgs::Image& outImageMsg = outDispImageMsg.image;
+    sensor_msgs::Image& outImageMsg = outDispImageMsg.image;
 
     // copying the data to ros msg
     // outDispImageMsg.header       = imgHeader;
     // std::string temp_str(encodingEnumMap[inData->getType()]);
     outImageMsg.encoding = sensor_msgs::image_encodings::TYPE_32FC1;
     outImageMsg.header = outDispImageMsg.header;
-    if(inData->getType() == dai::RawImgFrame::Type::RAW8){
-      outDispImageMsg.delta_d = 1; 
-      size_t size = inData->getData().size() * sizeof(float);
-      outImageMsg.data.resize(size);
-      outImageMsg.height = inData->getHeight();
-      outImageMsg.width = inData->getWidth();
-      outImageMsg.step = size / inData->getHeight();
-      outImageMsg.is_bigendian = true;
+    if(inData->getType() == dai::RawImgFrame::Type::RAW8) {
+        outDispImageMsg.delta_d = 1;
+        size_t size = inData->getData().size() * sizeof(float);
+        outImageMsg.data.resize(size);
+        outImageMsg.height = inData->getHeight();
+        outImageMsg.width = inData->getWidth();
+        outImageMsg.step = size / inData->getHeight();
+        outImageMsg.is_bigendian = true;
 
-      std::vector<float> convertedData(inData->getData().begin(),inData->getData().end());
-      unsigned char *imageMsgDataPtr =
-        reinterpret_cast<unsigned char *>(outImageMsg.data.data());
+        std::vector<float> convertedData(inData->getData().begin(), inData->getData().end());
+        unsigned char* imageMsgDataPtr = reinterpret_cast<unsigned char*>(outImageMsg.data.data());
 
-      unsigned char *daiImgData =
-        reinterpret_cast<unsigned char *>(convertedData.data());
+        unsigned char* daiImgData = reinterpret_cast<unsigned char*>(convertedData.data());
 
-      // TODO(Sachin): Try using assign since it is a vector
-      // img->data.assign(packet.data->cbegin(), packet.data->cend());
-      memcpy(imageMsgDataPtr, daiImgData, size);
+        // TODO(Sachin): Try using assign since it is a vector
+        // img->data.assign(packet.data->cbegin(), packet.data->cend());
+        memcpy(imageMsgDataPtr, daiImgData, size);
 
-    }else{
-      outDispImageMsg.delta_d = 1 / 32;
-      size_t size =  inData->getHeight() * inData->getWidth() * sizeof(float);
-      outImageMsg.data.resize(size);
-      outImageMsg.height = inData->getHeight();
-      outImageMsg.width = inData->getWidth();
-      outImageMsg.step = size / inData->getHeight();
-      outImageMsg.is_bigendian = true;
-      unsigned char *daiImgData =
-        reinterpret_cast<unsigned char *>(inData->getData().data());
+    } else {
+        outDispImageMsg.delta_d = 1 / 32;
+        size_t size = inData->getHeight() * inData->getWidth() * sizeof(float);
+        outImageMsg.data.resize(size);
+        outImageMsg.height = inData->getHeight();
+        outImageMsg.width = inData->getWidth();
+        outImageMsg.step = size / inData->getHeight();
+        outImageMsg.is_bigendian = true;
+        unsigned char* daiImgData = reinterpret_cast<unsigned char*>(inData->getData().data());
 
-      std::vector<int16_t> raw16Data(inData->getHeight() * inData->getWidth());
-      unsigned char *raw16DataPtr = reinterpret_cast<unsigned char *>(raw16Data.data());
-      memcpy(raw16DataPtr, daiImgData, inData->getData().size());
-      std::vector<float> convertedData;
-      std::transform(raw16Data.begin(), raw16Data.end(), std::back_inserter(convertedData),
-                           [](int16_t disp) -> std::size_t { return static_cast<float>(disp) / 32.0; });
+        std::vector<int16_t> raw16Data(inData->getHeight() * inData->getWidth());
+        unsigned char* raw16DataPtr = reinterpret_cast<unsigned char*>(raw16Data.data());
+        memcpy(raw16DataPtr, daiImgData, inData->getData().size());
+        std::vector<float> convertedData;
+        std::transform(
+            raw16Data.begin(), raw16Data.end(), std::back_inserter(convertedData), [](int16_t disp) -> std::size_t { return static_cast<float>(disp) / 32.0; });
 
-      unsigned char *imageMsgDataPtr = reinterpret_cast<unsigned char *>(outImageMsg.data.data());
-      unsigned char *convertedDataPtr = reinterpret_cast<unsigned char *>(convertedData.data());
-      memcpy(imageMsgDataPtr, convertedDataPtr, size);
-
+        unsigned char* imageMsgDataPtr = reinterpret_cast<unsigned char*>(outImageMsg.data.data());
+        unsigned char* convertedDataPtr = reinterpret_cast<unsigned char*>(convertedData.data());
+        memcpy(imageMsgDataPtr, convertedDataPtr, size);
     }
-    
-  return;
+
+    return;
 }
 
 /* void DisparityConverter::toDaiMsg(const stereo_msgs::DisparityImage &inMsg,
@@ -158,11 +148,10 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
   outData.setType(revEncodingIter->first);
 } */
 
-stereo_msgs::DisparityImagePtr
-DisparityConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
-  stereo_msgs::DisparityImagePtr ptr = boost::make_shared<stereo_msgs::DisparityImage>();
-  toRosMsg(inData, *ptr);
-  return ptr;
+stereo_msgs::DisparityImagePtr DisparityConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
+    stereo_msgs::DisparityImagePtr ptr = boost::make_shared<stereo_msgs::DisparityImage>();
+    toRosMsg(inData, *ptr);
+    return ptr;
 }
 
-} // namespace dai::rosBridge
+}  // namespace dai::rosBridge

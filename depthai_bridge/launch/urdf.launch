@@ -28,5 +28,5 @@
 
 
     <node name="$(arg camera_name)_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" required="true">
-            <remap from="robot_description" to="$(arg camera_name)_description" /></node>            
+    <remap from="robot_description" to="$(arg camera_name)_description" /></node>            
 </launch>

@@ -1,0 +1,115 @@
+ 
+name: DepthAI ROS CI/CD
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - noetic-devel
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - noetic-devel
+
+jobs:
+
+  style:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Clang-Format lint
+      
+      uses: DoozyX/clang-format-lint-action@v0.12
+      with:
+        source: '.'
+        extensions: 'h,hpp,c,cpp'
+        clangFormatVersion: 10
+  
+  ROS1-build:
+    if: startsWith(github.ref, 'refs/heads/noetic')
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04]
+    
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Melodic build
+        if: matrix.os == 'ubuntu-18.04'
+        uses: ros-tooling/setup-ros@v0.2
+        with:
+          required-ros-distributions: melodic
+      
+      - name: Noetic build
+        if: matrix.os == 'ubuntu-20.04'
+        uses: ros-tooling/setup-ros@v0.2
+        with:
+          required-ros-distributions: noetic
+      - name: Installing DepthAi Core
+        run: sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencies.sh | sudo bash
+      
+      - name: Build depthai-bridge melodic
+        if: matrix.os == 'ubuntu-18.04'  
+        uses: ros-tooling/action-ros-ci@v0.2
+        with:
+          # vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/examples.repos"
+          # package-name: depthai_examples
+          target-ros1-distro: melodic
+          skip-tests: true
+
+      - name: Build depthai-bridge noetic
+        if: matrix.os == 'ubuntu-20.04'
+        uses: ros-tooling/action-ros-ci@v0.2
+        with:
+          # vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/examples.repos"
+          # package-name: depthai_examples
+          target-ros1-distro: noetic
+          skip-tests: true
+      
+
+  ROS2-build:
+    if: startsWith(github.ref, 'refs/heads/foxy')
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        ros_distribution: [foxy, galactic]
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: ${{ matrix.ros_distribution }} build
+        uses: ros-tooling/setup-ros@v0.2
+        with:
+          required-ros-distributions: ${{ matrix.ros_distribution }}
+
+      - name: Installing DepthAi Core
+        run: sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencies.sh | sudo bash
+      
+      - name: Build depthai-bridge ${{ matrix.ros_distribution }}
+        uses: ros-tooling/action-ros-ci@v0.2
+        with:
+          # vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/examples.repos"
+          # package-name: depthai_examples
+          target-ros1-distro: ${{ matrix.ros_distribution }}
+          skip-tests: true
+
+
+
+  # build_:
+  #   runs-on: ubuntu-18.04
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - uses: ros-tooling/setup-ros@v0.2
+  #       with:
+  #         required-ros-distributions: melodic
+  #     - run: sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencies.sh | sudo bash
+  #     - uses: ros-tooling/action-ros-ci@v0.2
+  #       with:
+  #         # vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/examples.repos"
+  #         # package-name: depthai_examples
+  #         target-ros1-distro: melodic
+  #         skip-tests: true
