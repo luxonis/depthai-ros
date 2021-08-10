@@ -50,8 +50,62 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, sensor_msgs
     header.frame_id = _frameName;
 
     if(planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end()) {
-        cv::Mat inImg = inData->getCvFrame();
-        cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, inImg).toImageMsg(outImageMsg);
+        // cv::Mat inImg = inData->getCvFrame();
+        cv::Mat mat, output;
+        cv::Size size = {0, 0};
+        int type = 0;
+        switch(inData->getType()) {
+            case dai::RawImgFrame::Type::BGR888p:
+            case dai::RawImgFrame::Type::RGB888p:
+                size = cv::Size(inData->getWidth(), inData->getHeight());
+                type = CV_8UC3;
+                break;
+            case dai::RawImgFrame::Type::YUV420p:
+            case dai::RawImgFrame::Type::NV12:
+                size = cv::Size(inData->getWidth(), inData->getHeight() * 3 / 2);
+                type = CV_8UC1;
+                break;
+
+            default:
+                std::runtime_error("Invalid dataType inputs..");
+                break;
+        }
+        mat = cv::Mat(size, type, inData->getData().data());
+
+        switch(inData->getType()) {
+            case dai::RawImgFrame::Type::RGB888p: {
+                cv::Size s(inData->getWidth(), inData->getHeight());
+                std::vector<cv::Mat> channels;
+                // RGB
+                channels.push_back(cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 2));
+                channels.push_back(cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 1));
+                channels.push_back(cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 0));
+                cv::merge(channels, output);
+            } break;
+
+            case dai::RawImgFrame::Type::BGR888p: {
+                cv::Size s(inData->getWidth(), inData->getHeight());
+                std::vector<cv::Mat> channels;
+                // BGR
+                channels.push_back(cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 0));
+                channels.push_back(cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 1));
+                channels.push_back(cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 2));
+                cv::merge(channels, output);
+            } break;
+
+            case dai::RawImgFrame::Type::YUV420p:
+                cv::cvtColor(mat, output, cv::ColorConversionCodes::COLOR_YUV2BGR_IYUV);
+                break;
+
+            case dai::RawImgFrame::Type::NV12:
+                cv::cvtColor(mat, output, cv::ColorConversionCodes::COLOR_YUV2BGR_NV12);
+                break;
+
+            default:
+                output = mat.clone();
+                break;
+        }
+        cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, output).toImageMsg(outImageMsg);
 
     } else if(encodingEnumMap.find(inData->getType()) != encodingEnumMap.end()) {
         // copying the data to ros msg
