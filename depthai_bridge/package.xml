@@ -63,6 +63,7 @@
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>sensor_msgs</build_export_depend>
   <build_export_depend>std_msgs</build_export_depend>
+  <depend>libopencv-dev</depend>
   <depend>vision_msgs</depend>
   <exec_depend>depthai_ros_msgs</exec_depend>
   <exec_depend>roscpp</exec_depend>

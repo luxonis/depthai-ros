@@ -9,7 +9,7 @@ The following script will install depthai-core and update usb rules and install 
 ```
 sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencies.sh | sudo bash
 ```
-if you don't haave opencv installed then try `sudo apt install libopencv-dev`
+if you don't have opencv installed then try `sudo apt install libopencv-dev`
 
 
 if you don't have rosdep installed and not initialized please execute the following steps:
