@@ -62,7 +62,6 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS}
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   depthai::core
-  depthai::opencv
   opencv_imgproc
   opencv_highgui
 )
