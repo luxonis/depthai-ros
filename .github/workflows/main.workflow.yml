@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - noetic-devel
+      - noetic-depth-align-beta
     tags:
       - 'v*'
   pull_request:
