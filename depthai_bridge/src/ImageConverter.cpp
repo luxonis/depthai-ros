@@ -24,6 +24,7 @@ namespace dai::rosBridge {
 
 std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::planarEncodingEnumMap = {
                                     {dai::RawImgFrame::Type::BGR888p, "3_1_bgr8"}, // 3_1_bgr8 represents 3 planes/channels and 1 byte per pixel in BGR format
+                                    {dai::RawImgFrame::Type::RGB888p, "3_1_bgr8"}, // 3_1_bgr8 represents 3 planes/channels and 1 byte per pixel in BGR format
                                     {dai::RawImgFrame::Type::NV12   , "nv12"                 } 
 
                                 };
