@@ -23,7 +23,7 @@ find_package(std_msgs REQUIRED)
 find_package(vision_msgs REQUIRED)
 find_package(camera_info_manager REQUIRED)
 find_package(depthai_ros_msgs REQUIRED)
-find_package(depthai CONFIG REQUIRED PATHS "/home/sachin/depthai-core/build/install/lib/cmake/depthai") 
+find_package(depthai CONFIG REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake/depthai") 
 
 # find_package(depthai CONFIG REQUIRED) 
 
@@ -71,6 +71,9 @@ install(TARGETS depthai_bridge
 install(DIRECTORY include/
   DESTINATION include/
 )
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY urdf DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY rviz DESTINATION share/${PROJECT_NAME})
 
 ament_export_include_directories(include)
 ament_export_libraries(depthai_bridge)

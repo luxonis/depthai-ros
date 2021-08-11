@@ -16,9 +16,6 @@
     <xacro:property name="model"    value="$(arg camera_model)" />
 
 
-  <xacro:macro name="camera" >
-
-
     <xacro:if value="${model == 'BW1098OAK'}">
     <xacro:property name="baseline" value="0.075" />
     </xacro:if>
@@ -98,6 +95,5 @@
         <child link="$(arg camera_name)_right_camera_optical_frame"/>
     </joint>
 
-  </xacro:macro>
 
 </robot>

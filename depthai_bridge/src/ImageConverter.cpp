@@ -17,7 +17,7 @@ namespace dai::rosBridge {
             {dai::RawImgFrame::Type::RGB888i        , "rgb8"                 },
             {dai::RawImgFrame::Type::BGR888i        , "bgr8"                 },
             {dai::RawImgFrame::Type::GRAY8          , "mono8"                },
-            {dai::RawImgFrame::Type::RAW8           , "8UC1"                 },
+            {dai::RawImgFrame::Type::RAW8           , "mono8"                 },
             {dai::RawImgFrame::Type::RAW16          , "16UC1"                },
             // {dai::RawImgFrame::Type::NV12           : "CV_bridge" },
         };
