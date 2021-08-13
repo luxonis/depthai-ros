@@ -15,7 +15,7 @@
     <joint name="${camera_name}_center_joint" type="fixed">
         <parent link="${parent}"/>
         <child link="${base_frame}"/>
-        <origin xyz="${cam_pos_x} ${cam_pos_y} ${cam_pos_z}" rpy="${cam_roll} ${cam_pitch} 1.57" />
+        <origin xyz="${cam_pos_x} ${cam_pos_y} ${cam_pos_z}" rpy="${cam_roll} ${cam_pitch} ${cam_yaw}" />
     </joint>
 
 <!-- device Center -->
