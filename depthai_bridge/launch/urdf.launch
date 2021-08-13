@@ -15,7 +15,7 @@
 
 
     <param name="$(arg camera_name)_description"
-               command="$(find xacro)/xacro '$(find depthai_bridge)/urdf/depthai_descr.urdf'
+               command="$(find xacro)/xacro '$(find depthai_bridge)/urdf/depthai_descr.urdf.xacro'
                         camera_name:=$(arg camera_name)
                         camera_model:=$(arg camera_model)
                         base_frame:=$(arg base_frame)
