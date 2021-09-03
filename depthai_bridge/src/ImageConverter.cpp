@@ -1,5 +1,7 @@
 #include <depthai_bridge/ImageConverter.hpp>
 #include "rclcpp/rclcpp.hpp"
+#include <chrono>
+
 // FIXME(Sachin): Do I need to convert the encodings that are available in dai
 // to only that ros support ? I mean we can publish whatever it is and decode it
 // on the other side but howver maybe we should have option to convert planar to
@@ -54,6 +56,15 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
   } 
 
   auto tstamp = inData->getTimestamp();
+  auto rclNow = rclcpp::Clock().now();
+  auto steadyTime = std::chrono::steady_clock::now();
+  auto diffTime = steadyTime - tstamp;
+  auto rclStamp = rclNow - diffTime;
+
+  // std::cout << "Image TIme stamp  ->" << rclStamp << std::endl;
+  // std::cout << "rcl Cpp stamp  ->" << rclNow << std::endl;
+  // std::cout << "steady Cpp stamp  ->" << std::chrono::steady_clock::now() << std::endl;
+
   int32_t sec = std::chrono::duration_cast<std::chrono::seconds>(
                     tstamp.time_since_epoch())
                     .count();
@@ -62,7 +73,7 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
                      .count() %
                  1000000000UL;
 
-  outImageMsg.header.stamp = rclcpp::Time(sec, nsec);
+  outImageMsg.header.stamp = rclStamp;
   outImageMsg.header.frame_id = _frameName;
     
   if (!_daiInterleaved) {
