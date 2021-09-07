@@ -306,6 +306,7 @@ sensor_msgs::CameraInfo ImageConverter::calibrationToCameraInfo(
             std::copy(flatRectifiedRotation.begin(), flatRectifiedRotation.end(), cameraData.R.begin());
         }
     }
+    cameraData.distortion_model = "plumb_bob";
 
     return cameraData;
 }

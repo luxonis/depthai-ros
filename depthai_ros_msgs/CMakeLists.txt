@@ -19,6 +19,8 @@ add_message_files (
   AutoFocusCtrl.msg
   SpatialDetection.msg
   SpatialDetectionArray.msg
+  HandLandmark.msg
+  HandLandmarkArray.msg
 )
 
 ## Generate services in the 'srv' folder
