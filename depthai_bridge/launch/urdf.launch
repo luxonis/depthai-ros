@@ -5,6 +5,7 @@
     <arg name="camera_name"          default="oak" />
 
     <arg name="base_frame"           default="oak-d_frame" />
+    <arg name="parent_frame"         default="base_link" />
 
     <arg name="cam_pos_x"             default="0.0" /> <!-- Position respect to base frame (i.e. "base_link) -->
     <arg name="cam_pos_y"             default="0.0" /> <!-- Position respect to base frame (i.e. "base_link) -->
@@ -19,6 +20,7 @@
                         camera_name:=$(arg camera_name)
                         camera_model:=$(arg camera_model)
                         base_frame:=$(arg base_frame)
+                        parent_frame:=$(arg parent_frame)
                         cam_pos_x:=$(arg cam_pos_x)
                         cam_pos_y:=$(arg cam_pos_y)
                         cam_pos_z:=$(arg cam_pos_z)
