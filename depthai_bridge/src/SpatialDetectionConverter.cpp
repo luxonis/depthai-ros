@@ -57,7 +57,7 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
       float yCenter = yMin + ySize / 2;
 
       opDetectionMsg.detections[i].results.resize(1);
-      opDetectionMsg.detections[i].results[0].id =
+      opDetectionMsg.detections[i].results[0].class_id =
           std::to_string(inNetData->detections[i].label);
       opDetectionMsg.detections[i].results[0].score =
           inNetData->detections[i].confidence;
