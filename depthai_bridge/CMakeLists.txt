@@ -13,6 +13,46 @@ if(NOT OpenCV_FOUND)
   find_package(OpenCV 3 REQUIRED COMPONENTS imgproc highgui)
 endif()
 
+# Update the policy setting to avoid an error when loading the ament_cmake package
+# at the current cmake version level
+if(POLICY CMP0057)
+    cmake_policy(SET CMP0057 NEW)
+endif()
+
+find_package(ament_cmake QUIET)
+
+if ( ament_cmake_FOUND )
+
+    # Not adding -DUSING_ROS since xml_parsing.cpp hasn't been ported to ROS2
+
+    message(STATUS "------------------------------------------")
+    message(STATUS "BehaviourTree is being built using AMENT.")
+    message(STATUS "------------------------------------------")
+
+    set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
+
+elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
+
+    set(catkin_FOUND 1)
+    add_definitions( -DUSING_ROS )
+    find_package(catkin REQUIRED COMPONENTS roslib)
+    find_package(GTest)
+
+    message(STATUS "------------------------------------------")
+    message(STATUS "BehaviourTree is being built using CATKIN.")
+    message(STATUS "------------------------------------------")
+
+    catkin_package(
+        INCLUDE_DIRS include # do not include "3rdparty" here
+        LIBRARIES ${BEHAVIOR_TREE_LIBRARY}
+        CATKIN_DEPENDS roslib
+        )
+
+    list(APPEND BEHAVIOR_TREE_PUBLIC_LIBRARIES ${catkin_LIBRARIES})
+    set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
+
+endif()
+
 
 find_package(catkin REQUIRED COMPONENTS  
   cv_bridge
