@@ -5,6 +5,13 @@ project(depthai_bridge)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Update the policy setting to avoid an error when loading the ament_cmake package
+# at the current cmake version level
+if(POLICY CMP0057)
+    cmake_policy(SET CMP0057 NEW)
+endif()
+
+
 set(_opencv_version 4)
 find_package(OpenCV 4 QUIET COMPONENTS imgproc highgui)
 if(NOT OpenCV_FOUND)
@@ -13,12 +20,9 @@ if(NOT OpenCV_FOUND)
   find_package(OpenCV 3 REQUIRED COMPONENTS imgproc highgui)
 endif()
 
-# Update the policy setting to avoid an error when loading the ament_cmake package
-# at the current cmake version level
-if(POLICY CMP0057)
-    cmake_policy(SET CMP0057 NEW)
-endif()
 
+
+find_package(depthai CONFIG REQUIRED)
 find_package(ament_cmake QUIET)
 
 if ( ament_cmake_FOUND )
@@ -26,100 +30,158 @@ if ( ament_cmake_FOUND )
     # Not adding -DUSING_ROS since xml_parsing.cpp hasn't been ported to ROS2
 
     message(STATUS "------------------------------------------")
-    message(STATUS "BehaviourTree is being built using AMENT.")
+    message(STATUS "Depthai Bridge is being built using AMENT.")
     message(STATUS "------------------------------------------")
 
     set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
 
-elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
+elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
 
     set(catkin_FOUND 1)
     add_definitions( -DUSING_ROS )
-    find_package(catkin REQUIRED COMPONENTS roslib)
-    find_package(GTest)
+
+    find_package(Boost REQUIRED)
+
+    find_package(catkin REQUIRED COMPONENTS  
+      cv_bridge
+      camera_info_manager
+      depthai_ros_msgs
+      image_transport
+      roscpp
+      sensor_msgs
+      stereo_msgs
+      std_msgs
+      vision_msgs
+    )
+    find_package(Boost REQUIRED)
 
     message(STATUS "------------------------------------------")
-    message(STATUS "BehaviourTree is being built using CATKIN.")
+    message(STATUS "Depthai Bridge is being built using CATKIN.")
     message(STATUS "------------------------------------------")
 
     catkin_package(
-        INCLUDE_DIRS include # do not include "3rdparty" here
-        LIBRARIES ${BEHAVIOR_TREE_LIBRARY}
-        CATKIN_DEPENDS roslib
-        )
+      INCLUDE_DIRS include
+      LIBRARIES ${PROJECT_NAME}
+      CATKIN_DEPENDS depthai_ros_msgs camera_info_manager roscpp sensor_msgs std_msgs vision_msgs image_transport cv_bridge stereo_msgs
+    )
 
-    list(APPEND BEHAVIOR_TREE_PUBLIC_LIBRARIES ${catkin_LIBRARIES})
+    list(APPEND DEPENDENCY_PUBLIC_LIBRARIES ${catkin_LIBRARIES})
     set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
+
+    include_directories(
+      include
+      ${BUILD_TOOL_INCLUDE_DIRS}
+      ${Boost_INCLUDE_DIRS}
+      ${depthai}
+    )
+
+    FILE(GLOB LIB_SRC
+      "src/DisparityConverter.cpp"
+      "src/ImageConverter.cpp"
+      "src/ImgDetectionConverter.cpp"
+      "src/SpatialDetectionConverter.cpp"
+    )
+
+    ## Declare a C++ library
+    add_library(${PROJECT_NAME}  
+    ${LIB_SRC}
+    )
+
+    add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS}
+    ${catkin_EXPORTED_TARGETS}
+    )
+
+    target_link_libraries(${PROJECT_NAME}
+      ${catkin_LIBRARIES}
+      depthai::core
+      opencv_imgproc
+      opencv_highgui
+    )
+
+    install(TARGETS ${PROJECT_NAME}
+      ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+      LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+      RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+    )
+
+    ## Mark cpp header files for installation
+    install(DIRECTORY include/${PROJECT_NAME}/
+      DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+      FILES_MATCHING PATTERN "*.hpp"
+    )
+
+    install(DIRECTORY
+      launch
+      urdf
+      DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+    )
 
 endif()
 
 
-find_package(catkin REQUIRED COMPONENTS  
-  cv_bridge
-  camera_info_manager
-  depthai_ros_msgs
-  image_transport
-  roscpp
-  sensor_msgs
-  stereo_msgs
-  std_msgs
-  vision_msgs
-)
+# find_package(catkin REQUIRED COMPONENTS  
+#   cv_bridge
+#   camera_info_manager
+#   depthai_ros_msgs
+#   image_transport
+#   roscpp
+#   sensor_msgs
+#   stereo_msgs
+#   std_msgs
+#   vision_msgs
+# )
 
-find_package(Boost REQUIRED)
 
-find_package(depthai CONFIG REQUIRED)
+# catkin_package(
+#   INCLUDE_DIRS include
+#   LIBRARIES ${PROJECT_NAME}
+#   CATKIN_DEPENDS depthai_ros_msgs camera_info_manager roscpp sensor_msgs std_msgs vision_msgs image_transport cv_bridge stereo_msgs
+# )
 
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS depthai_ros_msgs camera_info_manager roscpp sensor_msgs std_msgs vision_msgs image_transport cv_bridge stereo_msgs
-)
+# list(APPEND DEPENDENCY_PUBLIC_LIBRARIES ${catkin_LIBRARIES})
+# set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
 
-list(APPEND DEPENDENCY_PUBLIC_LIBRARIES ${catkin_LIBRARIES})
-set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
+# include_directories(
+#   include
+#   ${BUILD_TOOL_INCLUDE_DIRS}
+#   ${Boost_INCLUDE_DIRS}
+#   ${depthai}
+# )
 
-include_directories(
-  include
-  ${BUILD_TOOL_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIRS}
-  ${depthai}
-)
+# FILE(GLOB LIB_SRC
+#    "src/*Converter.cpp"
+# )
 
-FILE(GLOB LIB_SRC
-   "src/*Converter.cpp"
-)
+# ## Declare a C++ library
+# add_library(${PROJECT_NAME}  
+# ${LIB_SRC}
+# )
 
-## Declare a C++ library
-add_library(${PROJECT_NAME}  
-${LIB_SRC}
-)
+# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS}
+#   ${catkin_EXPORTED_TARGETS}
+# )
 
-add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
+# target_link_libraries(${PROJECT_NAME}
+#   ${catkin_LIBRARIES}
+#   depthai::core
+#   opencv_imgproc
+#   opencv_highgui
+# )
 
-target_link_libraries(${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-  depthai::core
-  opencv_imgproc
-  opencv_highgui
-)
+# install(TARGETS ${PROJECT_NAME}
+#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+# )
 
-install(TARGETS ${PROJECT_NAME}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-)
+# ## Mark cpp header files for installation
+# install(DIRECTORY include/${PROJECT_NAME}/
+#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+#   FILES_MATCHING PATTERN "*.hpp"
+# )
 
-## Mark cpp header files for installation
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.hpp"
-)
-
-install(DIRECTORY
-  launch
-  urdf
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+# install(DIRECTORY
+#   launch
+#   urdf
+#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+# )

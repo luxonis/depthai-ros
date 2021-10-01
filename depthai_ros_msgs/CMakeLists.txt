@@ -2,43 +2,64 @@ cmake_minimum_required (VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
 
 project (depthai_ros_msgs VERSION 1.0.0)
 
-find_package (catkin REQUIRED COMPONENTS
-  geometry_msgs
-  message_generation
-  sensor_msgs
-  std_msgs
-  vision_msgs
-)
+if(POLICY CMP0057)
+    cmake_policy(SET CMP0057 NEW)
+endif()
 
-################################################
-## Declare ROS messages, services and actions ##
-################################################
-## Generate messages in the 'msg' folder
-add_message_files (
-  FILES
-  AutoFocusCtrl.msg
-  SpatialDetection.msg
-  SpatialDetectionArray.msg
-  HandLandmark.msg
-  HandLandmarkArray.msg
-)
+find_package(ament_cmake QUIET)
 
-## Generate services in the 'srv' folder
-add_service_files (
-  FILES
-  TriggerNamed.srv
-  NormalizedImageCrop.srv
-)
+if ( ament_cmake_FOUND )
 
-## Generate added messages and services with any dependencies listed here
-generate_messages (
-  DEPENDENCIES
-  geometry_msgs sensor_msgs std_msgs vision_msgs
-)
+    # Not adding -DUSING_ROS since xml_parsing.cpp hasn't been ported to ROS2
 
-###################################
-## catkin specific configuration ##
-###################################
-catkin_package (
-  CATKIN_DEPENDS geometry_msgs message_runtime sensor_msgs std_msgs vision_msgs
-)
+    message(STATUS "------------------------------------------")
+    message(STATUS "Depthai Bridge is being built using AMENT.")
+    message(STATUS "------------------------------------------")
+
+    set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
+
+elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
+    set(catkin_FOUND 1)
+    add_definitions( -DUSING_ROS )
+
+    find_package (catkin REQUIRED COMPONENTS
+      geometry_msgs
+      message_generation
+      sensor_msgs
+      std_msgs
+      vision_msgs
+    )
+
+    ################################################
+    ## Declare ROS messages, services and actions ##
+    ################################################
+    ## Generate messages in the 'msg' folder
+    add_message_files (
+      FILES
+      AutoFocusCtrl.msg
+      SpatialDetection.msg
+      SpatialDetectionArray.msg
+      HandLandmark.msg
+      HandLandmarkArray.msg
+    )
+
+    ## Generate services in the 'srv' folder
+    add_service_files (
+      FILES
+      TriggerNamed.srv
+      NormalizedImageCrop.srv
+    )
+
+    ## Generate added messages and services with any dependencies listed here
+    generate_messages (
+      DEPENDENCIES
+      geometry_msgs sensor_msgs std_msgs vision_msgs
+    )
+
+    ###################################
+    ## catkin specific configuration ##
+    ###################################
+    catkin_package (
+      CATKIN_DEPENDS geometry_msgs message_runtime sensor_msgs std_msgs vision_msgs
+    )
+endif()
