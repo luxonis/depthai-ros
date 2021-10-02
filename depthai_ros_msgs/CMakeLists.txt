@@ -9,14 +9,28 @@ endif()
 find_package(ament_cmake QUIET)
 
 if ( ament_cmake_FOUND )
-
     # Not adding -DUSING_ROS since xml_parsing.cpp hasn't been ported to ROS2
-
     message(STATUS "------------------------------------------")
     message(STATUS "Depthai Bridge is being built using AMENT.")
     message(STATUS "------------------------------------------")
+    
+    find_package(geometry_msgs REQUIRED)
+    find_package(std_msgs REQUIRED)
+    find_package(vision_msgs REQUIRED)
+    # set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
+    find_package(rosidl_default_generators REQUIRED)
 
-    set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
+    rosidl_generate_interfaces(${PROJECT_NAME}
+      "msg/AutoFocusCtrl.msg"
+      "msg/SpatialDetection.msg"
+      "msg/SpatialDetectionArray.msg"
+      "srv/TriggerNamed.srv"
+      "srv/NormalizedImageCrop.srv"
+      DEPENDENCIES builtin_interfaces geometry_msgs std_msgs vision_msgs
+    )
+    
+    ament_export_dependencies(rosidl_default_runtime)
+    ament_package()
 
 elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
     set(catkin_FOUND 1)

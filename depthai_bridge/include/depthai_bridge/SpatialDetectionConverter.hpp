@@ -1,12 +1,19 @@
-#include <depthai_ros_msgs/SpatialDetectionArray.h>
-#include <vision_msgs/Detection2DArray.h>
 
-#include <boost/make_shared.hpp>
-#include <boost/shared_ptr.hpp>
+
 #include <depthai_bridge/ImageConverter.hpp>
 
 #include "depthai/depthai.hpp"
-#include "sensor_msgs/Image.h"
+// #include "sensor_msgs/Image.h"
+#ifdef IS_ROS2
+    #include <depthai_ros_msgs/msg/SpatialDetectionArray.h>
+    namespace SpatialMessages = depthai_ros_msgs::msg;
+#else
+    #include <boost/make_shared.hpp>
+    #include <boost/shared_ptr.hpp>
+    #include <depthai_ros_msgs/SpatialDetectionArray.h>
+    namespace SpatialMessages = depthai_ros_msgs;
+#endif
+
 
 namespace dai::rosBridge {
 
@@ -16,13 +23,13 @@ class SpatialDetectionConverter {
     SpatialDetectionConverter(std::string frameName, int width, int height, bool normalized = false);
 
     void toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData,
-                  depthai_ros_msgs::SpatialDetectionArray& opDetectionMsg,
+                  SpatialMessages::SpatialDetectionArray& opDetectionMsg,
                   TimePoint tStamp,
                   int32_t sequenceNum = -1);
 
-    void toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData, depthai_ros_msgs::SpatialDetectionArray& opDetectionMsg);
+    void toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData, SpatialMessages::SpatialDetectionArray& opDetectionMsg);
 
-    depthai_ros_msgs::SpatialDetectionArray::Ptr toRosMsgPtr(std::shared_ptr<dai::SpatialImgDetections> inNetData);
+    SpatialMessages::SpatialDetectionArray::Ptr toRosMsgPtr(std::shared_ptr<dai::SpatialImgDetections> inNetData);
 
    private:
     uint32_t _sequenceNum;

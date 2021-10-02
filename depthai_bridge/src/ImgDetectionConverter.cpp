@@ -9,26 +9,32 @@ ImgDetectionConverter::ImgDetectionConverter(std::string frameName, int width, i
     : _frameName(frameName), _width(width), _height(height), _normalized(normalized), _sequenceNum(0) {}
 
 void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData,
-                                     vision_msgs::Detection2DArray& opDetectionMsg,
+                                     VisionMsgs::Detection2DArray& opDetectionMsg,
                                      TimePoint tStamp,
                                      int32_t sequenceNum) {
     toRosMsg(inNetData, opDetectionMsg);
-    if(sequenceNum != -1) _sequenceNum = sequenceNum;
+    #ifndef IS_ROS2
+        if(sequenceNum != -1) _sequenceNum = sequenceNum;
+        opDetectionMsg.header.seq = _sequenceNum;
+    #endif
 
     int32_t sec = std::chrono::duration_cast<std::chrono::seconds>(tStamp.time_since_epoch()).count();
     int32_t nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(tStamp.time_since_epoch()).count() % 1000000000UL;
-    opDetectionMsg.header.seq = _sequenceNum;
-    opDetectionMsg.header.stamp = ros::Time(sec, nsec);
+    opDetectionMsg.header.stamp = ros::Time(sec, nsec);    
     opDetectionMsg.header.frame_id = _frameName;
 }
 
-void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, vision_msgs::Detection2DArray& opDetectionMsg) {
+void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, VisionMsgs::Detection2DArray& opDetectionMsg) {
     // if (inNetData->detections.size() == 0)
     //   throw std::runtime_error(
     //       "Make sure to send the detections with size greater than 0");
 
     // setting the header
-    opDetectionMsg.header.seq = _sequenceNum;
+    #ifndef IS_ROS2
+        opDetectionMsg.header.seq = _sequenceNum;
+        _sequenceNum++;
+    #endif
+
     opDetectionMsg.header.stamp = ros::Time::now();
     opDetectionMsg.header.frame_id = _frameName;
 
@@ -56,7 +62,13 @@ void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetDa
         float yCenter = yMin + ySize / 2;
 
         opDetectionMsg.detections[i].results.resize(1);
-        opDetectionMsg.detections[i].results[0].id = inNetData->detections[i].label;
+        
+        #ifdef IS_ROS2
+            opDetectionMsg.detections[i].results[0].id = std::to_string(inNetData->detections[i].label);
+        #else
+            opDetectionMsg.detections[i].results[0].id = inNetData->detections[i].label;
+        #endif
+
         opDetectionMsg.detections[i].results[0].score = inNetData->detections[i].confidence;
 
         opDetectionMsg.detections[i].bbox.center.x = xCenter;
@@ -64,11 +76,10 @@ void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetDa
         opDetectionMsg.detections[i].bbox.size_x = xSize;
         opDetectionMsg.detections[i].bbox.size_y = ySize;
     }
-    _sequenceNum++;
 }
 
-vision_msgs::Detection2DArray::Ptr ImgDetectionConverter::toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData) {
-    vision_msgs::Detection2DArray::Ptr ptr = boost::make_shared<vision_msgs::Detection2DArray>();
+VisionMsgs::Detection2DArray::Ptr ImgDetectionConverter::toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData) {
+    VisionMsgs::Detection2DArray::Ptr ptr = boost::make_shared<VisionMsgs::Detection2DArray>();
     toRosMsg(inNetData, *ptr);
     return ptr;
 }

@@ -7,8 +7,16 @@
 
 #include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai/depthai.hpp"
-#include "sensor_msgs/CameraInfo.h"
-#include "sensor_msgs/Image.h"
+
+#ifdef IS_ROS2
+    #include "sensor_msgs/msg/CameraInfo.h"
+    #include "sensor_msgs/msg/Image.h"
+    namespace ImageMsgs = sensor_msgs::msg;
+#else
+    #include "sensor_msgs/CameraInfo.h"
+    #include "sensor_msgs/Image.h"
+    namespace ImageMsgs = sensor_msgs;
+#endif
 
 namespace dai::rosBridge {
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration>;
@@ -19,17 +27,17 @@ class ImageConverter {
     ImageConverter(const std::string frameName, bool interleaved);
     ImageConverter(bool interleaved);
 
-    void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, sensor_msgs::Image& outImageMsg);
-    sensor_msgs::ImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
+    void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, ImageMsgs::Image& outImageMsg);
+    ImageMsgs::ImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
 
-    void toDaiMsg(const sensor_msgs::Image& inMsg, dai::ImgFrame& outData);
+    void toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outData);
 
     /** TODO(sachin): Add support for ros msg to cv mat since we have some
      *  encodings which cv supports but ros doesn't
      **/
-    cv::Mat rosMsgtoCvMat(sensor_msgs::Image& inMsg);
+    cv::Mat rosMsgtoCvMat(ImageMsgs::Image& inMsg);
 
-    sensor_msgs::CameraInfo calibrationToCameraInfo(dai::CalibrationHandler calibHandler,
+    ImageMsgs::CameraInfo calibrationToCameraInfo(dai::CalibrationHandler calibHandler,
                                                     dai::CameraBoardSocket cameraId,
                                                     int width = -1,
                                                     int height = -1,

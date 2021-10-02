@@ -26,6 +26,7 @@ find_package(depthai CONFIG REQUIRED)
 find_package(ament_cmake QUIET)
 
 if ( ament_cmake_FOUND )
+    set(IS_ROS2 ON)
 
     # Not adding -DUSING_ROS since xml_parsing.cpp hasn't been ported to ROS2
 
@@ -36,7 +37,6 @@ if ( ament_cmake_FOUND )
     set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
 
 elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
-
     set(catkin_FOUND 1)
     add_definitions( -DUSING_ROS )
 

@@ -39,7 +39,7 @@ ImageConverter::ImageConverter(bool interleaved) : _daiInterleaved(interleaved) 
 
 ImageConverter::ImageConverter(const std::string frameName, bool interleaved) : _frameName(frameName), _daiInterleaved(interleaved) {}
 
-void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, sensor_msgs::Image& outImageMsg) {
+void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, ImageMsgs::Image& outImageMsg) {
     auto tstamp = inData->getTimestamp();
     int32_t sec = std::chrono::duration_cast<std::chrono::seconds>(tstamp.time_since_epoch()).count();
     int32_t nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(tstamp.time_since_epoch()).count() % 1000000000UL;
@@ -105,7 +105,7 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, sensor_msgs
                 output = mat.clone();
                 break;
         }
-        cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, output).toImageMsg(outImageMsg);
+        cv_bridge::CvImage(header, ImageMsgs::image_encodings::BGR8, output).toImageMsg(outImageMsg);
 
     } else if(encodingEnumMap.find(inData->getType()) != encodingEnumMap.end()) {
         // copying the data to ros msg
@@ -133,7 +133,7 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, sensor_msgs
 }
 
 // TODO(sachin): Not tested
-void ImageConverter::toDaiMsg(const sensor_msgs::Image& inMsg, dai::ImgFrame& outData) {
+void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outData) {
     std::unordered_map<dai::RawImgFrame::Type, std::string>::iterator revEncodingIter;
     if(_daiInterleaved) {
         revEncodingIter = std::find_if(encodingEnumMap.begin(), encodingEnumMap.end(), [&](const std::pair<dai::RawImgFrame::Type, std::string>& pair) {
@@ -164,7 +164,7 @@ void ImageConverter::toDaiMsg(const sensor_msgs::Image& inMsg, dai::ImgFrame& ou
     /** FIXME(sachin) : is this time convertion correct ???
      * Print the original time and ros time in seconds in
      * ImageFrame::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
-     *sensor_msgs::Image& opMsg) to cross verify..
+     *ImageMsgs::Image& opMsg) to cross verify..
      **/
     TimePoint ts(std::chrono::seconds((int)inMsg.header.stamp.toSec()) + std::chrono::nanoseconds(inMsg.header.stamp.toNSec()));
     outData.setTimestamp(ts);
@@ -174,8 +174,8 @@ void ImageConverter::toDaiMsg(const sensor_msgs::Image& inMsg, dai::ImgFrame& ou
     outData.setType(revEncodingIter->first);
 }
 
-sensor_msgs::ImagePtr ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
-    sensor_msgs::ImagePtr ptr = boost::make_shared<sensor_msgs::Image>();
+ImageMsgs::ImagePtr ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
+    ImageMsgs::ImagePtr ptr = boost::make_shared<ImageMsgs::Image>();
     toRosMsg(inData, *ptr);
     return ptr;
 }
@@ -231,7 +231,7 @@ void ImageConverter::interleavedToPlanar(const std::vector<uint8_t>& srcData, st
     return;
 }
 
-cv::Mat ImageConverter::rosMsgtoCvMat(sensor_msgs::Image& inMsg) {
+cv::Mat ImageConverter::rosMsgtoCvMat(ImageMsgs::Image& inMsg) {
     cv::Mat rgb(inMsg.height, inMsg.width, CV_8UC3);
     if(inMsg.encoding == "nv12") {
         cv::Mat nv_frame(inMsg.height * 3 / 2, inMsg.width, CV_8UC1, inMsg.data.data());
@@ -243,13 +243,13 @@ cv::Mat ImageConverter::rosMsgtoCvMat(sensor_msgs::Image& inMsg) {
     }
 }
 
-sensor_msgs::CameraInfo ImageConverter::calibrationToCameraInfo(
+ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
     dai::CalibrationHandler calibHandler, dai::CameraBoardSocket cameraId, int width, int height, Point2f topLeftPixelId, Point2f bottomRightPixelId) {
     std::vector<std::vector<float>> camIntrinsics, rectifiedRotation;
     std::vector<float> distCoeffs;
     std::vector<double> flatIntrinsics, distCoeffsDouble;
     int defWidth, defHeight;
-    sensor_msgs::CameraInfo cameraData;
+    ImageMsgs::CameraInfo cameraData;
     std::tie(std::ignore, defWidth, defHeight) = calibHandler.getDefaultIntrinsics(cameraId);
 
     if(width == -1) {

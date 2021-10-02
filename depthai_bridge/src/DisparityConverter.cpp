@@ -38,7 +38,7 @@ std::unordered_map<dai::RawImgFrame::Type, std::string> DisparityConverter::plan
 DisparityConverter::DisparityConverter(const std::string frameName, float focalLength, float baseline, float minDepth, float maxDepth)
     : _frameName(frameName), _focalLength(focalLength), _baseline(baseline / 100.0), _minDepth(minDepth / 100.0), _maxDepth(maxDepth / 100.0) {}
 
-void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, stereo_msgs::DisparityImage& outDispImageMsg) {
+void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, DisparityMsgs::DisparityImage& outDispImageMsg) {
     auto tstamp = inData->getTimestamp();
     int32_t sec = std::chrono::duration_cast<std::chrono::seconds>(tstamp.time_since_epoch()).count();
     int32_t nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(tstamp.time_since_epoch()).count() % 1000000000UL;
@@ -101,7 +101,7 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, stereo_
     return;
 }
 
-/* void DisparityConverter::toDaiMsg(const stereo_msgs::DisparityImage &inMsg,
+/* void DisparityConverter::toDaiMsg(const DisparityMsgs::DisparityImage &inMsg,
                               dai::ImgFrame& outData) {
 
   std::unordered_map<dai::RawImgFrame::Type, std::string>::iterator
@@ -114,7 +114,7 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, stereo_
         });
     if (revEncodingIter == encodingEnumMap.end())
       std::runtime_error("Unable to find DAI encoding for the corresponding "
-                         "stereo_msgs::DisparityImage.encoding stream");
+                         "DisparityMsgs::DisparityImage.encoding stream");
 
     outData.setData(inMsg.data);
   } else {
@@ -148,8 +148,8 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, stereo_
   outData.setType(revEncodingIter->first);
 } */
 
-stereo_msgs::DisparityImagePtr DisparityConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
-    stereo_msgs::DisparityImagePtr ptr = boost::make_shared<stereo_msgs::DisparityImage>();
+DisparityMsgs::DisparityImagePtr DisparityConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
+    DisparityMsgs::DisparityImagePtr ptr = boost::make_shared<DisparityMsgs::DisparityImage>();
     toRosMsg(inData, *ptr);
     return ptr;
 }

@@ -6,7 +6,14 @@
 #include <unordered_map>
 
 #include "depthai/depthai.hpp"
-#include "stereo_msgs/DisparityImage.h"
+
+#ifdef IS_ROS2
+    #include "stereo_msgs/msg/DisparityImage.h"
+    namespace DisparityMsgs = stereo_msgs::msg;
+#else
+    #include "stereo_msgs/DisparityImage.h"
+    namespace DisparityMsgs = stereo_msgs;
+#endif
 
 namespace dai::rosBridge {
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration>;
@@ -16,10 +23,10 @@ class DisparityConverter {
     // DisparityConverter() = default;
     DisparityConverter(const std::string frameName, float focalLength, float baseline = 7.5, float minDepth = 80, float maxDepth = 1100);
 
-    void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, stereo_msgs::DisparityImage& outImageMsg);
-    stereo_msgs::DisparityImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
+    void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, DisparityMsgs::DisparityImage& outImageMsg);
+    DisparityMsgs::DisparityImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
 
-    // void toDaiMsg(const stereo_msgs::DisparityImage& inMsg, dai::ImgFrame& outData);
+    // void toDaiMsg(const DisparityMsgs::DisparityImage& inMsg, dai::ImgFrame& outData);
 
    private:
     const std::string _frameName = "";

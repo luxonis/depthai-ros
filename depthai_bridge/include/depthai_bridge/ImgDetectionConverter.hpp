@@ -1,11 +1,15 @@
-#include <vision_msgs/Detection2DArray.h>
-
-#include <boost/make_shared.hpp>
-#include <boost/shared_ptr.hpp>
 #include <depthai_bridge/ImageConverter.hpp>
-
 #include "depthai/depthai.hpp"
-#include "sensor_msgs/Image.h"
+
+#ifdef IS_ROS2
+    #include <vision_msgs/msg/Detection2DArray.h>
+    namespace VisionMsgs = vision_msgs::msg;
+#else
+    #include <vision_msgs/Detection2DArray.h>
+    #include <boost/make_shared.hpp>
+    #include <boost/shared_ptr.hpp>
+    namespace VisionMsgs = vision_msgs;
+#endif
 
 namespace dai::rosBridge {
 
@@ -14,11 +18,11 @@ class ImgDetectionConverter {
     // DetectionConverter() = default;
     ImgDetectionConverter(std::string frameName, int width, int height, bool normalized = false);
 
-    void toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, vision_msgs::Detection2DArray& opDetectionMsg, TimePoint tStamp, int32_t sequenceNum = -1);
+    void toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, VisionMsgs::Detection2DArray& opDetectionMsg, TimePoint tStamp, int32_t sequenceNum = -1);
 
-    void toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, vision_msgs::Detection2DArray& opDetectionMsg);
+    void toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, VisionMsgs::Detection2DArray& opDetectionMsg);
 
-    vision_msgs::Detection2DArray::Ptr toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData);
+    VisionMsgs::Detection2DArray::Ptr toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData);
 
    private:
     uint32_t _sequenceNum;
