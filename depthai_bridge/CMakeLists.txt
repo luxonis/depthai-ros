@@ -21,9 +21,17 @@ if(NOT OpenCV_FOUND)
 endif()
 
 
-
-find_package(depthai CONFIG REQUIRED)
+# find_package(depthai CONFIG REQUIRED)
+find_package(depthai CONFIG REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake/depthai") 
 find_package(ament_cmake QUIET)
+
+FILE(GLOB LIB_SRC
+"src/DisparityConverter.cpp"
+"src/ImageConverter.cpp"
+"src/ImgDetectionConverter.cpp"
+"src/SpatialDetectionConverter.cpp"
+)
+
 
 if ( ament_cmake_FOUND )
     set(IS_ROS2 ON)
@@ -35,6 +43,53 @@ if ( ament_cmake_FOUND )
     message(STATUS "------------------------------------------")
 
     set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
+
+    find_package(rclcpp REQUIRED)
+    find_package(sensor_msgs REQUIRED)
+    find_package(std_msgs REQUIRED)
+    find_package(vision_msgs REQUIRED)
+    find_package(camera_info_manager REQUIRED)
+    find_package(depthai_ros_msgs REQUIRED)
+
+    set(dependencies
+      rclcpp
+      sensor_msgs
+      std_msgs
+      vision_msgs
+      depthai_ros_msgs 
+      camera_info_manager
+      )
+
+
+    add_library(${PROJECT_NAME} SHARED ${LIB_SRC})
+
+    ament_target_dependencies(${PROJECT_NAME}
+      ${dependencies})
+
+      target_link_libraries(${PROJECT_NAME} 
+                            depthai::core 
+                            opencv_imgproc
+                            opencv_highgui) 
+
+
+      install(TARGETS depthai_bridge
+                      ARCHIVE DESTINATION lib
+                      LIBRARY DESTINATION lib
+                      RUNTIME DESTINATION bin
+                    )
+
+      install(DIRECTORY include/
+        DESTINATION include/
+      )
+      install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+      install(DIRECTORY urdf DESTINATION share/${PROJECT_NAME})
+      install(DIRECTORY rviz DESTINATION share/${PROJECT_NAME})
+
+      ament_export_include_directories(include)
+      ament_export_libraries(depthai_bridge)
+      ament_export_dependencies(${dependencies})
+
+      ament_package()
 
 elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
     set(catkin_FOUND 1)
@@ -73,13 +128,6 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
       ${BUILD_TOOL_INCLUDE_DIRS}
       ${Boost_INCLUDE_DIRS}
       ${depthai}
-    )
-
-    FILE(GLOB LIB_SRC
-      "src/DisparityConverter.cpp"
-      "src/ImageConverter.cpp"
-      "src/ImgDetectionConverter.cpp"
-      "src/SpatialDetectionConverter.cpp"
     )
 
     ## Declare a C++ library
