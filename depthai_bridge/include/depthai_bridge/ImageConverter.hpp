@@ -12,10 +12,15 @@
     #include "sensor_msgs/msg/CameraInfo.h"
     #include "sensor_msgs/msg/Image.h"
     namespace ImageMsgs = sensor_msgs::msg;
+    using ImagePtr = ImageMsgs::Image::SharedPtr;
 #else
+    #include <boost/make_shared.hpp>
+    #include <boost/range/algorithm.hpp>
+
     #include "sensor_msgs/CameraInfo.h"
     #include "sensor_msgs/Image.h"
     namespace ImageMsgs = sensor_msgs;
+    using ImagePtr = ImageMsgs::ImagePtr;
 #endif
 
 namespace dai::rosBridge {

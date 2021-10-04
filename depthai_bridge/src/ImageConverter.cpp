@@ -1,11 +1,8 @@
 #include <cv_bridge/cv_bridge.h>
 #include <ros/ros.h>
 
-#include <boost/make_shared.hpp>
-#include <boost/range/algorithm.hpp>
 #include <depthai/depthai.hpp>
 #include <depthai_bridge/ImageConverter.hpp>
-#include <opencv2/opencv.hpp>
 #include <tuple>
 
 // FIXME(Sachin): Do I need to convert the encodings that are available in dai
