@@ -5,13 +5,17 @@
 #include "depthai/depthai.hpp"
 // #include "sensor_msgs/Image.h"
 #ifdef IS_ROS2
+    #include "rclcpp/rclcpp.hpp"
     #include <depthai_ros_msgs/msg/SpatialDetectionArray.h>
     namespace SpatialMessages = depthai_ros_msgs::msg;
+    using SpatialDetectionArrayPtr = SpatialMessages::SpatialDetectionArray::SharedPtr;
 #else
+    #include <ros/ros.h>
+    #include <depthai_ros_msgs/SpatialDetectionArray.h>
     #include <boost/make_shared.hpp>
     #include <boost/shared_ptr.hpp>
-    #include <depthai_ros_msgs/SpatialDetectionArray.h>
     namespace SpatialMessages = depthai_ros_msgs;
+    using SpatialDetectionArrayPtr = SpatialMessages::SpatialDetectionArray::Ptr;
 #endif
 
 
@@ -29,7 +33,7 @@ class SpatialDetectionConverter {
 
     void toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData, SpatialMessages::SpatialDetectionArray& opDetectionMsg);
 
-    SpatialMessages::SpatialDetectionArray::Ptr toRosMsgPtr(std::shared_ptr<dai::SpatialImgDetections> inNetData);
+    SpatialDetectionArrayPtr toRosMsgPtr(std::shared_ptr<dai::SpatialImgDetections> inNetData);
 
    private:
     uint32_t _sequenceNum;

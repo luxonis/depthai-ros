@@ -9,14 +9,15 @@
 #include "depthai/depthai.hpp"
 
 #ifdef IS_ROS2
+    #include "rclcpp/rclcpp.hpp"
     #include "sensor_msgs/msg/CameraInfo.h"
     #include "sensor_msgs/msg/Image.h"
     namespace ImageMsgs = sensor_msgs::msg;
     using ImagePtr = ImageMsgs::Image::SharedPtr;
 #else
+    #include <ros/ros.h>
     #include <boost/make_shared.hpp>
     #include <boost/range/algorithm.hpp>
-
     #include "sensor_msgs/CameraInfo.h"
     #include "sensor_msgs/Image.h"
     namespace ImageMsgs = sensor_msgs;
@@ -33,7 +34,7 @@ class ImageConverter {
     ImageConverter(bool interleaved);
 
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, ImageMsgs::Image& outImageMsg);
-    ImageMsgs::ImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
+    ImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
 
     void toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outData);
 

@@ -8,11 +8,16 @@
 #include "depthai/depthai.hpp"
 
 #ifdef IS_ROS2
+    #include "rclcpp/rclcpp.hpp"
     #include "stereo_msgs/msg/DisparityImage.h"
     namespace DisparityMsgs = stereo_msgs::msg;
+    using DisparityImagePtr = DisparityMsgs::DisparityImage::SharedPtr;
 #else
+    #include <ros/ros.h>
+    #include <boost/make_shared.hpp>
     #include "stereo_msgs/DisparityImage.h"
     namespace DisparityMsgs = stereo_msgs;
+    using DisparityImagePtr = DisparityMsgs::DisparityImage::Ptr;
 #endif
 
 namespace dai::rosBridge {
@@ -24,7 +29,7 @@ class DisparityConverter {
     DisparityConverter(const std::string frameName, float focalLength, float baseline = 7.5, float minDepth = 80, float maxDepth = 1100);
 
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, DisparityMsgs::DisparityImage& outImageMsg);
-    DisparityMsgs::DisparityImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
+    DisparityImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
 
     // void toDaiMsg(const DisparityMsgs::DisparityImage& inMsg, dai::ImgFrame& outData);
 

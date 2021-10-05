@@ -1,5 +1,4 @@
 #include <cv_bridge/cv_bridge.h>
-#include <ros/ros.h>
 
 #include <depthai/depthai.hpp>
 #include <depthai_bridge/ImageConverter.hpp>
@@ -43,9 +42,22 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, ImageMsgs::
 
     std_msgs::Header header;
     header.seq = inData->getSequenceNum();
-    header.stamp = ros::Time(sec, nsec);
     header.frame_id = _frameName;
 
+    #ifdef IS_ROS2
+        auto rclNow = rclcpp::Clock().now();
+        auto steadyTime = std::chrono::steady_clock::now();
+        auto diffTime = steadyTime - tstamp;
+        auto rclStamp = rclNow - diffTime;
+        header.stamp = rclStamp;
+    #else
+        auto rosNow = ros::Time::now();
+        auto steadyTime = std::chrono::steady_clock::now();
+        auto diffTime = steadyTime - tstamp;
+        auto rosStamp = rosNow - diffTime;
+        header.stamp = rosStamp;
+    #endif
+    
     if(planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end()) {
         // cv::Mat inImg = inData->getCvFrame();
         cv::Mat mat, output;
@@ -171,8 +183,13 @@ void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outD
     outData.setType(revEncodingIter->first);
 }
 
-ImageMsgs::ImagePtr ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
-    ImageMsgs::ImagePtr ptr = boost::make_shared<ImageMsgs::Image>();
+ImagePtr ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
+    #ifdef IS_ROS2
+        ImagePtr ptr = std::make_shared<sensor_msgs::msg::Image>();
+    #else
+        ImagePtr ptr = boost::make_shared<ImageMsgs::Image>();
+    #endif
+
     toRosMsg(inData, *ptr);
     return ptr;
 }

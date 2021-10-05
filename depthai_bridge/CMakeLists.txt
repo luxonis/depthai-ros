@@ -25,12 +25,7 @@ endif()
 find_package(depthai CONFIG REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake/depthai") 
 find_package(ament_cmake QUIET)
 
-FILE(GLOB LIB_SRC
-"src/DisparityConverter.cpp"
-"src/ImageConverter.cpp"
-"src/ImgDetectionConverter.cpp"
-"src/SpatialDetectionConverter.cpp"
-)
+
 
 
 if ( ament_cmake_FOUND )
@@ -60,7 +55,18 @@ if ( ament_cmake_FOUND )
       camera_info_manager
       )
 
+    FILE(GLOB LIB_SRC
+    "src/DisparityConverter.cpp"
+    "src/ImageConverter.cpp"
+    "src/ImgDetectionConverter.cpp"
+    "src/SpatialDetectionConverter.cpp"
+    )
 
+    include_directories(
+        include
+        ${BUILD_TOOL_INCLUDE_DIRS}
+        # ${OpenCV_INCLUDE_DIRS}
+    )
     add_library(${PROJECT_NAME} SHARED ${LIB_SRC})
 
     ament_target_dependencies(${PROJECT_NAME}
@@ -110,6 +116,13 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
     )
     find_package(Boost REQUIRED)
 
+    FILE(GLOB LIB_SRC
+    "src/DisparityConverter.cpp"
+    "src/ImageConverter.cpp"
+    "src/ImgDetectionConverter.cpp"
+    "src/SpatialDetectionConverter.cpp"
+    )
+    
     message(STATUS "------------------------------------------")
     message(STATUS "Depthai Bridge is being built using CATKIN.")
     message(STATUS "------------------------------------------")

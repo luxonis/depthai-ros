@@ -1,8 +1,5 @@
-#include <ros/ros.h>
 
-#include <boost/make_shared.hpp>
 #include <depthai_bridge/DisparityConverter.hpp>
-
 #include "sensor_msgs/image_encodings.h"
 
 // FIXME(Sachin): Do I need to convert the encodings that are available in dai
@@ -148,8 +145,12 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, Dispari
   outData.setType(revEncodingIter->first);
 } */
 
-DisparityMsgs::DisparityImagePtr DisparityConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
-    DisparityMsgs::DisparityImagePtr ptr = boost::make_shared<DisparityMsgs::DisparityImage>();
+DisparityImagePtr DisparityConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
+    #ifdef IS_ROS2
+        Detection2DArrayPtr ptr = std::make_shared<DisparityMsgs::DisparityImage>();
+    #else
+        Detection2DArrayPtr ptr = boost::make_shared<DisparityMsgs::DisparityImage>();
+    #endif
     toRosMsg(inData, *ptr);
     return ptr;
 }

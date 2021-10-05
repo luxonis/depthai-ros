@@ -1,6 +1,3 @@
-#include <ros/ros.h>
-
-#include <boost/make_shared.hpp>
 #include <depthai_bridge/ImgDetectionConverter.hpp>
 
 namespace dai::rosBridge {
@@ -13,31 +10,32 @@ void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetDa
                                      TimePoint tStamp,
                                      int32_t sequenceNum) {
     toRosMsg(inNetData, opDetectionMsg);
-    #ifndef IS_ROS2
-        if(sequenceNum != -1) _sequenceNum = sequenceNum;
-        opDetectionMsg.header.seq = _sequenceNum;
-    #endif
-
     int32_t sec = std::chrono::duration_cast<std::chrono::seconds>(tStamp.time_since_epoch()).count();
     int32_t nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(tStamp.time_since_epoch()).count() % 1000000000UL;
-    opDetectionMsg.header.stamp = ros::Time(sec, nsec);    
+     #ifndef IS_ROS2
+        if(sequenceNum != -1) _sequenceNum = sequenceNum;
+        opDetectionMsg.header.seq = _sequenceNum;
+        opDetectionMsg.header.stamp = ros::Time(sec, nsec);    
+    #else
+        opDetectionMsg.header.stamp = rclcpp::Time(sec, nsec);
+    #endif
+
     opDetectionMsg.header.frame_id = _frameName;
 }
 
 void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, VisionMsgs::Detection2DArray& opDetectionMsg) {
-    // if (inNetData->detections.size() == 0)
-    //   throw std::runtime_error(
-    //       "Make sure to send the detections with size greater than 0");
 
     // setting the header
     #ifndef IS_ROS2
         opDetectionMsg.header.seq = _sequenceNum;
         _sequenceNum++;
+         opDetectionMsg.header.stamp = ros::Time::now();
+    #else
+        opDetectionMsg.header.stamp = rclcpp::Clock().now();
     #endif
 
-    opDetectionMsg.header.stamp = ros::Time::now();
+   
     opDetectionMsg.header.frame_id = _frameName;
-
     opDetectionMsg.detections.resize(inNetData->detections.size());
 
     // TODO(Sachin): check if this works fine for normalized detection
@@ -78,8 +76,12 @@ void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetDa
     }
 }
 
-VisionMsgs::Detection2DArray::Ptr ImgDetectionConverter::toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData) {
-    VisionMsgs::Detection2DArray::Ptr ptr = boost::make_shared<VisionMsgs::Detection2DArray>();
+Detection2DArrayPtr ImgDetectionConverter::toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData) {
+    #ifdef IS_ROS2
+        Detection2DArrayPtr ptr = std::make_shared<VisionMsgs::Detection2DArray>();
+    #else
+        Detection2DArrayPtr ptr = boost::make_shared<VisionMsgs::Detection2DArray>();
+    #endif
     toRosMsg(inNetData, *ptr);
     return ptr;
 }
