@@ -37,11 +37,8 @@ ImageConverter::ImageConverter(const std::string frameName, bool interleaved) : 
 
 void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, ImageMsgs::Image& outImageMsg) {
     auto tstamp = inData->getTimestamp();
-    int32_t sec = std::chrono::duration_cast<std::chrono::seconds>(tstamp.time_since_epoch()).count();
-    int32_t nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(tstamp.time_since_epoch()).count() % 1000000000UL;
 
-    std_msgs::Header header;
-    header.seq = inData->getSequenceNum();
+    StdMsgs::Header header;
     header.frame_id = _frameName;
 
     #ifdef IS_ROS2
@@ -56,6 +53,7 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, ImageMsgs::
         auto diffTime = steadyTime - tstamp;
         auto rosStamp = rosNow - diffTime;
         header.stamp = rosStamp;
+        header.seq = inData->getSequenceNum();
     #endif
     
     if(planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end()) {
@@ -114,7 +112,7 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, ImageMsgs::
                 output = mat.clone();
                 break;
         }
-        cv_bridge::CvImage(header, ImageMsgs::image_encodings::BGR8, output).toImageMsg(outImageMsg);
+        cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, output).toImageMsg(outImageMsg);
 
     } else if(encodingEnumMap.find(inData->getType()) != encodingEnumMap.end()) {
         // copying the data to ros msg
@@ -175,8 +173,13 @@ void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outD
      * ImageFrame::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
      *ImageMsgs::Image& opMsg) to cross verify..
      **/
-    TimePoint ts(std::chrono::seconds((int)inMsg.header.stamp.toSec()) + std::chrono::nanoseconds(inMsg.header.stamp.toNSec()));
-    outData.setTimestamp(ts);
+    /* #ifdef IS_ROS2
+        TimePoint ts(std::chrono::seconds((int)inMsg.header.stamp.seconds ()) + std::chrono::nanoseconds(inMsg.header.stamp.nanoseconds()));
+    #else
+        TimePoint ts(std::chrono::seconds((int)inMsg.header.stamp.toSec()) + std::chrono::nanoseconds(inMsg.header.stamp.toNSec()));
+    #endif
+    
+    outData.setTimestamp(ts); */
     outData.setSequenceNum(inMsg.header.seq);
     outData.setWidth(inMsg.width);
     outData.setHeight(inMsg.height);

@@ -3,7 +3,7 @@
 
 #ifdef IS_ROS2
     #include "rclcpp/rclcpp.hpp"
-    #include <vision_msgs/msg/Detection2DArray.h>
+    #include <vision_msgs/msg/detection2_d_array.hpp>
     namespace VisionMsgs = vision_msgs::msg;
     using Detection2DArrayPtr = VisionMsgs::Detection2DArray::SharedPtr;
 #else

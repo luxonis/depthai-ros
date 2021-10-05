@@ -1,6 +1,5 @@
 
 #include <depthai_bridge/DisparityConverter.hpp>
-#include "sensor_msgs/image_encodings.h"
 
 // FIXME(Sachin): Do I need to convert the encodings that are available in dai
 // to only that ros support ? I mean we can publish whatever it is and decode it
@@ -37,18 +36,32 @@ DisparityConverter::DisparityConverter(const std::string frameName, float focalL
 
 void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, DisparityMsgs::DisparityImage& outDispImageMsg) {
     auto tstamp = inData->getTimestamp();
-    int32_t sec = std::chrono::duration_cast<std::chrono::seconds>(tstamp.time_since_epoch()).count();
-    int32_t nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(tstamp.time_since_epoch()).count() % 1000000000UL;
 
-    outDispImageMsg.header.seq = inData->getSequenceNum();
-    outDispImageMsg.header.stamp = ros::Time(sec, nsec);
     outDispImageMsg.header.frame_id = _frameName;
     outDispImageMsg.f = _focalLength;
-    outDispImageMsg.T = _baseline;  // TODO(Sachin): Change this units
     outDispImageMsg.min_disparity = _focalLength * _baseline / _maxDepth;
     outDispImageMsg.max_disparity = _focalLength * _baseline / _minDepth;
 
-    sensor_msgs::Image& outImageMsg = outDispImageMsg.image;
+    #ifdef IS_ROS2
+        auto rclNow = rclcpp::Clock().now();
+        auto steadyTime = std::chrono::steady_clock::now();
+        auto diffTime = steadyTime - tstamp;
+        auto rclStamp = rclNow - diffTime;
+        outDispImageMsg.header.stamp = rclStamp;
+        outDispImageMsg.t = _baseline;  // TODO(Sachin): Change this units
+        sensor_msgs::msg::Image& outImageMsg = outDispImageMsg.image;
+    #else
+        auto rosNow = ros::Time::now();
+        auto steadyTime = std::chrono::steady_clock::now();
+        auto diffTime = steadyTime - tstamp;
+        auto rosStamp = rosNow - diffTime;
+        outDispImageMsg.header.stamp = rosStamp;
+        outDispImageMsg.header.seq = inData->getSequenceNum();
+        outDispImageMsg.T = _baseline;  // TODO(Sachin): Change this units
+        sensor_msgs::Image& outImageMsg = outDispImageMsg.image;
+    #endif
+
+    
 
     // copying the data to ros msg
     // outDispImageMsg.header       = imgHeader;
@@ -147,9 +160,9 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, Dispari
 
 DisparityImagePtr DisparityConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
     #ifdef IS_ROS2
-        Detection2DArrayPtr ptr = std::make_shared<DisparityMsgs::DisparityImage>();
+        DisparityImagePtr ptr = std::make_shared<DisparityMsgs::DisparityImage>();
     #else
-        Detection2DArrayPtr ptr = boost::make_shared<DisparityMsgs::DisparityImage>();
+        DisparityImagePtr ptr = boost::make_shared<DisparityMsgs::DisparityImage>();
     #endif
     toRosMsg(inData, *ptr);
     return ptr;

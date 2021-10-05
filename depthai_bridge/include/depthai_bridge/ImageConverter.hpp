@@ -10,8 +10,10 @@
 
 #ifdef IS_ROS2
     #include "rclcpp/rclcpp.hpp"
-    #include "sensor_msgs/msg/CameraInfo.h"
-    #include "sensor_msgs/msg/Image.h"
+    #include "sensor_msgs/msg/camera_info.hpp"
+    #include "sensor_msgs/msg/image.hpp"
+    #include "std_msgs/msg/header.hpp"
+    namespace StdMsgs = std_msgs::msg;
     namespace ImageMsgs = sensor_msgs::msg;
     using ImagePtr = ImageMsgs::Image::SharedPtr;
 #else
@@ -20,6 +22,8 @@
     #include <boost/range/algorithm.hpp>
     #include "sensor_msgs/CameraInfo.h"
     #include "sensor_msgs/Image.h"
+    #include "std_msgs/Header.h"
+    namespace StdMsgs = std_msgs;
     namespace ImageMsgs = sensor_msgs;
     using ImagePtr = ImageMsgs::ImagePtr;
 #endif

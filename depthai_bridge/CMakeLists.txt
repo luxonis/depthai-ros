@@ -25,12 +25,9 @@ endif()
 find_package(depthai CONFIG REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake/depthai") 
 find_package(ament_cmake QUIET)
 
-
-
-
 if ( ament_cmake_FOUND )
-    set(IS_ROS2 ON)
-
+    # set(IS_ROS2 ON)
+    add_compile_definitions(IS_ROS2)
     # Not adding -DUSING_ROS since xml_parsing.cpp hasn't been ported to ROS2
 
     message(STATUS "------------------------------------------")
@@ -55,6 +52,12 @@ if ( ament_cmake_FOUND )
       camera_info_manager
       )
 
+    include_directories(
+        include
+        ${BUILD_TOOL_INCLUDE_DIRS}
+        # ${OpenCV_INCLUDE_DIRS}
+    )
+
     FILE(GLOB LIB_SRC
     "src/DisparityConverter.cpp"
     "src/ImageConverter.cpp"
@@ -62,27 +65,22 @@ if ( ament_cmake_FOUND )
     "src/SpatialDetectionConverter.cpp"
     )
 
-    include_directories(
-        include
-        ${BUILD_TOOL_INCLUDE_DIRS}
-        # ${OpenCV_INCLUDE_DIRS}
-    )
     add_library(${PROJECT_NAME} SHARED ${LIB_SRC})
 
     ament_target_dependencies(${PROJECT_NAME}
       ${dependencies})
 
-      target_link_libraries(${PROJECT_NAME} 
-                            depthai::core 
-                            opencv_imgproc
-                            opencv_highgui) 
+    target_link_libraries(${PROJECT_NAME} 
+                          depthai::core 
+                          opencv_imgproc
+                          opencv_highgui) 
 
 
-      install(TARGETS depthai_bridge
-                      ARCHIVE DESTINATION lib
-                      LIBRARY DESTINATION lib
-                      RUNTIME DESTINATION bin
-                    )
+    install(TARGETS depthai_bridge
+                    ARCHIVE DESTINATION lib
+                    LIBRARY DESTINATION lib
+                    RUNTIME DESTINATION bin
+                  )
 
       install(DIRECTORY include/
         DESTINATION include/

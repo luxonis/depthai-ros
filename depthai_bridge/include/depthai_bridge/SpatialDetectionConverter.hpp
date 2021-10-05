@@ -6,7 +6,7 @@
 // #include "sensor_msgs/Image.h"
 #ifdef IS_ROS2
     #include "rclcpp/rclcpp.hpp"
-    #include <depthai_ros_msgs/msg/SpatialDetectionArray.h>
+    #include <depthai_ros_msgs/msg/spatial_detection_array.hpp>
     namespace SpatialMessages = depthai_ros_msgs::msg;
     using SpatialDetectionArrayPtr = SpatialMessages::SpatialDetectionArray::SharedPtr;
 #else
