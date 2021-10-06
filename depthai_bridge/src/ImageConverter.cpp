@@ -179,8 +179,8 @@ void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outD
         TimePoint ts(std::chrono::seconds((int)inMsg.header.stamp.toSec()) + std::chrono::nanoseconds(inMsg.header.stamp.toNSec()));
     #endif
     
-    outData.setTimestamp(ts); */
-    outData.setSequenceNum(inMsg.header.seq);
+    outData.setTimestamp(ts);
+    outData.setSequenceNum(inMsg.header.seq); */
     outData.setWidth(inMsg.width);
     outData.setHeight(inMsg.height);
     outData.setType(revEncodingIter->first);
@@ -287,13 +287,26 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
     for(int i = 0; i < 3; i++) {
         std::copy(camIntrinsics[i].begin(), camIntrinsics[i].end(), flatIntrinsics.begin() + 3 * i);
     }
-    std::copy(flatIntrinsics.begin(), flatIntrinsics.end(), cameraData.K.begin());
+    
+    #ifdef IS_ROS2
+        auto& intrinsics = cameraData.k;
+        auto& distortions = cameraData.d;
+        auto& projection = cameraData.p;
+        auto& rotation = cameraData.r;
+    #else
+        auto& intrinsics = cameraData.K;
+        auto& distortions = cameraData.D;
+        auto& projection = cameraData.P;
+        auto& rotation = cameraData.R;    
+    #endif
+
+    std::copy(flatIntrinsics.begin(), flatIntrinsics.end(), intrinsics.begin());
 
     // TODO(sachin): plumb_bob takes only 5 parameters. Should I change from Plum_bob? if so which model represents best ?
     distCoeffs = calibHandler.getDistortionCoefficients(cameraId);
 
     for(size_t i = 0; i < 5; i++) {
-        cameraData.D.push_back(static_cast<double>(distCoeffs[i]));
+        distortions.push_back(static_cast<double>(distCoeffs[i]));
     }
 
     // Setting Projection matrix if the cameras are stereo pair
@@ -319,8 +332,8 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
                 std::copy(rectifiedRotation[i].begin(), rectifiedRotation[i].end(), flatRectifiedRotation.begin() + 3 * i);
             }
 
-            std::copy(stereoFlatIntrinsics.begin(), stereoFlatIntrinsics.end(), cameraData.P.begin());
-            std::copy(flatRectifiedRotation.begin(), flatRectifiedRotation.end(), cameraData.R.begin());
+            std::copy(stereoFlatIntrinsics.begin(), stereoFlatIntrinsics.end(), projection.begin());
+            std::copy(flatRectifiedRotation.begin(), flatRectifiedRotation.end(), rotation.begin());
         }
     }
     cameraData.distortion_model = "plumb_bob";
