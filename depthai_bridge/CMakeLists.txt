@@ -36,20 +36,26 @@ if ( ament_cmake_FOUND )
 
     set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
 
+    find_package(camera_info_manager REQUIRED)
+    find_package(cv_bridge REQUIRED)
+    find_package(depthai_ros_msgs REQUIRED)
+    find_package(image_transport REQUIRED)
     find_package(rclcpp REQUIRED)
     find_package(sensor_msgs REQUIRED)
+    find_package(stereo_msgs REQUIRED)
     find_package(std_msgs REQUIRED)
     find_package(vision_msgs REQUIRED)
-    find_package(camera_info_manager REQUIRED)
-    find_package(depthai_ros_msgs REQUIRED)
 
     set(dependencies
-      rclcpp
-      sensor_msgs
-      std_msgs
-      vision_msgs
-      depthai_ros_msgs 
-      camera_info_manager
+        camera_info_manager
+        cv_bridge
+        depthai_ros_msgs
+        image_transport
+        rclcpp
+        sensor_msgs
+        stereo_msgs
+        std_msgs
+        vision_msgs
       )
 
     include_directories(

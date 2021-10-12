@@ -49,13 +49,8 @@ class BridgePublisher {
                   std::shared_ptr<rclcpp::Node> node,
                   std::string rosTopic,
                   ConvertFunc converter,
-                  rmw_qos_profile_t qos_profile = rmw_qos_profile_default);
+                  rclcpp::QoS qosSetting = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
  
-      // BridgePublisher(std::shared_ptr<dai::DataOutputQueue> daiMessageQueue,
-      //             std::shared_ptr<rclcpp::Node> node,
-      //             std::string rosTopic,
-      //             ConvertFunc converter,
-      //             rmw_qos_profile_t qos_profile = rmw_qos_profile_default);
 
       BridgePublisher(std::shared_ptr<dai::DataOutputQueue> daiMessageQueue,
                   std::shared_ptr<rclcpp::Node> node,
@@ -162,10 +157,10 @@ const std::string BridgePublisher<RosMsg, SimMsg>::LOG_TAG = "BridgePublisher";
     template <class RosMsg, class SimMsg> 
     BridgePublisher<RosMsg, SimMsg>::BridgePublisher(
         std::shared_ptr<dai::DataOutputQueue> daiMessageQueue, std::shared_ptr<rclcpp::Node> node,
-        std::string rosTopic, ConvertFunc converter, rmw_qos_profile_t qos_profile)
-        : _daiMessageQueue(daiMessageQueue), _node(node), _converter(converter),
+        std::string rosTopic, ConvertFunc converter, rclcpp::QoS qosSetting)
+        : _daiMessageQueue(daiMessageQueue), _node(node), _converter(converter), _it(node),
         _rosTopic(rosTopic){
-        _rosPublisher = _node->create_publisher<RosMsg>(_rosTopic, qos_profile);
+        _rosPublisher = _node->create_publisher<RosMsg>(_rosTopic, qosSetting); // TODO(sachin): Add the qos_profle later
     }
 
     template <class RosMsg, class SimMsg>
@@ -341,16 +336,20 @@ void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDa
         _converter(inDataPtr, opMsg);
         _camInfoFrameId = opMsg.header.frame_id;
     }
-    
+    int infoSubCount;
     #ifndef IS_ROS2
       ROS_DEBUG_STREAM_NAMED(LOG_TAG, "Total number of subscribers to " << _rosTopic << " is :" << _rosPublisher.getNumSubscribers());
       if(_isImageMessage) {
           ROS_DEBUG_STREAM_NAMED(LOG_TAG,
                                 "Total number of subscribers to " << _cameraInfoPublisher.getTopic() << " is :" << _cameraInfoPublisher.getNumSubscribers());
+        infoSubCount = _rosPublisher.getNumSubscribers();
       }
-    int numSub = _rosPublisher.getNumSubscribers();
+      int numSub = _rosPublisher.getNumSubscribers();
     #else
-    int numSub = _node->count_subscribers(_rosTopic);
+      int numSub = _node->count_subscribers(_rosTopic);
+      if(_isImageMessage) {
+        infoSubCount = _node->count_subscribers(_rosTopic);
+      }
     #endif
 
     if(numSub > 0) {

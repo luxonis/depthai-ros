@@ -58,6 +58,7 @@
   <depend>libboost-dev</depend>
 
   <depend condition="$ROS_VERSION == 1">roscpp</depend>
+  <depend condition="$ROS_VERSION == 2">rclcpp</depend>
 
   <depend>cv_bridge</depend>
   <depend>camera_info_manager</depend>
@@ -67,7 +68,8 @@
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
   <depend>stereo_msgs</depend>
-  <depend>vision_msgs</depend>4
+  <depend>vision_msgs</depend>
+
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>xacro</exec_depend>
 
