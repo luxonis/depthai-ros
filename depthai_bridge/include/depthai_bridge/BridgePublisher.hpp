@@ -349,32 +349,27 @@ void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDa
     }
     int infoSubCount;
 #ifndef IS_ROS2
-    ROS_DEBUG_STREAM_NAMED(LOG_TAG, "Total number of subscribers to " << _rosTopic << " is :" << _rosPublisher->getNumSubscribers());
     if(_isImageMessage) {
-        ROS_DEBUG_STREAM_NAMED(LOG_TAG,
-                               "Total number of subscribers to " << _cameraInfoPublisher->getTopic() << " is :" << _cameraInfoPublisher->getNumSubscribers());
         infoSubCount = _rosPublisher->getNumSubscribers();
     }
     int numSub = _rosPublisher->getNumSubscribers();
 #else
-    int numSub = _node->count_subscribers(_rosTopic);
     if(_isImageMessage) {
-        infoSubCount = _node->count_subscribers(_rosTopic);
+        infoSubCount = _node->count_subscribers(_cameraName + "/camera_info");
     }
+    int numSub = _node->count_subscribers(_rosTopic);
 #endif
 
     if(numSub > 0) {
         _converter(inDataPtr, opMsg);
-        // std::cout << opMsg.height << " " << opMsg.width << " " <<
-        // opMsg.data.size() << std::endl;
         _rosPublisher->publish(opMsg);
 
         if(_isImageMessage) {
 #ifndef IS_ROS2
-            int infoSubCount = _cameraInfoPublisher->getNumSubscribers();
+            infoSubCount = _cameraInfoPublisher->getNumSubscribers();
 #else
             // FIXME(sachin): Pointing to ther main topic. Change it to camerainfo topic.
-            int infoSubCount = _node->count_subscribers(_rosTopic);
+            infoSubCount = _node->count_subscribers(_cameraName + "/camera_info");
 #endif
 
             if(infoSubCount > 0) {
