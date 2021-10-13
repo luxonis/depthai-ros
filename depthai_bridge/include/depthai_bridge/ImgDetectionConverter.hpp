@@ -1,18 +1,21 @@
 #include <depthai_bridge/ImageConverter.hpp>
+
 #include "depthai/depthai.hpp"
 
 #ifdef IS_ROS2
-    #include "rclcpp/rclcpp.hpp"
     #include <vision_msgs/msg/detection2_d_array.hpp>
-    namespace VisionMsgs = vision_msgs::msg;
-    using Detection2DArrayPtr = VisionMsgs::Detection2DArray::SharedPtr;
+
+    #include "rclcpp/rclcpp.hpp"
+namespace VisionMsgs = vision_msgs::msg;
+using Detection2DArrayPtr = VisionMsgs::Detection2DArray::SharedPtr;
 #else
     #include <ros/ros.h>
     #include <vision_msgs/Detection2DArray.h>
+
     #include <boost/make_shared.hpp>
     #include <boost/shared_ptr.hpp>
-    namespace VisionMsgs = vision_msgs;
-    using Detection2DArrayPtr = VisionMsgs::Detection2DArray::Ptr;
+namespace VisionMsgs = vision_msgs;
+using Detection2DArrayPtr = VisionMsgs::Detection2DArray::Ptr;
 #endif
 
 namespace dai::rosBridge {

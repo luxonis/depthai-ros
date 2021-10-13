@@ -3,21 +3,21 @@
 #include <depthai_bridge/ImageConverter.hpp>
 
 #include "depthai/depthai.hpp"
-// #include "sensor_msgs/Image.h"
 #ifdef IS_ROS2
-    #include "rclcpp/rclcpp.hpp"
     #include <depthai_ros_msgs/msg/spatial_detection_array.hpp>
-    namespace SpatialMessages = depthai_ros_msgs::msg;
-    using SpatialDetectionArrayPtr = SpatialMessages::SpatialDetectionArray::SharedPtr;
+
+    #include "rclcpp/rclcpp.hpp"
+namespace SpatialMessages = depthai_ros_msgs::msg;
+using SpatialDetectionArrayPtr = SpatialMessages::SpatialDetectionArray::SharedPtr;
 #else
-    #include <ros/ros.h>
     #include <depthai_ros_msgs/SpatialDetectionArray.h>
+    #include <ros/ros.h>
+
     #include <boost/make_shared.hpp>
     #include <boost/shared_ptr.hpp>
-    namespace SpatialMessages = depthai_ros_msgs;
-    using SpatialDetectionArrayPtr = SpatialMessages::SpatialDetectionArray::Ptr;
+namespace SpatialMessages = depthai_ros_msgs;
+using SpatialDetectionArrayPtr = SpatialMessages::SpatialDetectionArray::Ptr;
 #endif
-
 
 namespace dai::rosBridge {
 

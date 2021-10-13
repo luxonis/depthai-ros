@@ -2,8 +2,8 @@
 
 #include <depthai/depthai.hpp>
 #include <depthai_bridge/ImageConverter.hpp>
+#include <ratio>
 #include <tuple>
-
 // FIXME(Sachin): Do I need to convert the encodings that are available in dai
 // to only that ros support ? I mean we can publish whatever it is and decode it
 // on the other side but howver maybe we should have option to convert planar to
@@ -41,21 +41,22 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, ImageMsgs::
     StdMsgs::Header header;
     header.frame_id = _frameName;
 
-    #ifdef IS_ROS2
-        auto rclNow = rclcpp::Clock().now();
-        auto steadyTime = std::chrono::steady_clock::now();
-        auto diffTime = steadyTime - tstamp;
-        auto rclStamp = rclNow - diffTime;
-        header.stamp = rclStamp;
-    #else
-        auto rosNow = ros::Time::now();
-        auto steadyTime = std::chrono::steady_clock::now();
-        auto diffTime = steadyTime - tstamp;
-        auto rosStamp = rosNow - diffTime;
-        header.stamp = rosStamp;
-        header.seq = inData->getSequenceNum();
-    #endif
-    
+#ifdef IS_ROS2
+    auto rclNow = rclcpp::Clock().now();
+    auto steadyTime = std::chrono::steady_clock::now();
+    auto diffTime = steadyTime - tstamp;
+    auto rclStamp = rclNow - diffTime;
+    header.stamp = rclStamp;
+#else
+    auto rosNow = ros::Time::now();
+    auto steadyTime = std::chrono::steady_clock::now();
+    auto diffTime = steadyTime - tstamp;
+    long int nsec = rosNow.toNSec() - diffTime.count();
+    auto rosStamp = rosNow.fromNSec(nsec);
+    header.stamp = rosStamp;
+    header.seq = inData->getSequenceNum();
+#endif
+
     if(planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end()) {
         // cv::Mat inImg = inData->getCvFrame();
         cv::Mat mat, output;
@@ -178,7 +179,7 @@ void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outD
     #else
         TimePoint ts(std::chrono::seconds((int)inMsg.header.stamp.toSec()) + std::chrono::nanoseconds(inMsg.header.stamp.toNSec()));
     #endif
-    
+
     outData.setTimestamp(ts);
     outData.setSequenceNum(inMsg.header.seq); */
     outData.setWidth(inMsg.width);
@@ -187,11 +188,11 @@ void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outD
 }
 
 ImagePtr ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
-    #ifdef IS_ROS2
-        ImagePtr ptr = std::make_shared<sensor_msgs::msg::Image>();
-    #else
-        ImagePtr ptr = boost::make_shared<ImageMsgs::Image>();
-    #endif
+#ifdef IS_ROS2
+    ImagePtr ptr = std::make_shared<sensor_msgs::msg::Image>();
+#else
+    ImagePtr ptr = boost::make_shared<ImageMsgs::Image>();
+#endif
 
     toRosMsg(inData, *ptr);
     return ptr;
@@ -287,18 +288,18 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
     for(int i = 0; i < 3; i++) {
         std::copy(camIntrinsics[i].begin(), camIntrinsics[i].end(), flatIntrinsics.begin() + 3 * i);
     }
-    
-    #ifdef IS_ROS2
-        auto& intrinsics = cameraData.k;
-        auto& distortions = cameraData.d;
-        auto& projection = cameraData.p;
-        auto& rotation = cameraData.r;
-    #else
-        auto& intrinsics = cameraData.K;
-        auto& distortions = cameraData.D;
-        auto& projection = cameraData.P;
-        auto& rotation = cameraData.R;    
-    #endif
+
+#ifdef IS_ROS2
+    auto& intrinsics = cameraData.k;
+    auto& distortions = cameraData.d;
+    auto& projection = cameraData.p;
+    auto& rotation = cameraData.r;
+#else
+    auto& intrinsics = cameraData.K;
+    auto& distortions = cameraData.D;
+    auto& projection = cameraData.P;
+    auto& rotation = cameraData.R;
+#endif
 
     std::copy(flatIntrinsics.begin(), flatIntrinsics.end(), intrinsics.begin());
 

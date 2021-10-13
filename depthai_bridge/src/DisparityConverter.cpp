@@ -42,26 +42,26 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, Dispari
     outDispImageMsg.min_disparity = _focalLength * _baseline / _maxDepth;
     outDispImageMsg.max_disparity = _focalLength * _baseline / _minDepth;
 
-    #ifdef IS_ROS2
-        auto rclNow = rclcpp::Clock().now();
-        auto steadyTime = std::chrono::steady_clock::now();
-        auto diffTime = steadyTime - tstamp;
-        auto rclStamp = rclNow - diffTime;
-        outDispImageMsg.header.stamp = rclStamp;
-        outDispImageMsg.t = _baseline;  // TODO(Sachin): Change this units
-        sensor_msgs::msg::Image& outImageMsg = outDispImageMsg.image;
-    #else
-        auto rosNow = ros::Time::now();
-        auto steadyTime = std::chrono::steady_clock::now();
-        auto diffTime = steadyTime - tstamp;
-        auto rosStamp = rosNow - diffTime;
-        outDispImageMsg.header.stamp = rosStamp;
-        outDispImageMsg.header.seq = inData->getSequenceNum();
-        outDispImageMsg.T = _baseline;  // TODO(Sachin): Change this units
-        sensor_msgs::Image& outImageMsg = outDispImageMsg.image;
-    #endif
+#ifdef IS_ROS2
+    auto rclNow = rclcpp::Clock().now();
+    auto steadyTime = std::chrono::steady_clock::now();
+    auto diffTime = steadyTime - tstamp;
+    auto rclStamp = rclNow - diffTime;
+    outDispImageMsg.header.stamp = rclStamp;
+    outDispImageMsg.t = _baseline;  // TODO(Sachin): Change this units
+    sensor_msgs::msg::Image& outImageMsg = outDispImageMsg.image;
+#else
+    auto rosNow = ros::Time::now();
+    auto steadyTime = std::chrono::steady_clock::now();
+    auto diffTime = steadyTime - tstamp;
+    long int nsec = rosNow.toNSec() - diffTime.count();
+    auto rosStamp = rosNow.fromNSec(nsec);
+    outDispImageMsg.header.stamp = rosStamp;
 
-    
+    outDispImageMsg.header.seq = inData->getSequenceNum();
+    outDispImageMsg.T = _baseline;  // TODO(Sachin): Change this units
+    sensor_msgs::Image& outImageMsg = outDispImageMsg.image;
+#endif
 
     // copying the data to ros msg
     // outDispImageMsg.header       = imgHeader;
@@ -159,11 +159,11 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, Dispari
 } */
 
 DisparityImagePtr DisparityConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
-    #ifdef IS_ROS2
-        DisparityImagePtr ptr = std::make_shared<DisparityMsgs::DisparityImage>();
-    #else
-        DisparityImagePtr ptr = boost::make_shared<DisparityMsgs::DisparityImage>();
-    #endif
+#ifdef IS_ROS2
+    DisparityImagePtr ptr = std::make_shared<DisparityMsgs::DisparityImage>();
+#else
+    DisparityImagePtr ptr = boost::make_shared<DisparityMsgs::DisparityImage>();
+#endif
     toRosMsg(inData, *ptr);
     return ptr;
 }

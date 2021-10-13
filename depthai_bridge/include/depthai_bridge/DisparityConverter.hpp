@@ -9,19 +9,21 @@
 
 #ifdef IS_ROS2
     #include "rclcpp/rclcpp.hpp"
-    #include "stereo_msgs/msg/disparity_image.hpp"
     #include "sensor_msgs/image_encodings.hpp"
+    #include "stereo_msgs/msg/disparity_image.hpp"
 
-    namespace DisparityMsgs = stereo_msgs::msg;
-    using DisparityImagePtr = DisparityMsgs::DisparityImage::SharedPtr;
+namespace DisparityMsgs = stereo_msgs::msg;
+using DisparityImagePtr = DisparityMsgs::DisparityImage::SharedPtr;
 #else
     #include <ros/ros.h>
-    #include <boost/make_shared.hpp>
-    #include "stereo_msgs/DisparityImage.h"
-    #include "sensor_msgs/image_encodings.h"
 
-    namespace DisparityMsgs = stereo_msgs;
-    using DisparityImagePtr = DisparityMsgs::DisparityImage::Ptr;
+    #include <boost/make_shared.hpp>
+
+    #include "sensor_msgs/image_encodings.h"
+    #include "stereo_msgs/DisparityImage.h"
+
+namespace DisparityMsgs = stereo_msgs;
+using DisparityImagePtr = DisparityMsgs::DisparityImage::Ptr;
 #endif
 
 namespace dai::rosBridge {
