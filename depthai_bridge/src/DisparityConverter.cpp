@@ -1,15 +1,6 @@
 
 #include <depthai_bridge/DisparityConverter.hpp>
 
-// FIXME(Sachin): Do I need to convert the encodings that are available in dai
-// to only that ros support ? I mean we can publish whatever it is and decode it
-// on the other side but howver maybe we should have option to convert planar to
-// interleaved before publishing ???
-
-// By default everthing form dai is changed to interleaved when publishing over
-// ros. and if we subscribe to a previously published ros msg as input to
-// xlinkin node then we need to convert it back to planar if xlinkin node needs
-// it planar
 namespace dai::rosBridge {
 
 /*
@@ -48,7 +39,7 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, Dispari
     auto diffTime = steadyTime - tstamp;
     auto rclStamp = rclNow - diffTime;
     outDispImageMsg.header.stamp = rclStamp;
-    outDispImageMsg.t = _baseline;  // TODO(Sachin): Change this units
+    outDispImageMsg.t = _baseline / 100;  // converting cm to meters
     sensor_msgs::msg::Image& outImageMsg = outDispImageMsg.image;
 #else
     auto rosNow = ros::Time::now();
@@ -59,7 +50,7 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, Dispari
     outDispImageMsg.header.stamp = rosStamp;
 
     outDispImageMsg.header.seq = inData->getSequenceNum();
-    outDispImageMsg.T = _baseline;  // TODO(Sachin): Change this units
+    outDispImageMsg.T = _baseline / 100;  // converting cm to meters
     sensor_msgs::Image& outImageMsg = outDispImageMsg.image;
 #endif
 

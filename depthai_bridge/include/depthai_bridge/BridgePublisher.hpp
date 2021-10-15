@@ -163,7 +163,7 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(std::shared_ptr<dai::DataOutput
                                                  ConvertFunc converter,
                                                  rclcpp::QoS qosSetting)
     : _daiMessageQueue(daiMessageQueue), _node(node), _converter(converter), _it(node), _rosTopic(rosTopic) {
-    _rosPublisher = _node->create_publisher<RosMsg>(_rosTopic, qosSetting);  // TODO(sachin): Add the qos_profle later
+    _rosPublisher = _node->create_publisher<RosMsg>(_rosTopic, qosSetting);
 }
 
 template <class RosMsg, class SimMsg>
@@ -368,7 +368,6 @@ void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDa
 #ifndef IS_ROS2
             infoSubCount = _cameraInfoPublisher->getNumSubscribers();
 #else
-            // FIXME(sachin): Pointing to ther main topic. Change it to camerainfo topic.
             infoSubCount = _node->count_subscribers(_cameraName + "/camera_info");
 #endif
 

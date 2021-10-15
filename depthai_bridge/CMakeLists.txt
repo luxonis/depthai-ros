@@ -91,8 +91,10 @@ if ( ament_cmake_FOUND )
       install(DIRECTORY include/
         DESTINATION include/
       )
-      install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+      install(DIRECTORY launch/ DESTINATION share/${PROJECT_NAME}/launch
+              FILES_MATCHING PATTERN "*.py")
       install(DIRECTORY urdf DESTINATION share/${PROJECT_NAME})
+      install(DIRECTORY rviz DESTINATION share/${PROJECT_NAME})
 
       ament_export_include_directories(include)
       ament_export_libraries(depthai_bridge)
@@ -174,8 +176,10 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
       FILES_MATCHING PATTERN "*.hpp"
     )
 
+    install(DIRECTORY launch/ DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+    FILES_MATCHING PATTERN "*.launch")
+
     install(DIRECTORY
-      launch
       urdf
       DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
     )

@@ -4,15 +4,7 @@
 #include <depthai_bridge/ImageConverter.hpp>
 #include <ratio>
 #include <tuple>
-// FIXME(Sachin): Do I need to convert the encodings that are available in dai
-// to only that ros support ? I mean we can publish whatever it is and decode it
-// on the other side but howver maybe we should have option to convert planar to
-// interleaved before publishing ???
 
-// By default everthing form dai is changed to interleaved when publishing over
-// ros. and if we subscribe to a previously published ros msg as input to
-// xlinkin node then we need to convert it back to planar if xlinkin node needs
-// it planar
 namespace dai::rosBridge {
 
 std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::encodingEnumMap = {{dai::RawImgFrame::Type::YUV422i, "yuv422"},
@@ -256,7 +248,7 @@ cv::Mat ImageConverter::rosMsgtoCvMat(ImageMsgs::Image& inMsg) {
         cv::cvtColor(nv_frame, rgb, cv::COLOR_YUV2BGR_NV12);
         return rgb;
     } else {
-        std::runtime_error("THis frature is still WIP");
+        std::runtime_error("This frature is still WIP");
         return rgb;
     }
 }
