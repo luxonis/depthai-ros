@@ -9,7 +9,6 @@
 #include "sensor_msgs/Imu.h"
 
 namespace dai::rosBridge {
-using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration>;
 
 class ImuConverter {
    public:
