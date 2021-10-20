@@ -13,7 +13,7 @@ void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, sensor_msgs::I
     outImuMsg.header.stamp = ros::Time::now();
     outImuMsg.header.frame_id = _frameName;
 
-    const auto imuPacket = inData->packets[inData->packets.size()-1];
+    const auto imuPacket = inData->packets[inData->packets.size() - 1];
 
     {
         const auto& rVvalues = imuPacket.rotationVector;
