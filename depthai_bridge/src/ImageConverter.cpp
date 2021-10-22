@@ -315,7 +315,8 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
 
             if(calibHandler.getStereoLeftCameraId() == cameraId) {
                 stereoFlatIntrinsics[3] = stereoFlatIntrinsics[0]
-                                          * calibHandler.getCameraExtrinsics(calibHandler.getStereoLeftCameraId(), calibHandler.getStereoRightCameraId())[0][3];
+                                          * calibHandler.getCameraExtrinsics(calibHandler.getStereoLeftCameraId(), calibHandler.getStereoRightCameraId())[0][3]
+                                          / 100.0;  // Converting to meters
                 rectifiedRotation = calibHandler.getStereoLeftRectificationRotation();
             } else {
                 rectifiedRotation = calibHandler.getStereoRightRectificationRotation();
