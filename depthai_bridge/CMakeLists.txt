@@ -21,8 +21,8 @@ if(NOT OpenCV_FOUND)
 endif()
 
 
-find_package(depthai CONFIG REQUIRED)
-# find_package(depthai CONFIG REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake/depthai") 
+# find_package(depthai CONFIG REQUIRED)
+find_package(depthai CONFIG REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake/depthai") 
 find_package(ament_cmake QUIET)
 
 if ( ament_cmake_FOUND )
@@ -82,16 +82,24 @@ if ( ament_cmake_FOUND )
                           opencv_imgproc
                           opencv_highgui) 
 
+    ament_export_targets(depthai_bridgeTargets HAS_LIBRARY_TARGET)
 
-
+    install(DIRECTORY include/
+            DESTINATION include/
+    )
+    
     install(TARGETS depthai_bridge
-                    ARCHIVE DESTINATION lib
-                    LIBRARY DESTINATION lib
-                    RUNTIME DESTINATION bin)
+          EXPORT depthai_bridgeTargets      
+                  ARCHIVE DESTINATION lib
+                  LIBRARY DESTINATION lib
+                  RUNTIME DESTINATION bin
+                  INCLUDES DESTINATION include
 
-      install(DIRECTORY include/
-        DESTINATION include/
-      )
+                )
+    install(EXPORT depthai_bridgeTargets
+          DESTINATION share/${PROJECT_NAME}/cmake)
+
+
       install(DIRECTORY launch/ DESTINATION share/${PROJECT_NAME}/launch
               FILES_MATCHING PATTERN "*.py")
       install(DIRECTORY urdf DESTINATION share/${PROJECT_NAME})
