@@ -26,7 +26,6 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
 
 void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData, SpatialMessages::SpatialDetectionArray& opDetectionMsg) {
 // setting the header
-// setting the header
 #ifndef IS_ROS2
     opDetectionMsg.header.seq = _sequenceNum;
     opDetectionMsg.header.stamp = ros::Time::now();

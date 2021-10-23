@@ -69,6 +69,7 @@ if ( ament_cmake_FOUND )
     "src/ImageConverter.cpp"
     "src/ImgDetectionConverter.cpp"
     "src/SpatialDetectionConverter.cpp"
+    "src/ImuConverter.cpp"
     )
 
     add_library(${PROJECT_NAME} SHARED ${LIB_SRC})
@@ -126,6 +127,7 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
     "src/ImageConverter.cpp"
     "src/ImgDetectionConverter.cpp"
     "src/SpatialDetectionConverter.cpp"
+    "src/ImuConverter.cpp"
     )
     
     message(STATUS "------------------------------------------")

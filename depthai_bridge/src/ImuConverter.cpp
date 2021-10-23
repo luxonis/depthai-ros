@@ -1,16 +1,19 @@
-#include <ros/ros.h>
 
-#include <boost/make_shared.hpp>
 #include <depthai_bridge/ImuConverter.hpp>
 
 namespace dai::rosBridge {
 
 ImuConverter::ImuConverter(const std::string& frameName) : _frameName(frameName), _sequenceNum(0) {}
 
-void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, sensor_msgs::Imu& outImuMsg) {
-    // setting the header
+void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, ImuMsgs::Imu& outImuMsg) {
+// setting the header
+#ifndef IS_ROS2
     outImuMsg.header.seq = _sequenceNum;
     outImuMsg.header.stamp = ros::Time::now();
+#else
+    outImuMsg.header.stamp = rclcpp::Clock().now();
+#endif
+
     outImuMsg.header.frame_id = _frameName;
 
     const auto imuPacket = inData->packets[inData->packets.size() - 1];
@@ -43,8 +46,8 @@ void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, sensor_msgs::I
     _sequenceNum++;
 }
 
-sensor_msgs::Imu::Ptr ImuConverter::toRosMsgPtr(const std::shared_ptr<dai::IMUData> inData) {
-    sensor_msgs::Imu::Ptr ptr = boost::make_shared<sensor_msgs::Imu>();
+ImuPtr ImuConverter::toRosMsgPtr(const std::shared_ptr<dai::IMUData> inData) {
+    ImuPtr ptr = boost::make_shared<ImuMsgs::Imu>();
     toRosMsg(inData, *ptr);
     return ptr;
 }
