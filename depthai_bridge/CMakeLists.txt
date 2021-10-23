@@ -27,7 +27,6 @@ find_package(ament_cmake QUIET)
 
 if ( ament_cmake_FOUND )
     # set(IS_ROS2 ON)
-    add_compile_definitions(IS_ROS2)
     # Not adding -DUSING_ROS since xml_parsing.cpp hasn't been ported to ROS2
 
     message(STATUS "------------------------------------------")
@@ -76,6 +75,7 @@ if ( ament_cmake_FOUND )
 
     ament_target_dependencies(${PROJECT_NAME}
       ${dependencies})
+    target_compile_definitions(${PROJECT_NAME} PUBLIC IS_ROS2)
 
     target_link_libraries(${PROJECT_NAME} 
                           depthai::core 
@@ -83,11 +83,11 @@ if ( ament_cmake_FOUND )
                           opencv_highgui) 
 
 
+
     install(TARGETS depthai_bridge
                     ARCHIVE DESTINATION lib
                     LIBRARY DESTINATION lib
-                    RUNTIME DESTINATION bin
-                  )
+                    RUNTIME DESTINATION bin)
 
       install(DIRECTORY include/
         DESTINATION include/

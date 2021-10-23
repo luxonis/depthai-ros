@@ -181,7 +181,7 @@ void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outD
 
 ImagePtr ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
 #ifdef IS_ROS2
-    ImagePtr ptr = std::make_shared<sensor_msgs::msg::Image>();
+    ImagePtr ptr = std::make_shared<ImageMsgs::Image>();
 #else
     ImagePtr ptr = boost::make_shared<ImageMsgs::Image>();
 #endif

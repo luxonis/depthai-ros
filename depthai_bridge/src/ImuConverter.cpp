@@ -47,7 +47,12 @@ void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, ImuMsgs::Imu& 
 }
 
 ImuPtr ImuConverter::toRosMsgPtr(const std::shared_ptr<dai::IMUData> inData) {
-    ImuPtr ptr = boost::make_shared<ImuMsgs::Imu>();
+    #ifdef IS_ROS2
+    ImuPtr ptr = std::make_shared<ImuMsgs::Imu>();
+    #else
+        ImuPtr ptr = boost::make_shared<ImuMsgs::Imu>();
+    #endif
+
     toRosMsg(inData, *ptr);
     return ptr;
 }

@@ -9,7 +9,7 @@
 
 #ifdef IS_ROS2
     #include "rclcpp/rclcpp.hpp"
-    #include "sensor_msgs/msg/Imu.hpp"
+    #include "sensor_msgs/msg/imu.hpp"
 namespace ImuMsgs = sensor_msgs::msg;
 using ImuPtr = ImuMsgs::Imu::SharedPtr;
 #else
