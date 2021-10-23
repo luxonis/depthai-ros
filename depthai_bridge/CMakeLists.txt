@@ -21,8 +21,8 @@ if(NOT OpenCV_FOUND)
 endif()
 
 
-# find_package(depthai CONFIG REQUIRED)
-find_package(depthai CONFIG REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake/depthai") 
+find_package(depthai CONFIG REQUIRED)
+# find_package(depthai CONFIG REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake/depthai") 
 find_package(ament_cmake QUIET)
 
 if ( ament_cmake_FOUND )
