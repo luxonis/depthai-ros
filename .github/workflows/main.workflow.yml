@@ -93,7 +93,7 @@ jobs:
         with:
           # vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/examples.repos"
           # package-name: depthai_examples
-          target-ros1-distro: ${{ matrix.ros_distribution }}
+          target-ros2-distro: ${{ matrix.ros_distribution }}
           skip-tests: true
 
 
