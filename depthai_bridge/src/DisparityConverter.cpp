@@ -1,19 +1,6 @@
-#include <ros/ros.h>
 
-#include <boost/make_shared.hpp>
 #include <depthai_bridge/DisparityConverter.hpp>
 
-#include "sensor_msgs/image_encodings.h"
-
-// FIXME(Sachin): Do I need to convert the encodings that are available in dai
-// to only that ros support ? I mean we can publish whatever it is and decode it
-// on the other side but howver maybe we should have option to convert planar to
-// interleaved before publishing ???
-
-// By default everthing form dai is changed to interleaved when publishing over
-// ros. and if we subscribe to a previously published ros msg as input to
-// xlinkin node then we need to convert it back to planar if xlinkin node needs
-// it planar
 namespace dai::rosBridge {
 
 /*
@@ -38,20 +25,34 @@ std::unordered_map<dai::RawImgFrame::Type, std::string> DisparityConverter::plan
 DisparityConverter::DisparityConverter(const std::string frameName, float focalLength, float baseline, float minDepth, float maxDepth)
     : _frameName(frameName), _focalLength(focalLength), _baseline(baseline / 100.0), _minDepth(minDepth / 100.0), _maxDepth(maxDepth / 100.0) {}
 
-void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, stereo_msgs::DisparityImage& outDispImageMsg) {
+void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, DisparityMsgs::DisparityImage& outDispImageMsg) {
     auto tstamp = inData->getTimestamp();
-    int32_t sec = std::chrono::duration_cast<std::chrono::seconds>(tstamp.time_since_epoch()).count();
-    int32_t nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(tstamp.time_since_epoch()).count() % 1000000000UL;
 
-    outDispImageMsg.header.seq = inData->getSequenceNum();
-    outDispImageMsg.header.stamp = ros::Time(sec, nsec);
     outDispImageMsg.header.frame_id = _frameName;
     outDispImageMsg.f = _focalLength;
-    outDispImageMsg.T = _baseline;  // TODO(Sachin): Change this units
     outDispImageMsg.min_disparity = _focalLength * _baseline / _maxDepth;
     outDispImageMsg.max_disparity = _focalLength * _baseline / _minDepth;
 
+#ifdef IS_ROS2
+    auto rclNow = rclcpp::Clock().now();
+    auto steadyTime = std::chrono::steady_clock::now();
+    auto diffTime = steadyTime - tstamp;
+    auto rclStamp = rclNow - diffTime;
+    outDispImageMsg.header.stamp = rclStamp;
+    outDispImageMsg.t = _baseline / 100;  // converting cm to meters
+    sensor_msgs::msg::Image& outImageMsg = outDispImageMsg.image;
+#else
+    auto rosNow = ros::Time::now();
+    auto steadyTime = std::chrono::steady_clock::now();
+    auto diffTime = steadyTime - tstamp;
+    long int nsec = rosNow.toNSec() - diffTime.count();
+    auto rosStamp = rosNow.fromNSec(nsec);
+    outDispImageMsg.header.stamp = rosStamp;
+
+    outDispImageMsg.header.seq = inData->getSequenceNum();
+    outDispImageMsg.T = _baseline / 100;  // converting cm to meters
     sensor_msgs::Image& outImageMsg = outDispImageMsg.image;
+#endif
 
     // copying the data to ros msg
     // outDispImageMsg.header       = imgHeader;
@@ -101,7 +102,7 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, stereo_
     return;
 }
 
-/* void DisparityConverter::toDaiMsg(const stereo_msgs::DisparityImage &inMsg,
+/* void DisparityConverter::toDaiMsg(const DisparityMsgs::DisparityImage &inMsg,
                               dai::ImgFrame& outData) {
 
   std::unordered_map<dai::RawImgFrame::Type, std::string>::iterator
@@ -114,7 +115,7 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, stereo_
         });
     if (revEncodingIter == encodingEnumMap.end())
       std::runtime_error("Unable to find DAI encoding for the corresponding "
-                         "stereo_msgs::DisparityImage.encoding stream");
+                         "DisparityMsgs::DisparityImage.encoding stream");
 
     outData.setData(inMsg.data);
   } else {
@@ -148,8 +149,12 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, stereo_
   outData.setType(revEncodingIter->first);
 } */
 
-stereo_msgs::DisparityImagePtr DisparityConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
-    stereo_msgs::DisparityImagePtr ptr = boost::make_shared<stereo_msgs::DisparityImage>();
+DisparityImagePtr DisparityConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
+#ifdef IS_ROS2
+    DisparityImagePtr ptr = std::make_shared<DisparityMsgs::DisparityImage>();
+#else
+    DisparityImagePtr ptr = boost::make_shared<DisparityMsgs::DisparityImage>();
+#endif
     toRosMsg(inData, *ptr);
     return ptr;
 }

@@ -1,3 +1,4 @@
-geometry_msgs/Pose2D topLeft
-geometry_msgs/Pose2D bottomRight
+geometry_msgs/Pose2D top_left
+geometry_msgs/Pose2D bottom_right
 ---
+int64 status

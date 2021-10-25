@@ -30,7 +30,6 @@ jobs:
         clangFormatVersion: 10
   
   ROS1-build:
-    if: startsWith(github.ref, 'refs/heads/noetic')
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -73,7 +72,6 @@ jobs:
       
 
   ROS2-build:
-    if: startsWith(github.ref, 'refs/heads/foxy')
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -95,7 +93,7 @@ jobs:
         with:
           # vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/examples.repos"
           # package-name: depthai_examples
-          target-ros1-distro: ${{ matrix.ros_distribution }}
+          target-ros2-distro: ${{ matrix.ros_distribution }}
           skip-tests: true
 
 

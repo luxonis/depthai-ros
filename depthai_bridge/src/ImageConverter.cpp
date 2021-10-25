@@ -1,22 +1,10 @@
 #include <cv_bridge/cv_bridge.h>
-#include <ros/ros.h>
 
-#include <boost/make_shared.hpp>
-#include <boost/range/algorithm.hpp>
 #include <depthai/depthai.hpp>
 #include <depthai_bridge/ImageConverter.hpp>
-#include <opencv2/opencv.hpp>
+#include <ratio>
 #include <tuple>
 
-// FIXME(Sachin): Do I need to convert the encodings that are available in dai
-// to only that ros support ? I mean we can publish whatever it is and decode it
-// on the other side but howver maybe we should have option to convert planar to
-// interleaved before publishing ???
-
-// By default everthing form dai is changed to interleaved when publishing over
-// ros. and if we subscribe to a previously published ros msg as input to
-// xlinkin node then we need to convert it back to planar if xlinkin node needs
-// it planar
 namespace dai::rosBridge {
 
 std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::encodingEnumMap = {{dai::RawImgFrame::Type::YUV422i, "yuv422"},
@@ -39,15 +27,27 @@ ImageConverter::ImageConverter(bool interleaved) : _daiInterleaved(interleaved) 
 
 ImageConverter::ImageConverter(const std::string frameName, bool interleaved) : _frameName(frameName), _daiInterleaved(interleaved) {}
 
-void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, sensor_msgs::Image& outImageMsg) {
+void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, ImageMsgs::Image& outImageMsg) {
     auto tstamp = inData->getTimestamp();
-    int32_t sec = std::chrono::duration_cast<std::chrono::seconds>(tstamp.time_since_epoch()).count();
-    int32_t nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(tstamp.time_since_epoch()).count() % 1000000000UL;
 
-    std_msgs::Header header;
-    header.seq = inData->getSequenceNum();
-    header.stamp = ros::Time(sec, nsec);
+    StdMsgs::Header header;
     header.frame_id = _frameName;
+
+#ifdef IS_ROS2
+    auto rclNow = rclcpp::Clock().now();
+    auto steadyTime = std::chrono::steady_clock::now();
+    auto diffTime = steadyTime - tstamp;
+    auto rclStamp = rclNow - diffTime;
+    header.stamp = rclStamp;
+#else
+    auto rosNow = ros::Time::now();
+    auto steadyTime = std::chrono::steady_clock::now();
+    auto diffTime = steadyTime - tstamp;
+    long int nsec = rosNow.toNSec() - diffTime.count();
+    auto rosStamp = rosNow.fromNSec(nsec);
+    header.stamp = rosStamp;
+    header.seq = inData->getSequenceNum();
+#endif
 
     if(planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end()) {
         // cv::Mat inImg = inData->getCvFrame();
@@ -133,7 +133,7 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, sensor_msgs
 }
 
 // TODO(sachin): Not tested
-void ImageConverter::toDaiMsg(const sensor_msgs::Image& inMsg, dai::ImgFrame& outData) {
+void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outData) {
     std::unordered_map<dai::RawImgFrame::Type, std::string>::iterator revEncodingIter;
     if(_daiInterleaved) {
         revEncodingIter = std::find_if(encodingEnumMap.begin(), encodingEnumMap.end(), [&](const std::pair<dai::RawImgFrame::Type, std::string>& pair) {
@@ -164,18 +164,28 @@ void ImageConverter::toDaiMsg(const sensor_msgs::Image& inMsg, dai::ImgFrame& ou
     /** FIXME(sachin) : is this time convertion correct ???
      * Print the original time and ros time in seconds in
      * ImageFrame::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
-     *sensor_msgs::Image& opMsg) to cross verify..
+     *ImageMsgs::Image& opMsg) to cross verify..
      **/
-    TimePoint ts(std::chrono::seconds((int)inMsg.header.stamp.toSec()) + std::chrono::nanoseconds(inMsg.header.stamp.toNSec()));
+    /* #ifdef IS_ROS2
+        TimePoint ts(std::chrono::seconds((int)inMsg.header.stamp.seconds ()) + std::chrono::nanoseconds(inMsg.header.stamp.nanoseconds()));
+    #else
+        TimePoint ts(std::chrono::seconds((int)inMsg.header.stamp.toSec()) + std::chrono::nanoseconds(inMsg.header.stamp.toNSec()));
+    #endif
+
     outData.setTimestamp(ts);
-    outData.setSequenceNum(inMsg.header.seq);
+    outData.setSequenceNum(inMsg.header.seq); */
     outData.setWidth(inMsg.width);
     outData.setHeight(inMsg.height);
     outData.setType(revEncodingIter->first);
 }
 
-sensor_msgs::ImagePtr ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
-    sensor_msgs::ImagePtr ptr = boost::make_shared<sensor_msgs::Image>();
+ImagePtr ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
+#ifdef IS_ROS2
+    ImagePtr ptr = std::make_shared<ImageMsgs::Image>();
+#else
+    ImagePtr ptr = boost::make_shared<ImageMsgs::Image>();
+#endif
+
     toRosMsg(inData, *ptr);
     return ptr;
 }
@@ -231,25 +241,25 @@ void ImageConverter::interleavedToPlanar(const std::vector<uint8_t>& srcData, st
     return;
 }
 
-cv::Mat ImageConverter::rosMsgtoCvMat(sensor_msgs::Image& inMsg) {
+cv::Mat ImageConverter::rosMsgtoCvMat(ImageMsgs::Image& inMsg) {
     cv::Mat rgb(inMsg.height, inMsg.width, CV_8UC3);
     if(inMsg.encoding == "nv12") {
         cv::Mat nv_frame(inMsg.height * 3 / 2, inMsg.width, CV_8UC1, inMsg.data.data());
         cv::cvtColor(nv_frame, rgb, cv::COLOR_YUV2BGR_NV12);
         return rgb;
     } else {
-        std::runtime_error("THis frature is still WIP");
+        std::runtime_error("This frature is still WIP");
         return rgb;
     }
 }
 
-sensor_msgs::CameraInfo ImageConverter::calibrationToCameraInfo(
+ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
     dai::CalibrationHandler calibHandler, dai::CameraBoardSocket cameraId, int width, int height, Point2f topLeftPixelId, Point2f bottomRightPixelId) {
     std::vector<std::vector<float>> camIntrinsics, rectifiedRotation;
     std::vector<float> distCoeffs;
     std::vector<double> flatIntrinsics, distCoeffsDouble;
     int defWidth, defHeight;
-    sensor_msgs::CameraInfo cameraData;
+    ImageMsgs::CameraInfo cameraData;
     std::tie(std::ignore, defWidth, defHeight) = calibHandler.getDefaultIntrinsics(cameraId);
 
     if(width == -1) {
@@ -270,13 +280,26 @@ sensor_msgs::CameraInfo ImageConverter::calibrationToCameraInfo(
     for(int i = 0; i < 3; i++) {
         std::copy(camIntrinsics[i].begin(), camIntrinsics[i].end(), flatIntrinsics.begin() + 3 * i);
     }
-    std::copy(flatIntrinsics.begin(), flatIntrinsics.end(), cameraData.K.begin());
+
+#ifdef IS_ROS2
+    auto& intrinsics = cameraData.k;
+    auto& distortions = cameraData.d;
+    auto& projection = cameraData.p;
+    auto& rotation = cameraData.r;
+#else
+    auto& intrinsics = cameraData.K;
+    auto& distortions = cameraData.D;
+    auto& projection = cameraData.P;
+    auto& rotation = cameraData.R;
+#endif
+
+    std::copy(flatIntrinsics.begin(), flatIntrinsics.end(), intrinsics.begin());
 
     // TODO(sachin): plumb_bob takes only 5 parameters. Should I change from Plum_bob? if so which model represents best ?
     distCoeffs = calibHandler.getDistortionCoefficients(cameraId);
 
     for(size_t i = 0; i < 5; i++) {
-        cameraData.D.push_back(static_cast<double>(distCoeffs[i]));
+        distortions.push_back(static_cast<double>(distCoeffs[i]));
     }
 
     // Setting Projection matrix if the cameras are stereo pair
@@ -303,8 +326,8 @@ sensor_msgs::CameraInfo ImageConverter::calibrationToCameraInfo(
                 std::copy(rectifiedRotation[i].begin(), rectifiedRotation[i].end(), flatRectifiedRotation.begin() + 3 * i);
             }
 
-            std::copy(stereoFlatIntrinsics.begin(), stereoFlatIntrinsics.end(), cameraData.P.begin());
-            std::copy(flatRectifiedRotation.begin(), flatRectifiedRotation.end(), cameraData.R.begin());
+            std::copy(stereoFlatIntrinsics.begin(), stereoFlatIntrinsics.end(), projection.begin());
+            std::copy(flatRectifiedRotation.begin(), flatRectifiedRotation.end(), rotation.begin());
         }
     }
     cameraData.distortion_model = "plumb_bob";
