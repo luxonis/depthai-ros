@@ -30,7 +30,6 @@ jobs:
         clangFormatVersion: 10
   
   ROS1-build:
-    if: startsWith(github.ref, 'refs/heads/noetic')
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -73,7 +72,6 @@ jobs:
       
 
   ROS2-build:
-    if: startsWith(github.ref, 'refs/heads/foxy')
     runs-on: ubuntu-20.04
     strategy:
       matrix:
