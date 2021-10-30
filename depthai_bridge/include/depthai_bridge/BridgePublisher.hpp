@@ -347,10 +347,10 @@ void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDa
         _converter(inDataPtr, opMsg);
         _camInfoFrameId = opMsg.header.frame_id;
     }
-    int infoSubCount;
+    int infoSubCount = 0;
 #ifndef IS_ROS2
     if(_isImageMessage) {
-        infoSubCount = _rosPublisher->getNumSubscribers();
+        infoSubCount = _cameraInfoPublisher->getNumSubscribers();
     }
     int numSub = _rosPublisher->getNumSubscribers();
 #else
@@ -359,7 +359,6 @@ void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDa
     }
     int numSub = _node->count_subscribers(_rosTopic);
 #endif
-
     if(numSub > 0) {
         _converter(inDataPtr, opMsg);
         _rosPublisher->publish(opMsg);
