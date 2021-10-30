@@ -301,7 +301,7 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
         distortions.push_back(static_cast<double>(distCoeffs[i]));
     }
 
-    // Setting Projection matrix if the cameras are stereo pair
+    // Setting Projection matrix if the cameras are stereo pair. Right as the first and left as the second.
     if(calibHandler.getStereoRightCameraId() != dai::CameraBoardSocket::AUTO && calibHandler.getStereoLeftCameraId() != dai::CameraBoardSocket::AUTO) {
         if(calibHandler.getStereoRightCameraId() == cameraId || calibHandler.getStereoLeftCameraId() == cameraId) {
             std::vector<std::vector<float>> stereoIntrinsics = calibHandler.getCameraIntrinsics(
@@ -313,6 +313,8 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
             }
 
             if(calibHandler.getStereoLeftCameraId() == cameraId) {
+                // This defines where the first camera is w.r.t second camera coordinate system giving it a translation to place all the points in the first
+                // camera to second camera by multiplying that translation vector using transformation function.
                 stereoFlatIntrinsics[3] = stereoFlatIntrinsics[0]
                                           * calibHandler.getCameraExtrinsics(calibHandler.getStereoRightCameraId(), calibHandler.getStereoLeftCameraId())[0][3]
                                           / 100.0;  // Converting to meters
