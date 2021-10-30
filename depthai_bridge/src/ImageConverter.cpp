@@ -298,7 +298,7 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
     // TODO(sachin): plumb_bob takes only 5 parameters. Should I change from Plum_bob? if so which model represents best ?
     distCoeffs = calibHandler.getDistortionCoefficients(cameraId);
 
-    for(size_t i = 0; i < 5; i++) {
+    for(size_t i = 0; i < 8; i++) {
         distortions.push_back(static_cast<double>(distCoeffs[i]));
     }
 
@@ -330,7 +330,7 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
             std::copy(flatRectifiedRotation.begin(), flatRectifiedRotation.end(), rotation.begin());
         }
     }
-    cameraData.distortion_model = "plumb_bob";
+    cameraData.distortion_model = "rational_polynomial";
 
     return cameraData;
 }
