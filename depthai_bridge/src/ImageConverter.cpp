@@ -295,7 +295,6 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
 
     std::copy(flatIntrinsics.begin(), flatIntrinsics.end(), intrinsics.begin());
 
-    // TODO(sachin): plumb_bob takes only 5 parameters. Should I change from Plum_bob? if so which model represents best ?
     distCoeffs = calibHandler.getDistortionCoefficients(cameraId);
 
     for(size_t i = 0; i < 8; i++) {
@@ -314,7 +313,7 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
             }
 
             if(calibHandler.getStereoLeftCameraId() == cameraId) {
-                stereoFlatIntrinsics[3] = stereoFlatIntrinsics[0]
+                stereoFlatIntrinsics[3] = - stereoFlatIntrinsics[0]
                                           * calibHandler.getCameraExtrinsics(calibHandler.getStereoLeftCameraId(), calibHandler.getStereoRightCameraId())[0][3]
                                           / 100.0;  // Converting to meters
                 rectifiedRotation = calibHandler.getStereoLeftRectificationRotation();
