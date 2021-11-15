@@ -5,10 +5,9 @@
   <description>Package to keep interface independent of the driver</description>
 
   <maintainer email="sachin@luxonis.com">Sachin Guruswamy</maintainer>
-
-  <license>MPLv2</license>
-
   <author>Sachin Guruswamy</author>
+
+  <license>MIT</license>
 
   <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
   <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
