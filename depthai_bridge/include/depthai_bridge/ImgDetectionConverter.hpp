@@ -1,3 +1,5 @@
+#pragma once
+
 #include <depthai_bridge/ImageConverter.hpp>
 
 #include "depthai/depthai.hpp"

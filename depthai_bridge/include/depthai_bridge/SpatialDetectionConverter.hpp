@@ -1,4 +1,4 @@
-
+#pragma once
 
 #include <depthai_bridge/ImageConverter.hpp>
 
