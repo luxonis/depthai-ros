@@ -5,9 +5,9 @@
     <xacro:property name="M_PI"     value="3.1415926535897931" />
     <xacro:property name="model"    value="${camera_model}" />
 
-    <xacro:if value="${model == 'BW1098OAK'}">
-        <xacro:property name="baseline" value="0.075" />
-    </xacro:if>
+    <!-- <xacro:if value="${model == 'BW1098OAK'}">
+    </xacro:if> -->
+    <xacro:property name="baseline" value="0.095" />
 
     <!-- base_link of the sensor-->
     <link name="${base_frame}"/>
@@ -23,7 +23,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
-                <mesh filename="package://depthai_bridge/urdf/models/${model}.dae" />
+                <mesh filename="package://depthai_bridge/urdf/models/${model}.stl" />
             </geometry>
             <material name="mat">
                 <color rgba="0.8 0.8 0.8 0.8"/>

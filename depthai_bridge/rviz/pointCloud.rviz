@@ -7,9 +7,8 @@ Panels:
         - /Global Options1
         - /Status1
         - /image_rect1
-        - /PointCloud21
-        - /PointCloud21/Status1
         - /PointCloud21/Topic1
+        - /RobotModel1
       Splitter Ratio: 0.5
     Tree Height: 384
   - Class: rviz_common/Selection
@@ -92,6 +91,70 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
+    - Alpha: 1
+      Class: rviz_default_plugins/RobotModel
+      Collision Enabled: false
+      Description File: ""
+      Description Source: Topic
+      Description Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /robot_description
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        oak-d_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        oak_imu_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        oak_left_camera_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        oak_left_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        oak_model_origin:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        oak_rgb_camera_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        oak_rgb_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        oak_right_camera_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        oak_right_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+      Name: RobotModel
+      TF Prefix: ""
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48

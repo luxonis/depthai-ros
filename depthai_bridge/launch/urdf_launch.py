@@ -28,7 +28,7 @@ def generate_launch_description():
 
     declare_camera_model_cmd = DeclareLaunchArgument(
         'camera_model',
-        default_value='BW1098OAK',
+        default_value='OAK-D',
         description='The model of the camera. Using a wrong camera model can disable camera features. Valid models: `BW1098OAK`.')
 
     # declare_config_common_path_cmd = DeclareLaunchArgument(
