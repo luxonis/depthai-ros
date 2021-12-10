@@ -53,7 +53,7 @@ jobs:
         run: sudo apt-get install libusb-1.0-0-dev
 
       - name: Installing DepthAi Core
-        run: sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencies.sh | sudo bash
+        run: sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/main/install_dependencies.sh | sudo bash
       
       - name: Build depthai-bridge melodic
         if: matrix.os == 'ubuntu-18.04'  
@@ -92,7 +92,7 @@ jobs:
         run: sudo apt-get install libusb-1.0-0-dev
 
       - name: Installing DepthAi Core
-        run: sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencies.sh | sudo bash
+        run: sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/main/install_dependencies.sh | sudo bash
       
       - name: Build depthai-bridge ${{ matrix.ros_distribution }}
         uses: ros-tooling/action-ros-ci@v0.2
