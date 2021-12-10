@@ -5,12 +5,12 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - noetic-devel
+      - main
     tags:
       - 'v*'
   pull_request:
     branches:
-      - noetic-devel
+      - main
 
 jobs:
 
@@ -90,7 +90,7 @@ jobs:
 
       - name: Installing libusb
         run: sudo apt-get install libusb-1.0-0-dev
-        
+
       - name: Installing DepthAi Core
         run: sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencies.sh | sudo bash
       
