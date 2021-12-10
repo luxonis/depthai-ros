@@ -36,7 +36,10 @@ jobs:
     
     steps:
       - uses: actions/checkout@v2
-      
+
+      - name: Installing libusb
+        run: sudo apt-get install libusb-1.0-0-dev
+
       - name: Melodic build
         if: matrix.os == 'ubuntu-18.04'
         uses: ros-tooling/setup-ros@v0.2
@@ -48,9 +51,6 @@ jobs:
         uses: ros-tooling/setup-ros@v0.2
         with:
           required-ros-distributions: noetic
-
-      - name: Installing libusb
-        run: sudo apt-get install libusb-1.0-0-dev
 
       - name: Installing DepthAi Core
         run: sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencies.sh | sudo bash
@@ -83,6 +83,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       
+      - name: Installing libusb
+        run: sudo apt-get install libusb-1.0-0-dev
+
       - name: ${{ matrix.ros_distribution }} build
         uses: ros-tooling/setup-ros@v0.2
         with:
