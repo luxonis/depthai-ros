@@ -1,7 +1,8 @@
 
 #include <depthai_bridge/ImuConverter.hpp>
 
-namespace dai::ros {
+namespace dai {
+namespace ros {
 
 ImuConverter::ImuConverter(const std::string& frameName) : _frameName(frameName), _sequenceNum(0) {}
 
@@ -57,4 +58,5 @@ ImuPtr ImuConverter::toRosMsgPtr(const std::shared_ptr<dai::IMUData> inData) {
     return ptr;
 }
 
-}  // namespace dai::ros
+}  // namespace ros
+}  // namespace dai

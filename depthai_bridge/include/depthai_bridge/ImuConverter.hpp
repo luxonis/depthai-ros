@@ -19,6 +19,8 @@
 #endif
 
 namespace dai {
+
+namespace ros {
 #ifdef IS_ROS2
 namespace ImuMsgs = sensor_msgs::msg;
 using ImuPtr = ImuMsgs::Imu::SharedPtr;
@@ -26,8 +28,6 @@ using ImuPtr = ImuMsgs::Imu::SharedPtr;
 namespace ImuMsgs = sensor_msgs;
 using ImuPtr = ImuMsgs::Imu::Ptr;
 #endif
-namespace ros {
-
 class ImuConverter {
    public:
     ImuConverter(const std::string& frameName);

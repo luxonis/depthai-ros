@@ -1,7 +1,8 @@
 
 #include <depthai_bridge/DisparityConverter.hpp>
 
-namespace dai::ros {
+namespace dai {
+namespace ros {
 
 /*
 std::unordered_map<dai::RawImgFrame::Type, std::string> DisparityConverter::encodingEnumMap = {
@@ -159,4 +160,5 @@ DisparityImagePtr DisparityConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame>
     return ptr;
 }
 
-}  // namespace dai::ros
+}  // namespace ros
+}  // namespace dai

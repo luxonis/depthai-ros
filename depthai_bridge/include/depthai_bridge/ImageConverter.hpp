@@ -25,6 +25,8 @@
 #endif
 
 namespace dai {
+
+namespace ros {
 #ifdef IS_ROS2
 
 namespace StdMsgs = std_msgs::msg;
@@ -35,7 +37,6 @@ namespace StdMsgs = std_msgs;
 namespace ImageMsgs = sensor_msgs;
 using ImagePtr = ImageMsgs::ImagePtr;
 #endif
-namespace ros {
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration>;
 
 class ImageConverter {

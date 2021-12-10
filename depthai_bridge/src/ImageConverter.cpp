@@ -5,7 +5,8 @@
 #include <ratio>
 #include <tuple>
 
-namespace dai::ros {
+namespace dai {
+namespace ros {
 
 std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::encodingEnumMap = {{dai::RawImgFrame::Type::YUV422i, "yuv422"},
                                                                                            {dai::RawImgFrame::Type::RGBA8888, "rgba8"},
@@ -336,4 +337,5 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
     return cameraData;
 }
 
-}  // namespace dai::ros
+}  // namespace ros
+}  // namespace dai

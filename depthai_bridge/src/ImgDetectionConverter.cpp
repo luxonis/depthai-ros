@@ -1,6 +1,7 @@
 #include <depthai_bridge/ImgDetectionConverter.hpp>
 
-namespace dai::ros {
+namespace dai {
+namespace ros {
 
 ImgDetectionConverter::ImgDetectionConverter(std::string frameName, int width, int height, bool normalized)
     : _frameName(frameName), _width(width), _height(height), _normalized(normalized), _sequenceNum(0) {}
@@ -84,4 +85,5 @@ Detection2DArrayPtr ImgDetectionConverter::toRosMsgPtr(std::shared_ptr<dai::ImgD
     return ptr;
 }
 
-}  // namespace dai::ros
+}  // namespace ros
+}  // namespace dai

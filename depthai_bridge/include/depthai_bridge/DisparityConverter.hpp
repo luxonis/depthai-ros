@@ -24,6 +24,8 @@
 
 namespace dai {
 
+namespace ros {
+
 #ifdef IS_ROS2
 namespace DisparityMsgs = stereo_msgs::msg;
 using DisparityImagePtr = DisparityMsgs::DisparityImage::SharedPtr;
@@ -31,7 +33,6 @@ using DisparityImagePtr = DisparityMsgs::DisparityImage::SharedPtr;
 namespace DisparityMsgs = stereo_msgs;
 using DisparityImagePtr = DisparityMsgs::DisparityImage::Ptr;
 #endif
-namespace ros {
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration>;
 
 class DisparityConverter {

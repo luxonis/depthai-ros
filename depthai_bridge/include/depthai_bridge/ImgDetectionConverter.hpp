@@ -17,6 +17,8 @@
 #endif
 
 namespace dai {
+
+namespace ros {
 #ifdef IS_ROS2
 namespace VisionMsgs = vision_msgs::msg;
 using Detection2DArrayPtr = VisionMsgs::Detection2DArray::SharedPtr;
@@ -24,8 +26,6 @@ using Detection2DArrayPtr = VisionMsgs::Detection2DArray::SharedPtr;
 namespace VisionMsgs = vision_msgs;
 using Detection2DArrayPtr = VisionMsgs::Detection2DArray::Ptr;
 #endif
-namespace ros {
-
 class ImgDetectionConverter {
    public:
     // DetectionConverter() = default;

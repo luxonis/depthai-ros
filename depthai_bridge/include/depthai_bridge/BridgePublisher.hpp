@@ -31,11 +31,14 @@
 
 namespace dai {
 
+
+namespace ros {
+
 #ifdef IS_ROS2
 namespace StdMsgs = std_msgs::msg;
 namespace ImageMsgs = sensor_msgs::msg;
 using ImagePtr = ImageMsgs::Image::SharedPtr;
-namespace rosOrigin = rclcpp;
+namespace rosOrigin = ::rclcpp;
 #else
 namespace StdMsgs = std_msgs;
 namespace ImageMsgs = sensor_msgs;
@@ -43,7 +46,6 @@ using ImagePtr = ImageMsgs::ImagePtr;
 namespace rosOrigin = ::ros;
 #endif
 
-namespace ros {
 template <class RosMsg, class SimMsg>
 class BridgePublisher {
    public:

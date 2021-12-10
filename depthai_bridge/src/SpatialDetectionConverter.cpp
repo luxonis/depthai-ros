@@ -1,6 +1,7 @@
 #include <depthai_bridge/SpatialDetectionConverter.hpp>
 
-namespace dai::ros {
+namespace dai {
+namespace ros {
 
 SpatialDetectionConverter::SpatialDetectionConverter(std::string frameName, int width, int height, bool normalized)
     : _frameName(frameName), _width(width), _height(height), _normalized(normalized), _sequenceNum(0) {}
@@ -91,4 +92,5 @@ SpatialDetectionArrayPtr SpatialDetectionConverter::toRosMsgPtr(std::shared_ptr<
     return ptr;
 }
 
-}  // namespace dai::ros
+}  // namespace ros
+}  // namespace dai
