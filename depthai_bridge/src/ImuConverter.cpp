@@ -1,7 +1,7 @@
 
 #include <depthai_bridge/ImuConverter.hpp>
 
-namespace dai::rosBridge {
+namespace dai::ros {
 
 ImuConverter::ImuConverter(const std::string& frameName) : _frameName(frameName), _sequenceNum(0) {}
 

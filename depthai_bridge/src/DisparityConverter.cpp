@@ -1,7 +1,7 @@
 
 #include <depthai_bridge/DisparityConverter.hpp>
 
-namespace dai::rosBridge {
+namespace dai::ros {
 
 /*
 std::unordered_map<dai::RawImgFrame::Type, std::string> DisparityConverter::encodingEnumMap = {

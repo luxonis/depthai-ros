@@ -20,7 +20,7 @@ namespace VisionMsgs = vision_msgs;
 using Detection2DArrayPtr = VisionMsgs::Detection2DArray::Ptr;
 #endif
 
-namespace dai::rosBridge {
+namespace dai::ros {
 
 class ImgDetectionConverter {
    public:
@@ -48,4 +48,5 @@ class ImgDetectionConverter {
  * feel that feature is good to have...
  */
 
-}  // namespace dai::rosBridge
+}  // namespace dai::ros
+namespace rosBridge = ros;

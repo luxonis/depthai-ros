@@ -22,7 +22,7 @@ namespace ImuMsgs = sensor_msgs;
 using ImuPtr = ImuMsgs::Imu::Ptr;
 #endif
 
-namespace dai::rosBridge {
+namespace dai::ros {
 
 class ImuConverter {
    public:
@@ -36,4 +36,5 @@ class ImuConverter {
     const std::string _frameName = "";
 };
 
-}  // namespace dai::rosBridge
+}  // namespace dai::ros
+namespace rosBridge = ros;

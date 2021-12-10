@@ -30,7 +30,7 @@ namespace ImageMsgs = sensor_msgs;
 using ImagePtr = ImageMsgs::ImagePtr;
 #endif
 
-namespace dai::rosBridge {
+namespace dai::ros {
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration>;
 
 class ImageConverter {
@@ -68,4 +68,5 @@ class ImageConverter {
     void interleavedToPlanar(const std::vector<uint8_t>& srcData, std::vector<uint8_t>& destData, int w, int h, int numPlanes, int bpp);
 };
 
-}  // namespace dai::rosBridge
+}  // namespace dai::ros
+namespace rosBridge = ros;

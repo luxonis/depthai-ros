@@ -5,7 +5,7 @@
 #include <ratio>
 #include <tuple>
 
-namespace dai::rosBridge {
+namespace dai::ros {
 
 std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::encodingEnumMap = {{dai::RawImgFrame::Type::YUV422i, "yuv422"},
                                                                                            {dai::RawImgFrame::Type::RGBA8888, "rgba8"},

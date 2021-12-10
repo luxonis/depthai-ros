@@ -19,7 +19,7 @@ namespace SpatialMessages = depthai_ros_msgs;
 using SpatialDetectionArrayPtr = SpatialMessages::SpatialDetectionArray::Ptr;
 #endif
 
-namespace dai::rosBridge {
+namespace dai::ros {
 
 class SpatialDetectionConverter {
    public:
@@ -50,4 +50,5 @@ class SpatialDetectionConverter {
  * feel that feature is good to have...
  */
 
-}  // namespace dai::rosBridge
+}  // namespace dai::ros
+namespace rosBridge = ros;

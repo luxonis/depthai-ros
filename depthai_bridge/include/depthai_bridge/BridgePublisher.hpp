@@ -37,7 +37,7 @@ using ImagePtr = ImageMsgs::ImagePtr;
 namespace rosOrigin = ros;
 #endif
 
-namespace dai::rosBridge {
+namespace dai::ros {
 
 template <class RosMsg, class SimMsg>
 class BridgePublisher {
@@ -403,4 +403,5 @@ BridgePublisher<RosMsg, SimMsg>::~BridgePublisher() {
 // (so I need to create async spinner for that or multithreaded nodehandle??),
 // ANd what about the callbacks ?
 
-}  // namespace dai::rosBridge
+}  // namespace dai::ros
+namespace rosBridge = ros;
