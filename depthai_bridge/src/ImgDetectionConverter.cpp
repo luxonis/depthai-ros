@@ -61,14 +61,17 @@ void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetDa
 
         opDetectionMsg.detections[i].results.resize(1);
 
-#ifdef IS_ROS2
+#ifdef IS_GALACTIC
+        opDetectionMsg.detections[i].id = std::to_string(inNetData->detections[i].label);
+        opDetectionMsg.detections[i].results[0].hypothesis.class_id = std::to_string(inNetData->detections[i].label);
+        opDetectionMsg.detections[i].results[0].hypothesis.score = inNetData->detections[i].confidence;
+#elif IS_ROS2
         opDetectionMsg.detections[i].results[0].id = std::to_string(inNetData->detections[i].label);
+        opDetectionMsg.detections[i].results[0].score = inNetData->detections[i].confidence;
 #else
         opDetectionMsg.detections[i].results[0].id = inNetData->detections[i].label;
-#endif
-
         opDetectionMsg.detections[i].results[0].score = inNetData->detections[i].confidence;
-
+#endif
         opDetectionMsg.detections[i].bbox.center.x = xCenter;
         opDetectionMsg.detections[i].bbox.center.y = yCenter;
         opDetectionMsg.detections[i].bbox.size_x = xSize;

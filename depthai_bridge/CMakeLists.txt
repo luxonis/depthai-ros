@@ -76,6 +76,10 @@ if ( ament_cmake_FOUND )
     ament_target_dependencies(${PROJECT_NAME}
       ${dependencies})
     target_compile_definitions(${PROJECT_NAME} PUBLIC IS_ROS2)
+    
+    if($ENV{ROS_DISTRO} STREQUAL "galactic")
+      target_compile_definitions(${PROJECT_NAME} PRIVATE IS_GALACTIC)
+    endif()
 
     target_link_libraries(${PROJECT_NAME} 
                           depthai::core 
