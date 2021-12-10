@@ -31,7 +31,6 @@
 
 namespace dai {
 
-
 namespace ros {
 
 #ifdef IS_ROS2
