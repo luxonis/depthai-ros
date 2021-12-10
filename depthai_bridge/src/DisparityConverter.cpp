@@ -159,4 +159,4 @@ DisparityImagePtr DisparityConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame>
     return ptr;
 }
 
-}  // namespace dai::rosBridge
+}  // namespace dai::ros

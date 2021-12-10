@@ -336,4 +336,4 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
     return cameraData;
 }
 
-}  // namespace dai::rosBridge
+}  // namespace dai::ros

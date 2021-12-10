@@ -84,4 +84,4 @@ Detection2DArrayPtr ImgDetectionConverter::toRosMsgPtr(std::shared_ptr<dai::ImgD
     return ptr;
 }
 
-}  // namespace dai::rosBridge
+}  // namespace dai::ros

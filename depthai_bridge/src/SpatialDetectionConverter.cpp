@@ -91,4 +91,4 @@ SpatialDetectionArrayPtr SpatialDetectionConverter::toRosMsgPtr(std::shared_ptr<
     return ptr;
 }
 
-}  // namespace dai::rosBridge
+}  // namespace dai::ros

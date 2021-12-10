@@ -57,4 +57,4 @@ ImuPtr ImuConverter::toRosMsgPtr(const std::shared_ptr<dai::IMUData> inData) {
     return ptr;
 }
 
-}  // namespace dai::rosBridge
+}  // namespace dai::ros
