@@ -1,6 +1,8 @@
 #include <depthai_bridge/ImgDetectionConverter.hpp>
 
-namespace dai::rosBridge {
+namespace dai {
+
+namespace ros {
 
 ImgDetectionConverter::ImgDetectionConverter(std::string frameName, int width, int height, bool normalized)
     : _frameName(frameName), _width(width), _height(height), _normalized(normalized), _sequenceNum(0) {}
@@ -15,7 +17,7 @@ void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetDa
 #ifndef IS_ROS2
     if(sequenceNum != -1) _sequenceNum = sequenceNum;
     opDetectionMsg.header.seq = _sequenceNum;
-    opDetectionMsg.header.stamp = ros::Time(sec, nsec);
+    opDetectionMsg.header.stamp = ::ros::Time(sec, nsec);
 #else
     opDetectionMsg.header.stamp = rclcpp::Time(sec, nsec);
 #endif
@@ -28,7 +30,7 @@ void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetDa
 #ifndef IS_ROS2
     opDetectionMsg.header.seq = _sequenceNum;
     _sequenceNum++;
-    opDetectionMsg.header.stamp = ros::Time::now();
+    opDetectionMsg.header.stamp = ::ros::Time::now();
 #else
     opDetectionMsg.header.stamp = rclcpp::Clock().now();
 #endif
@@ -84,4 +86,5 @@ Detection2DArrayPtr ImgDetectionConverter::toRosMsgPtr(std::shared_ptr<dai::ImgD
     return ptr;
 }
 
-}  // namespace dai::rosBridge
+}  // namespace ros
+}  // namespace dai

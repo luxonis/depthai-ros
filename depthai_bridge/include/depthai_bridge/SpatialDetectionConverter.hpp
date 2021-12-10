@@ -7,20 +7,25 @@
     #include <depthai_ros_msgs/msg/spatial_detection_array.hpp>
 
     #include "rclcpp/rclcpp.hpp"
-namespace SpatialMessages = depthai_ros_msgs::msg;
-using SpatialDetectionArrayPtr = SpatialMessages::SpatialDetectionArray::SharedPtr;
 #else
     #include <depthai_ros_msgs/SpatialDetectionArray.h>
     #include <ros/ros.h>
 
     #include <boost/make_shared.hpp>
     #include <boost/shared_ptr.hpp>
+#endif
+
+namespace dai {
+
+namespace ros {
+
+#ifdef IS_ROS2
+namespace SpatialMessages = depthai_ros_msgs::msg;
+using SpatialDetectionArrayPtr = SpatialMessages::SpatialDetectionArray::SharedPtr;
+#else
 namespace SpatialMessages = depthai_ros_msgs;
 using SpatialDetectionArrayPtr = SpatialMessages::SpatialDetectionArray::Ptr;
 #endif
-
-namespace dai::rosBridge {
-
 class SpatialDetectionConverter {
    public:
     // DetectionConverter() = default;
@@ -50,4 +55,8 @@ class SpatialDetectionConverter {
  * feel that feature is good to have...
  */
 
-}  // namespace dai::rosBridge
+}  // namespace ros
+
+namespace rosBridge = ros;
+
+}  // namespace dai

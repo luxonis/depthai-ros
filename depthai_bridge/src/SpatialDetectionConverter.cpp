@@ -1,6 +1,7 @@
 #include <depthai_bridge/SpatialDetectionConverter.hpp>
 
-namespace dai::rosBridge {
+namespace dai {
+namespace ros {
 
 SpatialDetectionConverter::SpatialDetectionConverter(std::string frameName, int width, int height, bool normalized)
     : _frameName(frameName), _width(width), _height(height), _normalized(normalized), _sequenceNum(0) {}
@@ -16,7 +17,7 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
 #ifndef IS_ROS2
     if(sequenceNum != -1) _sequenceNum = sequenceNum;
     opDetectionMsg.header.seq = _sequenceNum;
-    opDetectionMsg.header.stamp = ros::Time(sec, nsec);
+    opDetectionMsg.header.stamp = ::ros::Time(sec, nsec);
 #else
     opDetectionMsg.header.stamp = rclcpp::Time(sec, nsec);
 #endif
@@ -28,7 +29,7 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
 // setting the header
 #ifndef IS_ROS2
     opDetectionMsg.header.seq = _sequenceNum;
-    opDetectionMsg.header.stamp = ros::Time::now();
+    opDetectionMsg.header.stamp = ::ros::Time::now();
     _sequenceNum++;
 #else
     opDetectionMsg.header.stamp = rclcpp::Clock().now();
@@ -91,4 +92,5 @@ SpatialDetectionArrayPtr SpatialDetectionConverter::toRosMsgPtr(std::shared_ptr<
     return ptr;
 }
 
-}  // namespace dai::rosBridge
+}  // namespace ros
+}  // namespace dai

@@ -5,7 +5,9 @@
 #include <ratio>
 #include <tuple>
 
-namespace dai::rosBridge {
+namespace dai {
+
+namespace ros {
 
 std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::encodingEnumMap = {{dai::RawImgFrame::Type::YUV422i, "yuv422"},
                                                                                            {dai::RawImgFrame::Type::RGBA8888, "rgba8"},
@@ -40,7 +42,7 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, ImageMsgs::
     auto rclStamp = rclNow - diffTime;
     header.stamp = rclStamp;
 #else
-    auto rosNow = ros::Time::now();
+    auto rosNow = ::ros::Time::now();
     auto steadyTime = std::chrono::steady_clock::now();
     auto diffTime = steadyTime - tstamp;
     long int nsec = rosNow.toNSec() - diffTime.count();
@@ -336,4 +338,5 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
     return cameraData;
 }
 
-}  // namespace dai::rosBridge
+}  // namespace ros
+}  // namespace dai

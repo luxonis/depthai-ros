@@ -1,7 +1,9 @@
 
 #include <depthai_bridge/ImuConverter.hpp>
 
-namespace dai::rosBridge {
+namespace dai {
+
+namespace ros {
 
 ImuConverter::ImuConverter(const std::string& frameName) : _frameName(frameName), _sequenceNum(0) {}
 
@@ -9,7 +11,7 @@ void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, ImuMsgs::Imu& 
 // setting the header
 #ifndef IS_ROS2
     outImuMsg.header.seq = _sequenceNum;
-    outImuMsg.header.stamp = ros::Time::now();
+    outImuMsg.header.stamp = ::ros::Time::now();
 #else
     outImuMsg.header.stamp = rclcpp::Clock().now();
 #endif
@@ -57,4 +59,5 @@ ImuPtr ImuConverter::toRosMsgPtr(const std::shared_ptr<dai::IMUData> inData) {
     return ptr;
 }
 
-}  // namespace dai::rosBridge
+}  // namespace ros
+}  // namespace dai

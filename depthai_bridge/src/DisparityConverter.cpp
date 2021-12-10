@@ -1,7 +1,9 @@
 
 #include <depthai_bridge/DisparityConverter.hpp>
 
-namespace dai::rosBridge {
+namespace dai {
+
+namespace ros {
 
 /*
 std::unordered_map<dai::RawImgFrame::Type, std::string> DisparityConverter::encodingEnumMap = {
@@ -42,7 +44,7 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, Dispari
     outDispImageMsg.t = _baseline / 100;  // converting cm to meters
     sensor_msgs::msg::Image& outImageMsg = outDispImageMsg.image;
 #else
-    auto rosNow = ros::Time::now();
+    auto rosNow = ::ros::Time::now();
     auto steadyTime = std::chrono::steady_clock::now();
     auto diffTime = steadyTime - tstamp;
     long int nsec = rosNow.toNSec() - diffTime.count();
@@ -159,4 +161,5 @@ DisparityImagePtr DisparityConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame>
     return ptr;
 }
 
-}  // namespace dai::rosBridge
+}  // namespace ros
+}  // namespace dai
