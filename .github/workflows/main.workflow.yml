@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - noetic-devel
-      - noetic-depth-align-beta
     tags:
       - 'v*'
   pull_request:
@@ -49,6 +48,10 @@ jobs:
         uses: ros-tooling/setup-ros@v0.2
         with:
           required-ros-distributions: noetic
+
+      - name: Installing libusb
+        run: sudo apt-get install libusb-1.0-0-dev
+
       - name: Installing DepthAi Core
         run: sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencies.sh | sudo bash
       
