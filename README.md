@@ -1,5 +1,6 @@
 # depthai-ros(Gen2)
-noetic-devel branch also works on melodic(tested). Might also work on kinetic too.
+main branch supports ROS Melodic, ROS Noetic, ROS2 Foxy. Might also work on kinetic too.
+
 
 ## Getting Started
 
@@ -7,7 +8,7 @@ noetic-devel branch also works on melodic(tested). Might also work on kinetic to
 The following script will install depthai-core and update usb rules and install depthai devices
 
 ```
-sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencies.sh | sudo bash
+sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/main/install_dependencies.sh | sudo bash
 ```
 if you don't have opencv installed then try `sudo apt install libopencv-dev`
 
@@ -24,7 +25,7 @@ The following setup procedure assumes you have cmake version >= 3.10.2 and OpenC
 
 1. `mkdir -p <directory_for_workspaces>/src`
 2. `cd <directory_for_workspaces>`
-3. `wget https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/underlay.repos`
+3. `wget https://raw.githubusercontent.com/luxonis/depthai-ros/main/underlay.repos`
 4. `vcs import src < underlay.repos`
 5. `rosdep install --from-paths src --ignore-src -r -y`
 6. `source /opt/ros/<ros-distro>/setup.bash`
