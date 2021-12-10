@@ -16,7 +16,7 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
 #ifndef IS_ROS2
     if(sequenceNum != -1) _sequenceNum = sequenceNum;
     opDetectionMsg.header.seq = _sequenceNum;
-    opDetectionMsg.header.stamp = ros::Time(sec, nsec);
+    opDetectionMsg.header.stamp = ::ros::Time(sec, nsec);
 #else
     opDetectionMsg.header.stamp = rclcpp::Time(sec, nsec);
 #endif
@@ -28,7 +28,7 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
 // setting the header
 #ifndef IS_ROS2
     opDetectionMsg.header.seq = _sequenceNum;
-    opDetectionMsg.header.stamp = ros::Time::now();
+    opDetectionMsg.header.stamp = ::ros::Time::now();
     _sequenceNum++;
 #else
     opDetectionMsg.header.stamp = rclcpp::Clock().now();

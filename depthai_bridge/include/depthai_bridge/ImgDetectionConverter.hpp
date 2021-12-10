@@ -8,19 +8,23 @@
     #include <vision_msgs/msg/detection2_d_array.hpp>
 
     #include "rclcpp/rclcpp.hpp"
-namespace VisionMsgs = vision_msgs::msg;
-using Detection2DArrayPtr = VisionMsgs::Detection2DArray::SharedPtr;
 #else
     #include <ros/ros.h>
     #include <vision_msgs/Detection2DArray.h>
 
     #include <boost/make_shared.hpp>
     #include <boost/shared_ptr.hpp>
+#endif
+
+namespace dai {
+#ifdef IS_ROS2
+namespace VisionMsgs = vision_msgs::msg;
+using Detection2DArrayPtr = VisionMsgs::Detection2DArray::SharedPtr;
+#else
 namespace VisionMsgs = vision_msgs;
 using Detection2DArrayPtr = VisionMsgs::Detection2DArray::Ptr;
 #endif
-
-namespace dai::ros {
+namespace ros {
 
 class ImgDetectionConverter {
    public:
@@ -48,5 +52,8 @@ class ImgDetectionConverter {
  * feel that feature is good to have...
  */
 
-}  // namespace dai::ros
+}  // namespace ros
+
 namespace rosBridge = ros;
+
+}  // namespace dai

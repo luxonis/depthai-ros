@@ -10,19 +10,23 @@
 #ifdef IS_ROS2
     #include "rclcpp/rclcpp.hpp"
     #include "sensor_msgs/msg/imu.hpp"
-namespace ImuMsgs = sensor_msgs::msg;
-using ImuPtr = ImuMsgs::Imu::SharedPtr;
 #else
     #include <ros/ros.h>
 
     #include <boost/make_shared.hpp>
 
     #include "sensor_msgs/Imu.h"
+#endif
+
+namespace dai {
+#ifdef IS_ROS2
+namespace ImuMsgs = sensor_msgs::msg;
+using ImuPtr = ImuMsgs::Imu::SharedPtr;
+#else
 namespace ImuMsgs = sensor_msgs;
 using ImuPtr = ImuMsgs::Imu::Ptr;
 #endif
-
-namespace dai::ros {
+namespace ros {
 
 class ImuConverter {
    public:
@@ -36,5 +40,8 @@ class ImuConverter {
     const std::string _frameName = "";
 };
 
-}  // namespace dai::ros
+}  // namespace ros
+
 namespace rosBridge = ros;
+
+}  // namespace dai
