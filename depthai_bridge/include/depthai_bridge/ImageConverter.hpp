@@ -27,8 +27,8 @@
 namespace dai {
 
 namespace ros {
-#ifdef IS_ROS2
 
+#ifdef IS_ROS2
 namespace StdMsgs = std_msgs::msg;
 namespace ImageMsgs = sensor_msgs::msg;
 using ImagePtr = ImageMsgs::Image::SharedPtr;

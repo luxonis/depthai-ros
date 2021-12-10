@@ -2,6 +2,7 @@
 #include <depthai_bridge/DisparityConverter.hpp>
 
 namespace dai {
+
 namespace ros {
 
 /*

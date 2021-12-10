@@ -16,7 +16,9 @@
 #endif
 
 namespace dai {
+
 namespace ros {
+
 #ifdef IS_ROS2
 namespace SpatialMessages = depthai_ros_msgs::msg;
 using SpatialDetectionArrayPtr = SpatialMessages::SpatialDetectionArray::SharedPtr;

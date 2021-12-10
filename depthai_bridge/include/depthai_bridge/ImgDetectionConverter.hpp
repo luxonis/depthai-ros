@@ -19,6 +19,7 @@
 namespace dai {
 
 namespace ros {
+
 #ifdef IS_ROS2
 namespace VisionMsgs = vision_msgs::msg;
 using Detection2DArrayPtr = VisionMsgs::Detection2DArray::SharedPtr;

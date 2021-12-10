@@ -1,6 +1,7 @@
 #include <depthai_bridge/ImgDetectionConverter.hpp>
 
 namespace dai {
+
 namespace ros {
 
 ImgDetectionConverter::ImgDetectionConverter(std::string frameName, int width, int height, bool normalized)

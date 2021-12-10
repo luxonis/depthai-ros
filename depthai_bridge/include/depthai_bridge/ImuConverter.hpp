@@ -21,6 +21,7 @@
 namespace dai {
 
 namespace ros {
+
 #ifdef IS_ROS2
 namespace ImuMsgs = sensor_msgs::msg;
 using ImuPtr = ImuMsgs::Imu::SharedPtr;
