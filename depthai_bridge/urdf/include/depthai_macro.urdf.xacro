@@ -7,7 +7,7 @@
 
     <!-- <xacro:if value="${model == 'BW1098OAK'}">
     </xacro:if> -->
-    <xacro:property name="baseline" value="0.095" />
+    <xacro:property name="baseline" value="0.075" />
 
     <!-- base_link of the sensor-->
     <link name="${base_frame}"/>
