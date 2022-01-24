@@ -237,8 +237,8 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(std::shared_ptr<dai::DataOutput
                                                  std::string cameraParamUri,
                                                  std::string cameraName)
     : _daiMessageQueue(daiMessageQueue),
-      _nh(nh),
       _converter(converter),
+      _nh(nh),
       _it(_nh),
       _rosTopic(rosTopic),
       _cameraParamUri(cameraParamUri),
@@ -259,8 +259,8 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(std::shared_ptr<dai::DataOutput
       _nh(nh),
       _converter(converter),
       _it(_nh),
-      _rosTopic(rosTopic),
       _cameraInfoData(cameraInfoData),
+      _rosTopic(rosTopic),
       _cameraName(cameraName) {
     // ROS_DEBUG_STREAM_NAMED(LOG_TAG, "Publisher Type : " << typeid(CustomPublisher).name());
     _rosPublisher = advertise(queueSize, std::is_same<RosMsg, ImageMsgs::Image>{});
