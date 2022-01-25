@@ -71,7 +71,7 @@ The following setup procedure assumes you have cmake version >= 3.10.2 and OpenC
 ### Executing an example
 
 1. `cd ~/ros_ws`
-2. `source ~/ros_ws/devel_isolated/setup.bash`
+2. `source ~/ros_ws/devel/setup.bash`
 3. `roslaunch depthai_examples stereo_node.launch` - example node
 
 
