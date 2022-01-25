@@ -120,7 +120,9 @@ class BridgePublisher {
 
     BridgePublisher(const BridgePublisher& other);
 
-    void addPubisherCallback();
+    [[deprecated("addPubisherCallback is a typo function of addPublisherCallback(). use addPublisherCallback()")]] void addPubisherCallback();
+
+    void addPublisherCallback();
 
     void publishHelper(std::shared_ptr<SimMsg> inData);
 
@@ -312,7 +314,7 @@ template <class RosMsg, class SimMsg>
 void BridgePublisher<RosMsg, SimMsg>::startPublisherThread() {
     if(_isCallbackAdded) {
         std::runtime_error(
-            "addPubisherCallback() function adds a callback to the"
+            "addPublisherCallback() function adds a callback to the"
             "depthai which handles the publishing so no need to start"
             "the thread using startPublisherThread() ");
     }
@@ -342,6 +344,12 @@ void BridgePublisher<RosMsg, SimMsg>::startPublisherThread() {
 
 template <class RosMsg, class SimMsg>
 void BridgePublisher<RosMsg, SimMsg>::addPubisherCallback() {
+    _daiMessageQueue->addCallback(std::bind(&BridgePublisher<RosMsg, SimMsg>::daiCallback, this, std::placeholders::_1, std::placeholders::_2));
+    _isCallbackAdded = true;
+}
+
+template <class RosMsg, class SimMsg>
+void BridgePublisher<RosMsg, SimMsg>::addPublisherCallback() {
     _daiMessageQueue->addCallback(std::bind(&BridgePublisher<RosMsg, SimMsg>::daiCallback, this, std::placeholders::_1, std::placeholders::_2));
     _isCallbackAdded = true;
 }
