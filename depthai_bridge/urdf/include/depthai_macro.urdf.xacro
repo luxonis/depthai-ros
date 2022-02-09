@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot name="depthai_camera" xmlns:xacro="http://ros.org/wiki/xacro">
 
-<xacro:macro name="depthai_camera" params="camera_name camera_model parent base_frame cam_pos_x cam_pos_y cam_pos_z cam_roll cam_pitch cam_yaw">
+<xacro:macro name="depthai_camera" params="tf_prefix camera_model parent base_frame cam_pos_x cam_pos_y cam_pos_z cam_roll cam_pitch cam_yaw">
     <xacro:property name="M_PI"     value="3.1415926535897931" />
     <xacro:property name="model"    value="${camera_model}" />
 
@@ -12,14 +12,14 @@
     <!-- base_link of the sensor-->
     <link name="${base_frame}"/>
 
-    <joint name="${camera_name}_center_joint" type="fixed">
+    <joint name="${tf_prefix}_center_joint" type="fixed">
         <parent link="${parent}"/>
         <child link="${base_frame}"/>
         <origin xyz="${cam_pos_x} ${cam_pos_y} ${cam_pos_z}" rpy="${cam_roll} ${cam_pitch} ${cam_yaw}" />
     </joint>
 
 <!-- device Center -->
-    <link name="${camera_name}_model_origin">
+    <link name="${tf_prefix}_model_origin">
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
@@ -31,71 +31,71 @@
         </visual>
     </link>
 
-    <joint name="${camera_name}_model_origin_joint" type="fixed">
+    <joint name="${tf_prefix}_model_origin_joint" type="fixed">
         <parent link="${base_frame}"/>
-        <child link="${camera_name}_model_origin"/>
+        <child link="${tf_prefix}_model_origin"/>
         <origin xyz="0 0 0" rpy="1.5708 0 1.5708" />
     </joint>
 
 <!-- IMU -->
-    <link name="${ camera_name}_imu_frame" />
+    <link name="${ tf_prefix}_imu_frame" />
 
-    <joint name="${ camera_name}_imu_joint" type="fixed">
+    <joint name="${ tf_prefix}_imu_joint" type="fixed">
         <parent link="${base_frame}"/>
-        <child link="${camera_name}_imu_frame"/>
+        <child link="${tf_prefix}_imu_frame"/>
         <origin xyz="0 0 0" rpy="-${M_PI/2} 0 -${M_PI/2}" />
     </joint>
 
 <!-- RGB Camera -->
-    <link name="${ camera_name}_rgb_camera_frame" />
+    <link name="${ tf_prefix}_rgb_camera_frame" />
     
-    <joint name="${ camera_name}_rgb_camera_joint" type="fixed">
+    <joint name="${ tf_prefix}_rgb_camera_joint" type="fixed">
         <parent link="${base_frame}"/>
-        <child link="${camera_name}_rgb_camera_frame"/>
+        <child link="${tf_prefix}_rgb_camera_frame"/>
         <origin xyz="0 0 0" rpy="0 0 0" />
     </joint>
 
-    <link name="${camera_name}_rgb_camera_optical_frame"/>
+    <link name="${tf_prefix}_rgb_camera_optical_frame"/>
     
-    <joint name="${camera_name}_rgb_camera_optical_joint" type="fixed">
+    <joint name="${tf_prefix}_rgb_camera_optical_joint" type="fixed">
         <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
-        <parent link="${camera_name}_rgb_camera_frame"/>
-        <child link="${camera_name}_rgb_camera_optical_frame"/>
+        <parent link="${tf_prefix}_rgb_camera_frame"/>
+        <child link="${tf_prefix}_rgb_camera_optical_frame"/>
     </joint>
 
 <!-- Left Camera -->
-    <link name="${camera_name}_left_camera_frame" />
+    <link name="${tf_prefix}_left_camera_frame" />
     
-    <joint name="${camera_name}_left_camera_joint" type="fixed">
+    <joint name="${tf_prefix}_left_camera_joint" type="fixed">
         <parent link="${base_frame}"/>
-        <child link="${camera_name}_left_camera_frame"/>
+        <child link="${tf_prefix}_left_camera_frame"/>
         <origin xyz="0 ${baseline/2} 0" rpy="0 0 0" />
     </joint>
 
-    <link name="${camera_name}_left_camera_optical_frame"/>
+    <link name="${tf_prefix}_left_camera_optical_frame"/>
     
-    <joint name="${camera_name}_left_camera_optical_joint" type="fixed">
+    <joint name="${tf_prefix}_left_camera_optical_joint" type="fixed">
         <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
-        <parent link="${camera_name}_left_camera_frame"/>
-        <child link="${camera_name}_left_camera_optical_frame"/>
+        <parent link="${tf_prefix}_left_camera_frame"/>
+        <child link="${tf_prefix}_left_camera_optical_frame"/>
     </joint>
 
     
 <!-- right Camera -->
-    <link name="${camera_name}_right_camera_frame" />
+    <link name="${tf_prefix}_right_camera_frame" />
     
-    <joint name="${camera_name}_right_camera_joint" type="fixed">
+    <joint name="${tf_prefix}_right_camera_joint" type="fixed">
         <parent link="${base_frame}"/>
-        <child link="${camera_name}_right_camera_frame"/>
+        <child link="${tf_prefix}_right_camera_frame"/>
         <origin xyz="0 -${baseline/2} 0" rpy="0 0 0" />
     </joint>
 
-    <link name="${camera_name}_right_camera_optical_frame"/>
+    <link name="${tf_prefix}_right_camera_optical_frame"/>
     
-    <joint name="${camera_name}_right_camera_optical_joint" type="fixed">
+    <joint name="${tf_prefix}_right_camera_optical_joint" type="fixed">
         <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
-        <parent link="${camera_name}_right_camera_frame"/>
-        <child link="${camera_name}_right_camera_optical_frame"/>
+        <parent link="${tf_prefix}_right_camera_frame"/>
+        <child link="${tf_prefix}_right_camera_optical_frame"/>
     </joint>
 
 </xacro:macro>

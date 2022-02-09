@@ -12,7 +12,7 @@ def generate_launch_description():
     # doc = xacro.process_file(urdf_path, mappings={'simulate_obstacles' : 'false'})
     print(xacro_path)
     camera_model = LaunchConfiguration('camera_model',  default = 'OAK-D')
-    camera_name  = LaunchConfiguration('camera_name',   default = 'oak')
+    tf_prefix    = LaunchConfiguration('tf_prefix',   default = 'oak')
     base_frame   = LaunchConfiguration('base_frame',    default = 'oak-d_frame')
     parent_frame = LaunchConfiguration('parent_frame',  default = 'oak-d-base-frame')
     cam_pos_x    = LaunchConfiguration('cam_pos_x',     default = '0.0')
@@ -27,9 +27,9 @@ def generate_launch_description():
         default_value=camera_model,
         description='The model of the camera. Using a wrong camera model can disable camera features. Valid models: `OAK-D, OAK-D-LITE`.')
 
-    declare_camera_name_cmd = DeclareLaunchArgument(
-        'camera_name',
-        default_value=camera_name,
+    declare_tf_prefix_cmd = DeclareLaunchArgument(
+        'tf_prefix',
+        default_value=tf_prefix,
         description='The name of the camera. It can be different from the camera model and it will be used as node `namespace`.')
 
     declare_base_frame_cmd = DeclareLaunchArgument(
@@ -79,7 +79,7 @@ def generate_launch_description():
             parameters=[{'robot_description': Command(
                 [
                     'xacro', ' ', xacro_path, ' ',
-                    'camera_name:=', camera_name, ' ',
+                    'tf_prefix:=', tf_prefix, ' ',
                     'camera_model:=', camera_model, ' ',
                     'base_frame:=', base_frame, ' ',
                     'parent_frame:=', parent_frame, ' ',
@@ -108,7 +108,7 @@ def generate_launch_description():
     # doc = xacro.process_file(urdf_path, mappings={'simulate_obstacles' : 'false'})
     print(xacro_path)
     camera_model = LaunchConfiguration('camera_model',  default = 'OAK-D')
-    camera_name  = LaunchConfiguration('camera_name',   default = 'oak')
+    tf_prefix    = LaunchConfiguration('tf_prefix',     default = 'oak')
     base_frame   = LaunchConfiguration('base_frame',    default = 'oak-d_frame')
     parent_frame = LaunchConfiguration('parent_frame',  default = 'oak-d-base-frame')
     cam_pos_x    = LaunchConfiguration('cam_pos_x',     default = '0.0')
@@ -124,9 +124,9 @@ def generate_launch_description():
         default_value=camera_model,
         description='The model of the camera. Using a wrong camera model can disable camera features. Valid models: `OAK-D, OAK-D-LITE`.')
 
-    declare_camera_name_cmd = DeclareLaunchArgument(
-        'camera_name',
-        default_value=camera_name,
+    declare_tf_prefix_cmd = DeclareLaunchArgument(
+        'tf_prefix',
+        default_value=tf_prefix,
         description='The name of the camera. It can be different from the camera model and it will be used as node `namespace`.')
 
     declare_base_frame_cmd = DeclareLaunchArgument(
@@ -176,7 +176,7 @@ def generate_launch_description():
             parameters=[{'robot_description': Command(
                 [
                     'xacro', ' ', xacro_path, ' ',
-                    'camera_name:=', camera_name, ' ',
+                    'tf_prefix:=', tf_prefix, ' ',
                     'camera_model:=', camera_model, ' ',
                     'base_frame:=', base_frame, ' ',
                     'parent_frame:=', parent_frame, ' ',
@@ -190,7 +190,7 @@ def generate_launch_description():
         )
     
     ld = LaunchDescription()
-    ld.add_action(declare_camera_name_cmd)
+    ld.add_action(declare_tf_prefix_cmd)
     ld.add_action(declare_camera_model_cmd)
     ld.add_action(declare_base_frame_cmd)
     ld.add_action(declare_parent_frame_cmd)
