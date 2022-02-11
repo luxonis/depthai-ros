@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot name="depthai_camera" xmlns:xacro="http://ros.org/wiki/xacro">
 
-    <xacro:arg name="tf_prefix"     default="oak" />
+    <xacro:arg name="camera_name"   default="oak" />
     <xacro:arg name="camera_model"  default="OAK-D" />
     <xacro:arg name="base_frame"    default="oak-d_frame" />
     <xacro:arg name="parent_frame"  default="oak-d-base-frame" />
@@ -15,6 +15,6 @@
     <xacro:include filename="$(find depthai_bridge)/urdf/include/depthai_macro.urdf.xacro"/>
 
     <link name="$(arg parent_frame)"/>
-    <xacro:depthai_camera tf_prefix= "$(arg tf_prefix)" parent = "$(arg parent_frame)" camera_model = "$(arg camera_model)" base_frame = "$(arg base_frame)" cam_pos_x = "$(arg cam_pos_x)" cam_pos_y = "$(arg cam_pos_y)" cam_pos_z = "$(arg cam_pos_z)" cam_roll = "$(arg cam_roll)" cam_pitch = "$(arg cam_pitch)" cam_yaw = "$(arg cam_yaw)"/>
+    <xacro:depthai_camera camera_name = "$(arg camera_name)" parent = "$(arg parent_frame)" camera_model = "$(arg camera_model)" base_frame = "$(arg base_frame)" cam_pos_x = "$(arg cam_pos_x)" cam_pos_y = "$(arg cam_pos_y)" cam_pos_z = "$(arg cam_pos_z)" cam_roll = "$(arg cam_roll)" cam_pitch = "$(arg cam_pitch)" cam_yaw = "$(arg cam_yaw)"/>
 
 </robot>

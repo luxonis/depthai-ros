@@ -79,7 +79,7 @@ def generate_launch_description():
             parameters=[{'robot_description': Command(
                 [
                     'xacro', ' ', xacro_path, ' ',
-                    'tf_prefix:=', tf_prefix, ' ',
+                    'camera_name:=', tf_prefix, ' ',
                     'camera_model:=', camera_model, ' ',
                     'base_frame:=', base_frame, ' ',
                     'parent_frame:=', parent_frame, ' ',
