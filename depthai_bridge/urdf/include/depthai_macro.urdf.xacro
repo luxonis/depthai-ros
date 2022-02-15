@@ -38,18 +38,18 @@
     </joint>
 
 <!-- IMU -->
-    <link name="${ camera_name}_imu_frame" />
+    <link name="${camera_name}_imu_frame" />
 
-    <joint name="${ camera_name}_imu_joint" type="fixed">
+    <joint name="${camera_name}_imu_joint" type="fixed">
         <parent link="${base_frame}"/>
         <child link="${camera_name}_imu_frame"/>
         <origin xyz="0 0 0" rpy="-${M_PI/2} 0 -${M_PI/2}" />
     </joint>
 
 <!-- RGB Camera -->
-    <link name="${ camera_name}_rgb_camera_frame" />
+    <link name="${camera_name}_rgb_camera_frame" />
     
-    <joint name="${ camera_name}_rgb_camera_joint" type="fixed">
+    <joint name="${camera_name}_rgb_camera_joint" type="fixed">
         <parent link="${base_frame}"/>
         <child link="${camera_name}_rgb_camera_frame"/>
         <origin xyz="0 0 0" rpy="0 0 0" />

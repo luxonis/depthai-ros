@@ -2,7 +2,7 @@
 <launch>
     <!-- <args for urdf/> -->
     <arg name="camera_model"         default="OAK-D" />
-    <arg name="camera_name"          default="oak" />
+    <arg name="tf_prefix"            default="oak" />
 
     <arg name="base_frame"           default="oak-d_frame" />
     <arg name="parent_frame"         default="oak-d-base-frame" />
@@ -15,9 +15,9 @@
     <arg name="cam_yaw"               default="0.0" /> <!-- Orientation respect to base frame (i.e. "base_link) -->
 
 
-    <param name="$(arg camera_name)_description"
+    <param name="robot_description"
                command="$(find xacro)/xacro '$(find depthai_bridge)/urdf/depthai_descr.urdf.xacro'
-                        camera_name:=$(arg camera_name)
+                        camera_name:=$(arg tf_prefix)
                         camera_model:=$(arg camera_model)
                         base_frame:=$(arg base_frame)
                         parent_frame:=$(arg parent_frame)
@@ -29,6 +29,5 @@
                         cam_yaw:=$(arg cam_yaw)"/>
 
 
-    <node name="$(arg camera_name)_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" required="true">
-    <remap from="robot_description" to="$(arg camera_name)_description" /></node>            
+    <node name="$(arg tf_prefix)_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" required="true"/>
 </launch>
