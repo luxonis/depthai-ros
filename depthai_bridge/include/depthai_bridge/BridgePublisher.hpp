@@ -410,12 +410,8 @@ void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDa
 
 template <class RosMsg, class SimMsg>
 BridgePublisher<RosMsg, SimMsg>::~BridgePublisher() {
-    _readingThread.join();
+    if(_readingThread.joinable()) _readingThread.join();
 }
-
-// TODO(sachin): alternative methods to publish would be using walltimer here
-// (so I need to create async spinner for that or multithreaded nodehandle??),
-// ANd what about the callbacks ?
 
 }  // namespace ros
 
