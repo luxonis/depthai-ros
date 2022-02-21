@@ -22,6 +22,7 @@ if ( ament_cmake_FOUND )
 
     rosidl_generate_interfaces(${PROJECT_NAME}
       "msg/AutoFocusCtrl.msg"
+      "msg/CameraMetadata.msg"
       "msg/SpatialDetection.msg"
       "msg/SpatialDetectionArray.msg"
       "srv/TriggerNamed.srv"
@@ -51,6 +52,7 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
     add_message_files (
       FILES
       AutoFocusCtrl.msg
+      CameraMetadata.msg
       SpatialDetection.msg
       SpatialDetectionArray.msg
       HandLandmark.msg
