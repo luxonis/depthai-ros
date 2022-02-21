@@ -366,10 +366,10 @@ void BridgePublisher<RosMsg, SimMsg>::publishMetadata(std::shared_ptr<SimMsg> in
     if(inFrame) {
         depthai_ros_msgs::CameraMetadata msg;
         msg.header = opMsg.header;
-        msg.LensPosition = inFrame->getLensPosition() < 0 ? -1 : (inFrame->getLensPosition() / 255.);
-        msg.ExposureTime = inFrame->getExposureTime();
-        msg.Category = inFrame->getCategory();
-        msg.Sensitivity = inFrame->getSensitivity();
+        msg.lens_position = inFrame->getLensPosition() < 0 ? -1 : (inFrame->getLensPosition() / 255.);
+        msg.exposure_time = inFrame->getExposureTime();
+        msg.category = inFrame->getCategory();
+        msg.sensitivity = inFrame->getSensitivity();
         _cameraMetaPublisher->publish(msg);
     }
 }

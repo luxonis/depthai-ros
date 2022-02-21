@@ -2,8 +2,8 @@
 
 std_msgs/Header header
 
-float32 LensPosition
-int32 ExposureTime
-int32 Sensitivity
-int32 Category
-int32 InstanceNumber
+float32 lens_position
+int32 exposure_time
+int32 sensitivity
+int32 category
+int32 instance_number
