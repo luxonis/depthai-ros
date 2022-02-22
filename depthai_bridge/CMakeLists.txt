@@ -136,6 +136,7 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
 
     FILE(GLOB LIB_SRC
     "src/DisparityConverter.cpp"
+    "src/GenericPipelinePublisher.cpp"
     "src/ImageConverter.cpp"
     "src/ImgDetectionConverter.cpp"
     "src/SpatialDetectionConverter.cpp"
