@@ -6,13 +6,12 @@
 
 #include "depthai/depthai.hpp"
 
-// #include <depthai_ros_msgs/DetectionDaiArray.h>
-// #include <vision_msgs/Detection2DArray.h>
 
 #ifdef IS_ROS2
     #include <camera_info_manager/camera_info_manager.hpp>
     #include <image_transport/image_transport.hpp>
 
+    #include "depthai_ros_msgs/msg/CameraMetadata.hpp"
     #include "rclcpp/rclcpp.hpp"
     #include "sensor_msgs/msg/camera_info.hpp"
     #include "sensor_msgs/msg/image.hpp"
