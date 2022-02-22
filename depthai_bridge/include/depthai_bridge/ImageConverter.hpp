@@ -55,7 +55,7 @@ class ImageConverter {
      **/
     cv::Mat rosMsgtoCvMat(ImageMsgs::Image& inMsg);
 
-    ImageMsgs::CameraInfo calibrationToCameraInfo(dai::CalibrationHandler calibHandler,
+    static ImageMsgs::CameraInfo calibrationToCameraInfo(dai::CalibrationHandler calibHandler,
                                                   dai::CameraBoardSocket cameraId,
                                                   int width = -1,
                                                   int height = -1,
