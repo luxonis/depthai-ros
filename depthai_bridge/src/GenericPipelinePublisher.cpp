@@ -4,12 +4,28 @@
 #include <depthai_bridge/BridgePublisher.hpp>
 #include <depthai_bridge/ImuConverter.hpp>
 #include <sensor_msgs/Imu.h>
+
+#include "depthai_ros_msgs/StereoDepthConfig.h"
+#include <dynamic_reconfigure/server.h>
 #include <depthai_bridge/DisparityConverter.hpp>
 
 namespace dai {
     namespace ros {
         void GenericPipelinePublisher::BuildPublisherFromPipeline(dai::Pipeline& pipeline) {
             auto connections = pipeline.getConnectionMap();
+            if(!_device.isPipelineRunning()) {
+                for (auto &node : pipeline.getAllNodes()) {
+                    addConfigNodes(pipeline, node);
+                }
+
+                _device.startPipeline(pipeline);
+
+                for (auto &node : pipeline.getAllNodes()) {
+                    mapNode(pipeline, node);
+                }
+            } else {
+                ROS_WARN("Device is running already, GenericPipelinePublisher can not add configuration servers");
+            }
 
             for(auto& connection: connections) {
                 auto node = pipeline.getNode(connection.first);
@@ -205,6 +221,31 @@ namespace dai {
 
             publisher->addPublisherCallback();
             return true;
+        }
+
+        void GenericPipelinePublisher::mapNode(Pipeline &pipeline, std::shared_ptr<dai::Node> node) {
+            if(auto stereo = std::dynamic_pointer_cast<dai::node::StereoDepth>(node)) {
+                auto configQueue = _device.getInputQueue("stereoConfig");
+                auto server = std::make_shared<dynamic_reconfigure::Server<depthai_ros::StereoDepthConfig>>(_pnh);
+                server->setCallback([configQueue, stereo](depthai_ros::StereoDepthConfig& cfg, unsigned level) {
+                    dai::StereoDepthConfig dcfg = stereo->initialConfig;
+                    dcfg.setConfidenceThreshold(cfg.confidence);
+                    dcfg.setLeftRightCheckThreshold(cfg.lr_check_threshold);
+                    dcfg.setBilateralFilterSigma(cfg.bilateral_sigma);
+                    dcfg.setSubpixel(cfg.enable_subpixel);
+                    dcfg.setLeftRightCheck(cfg.enable_left_right_check);
+                    configQueue->send(dcfg);
+                });
+                keep_alive.push_back(server);
+            }
+        }
+
+        void GenericPipelinePublisher::addConfigNodes(Pipeline &pipeline, std::shared_ptr<dai::Node> node) {
+            if(auto stereo = std::dynamic_pointer_cast<dai::node::StereoDepth>(node)) {
+                auto configIn = pipeline.create<dai::node::XLinkIn>();
+                configIn->setStreamName("stereoConfig");
+                configIn->out.link(stereo->inputConfig);
+            }
         }
     }
 }

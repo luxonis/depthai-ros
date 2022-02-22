@@ -38,6 +38,7 @@ if ( ament_cmake_FOUND )
     find_package(camera_info_manager REQUIRED)
     find_package(cv_bridge REQUIRED)
     find_package(depthai_ros_msgs REQUIRED)
+    find_package(depthai_ros_gencfg REQUIRED)
     find_package(image_transport REQUIRED)
     find_package(rclcpp REQUIRED)
     find_package(sensor_msgs REQUIRED)
@@ -49,6 +50,7 @@ if ( ament_cmake_FOUND )
         camera_info_manager
         cv_bridge
         depthai_ros_msgs
+        depthai_ros_gencfg
         image_transport
         rclcpp
         sensor_msgs

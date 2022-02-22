@@ -23,6 +23,8 @@
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>vision_msgs</depend>
+  <depend>dynamic_reconfigure</depend>
+
   <member_of_group condition="$ROS_VERSION == 2">rosidl_interface_packages</member_of_group>
   
   <export>

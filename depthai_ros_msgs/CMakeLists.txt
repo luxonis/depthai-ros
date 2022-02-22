@@ -43,6 +43,7 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
       sensor_msgs
       std_msgs
       vision_msgs
+      dynamic_reconfigure
     )
 
     ################################################
@@ -69,13 +70,17 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
     ## Generate added messages and services with any dependencies listed here
     generate_messages (
       DEPENDENCIES
-      geometry_msgs sensor_msgs std_msgs vision_msgs
+      geometry_msgs sensor_msgs std_msgs vision_msgs dynamic_reconfigure
+    )
+
+    generate_dynamic_reconfigure_options(
+            cfg/StereoDepth.cfg
     )
 
     ###################################
     ## catkin specific configuration ##
     ###################################
     catkin_package (
-      CATKIN_DEPENDS geometry_msgs message_runtime sensor_msgs std_msgs vision_msgs
+      CATKIN_DEPENDS geometry_msgs message_runtime sensor_msgs std_msgs vision_msgs dynamic_reconfigure
     )
 endif()

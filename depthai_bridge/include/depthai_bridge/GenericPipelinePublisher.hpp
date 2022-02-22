@@ -41,6 +41,8 @@ namespace dai {
                 return mapKnownInputNodeTypes<Args...>(xLinkOut, inputNode, inputName);
             }
             void mapOutputStream(dai::Pipeline& pipeline, std::shared_ptr<dai::node::XLinkOut> xLinkOut, const dai::Node::Connection& connection);
+            void mapNode(dai::Pipeline& pipeline, std::shared_ptr<dai::Node> node);
+            void addConfigNodes(dai::Pipeline& pipeline, std::shared_ptr<dai::Node> node);
         public:
             void BuildPublisherFromPipeline(dai::Pipeline& pipeline);
             GenericPipelinePublisher(::ros::NodeHandle& pnh, dai::Device& device, dai::Pipeline& pipeline);
