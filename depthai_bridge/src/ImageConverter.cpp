@@ -294,11 +294,7 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
     auto& projection = cameraData.P;
     auto& rotation = cameraData.R;
 #endif
-    // Set rotation to reasonable default even for non-stereo pairs
-    rotation[0] = rotation[4] = rotation[8] = 1;
-    for(size_t i = 0; i < 3; i++) {
-        std::copy(flatIntrinsics.begin() + i * 3, flatIntrinsics.begin() + (i + 1) * 3, projection.begin() + i * 4);
-    }
+
     std::copy(flatIntrinsics.begin(), flatIntrinsics.end(), intrinsics.begin());
 
     distCoeffs = calibHandler.getDistortionCoefficients(cameraId);
