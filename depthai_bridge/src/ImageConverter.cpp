@@ -45,7 +45,7 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, ImageMsgs::
     auto rosNow = ::ros::Time::now();
     auto steadyTime = std::chrono::steady_clock::now();
     auto diffTime = steadyTime - tstamp;
-    long int nsec = rosNow.toNSec() - diffTime.count();
+    uint64_t nsec = rosNow.toNSec() - diffTime.count();
     auto rosStamp = rosNow.fromNSec(nsec);
     header.stamp = rosStamp;
     header.seq = inData->getSequenceNum();
@@ -294,7 +294,11 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
     auto& projection = cameraData.P;
     auto& rotation = cameraData.R;
 #endif
-
+    // Set rotation to reasonable default even for non-stereo pairs
+    rotation[0] = rotation[4] = rotation[8] = 1;
+    for(size_t i = 0; i < 3; i++) {
+        std::copy(flatIntrinsics.begin() + i * 3, flatIntrinsics.begin() + (i + 1) * 3, projection.begin() + i * 4);
+    }
     std::copy(flatIntrinsics.begin(), flatIntrinsics.end(), intrinsics.begin());
 
     distCoeffs = calibHandler.getDistortionCoefficients(cameraId);
