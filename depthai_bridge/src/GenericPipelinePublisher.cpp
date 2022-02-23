@@ -226,7 +226,7 @@ void GenericPipelinePublisher::mapNode(Pipeline& pipeline, std::shared_ptr<dai::
     if(auto stereo = std::dynamic_pointer_cast<dai::node::StereoDepth>(node)) {
         auto configQueue = _device.getInputQueue("stereoConfig");
         auto server = std::make_shared<dynamic_reconfigure::Server<depthai_ros::StereoDepthConfig>>(_pnh);
-        depthai_ros::StereoDepthConfig def_config;
+        depthai_ros::StereoDepthConfig def_config = { };
         def_config.left_right_check = stereo->initialConfig.getLeftRightCheckThreshold() > 0; // No getter for this; just check threshold??
         def_config.confidence = stereo->initialConfig.getConfidenceThreshold();
         def_config.bilateral_sigma = stereo->initialConfig.getBilateralFilterSigma();
@@ -239,8 +239,8 @@ void GenericPipelinePublisher::mapNode(Pipeline& pipeline, std::shared_ptr<dai::
             auto rawCfg = dcfg.get();
             rawCfg.postProcessing.thresholdFilter.maxRange = cfg.threshold_max;
             rawCfg.postProcessing.thresholdFilter.minRange = cfg.threshold_min;
-            rawCfg.postProcessing.decimationFilter.decimationFactor = cfg.decimation_factor;
-            rawCfg.postProcessing.decimationFilter.decimationMode = static_cast<RawStereoDepthConfig::PostProcessing::DecimationFilter::DecimationMode>(cfg.decimation_mode);
+            //rawCfg.postProcessing.decimationFilter.decimationFactor = cfg.decimation_factor;
+            //rawCfg.postProcessing.decimationFilter.decimationMode = static_cast<RawStereoDepthConfig::PostProcessing::DecimationFilter::DecimationMode>(cfg.decimation_mode);
             dcfg.set(rawCfg);
 
             dcfg.setConfidenceThreshold(cfg.confidence);
