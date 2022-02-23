@@ -75,6 +75,7 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
 
     generate_dynamic_reconfigure_options(
             cfg/StereoDepth.cfg
+            cfg/CameraControl.cfg
     )
 
     ###################################

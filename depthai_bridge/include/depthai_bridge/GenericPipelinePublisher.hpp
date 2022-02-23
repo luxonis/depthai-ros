@@ -17,6 +17,15 @@ class GenericPipelinePublisher {
     dai::Device& _device;
     std::string _frame_prefix;
     std::map<CameraBoardSocket, std::string> _frameNames;
+
+    std::map<CameraBoardSocket, ::ros::NodeHandle> _nodeHandles;
+    ::ros::NodeHandle& getNodeHandle(CameraBoardSocket socket) {
+        if(_nodeHandles.find(socket) == _nodeHandles.end()) {
+            _nodeHandles[socket] = ::ros::NodeHandle(_pnh, _frameNames[socket]);
+        }
+        return _nodeHandles[socket];
+    }
+
     std::vector<std::shared_ptr<void>> keep_alive;
     std::vector<std::shared_ptr<ImageConverter>> converters;
     std::vector<std::shared_ptr<BridgePublisherBase>> publishers;
@@ -40,6 +49,9 @@ class GenericPipelinePublisher {
         return mapKnownInputNodeTypes<Args...>(xLinkOut, inputNode, inputName);
     }
     void mapOutputStream(dai::Pipeline& pipeline, std::shared_ptr<dai::node::XLinkOut> xLinkOut, const dai::Node::Connection& connection);
+
+    template<typename T> void setupCameraControlQueue(std::shared_ptr<T> cam, const std::string& prefix);
+    template<typename T> void setupCameraControlServer(std::shared_ptr<T> cam, const std::string& prefix);
     void mapNode(dai::Pipeline& pipeline, std::shared_ptr<dai::Node> node);
     void addConfigNodes(dai::Pipeline& pipeline, std::shared_ptr<dai::Node> node);
 

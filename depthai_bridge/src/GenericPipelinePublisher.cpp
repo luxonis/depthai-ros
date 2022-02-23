@@ -9,6 +9,7 @@
 #include <depthai_bridge/ImuConverter.hpp>
 
 #include "depthai_ros_msgs/StereoDepthConfig.h"
+#include "depthai_ros_msgs/CameraControlConfig.h"
 
 namespace dai {
 namespace ros {
@@ -101,16 +102,32 @@ bool GenericPipelinePublisher::mapKnownInputNodeType(std::shared_ptr<dai::node::
             "stereo");
     } else if(inputName == "disparity") {
         auto converter =
-            std::make_shared<dai::rosBridge::DisparityConverter>(_frame_prefix + frame, 880, 7.5, 20, 2000);  // TODO(sachin): undo hardcoding of baseline
+                std::make_shared<dai::rosBridge::DisparityConverter>(_frame_prefix + frame, 880, 7.5, 20,
+                                                                     2000);  // TODO(sachin): undo hardcoding of baseline
         publisher = std::make_shared<dai::rosBridge::BridgePublisher<stereo_msgs::DisparityImage, dai::ImgFrame>>(
-            queue,
-            _pnh,
-            std::string("stereo/disparity"),
-            std::bind(&dai::rosBridge::DisparityConverter::toRosMsg, converter.get(), std::placeholders::_1, std::placeholders::_2),
-            30,
-            depthCameraInfo,
-            "stereo");
+                queue,
+                _pnh,
+                std::string("stereo/disparity"),
+                std::bind(&dai::rosBridge::DisparityConverter::toRosMsg, converter.get(), std::placeholders::_1,
+                          std::placeholders::_2),
+                30,
+                depthCameraInfo,
+                "stereo");
         keep_alive.push_back(converter);
+    } else if(inputName == "confidenceMap") {
+        converter = std::make_shared<ImageConverter>(_frame_prefix + frame, true);
+        publisher = std::make_shared<dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame>>(
+                queue,
+                _pnh,
+                std::string("stereo/confidenceMap"),
+                std::bind(&dai::rosBridge::ImageConverter::toRosMsg,
+                          converter.get(),  // since the converter has the same frame name
+                        // and image type is also same we can reuse it
+                          std::placeholders::_1,
+                          std::placeholders::_2),
+                30,
+                depthCameraInfo,
+                "stereo");
     } else if(inputName == "rectifiedLeft" || inputName == "rectifiedRight" || inputName == "syncedRight" || inputName == "syncedLeft") {
         std::string side_name = (inputName == "rectifiedLeft" || inputName == "syncedLeft") ? "left" : "right";
         auto socket = side_name == "left" ? CameraBoardSocket::LEFT : CameraBoardSocket::RIGHT;
@@ -222,6 +239,38 @@ bool GenericPipelinePublisher::mapKnownInputNodeType(std::shared_ptr<dai::node::
     return true;
 }
 
+template<typename T> void GenericPipelinePublisher::setupCameraControlQueue(std::shared_ptr<T> cam, const std::string& prefix) {
+    auto configIn = cam->getParentPipeline().template create<dai::node::XLinkIn>();
+    auto name = prefix + std::to_string((int)cam->getBoardSocket());
+    configIn->setStreamName(name + "_inputControl");
+    configIn->out.link(cam->inputControl);
+}
+
+template <typename T>
+void GenericPipelinePublisher::setupCameraControlServer(std::shared_ptr<T> cam, const std::string& prefix) {
+    auto name = prefix + std::to_string((int)cam->getBoardSocket());
+    auto configQueue = _device.getInputQueue(name + "_inputControl");
+    auto n = getNodeHandle(cam->getBoardSocket());
+    auto server = std::make_shared<dynamic_reconfigure::Server<depthai_ros::CameraControlConfig>>(n);
+
+    server->setCallback([configQueue, cam](depthai_ros::CameraControlConfig& cfg, unsigned level) {
+        auto dcfg = cam->initialControl;
+        dcfg.setStartStreaming();
+        dcfg.setAutoFocusMode(static_cast<CameraControl::AutoFocusMode>(cfg.autofocus_mode));
+        dcfg.setManualFocus(cfg.manual_focus);
+        dcfg.setAutoFocusRegion(cfg.autofocus_startx, cfg.autofocus_starty, cfg.autofocus_width, cfg.autofocus_height);
+        dcfg.setSaturation(cfg.saturation);
+        dcfg.setSharpness(cfg.sharpness);
+        dcfg.setBrightness(cfg.brightness);
+        dcfg.setChromaDenoise(cfg.chroma_denoise);
+        dcfg.setContrast(cfg.contrast);
+        dcfg.setAutoExposureCompensation(cfg.autoexposure_compensation);
+
+        configQueue->send(dcfg);
+    });
+    keep_alive.push_back(server);
+}
+
 void GenericPipelinePublisher::mapNode(Pipeline& pipeline, std::shared_ptr<dai::Node> node) {
     if(auto stereo = std::dynamic_pointer_cast<dai::node::StereoDepth>(node)) {
         auto configQueue = _device.getInputQueue("stereoConfig");
@@ -230,7 +279,8 @@ void GenericPipelinePublisher::mapNode(Pipeline& pipeline, std::shared_ptr<dai::
         def_config.left_right_check = stereo->initialConfig.getLeftRightCheckThreshold() > 0; // No getter for this; just check threshold??
         def_config.confidence = stereo->initialConfig.getConfidenceThreshold();
         def_config.bilateral_sigma = stereo->initialConfig.getBilateralFilterSigma();
-        //def_config.enable_subpixel = stereo->getSubpixel();  // There is no getter for subpixel?
+        def_config.extended_disparity = stereo->initialConfig.get().algorithmControl.enableExtended;
+        def_config.subpixel = stereo->initialConfig.get().algorithmControl.enableSubpixel;
         def_config.lr_check_threshold = stereo->initialConfig.getLeftRightCheckThreshold();
         server->setConfigDefault(def_config);
 
@@ -254,6 +304,13 @@ void GenericPipelinePublisher::mapNode(Pipeline& pipeline, std::shared_ptr<dai::
         });
         keep_alive.push_back(server);
     }
+
+    else if(auto rgb = std::dynamic_pointer_cast<dai::node::ColorCamera>(node)) {
+        setupCameraControlServer(rgb, "rgb");
+    }
+    else if(auto mono = std::dynamic_pointer_cast<dai::node::MonoCamera>(node)) {
+        setupCameraControlServer(mono, "mono");
+    }
 }
 
 void GenericPipelinePublisher::addConfigNodes(Pipeline& pipeline, std::shared_ptr<dai::Node> node) {
@@ -261,6 +318,11 @@ void GenericPipelinePublisher::addConfigNodes(Pipeline& pipeline, std::shared_pt
         auto configIn = pipeline.create<dai::node::XLinkIn>();
         configIn->setStreamName("stereoConfig");
         configIn->out.link(stereo->inputConfig);
+    } else if(auto rgb = std::dynamic_pointer_cast<dai::node::ColorCamera>(node)) {
+        setupCameraControlQueue(rgb, "rgb");
+    }
+    else if(auto mono = std::dynamic_pointer_cast<dai::node::MonoCamera>(node)) {
+        setupCameraControlQueue(mono, "mono");
     }
 }
 }  // namespace ros
