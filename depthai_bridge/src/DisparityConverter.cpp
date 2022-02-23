@@ -47,7 +47,7 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, Dispari
     auto rosNow = ::ros::Time::now();
     auto steadyTime = std::chrono::steady_clock::now();
     auto diffTime = steadyTime - tstamp;
-    long int nsec = rosNow.toNSec() - diffTime.count();
+    uint64_t nsec = rosNow.toNSec() - diffTime.count();
     auto rosStamp = rosNow.fromNSec(nsec);
     outDispImageMsg.header.stamp = rosStamp;
 
