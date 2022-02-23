@@ -52,10 +52,13 @@ GenericPipelinePublisher::GenericPipelinePublisher(::ros::NodeHandle& pnh, dai::
     : GenericPipelinePublisher(pnh, device, pipeline, "dai_" + device.getMxId()) {}
 static std::map<CameraBoardSocket, std::string> default_frame_mapping() {
     std::map<CameraBoardSocket, std::string> frameNames;
-    for(int i = 0; i < 8; i++) {
+    for(int i = (int)CameraBoardSocket::CAM_D; i < 8; i++) {
         auto name = std::string("CAM_") + std::to_string(i + 'A');
         frameNames[(CameraBoardSocket)i] = name;
     }
+    frameNames[CameraBoardSocket::LEFT] = "left_camera_optical_frame";
+    frameNames[CameraBoardSocket::RIGHT] = "right_camera_optical_frame";
+    frameNames[CameraBoardSocket::RGB] = "rgb_camera_optical_frame";
     return frameNames;
 }
 GenericPipelinePublisher::GenericPipelinePublisher(::ros::NodeHandle& pnh, dai::Device& device, dai::Pipeline& pipeline, const std::string& frame_prefix)
@@ -223,13 +226,30 @@ void GenericPipelinePublisher::mapNode(Pipeline& pipeline, std::shared_ptr<dai::
     if(auto stereo = std::dynamic_pointer_cast<dai::node::StereoDepth>(node)) {
         auto configQueue = _device.getInputQueue("stereoConfig");
         auto server = std::make_shared<dynamic_reconfigure::Server<depthai_ros::StereoDepthConfig>>(_pnh);
+        depthai_ros::StereoDepthConfig def_config;
+        def_config.left_right_check = stereo->initialConfig.getLeftRightCheckThreshold() > 0; // No getter for this; just check threshold??
+        def_config.confidence = stereo->initialConfig.getConfidenceThreshold();
+        def_config.bilateral_sigma = stereo->initialConfig.getBilateralFilterSigma();
+        //def_config.enable_subpixel = stereo->getSubpixel();  // There is no getter for subpixel?
+        def_config.lr_check_threshold = stereo->initialConfig.getLeftRightCheckThreshold();
+        server->setConfigDefault(def_config);
+
         server->setCallback([configQueue, stereo](depthai_ros::StereoDepthConfig& cfg, unsigned level) {
             dai::StereoDepthConfig dcfg = stereo->initialConfig;
+            auto rawCfg = dcfg.get();
+            rawCfg.postProcessing.thresholdFilter.maxRange = cfg.threshold_max;
+            rawCfg.postProcessing.thresholdFilter.minRange = cfg.threshold_min;
+            rawCfg.postProcessing.decimationFilter.decimationFactor = cfg.decimation_factor;
+            rawCfg.postProcessing.decimationFilter.decimationMode = static_cast<RawStereoDepthConfig::PostProcessing::DecimationFilter::DecimationMode>(cfg.decimation_mode);
+            dcfg.set(rawCfg);
+
             dcfg.setConfidenceThreshold(cfg.confidence);
             dcfg.setLeftRightCheckThreshold(cfg.lr_check_threshold);
             dcfg.setBilateralFilterSigma(cfg.bilateral_sigma);
-            dcfg.setSubpixel(cfg.enable_subpixel);
-            dcfg.setLeftRightCheck(cfg.enable_left_right_check);
+            dcfg.setSubpixel(cfg.subpixel);
+            dcfg.setLeftRightCheck(cfg.left_right_check);
+            dcfg.setExtendedDisparity(cfg.extended_disparity);
+
             configQueue->send(dcfg);
         });
         keep_alive.push_back(server);
