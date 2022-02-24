@@ -6,13 +6,12 @@
 
 #include "depthai/depthai.hpp"
 
-// #include <depthai_ros_msgs/DetectionDaiArray.h>
-// #include <vision_msgs/Detection2DArray.h>
 
 #ifdef IS_ROS2
     #include <camera_info_manager/camera_info_manager.hpp>
     #include <image_transport/image_transport.hpp>
 
+    #include "depthai_ros_msgs/msg/CameraMetadata.hpp"
     #include "rclcpp/rclcpp.hpp"
     #include "sensor_msgs/msg/camera_info.hpp"
     #include "sensor_msgs/msg/image.hpp"
@@ -26,6 +25,7 @@
     #include <boost/make_shared.hpp>
     #include <boost/shared_ptr.hpp>
 
+    #include "depthai_ros_msgs/CameraMetadata.h"
     #include "sensor_msgs/Image.h"
 #endif
 
@@ -124,6 +124,7 @@ class BridgePublisher {
 
     void addPublisherCallback();
 
+    void publishMetadata(std::shared_ptr<SimMsg> inData, const RosMsg& opMsg);
     void publishHelper(std::shared_ptr<SimMsg> inData);
 
     void startPublisherThread();
@@ -147,6 +148,7 @@ class BridgePublisher {
 #else
     rosOrigin::NodeHandle _nh;
     std::shared_ptr<rosOrigin::Publisher> _cameraInfoPublisher;
+    std::shared_ptr<rosOrigin::Publisher> _cameraMetaPublisher;
 #endif
 
     image_transport::ImageTransport _it;
@@ -282,6 +284,8 @@ std::shared_ptr<image_transport::Publisher> BridgePublisher<RosMsg, SimMsg>::adv
             _camInfoManager->setCameraInfo(_cameraInfoData);
         }
         _cameraInfoPublisher = std::make_shared<rosOrigin::Publisher>(_nh.advertise<ImageMsgs::CameraInfo>(_cameraName + "/camera_info", queueSize));
+        _cameraMetaPublisher =
+            std::make_shared<rosOrigin::Publisher>(_nh.advertise<depthai_ros_msgs::CameraMetadata>(_cameraName + "/camera_metadata", queueSize));
     }
     return std::make_shared<image_transport::Publisher>(_it.advertise(_rosTopic, queueSize));
 }
@@ -299,6 +303,7 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(const BridgePublisher& other) {
         _isImageMessage = true;
         _camInfoManager = std::make_unique<camera_info_manager::CameraInfoManager>(std::move(other._camInfoManager));
         _cameraInfoPublisher = rosOrigin::Publisher(other._cameraInfoPublisher);
+        _cameraMetaPublisher = rosOrigin::Publisher(other._cameraMetaPublisher);
     }
 }
 #endif
@@ -355,6 +360,20 @@ void BridgePublisher<RosMsg, SimMsg>::addPublisherCallback() {
 }
 
 template <class RosMsg, class SimMsg>
+void BridgePublisher<RosMsg, SimMsg>::publishMetadata(std::shared_ptr<SimMsg> inData, const RosMsg& opMsg) {
+    auto inFrame = std::dynamic_pointer_cast<dai::ImgFrame>(inData);
+    if(inFrame) {
+        depthai_ros_msgs::CameraMetadata msg;
+        msg.header = opMsg.header;
+        msg.lens_position = inFrame->getLensPosition() < 0 ? -1 : (inFrame->getLensPosition() / 255.);
+        msg.exposure_time = inFrame->getExposureTime();
+        msg.category = inFrame->getCategory();
+        msg.sensitivity = inFrame->getSensitivity();
+        _cameraMetaPublisher->publish(msg);
+    }
+}
+
+template <class RosMsg, class SimMsg>
 void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDataPtr) {
     RosMsg opMsg;
     if(_camInfoFrameId.empty()) {
@@ -393,6 +412,8 @@ void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDa
                 localCameraInfo.header.frame_id = opMsg.header.frame_id;
                 _cameraInfoPublisher->publish(localCameraInfo);
             }
+
+            publishMetadata(inDataPtr, opMsg);
         }
     }
 
