@@ -12,16 +12,22 @@ if(POLICY CMP0057)
 endif()
 
 
-set(_opencv_version 4)
-find_package(OpenCV 4 QUIET COMPONENTS imgproc highgui)
+set(opencv_version 4)
+find_package(OpenCV ${opencv_version} QUIET COMPONENTS imgproc highgui)
 if(NOT OpenCV_FOUND)
   message(STATUS "----------------Did not find OpenCV 4, trying OpenCV 3--------------")
-  set(_opencv_version 3)
-  find_package(OpenCV 3 REQUIRED COMPONENTS imgproc highgui)
+  set(opencv_version 3)
+  find_package(OpenCV ${opencv_version} REQUIRED COMPONENTS imgproc highgui)
 endif()
 
+message(STATUS "----------------Did not find OpenCV 4, trying OpenCV 3--------------")
 
 find_package(depthai CONFIG REQUIRED)
+message(STATUS ${depthai_VERSION})
+if(depthai_VERSION LESS_EQUAL 2.14.1)
+  message( FATAL_ERROR "Installed DEPTHAI VERSION is less than 2.15.0.  Please upgrade to the latest version which solves the timesync issues" )
+endif()
+
 # find_package(depthai CONFIG REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake/depthai") 
 find_package(ament_cmake QUIET)
 
@@ -33,7 +39,7 @@ if ( ament_cmake_FOUND )
     message(STATUS "Depthai Bridge is being built using AMENT.")
     message(STATUS "------------------------------------------")
 
-    set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
+    set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS}})
 
     find_package(camera_info_manager REQUIRED)
     find_package(cv_bridge REQUIRED)
