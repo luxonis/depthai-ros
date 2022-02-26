@@ -120,8 +120,6 @@ class BridgePublisher {
 
     BridgePublisher(const BridgePublisher& other);
 
-    [[deprecated("addPubisherCallback is a typo function of addPublisherCallback(). use addPublisherCallback()")]] void addPubisherCallback();
-
     void addPublisherCallback();
 
     void publishHelper(std::shared_ptr<SimMsg> inData);
@@ -357,7 +355,7 @@ void BridgePublisher<RosMsg, SimMsg>::addPublisherCallback() {
 template <class RosMsg, class SimMsg>
 void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDataPtr) {
     RosMsg opMsg;
-    if(_camInfoFrameId.empty()) {
+    if(_isImageMessage && _camInfoFrameId.empty()) {
         _converter(inDataPtr, opMsg);
         _camInfoFrameId = opMsg.header.frame_id;
     }
