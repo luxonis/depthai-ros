@@ -5,25 +5,6 @@ namespace dai {
 
 namespace ros {
 
-/*
-std::unordered_map<dai::RawImgFrame::Type, std::string> DisparityConverter::encodingEnumMap = {
-            {dai::RawImgFrame::Type::YUV422i        , "yuv422"               },
-            {dai::RawImgFrame::Type::RGBA8888       , "rgba8"                },
-            {dai::RawImgFrame::Type::RGB888i        , "rgb8"                 },
-            {dai::RawImgFrame::Type::BGR888i        , "bgr8"                 },
-            {dai::RawImgFrame::Type::GRAY8          , "mono8"                },
-            {dai::RawImgFrame::Type::RAW8           , "mono8"                },
-            {dai::RawImgFrame::Type::RAW16          , "16UC1"                },
-            // {dai::RawImgFrame::Type::NV12           : "CV_bridge" },
-        };
-
-std::unordered_map<dai::RawImgFrame::Type, std::string> DisparityConverter::planarEncodingEnumMap = {
-                                    {dai::RawImgFrame::Type::BGR888p, "3_1_bgr8"}, // 3_1_bgr8 represents 3 planes/channels and 1 byte per pixel in BGR format
-                                    {dai::RawImgFrame::Type::NV12   , "nv12"                 }
-
-                                };
-*/
-
 DisparityConverter::DisparityConverter(const std::string frameName, float focalLength, float baseline, float minDepth, float maxDepth)
     : _frameName(frameName), _focalLength(focalLength), _baseline(baseline / 100.0), _minDepth(minDepth / 100.0), _maxDepth(maxDepth / 100.0) {}
 

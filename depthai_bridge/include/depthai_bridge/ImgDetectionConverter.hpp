@@ -32,14 +32,11 @@ class ImgDetectionConverter {
     // DetectionConverter() = default;
     ImgDetectionConverter(std::string frameName, int width, int height, bool normalized = false);
 
-    void toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, VisionMsgs::Detection2DArray& opDetectionMsg, TimePoint tStamp, int32_t sequenceNum = -1);
-
     void toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, VisionMsgs::Detection2DArray& opDetectionMsg);
 
     Detection2DArrayPtr toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData);
 
    private:
-    uint32_t _sequenceNum;
     int _width, _height;
     const std::string _frameName;
     bool _normalized;
