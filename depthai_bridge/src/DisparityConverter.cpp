@@ -27,9 +27,9 @@ std::unordered_map<dai::RawImgFrame::Type, std::string> DisparityConverter::plan
 DisparityConverter::DisparityConverter(const std::string frameName, float focalLength, float baseline, float minDepth, float maxDepth)
     : _frameName(frameName), _focalLength(focalLength), _baseline(baseline / 100.0), _minDepth(minDepth / 100.0), _maxDepth(maxDepth / 100.0) {}
 
-void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, DisparityMsgs::DisparityImage& outDispImageMsg) {
+void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<DisparityMsgs::DisparityImage>& outDispImageMsgs) {
     auto tstamp = inData->getTimestamp();
-
+    DisparityMsgs::DisparityImage outDispImageMsg;
     outDispImageMsg.header.frame_id = _frameName;
     outDispImageMsg.f = _focalLength;
     outDispImageMsg.min_disparity = _focalLength * _baseline / _maxDepth;
@@ -100,7 +100,7 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, Dispari
         unsigned char* convertedDataPtr = reinterpret_cast<unsigned char*>(convertedData.data());
         memcpy(imageMsgDataPtr, convertedDataPtr, size);
     }
-
+    outDispImageMsgs.push_back(outDispImageMsg);
     return;
 }
 
@@ -152,12 +152,14 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, Dispari
 } */
 
 DisparityImagePtr DisparityConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
+    std::deque<DisparityMsgs::DisparityImage> msgQueue;
+    toRosMsg(inData, msgQueue);
+    auto msg = msgQueue.front();
 #ifdef IS_ROS2
-    DisparityImagePtr ptr = std::make_shared<DisparityMsgs::DisparityImage>();
+    DisparityImagePtr ptr = std::make_shared<DisparityMsgs::DisparityImage>(msg);
 #else
-    DisparityImagePtr ptr = boost::make_shared<DisparityMsgs::DisparityImage>();
+    DisparityImagePtr ptr = boost::make_shared<DisparityMsgs::DisparityImage>(msg);
 #endif
-    toRosMsg(inData, *ptr);
     return ptr;
 }
 

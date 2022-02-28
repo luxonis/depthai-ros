@@ -49,7 +49,7 @@ namespace rosOrigin = ::ros;
 template <class RosMsg, class SimMsg>
 class BridgePublisher {
    public:
-    using ConvertFunc = std::function<void(std::shared_ptr<SimMsg>, RosMsg&)>;
+    using ConvertFunc = std::function<void(std::shared_ptr<SimMsg>, std::deque<RosMsg>&)>;
 
 #ifdef IS_ROS2
     using CustomPublisher = typename std::conditional<std::is_same<RosMsg, ImageMsgs::Image>::value,
@@ -385,10 +385,10 @@ void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDa
                 // }
                 auto localCameraInfo = _camInfoManager->getCameraInfo();
 #ifndef IS_ROS2
-                localCameraInfo.header.seq = opMsg.header.seq;
+                localCameraInfo.header.seq = currMsg.header.seq;
 #endif
-                localCameraInfo.header.stamp = opMsg.header.stamp;
-                localCameraInfo.header.frame_id = opMsg.header.frame_id;
+                localCameraInfo.header.stamp = currMsg.header.stamp;
+                localCameraInfo.header.frame_id = currMsg.header.frame_id;
                 _cameraInfoPublisher->publish(localCameraInfo);
             }
             opMsgs.pop_front();

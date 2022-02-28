@@ -4,15 +4,18 @@
 #include <opencv2/opencv.hpp>
 #include <sstream>
 #include <unordered_map>
+#include <tuple>
 
 #include "depthai-shared/common/CameraBoardSocket.hpp"
-#include "depthai/depthai.hpp"
+#include <depthai/depthai.hpp>
 
 #ifdef IS_ROS2
     #include "rclcpp/rclcpp.hpp"
     #include "sensor_msgs/msg/camera_info.hpp"
     #include "sensor_msgs/msg/image.hpp"
     #include "std_msgs/msg/header.hpp"
+    #include <cv_bridge/cv_bridge.hpp>
+
 #else
     #include <ros/ros.h>
 
@@ -22,6 +25,8 @@
     #include "sensor_msgs/CameraInfo.h"
     #include "sensor_msgs/Image.h"
     #include "std_msgs/Header.h"
+    #include <cv_bridge/cv_bridge.h>
+
 #endif
 
 namespace dai {
@@ -45,7 +50,7 @@ class ImageConverter {
     ImageConverter(const std::string frameName, bool interleaved);
     ImageConverter(bool interleaved);
 
-    void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, ImageMsgs::Image& outImageMsg);
+    void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs);
     ImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
 
     void toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outData);
