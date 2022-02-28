@@ -7,10 +7,10 @@ namespace ros {
 ImgDetectionConverter::ImgDetectionConverter(std::string frameName, int width, int height, bool normalized)
     : _frameName(frameName), _width(width), _height(height), _normalized(normalized) {}
 
-void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, VisionMsgs::Detection2DArray& opDetectionMsg) {
+void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, std::deque<VisionMsgs::Detection2DArray>& opDetectionMsgs) {
     // setting the header
     auto tstamp = inNetData->getTimestamp();
-
+    VisionMsgs::Detection2DArray opDetectionMsg;
 #ifndef IS_ROS2
     auto rosNow = ::ros::Time::now();
     auto steadyTime = std::chrono::steady_clock::now();
@@ -69,15 +69,19 @@ void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetDa
         opDetectionMsg.detections[i].bbox.size_x = xSize;
         opDetectionMsg.detections[i].bbox.size_y = ySize;
     }
+
+    opDetectionMsgs.push_back(opDetectionMsg);
 }
 
 Detection2DArrayPtr ImgDetectionConverter::toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData) {
+    std::deque<VisionMsgs::Detection2DArray> msgQueue;
+    toRosMsg(inData, msgQueue);
+    auto msg = msgQueue.front();
 #ifdef IS_ROS2
-    Detection2DArrayPtr ptr = std::make_shared<VisionMsgs::Detection2DArray>();
+    Detection2DArrayPtr ptr = std::make_shared<VisionMsgs::Detection2DArray>(msg);
 #else
-    Detection2DArrayPtr ptr = boost::make_shared<VisionMsgs::Detection2DArray>();
+    Detection2DArrayPtr ptr = boost::make_shared<VisionMsgs::Detection2DArray>(msg);
 #endif
-    toRosMsg(inNetData, *ptr);
     return ptr;
 }
 

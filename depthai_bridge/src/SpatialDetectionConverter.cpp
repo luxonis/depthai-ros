@@ -6,9 +6,11 @@ namespace ros {
 SpatialDetectionConverter::SpatialDetectionConverter(std::string frameName, int width, int height, bool normalized)
     : _frameName(frameName), _width(width), _height(height), _normalized(normalized) {}
 
-void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData, SpatialMessages::SpatialDetectionArray& opDetectionMsg) {
+void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData,
+                                         std::deque<SpatialMessages::SpatialDetectionArray>& opDetectionMsgs) {
     // setting the header
     auto tstamp = inNetData->getTimestamp();
+    SpatialMessages::SpatialDetectionArray opDetectionMsg;
 
 #ifndef IS_ROS2
     auto rosNow = ::ros::Time::now();
@@ -73,15 +75,19 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
         opDetectionMsg.detections[i].position.y = inNetData->detections[i].spatialCoordinates.y / 1000;
         opDetectionMsg.detections[i].position.z = inNetData->detections[i].spatialCoordinates.z / 1000;
     }
+
+    opDetectionMsgs.push_back(opDetectionMsg);
 }
 
 SpatialDetectionArrayPtr SpatialDetectionConverter::toRosMsgPtr(std::shared_ptr<dai::SpatialImgDetections> inNetData) {
+    std::deque<SpatialMessages::SpatialDetectionArray> msgQueue;
+    toRosMsg(inData, msgQueue);
+    auto msg = msgQueue.front();
 #ifdef IS_ROS2
-    SpatialDetectionArrayPtr ptr = std::make_shared<SpatialMessages::SpatialDetectionArray>();
+    SpatialDetectionArrayPtr ptr = std::make_shared<SpatialMessages::SpatialDetectionArray>(msg);
 #else
-    SpatialDetectionArrayPtr ptr = boost::make_shared<SpatialMessages::SpatialDetectionArray>();
+    SpatialDetectionArrayPtr ptr = boost::make_shared<SpatialMessages::SpatialDetectionArray>(msg);
 #endif
-    toRosMsg(inNetData, *ptr);
     return ptr;
 }
 
