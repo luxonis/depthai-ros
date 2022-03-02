@@ -38,9 +38,17 @@ class ImuConverter {
    
    private:
    void FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPackets,  std::deque<ImuMsgs::Imu>& imuMsgs);
+   ImuMsgs::Imu CreateUnitMessage(dai::IMUReportAccelerometer accel, dai::IMUReportGyroscope gyro);
+
     uint32_t _sequenceNum;
     const std::string _frameName = "";
     imuSyncMethod _syncMode;
+    #ifdef IS_ROS2
+    rclcpp::Time _initTime;
+    #else
+    ::ros::Time _initTime;
+    #endif
+
 };
 
 }  // namespace ros
