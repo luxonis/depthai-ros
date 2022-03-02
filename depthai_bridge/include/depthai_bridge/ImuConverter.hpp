@@ -31,14 +31,16 @@ using ImuPtr = ImuMsgs::Imu::Ptr;
 #endif
 class ImuConverter {
    public:
-    ImuConverter(const std::string& frameName);
+    ImuConverter(const std::string& frameName, imuSyncMethod syncMode);
 
-    void toRosMsg(std::shared_ptr<dai::IMUData> inData, ImuMsgs::Imu& outImuMsg);
-    ImuPtr toRosMsgPtr(const std::shared_ptr<dai::IMUData> inData);
-
+    void toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<ImuMsgs::Imu>& outImuMsg);
+    enum imuSyncMethod{COPY, LINEAR_INTERPOLATE_GYRO, LINEAR_INTERPOLATE_ACCEL};
+   
    private:
+   void FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPackets,  std::deque<ImuMsgs::Imu>& imuMsgs);
     uint32_t _sequenceNum;
     const std::string _frameName = "";
+    imuSyncMethod _syncMode;
 };
 
 }  // namespace ros
