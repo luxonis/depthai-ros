@@ -179,6 +179,7 @@ ImuMsgs::Imu ImuConverter::CreateUnitMessage(dai::IMUReportAccelerometer accel, 
 }
 
 void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<ImuMsgs::Imu>& outImuMsgs) {
+    std::cout << "toRosMsg Filter" << inData->packets.size() << std::endl;
     FillImuData_LinearInterpolation(inData->packets, outImuMsgs);
 }
 

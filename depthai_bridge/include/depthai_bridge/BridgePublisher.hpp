@@ -342,12 +342,6 @@ void BridgePublisher<RosMsg, SimMsg>::startPublisherThread() {
 }
 
 template <class RosMsg, class SimMsg>
-void BridgePublisher<RosMsg, SimMsg>::addPubisherCallback() {
-    _daiMessageQueue->addCallback(std::bind(&BridgePublisher<RosMsg, SimMsg>::daiCallback, this, std::placeholders::_1, std::placeholders::_2));
-    _isCallbackAdded = true;
-}
-
-template <class RosMsg, class SimMsg>
 void BridgePublisher<RosMsg, SimMsg>::addPublisherCallback() {
     _daiMessageQueue->addCallback(std::bind(&BridgePublisher<RosMsg, SimMsg>::daiCallback, this, std::placeholders::_1, std::placeholders::_2));
     _isCallbackAdded = true;
