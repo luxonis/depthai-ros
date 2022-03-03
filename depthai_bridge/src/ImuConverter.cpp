@@ -5,21 +5,21 @@ namespace dai {
 
 namespace ros {
 
-ImuConverter::ImuConverter(const std::string& frameName) : _frameName(frameName), _sequenceNum(0) {}
-
-template <typename T>
-T lerp(const T& a, const T& b, const double t) {
-    return a * (1.0 - t) + b * t;
+ImuConverter::ImuConverter(const std::string& frameName)
+    ImuConverter::ImuConverter(const std::string& frameName, imuSyncMethod syncMode, double linear_accel_cov, double angular_velocity_cov)
+    : _frameName(frameName),
+      _syncMode(syncMode),
+      _linear_accel_cov(linear_accel_cov),
+      _angular_velocity_cov(angular_velocity_cov),
+      _sequenceNum(0),
+      _steadyBaseTime(std::chrono::steady_clock::now()) {
+#ifdef IS_ROS2
+    rosBaseTime = rclcpp::Clock().now();
+#else
+    _rosBaseTime = ::ros::Time::now();
+#endif
 }
 
-template <typename T>
-T lerpImu(const T& a, const T& b, const double t) {
-    T res;
-    res.x = lerp(a.x, b.x, t);
-    res.y = lerp(a.y, b.y, t);
-    res.z = lerp(a.z, b.z, t);
-    return res;
-}
 void ImuConverter::FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPackets, std::deque<ImuMsgs::Imu>& imuMsgs) {
     int accelSequenceNum = -1, gyroSequenceNum = -1;
     std::deque<dai::IMUReportAccelerometer> accelHist;
@@ -54,7 +54,14 @@ void ImuConverter::FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPa
                     } else {
                         accel1 = accelHist.front();
                         accelHist.pop_front();
-                        auto dt = accel1.timestamp.get() - accel0.timestamp.get();
+                        // auto dt = 1e-9
+                        //           * static_cast<double>(
+                        //               std::chrono::duration_cast<std::chrono::nanoseconds>(accel1.timestamp.get() - accel0.timestamp.get()).count());
+
+                        // remove std::milli to get in seconds
+                        std::chrono::duration<double, std::milli> duration_ms = accel1.timestamp.get() - accel0.timestamp.get();
+                        const double dt = duration_ms.count();
+
                         if(!gyroHist.size()) {
                             ROS_WARN_STREAM_NAMED("IMU INTERPOLATION: ", "Gyro data not found. Dropping data");
                         }
@@ -71,7 +78,11 @@ void ImuConverter::FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPa
                                                    "Accel 1: Seq => " << accel1.sequence << std::endl
                                                                       << "       timeStamp => " << accel1.timestamp.get() << std::endl);
                             if(currGyro.timestamp.get() > accel0.timestamp.get()) {
-                                auto alpha = (currGyro.timestamp.get() - accel0.timestamp.get()) / dt;
+                                // auto alpha = std::chrono::duration_cast<std::chrono::nanoseconds>(currGyro.timestamp.get() - accel0.timestamp.get()).count();
+                                // / dt;
+                                // remove std::milli to get in seconds
+                                std::chrono::duration<double, std::milli> diff = currGyro.timestamp.get() - accel0.timestamp.get();
+                                const double alpha = diff.count() / dt;
                                 dai::IMUReportAccelerometer interpAccel = lerpImu(accel0, accel1, alpha);
                                 imuMsgs.push_back(CreateUnitMessage(interpAccel, currGyro))
                             } else {
@@ -97,7 +108,10 @@ void ImuConverter::FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPa
                     } else {
                         gyro1 = gyroHist.front();
                         gyroHist.pop_front();
-                        auto dt = gyro1.timestamp.get() - gyro1.timestamp.get();
+                        // remove std::milli to get in seconds
+                        std::chrono::duration<double, std::milli> duration_ms = gyro1.timestamp.get() - gyro0.timestamp.get();
+                        const double dt = duration_ms.count();
+
                         if(!accelHist.size()) {
                             ROS_WARN_STREAM_NAMED("IMU INTERPOLATION: ", "Accel data not found. Dropping data");
                         }
@@ -114,7 +128,9 @@ void ImuConverter::FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPa
                                                    "gyro 1: Seq => " << gyro1.sequence << std::endl
                                                                      << "       timeStamp => " << gyro1.timestamp.get() << std::endl);
                             if(currAccel.timestamp.get() > gyro0.timestamp.get()) {
-                                auto alpha = (currAccel.timestamp.get() - gyro0.timestamp.get()) / dt;
+                                // remove std::milli to get in seconds
+                                std::chrono::duration<double, std::milli> diff = currGyro.timestamp.get() - accel0.timestamp.get();
+                                const double alpha = diff.count() / dt;
                                 dai::IMUReportGyroscope interpGyro = lerpImu(gyro0, gyro1, alpha);
                                 imuMsgs.push_back(CreateUnitMessage(currAccel, interpGyro))
                             } else {
@@ -139,11 +155,14 @@ ImuMsgs::Imu ImuConverter::CreateUnitMessage(dai::IMUReportAccelerometer accel, 
     interpMsg.angular_velocity.y = gyro.y;
     interpMsg.angular_velocity.z = gyro.z;
 
-    for(int i = 0; i < interpMsg.angular_velocity_covariance.size(); ++i) {
-        interpMsg.linear_acceleration_covariance = 0;
-        interpMsg.angular_velocity_covariance = 0;
-        interpMsg.orientation_covariance = -1;
-    }
+    interpMsg.orientation.x = 0.0;
+    interpMsg.orientation.y = 0.0;
+    interpMsg.orientation.z = 0.0;
+    interpMsg.orientation.w = 0.0;
+
+    interpMsg.orientation_covariance = {-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    interpMsg.linear_acceleration_covariance = {_linear_accel_cov, 0.0, 0.0, 0.0, _linear_accel_cov, 0.0, 0.0, 0.0, _linear_accel_cov};
+    interpMsg.angular_velocity_covariance = {_angular_velocity_cov, 0.0, 0.0, 0.0, _angular_velocity_cov, 0.0, 0.0, 0.0, _angular_velocity_cov};
 
     interpMsg.header.frame_id = _frameName;
 #ifndef IS_ROS2

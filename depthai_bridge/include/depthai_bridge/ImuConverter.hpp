@@ -5,7 +5,8 @@
 #include <sstream>
 #include <unordered_map>
 
-#include "depthai/depthai.hpp"
+#include <depthai/depthai.hpp>
+#include <depthai_bridge/depthaiUtility.hpp>
 
 #ifdef IS_ROS2
     #include "rclcpp/rclcpp.hpp"
@@ -31,24 +32,29 @@ using ImuPtr = ImuMsgs::Imu::Ptr;
 #endif
 class ImuConverter {
    public:
-    ImuConverter(const std::string& frameName, imuSyncMethod syncMode);
+    enum imuSyncMethod { COPY, LINEAR_INTERPOLATE_GYRO, LINEAR_INTERPOLATE_ACCEL };
+
+    ImuConverter(const std::string& frameName,
+                 imuSyncMethod syncMode = ImuSyncMethod::LINEAR_INTERPOLATE_ACCEL,
+                 double linear_accel_cov = 0.0,
+                 double angular_velocity_cov = 0.0);
 
     void toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<ImuMsgs::Imu>& outImuMsg);
-    enum imuSyncMethod{COPY, LINEAR_INTERPOLATE_GYRO, LINEAR_INTERPOLATE_ACCEL};
-   
+
    private:
-   void FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPackets,  std::deque<ImuMsgs::Imu>& imuMsgs);
-   ImuMsgs::Imu CreateUnitMessage(dai::IMUReportAccelerometer accel, dai::IMUReportGyroscope gyro);
+    void FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPackets, std::deque<ImuMsgs::Imu>& imuMsgs);
+    ImuMsgs::Imu CreateUnitMessage(dai::IMUReportAccelerometer accel, dai::IMUReportGyroscope gyro);
 
     uint32_t _sequenceNum;
+    double _linear_accel_cov, _angular_velocity_cov;
     const std::string _frameName = "";
     imuSyncMethod _syncMode;
-    #ifdef IS_ROS2
-    rclcpp::Time _initTime;
-    #else
-    ::ros::Time _initTime;
-    #endif
-
+    std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
+#ifdef IS_ROS2
+    rclcpp::Time _rosBaseTime;
+#else
+    ::ros::Time _rosBaseTime;
+#endif
 };
 
 }  // namespace ros
