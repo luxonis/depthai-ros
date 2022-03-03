@@ -75,7 +75,7 @@ void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetDa
 
 Detection2DArrayPtr ImgDetectionConverter::toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData) {
     std::deque<VisionMsgs::Detection2DArray> msgQueue;
-    toRosMsg(inData, msgQueue);
+    toRosMsg(inNetData, msgQueue);
     auto msg = msgQueue.front();
 #ifdef IS_ROS2
     Detection2DArrayPtr ptr = std::make_shared<VisionMsgs::Detection2DArray>(msg);

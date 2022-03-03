@@ -81,7 +81,7 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
 
 SpatialDetectionArrayPtr SpatialDetectionConverter::toRosMsgPtr(std::shared_ptr<dai::SpatialImgDetections> inNetData) {
     std::deque<SpatialMessages::SpatialDetectionArray> msgQueue;
-    toRosMsg(inData, msgQueue);
+    toRosMsg(inNetData, msgQueue);
     auto msg = msgQueue.front();
 #ifdef IS_ROS2
     SpatialDetectionArrayPtr ptr = std::make_shared<SpatialMessages::SpatialDetectionArray>(msg);
