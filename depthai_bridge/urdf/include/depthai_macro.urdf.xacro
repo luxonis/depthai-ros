@@ -7,7 +7,17 @@
 
     <!-- <xacro:if value="${model == 'BW1098OAK'}">
     </xacro:if> -->
+
     <xacro:property name="baseline" value="0.075" />
+    <xacro:if value="${model == 'OAK-D'}">
+      <xacro:property name="imu_offset_x" value="0.015" />
+      <xacro:property name="imu_offset_y" value="-0.013662" />
+      <xacro:property name="imu_offset_z" value="0" />
+      <xacro:property name="imu_r" value="0.0" />
+      <xacro:property name="imu_p" value="0.0" />
+      <xacro:property name="imu_y" value="0.0" />
+    </xacro:if>
+
 
     <!-- base_link of the sensor-->
     <link name="${base_frame}"/>
