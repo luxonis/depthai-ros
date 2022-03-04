@@ -19,7 +19,7 @@ rclcpp::Time getFrameTime(rclcpp::Time rclBaseTime,
     auto elapsedTime = currTimePoint - steadyBaseTime;
     // uint64_t nSec = rosBaseTime.toNSec() + std::chrono::duration_cast<std::chrono::nanoseconds>(elapsedTime).count();
     auto rclStamp = rclBaseTime + elapsedTime;
-    ROS_DEBUG_STREAM_NAMED("PRINT TIMESTAMP: ", "rosStamp -> " << rclStamp << "rosBaseTime -> " << rclBaseTime);
+    ROS_DEBUG_STREAM_NAMED("PRINT TIMESTAMP: ", "rosStamp -> " << rclStamp << "  rosBaseTime -> " << rclBaseTime);
     return rclStamp;
 }
 
@@ -31,7 +31,7 @@ rclcpp::Time getFrameTime(rclcpp::Time rclBaseTime,
     auto elapsedTime = currTimePoint - steadyBaseTime;
     uint64_t nSec = rosBaseTime.toNSec() + std::chrono::duration_cast<std::chrono::nanoseconds>(elapsedTime).count();
     auto rosStamp = rosBaseTime.fromNSec(nSec);
-    ROS_DEBUG_STREAM_NAMED("PRINT TIMESTAMP: ", "rosStamp -> " << rosStamp << "rosBaseTime -> " << rosBaseTime);
+    ROS_DEBUG_STREAM_NAMED("PRINT TIMESTAMP: ", "rosStamp -> " << rosStamp << "  rosBaseTime -> " << rosBaseTime);
     return rosStamp;
 }
 #endif
