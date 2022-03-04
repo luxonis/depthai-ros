@@ -29,11 +29,13 @@ class GenericPipelinePublisher {
     std::vector<std::shared_ptr<void>> keep_alive;
     std::vector<std::shared_ptr<ImageConverter>> converters;
     std::vector<std::shared_ptr<BridgePublisherBase>> publishers;
+    ::ros::Subscriber ae_boundingbox, af_boundingbox;
     CalibrationHandler _calibrationHandler;
 
     bool mapKnownInputNodeType(std::shared_ptr<dai::node::XLinkOut> xLinkOut, std::shared_ptr<dai::node::StereoDepth> inputNode, const std::string& inputName);
     bool mapKnownInputNodeType(std::shared_ptr<dai::node::XLinkOut> xLinkOut, std::shared_ptr<dai::node::IMU> inputNode, const std::string& inputName);
     bool mapKnownInputNodeType(std::shared_ptr<dai::node::XLinkOut> xLinkOut, std::shared_ptr<dai::node::ColorCamera> inputNode, const std::string& inputName);
+    bool mapKnownInputNodeType(std::shared_ptr<dai::node::XLinkOut> xLinkOut, std::shared_ptr<dai::node::MonoCamera> inputNode, const std::string& inputName);
 
     template <int None = 0>
     bool mapKnownInputNodeTypes(std::shared_ptr<dai::node::XLinkOut> xLinkOut, std::shared_ptr<dai::Node> inputNode, const std::string& inputName) {

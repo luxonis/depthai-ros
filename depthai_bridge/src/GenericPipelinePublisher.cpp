@@ -2,6 +2,8 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/Imu.h>
 
+#include <vision_msgs/BoundingBox2D.h>
+
 #include <depthai_bridge/BridgePublisher.hpp>
 #include <depthai_bridge/DisparityConverter.hpp>
 #include <depthai_bridge/GenericPipelinePublisher.hpp>
@@ -67,7 +69,7 @@ GenericPipelinePublisher::GenericPipelinePublisher(::ros::NodeHandle& pnh, dai::
 
 void GenericPipelinePublisher::mapOutputStream(Pipeline& pipeline, std::shared_ptr<dai::node::XLinkOut> xLinkOut, const Node::Connection& connection) {
     auto otherNode = pipeline.getNode(connection.outputId);
-    if(!mapKnownInputNodeTypes<dai::node::ColorCamera, dai::node::IMU, dai::node::StereoDepth>(xLinkOut, otherNode, connection.outputName)) {
+    if(!mapKnownInputNodeTypes<dai::node::ColorCamera, dai::node::IMU, dai::node::StereoDepth, dai::node::MonoCamera>(xLinkOut, otherNode, connection.outputName)) {
         ROS_WARN("Could not generate depthai publisher for %s(%s.%s)", xLinkOut->getStreamName().c_str(), otherNode->getName(), connection.outputName.c_str());
     }
 }
@@ -194,6 +196,35 @@ bool GenericPipelinePublisher::mapKnownInputNodeType(std::shared_ptr<dai::node::
     return true;
 }
 
+bool GenericPipelinePublisher::mapKnownInputNodeType(std::shared_ptr<dai::node::XLinkOut> xLinkOut, std::shared_ptr<dai::node::MonoCamera> inputNode, const std::string& inputName) {
+    auto frame = _frameNames[inputNode->getBoardSocket()];
+    auto queue = _device.getOutputQueue(xLinkOut->getStreamName(), 30, false);
+
+
+    int width = 1280, height = 720;
+    width = inputNode->getResolutionWidth();
+    height = inputNode->getResolutionHeight();
+
+    converters.emplace_back(std::make_shared<ImageConverter>(_frame_prefix + frame, true));
+    auto& converter = converters.back();
+    auto cameraInfo = converter->calibrationToCameraInfo(_calibrationHandler, inputNode->getBoardSocket(), width, height);
+    auto publisher = std::make_shared<dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame>>(
+            queue,
+            _pnh,
+            std::string(frame + "/image"),
+            std::bind(&dai::rosBridge::ImageConverter::toRosMsg,
+                      converter.get(),  // since the converter has the same frame name
+                    // and image type is also same we can reuse it
+                      std::placeholders::_1,
+                      std::placeholders::_2),
+            30,
+            cameraInfo,
+            "mono" + std::to_string((int)inputNode->getBoardSocket()));
+    publishers.push_back(publisher);
+
+    publisher->addPublisherCallback();
+    return true;
+}
 bool GenericPipelinePublisher::mapKnownInputNodeType(std::shared_ptr<dai::node::XLinkOut> xLinkOut,
                                                      std::shared_ptr<dai::node::ColorCamera> inputNode,
                                                      const std::string& inputName) {
@@ -253,21 +284,63 @@ void GenericPipelinePublisher::setupCameraControlServer(std::shared_ptr<T> cam, 
     auto n = getNodeHandle(cam->getBoardSocket());
     auto server = std::make_shared<dynamic_reconfigure::Server<depthai_ros::CameraControlConfig>>(n);
 
-    server->setCallback([configQueue, cam](depthai_ros::CameraControlConfig& cfg, unsigned level) {
-        auto dcfg = cam->initialControl;
-        dcfg.setStartStreaming();
-        dcfg.setAutoFocusMode(static_cast<CameraControl::AutoFocusMode>(cfg.autofocus_mode));
-        dcfg.setManualFocus(cfg.manual_focus);
-        dcfg.setAutoFocusRegion(cfg.autofocus_startx, cfg.autofocus_starty, cfg.autofocus_width, cfg.autofocus_height);
-        dcfg.setSaturation(cfg.saturation);
-        dcfg.setSharpness(cfg.sharpness);
-        dcfg.setBrightness(cfg.brightness);
-        dcfg.setChromaDenoise(cfg.chroma_denoise);
-        dcfg.setContrast(cfg.contrast);
-        dcfg.setAutoExposureCompensation(cfg.autoexposure_compensation);
+    auto current_config = std::make_shared<depthai_ros::CameraControlConfig>();
+    server->getConfigDefault(*current_config);
+    keep_alive.push_back(current_config);
 
+    auto triggger_update = [=](depthai_ros::CameraControlConfig& cfg, unsigned level) {
+        dai::CameraControl dcfg;
+        if(level == 0xffffffff || level & 7) dcfg.setStartStreaming();
+        if(level & 1) dcfg.setAutoFocusMode(static_cast<CameraControl::AutoFocusMode>(cfg.autofocus_mode));
+        if(level & 2) dcfg.setAutoFocusRegion(cfg.autofocus_startx, cfg.autofocus_starty, cfg.autofocus_width, cfg.autofocus_height);
+        if(level & 2) dcfg.setAutoFocusLensRange(cfg.autofocus_min, cfg.autofocus_max);
+        if(level & 4) dcfg.setManualFocus(cfg.manual_focus);
+        if(level & 8) dcfg.setAutoExposureLock(cfg.autoexposure_lock);
+        if(level & 16) dcfg.setAutoExposureRegion(cfg.autoexposure_startx, cfg.autoexposure_starty, cfg.autoexposure_width, cfg.autoexposure_height);
+
+        if(level & 32) dcfg.setAutoExposureCompensation(cfg.autoexposure_compensation);
+        if(level & 64) dcfg.setContrast(cfg.contrast);
+        if(level & 128) dcfg.setBrightness(cfg.brightness);
+        if(level & 256) dcfg.setSaturation(cfg.saturation);
+        if(level & 512) dcfg.setSharpness(cfg.sharpness);
+        if(level & 1024) dcfg.setChromaDenoise(cfg.chroma_denoise);
+
+        *current_config = cfg;
         configQueue->send(dcfg);
+    };
+
+    server->setCallback([=](depthai_ros::CameraControlConfig& cfg, unsigned level) {
+        triggger_update(cfg, level);
     });
+
+    auto ae_subscriber = std::make_shared<::ros::Subscriber>
+            (_pnh.subscribe<vision_msgs::BoundingBox2D>(
+                    name + "/ae_bbox", 1,
+                    [=](boost::shared_ptr<const vision_msgs::BoundingBox2D> bb){
+                        current_config->autoexposure_startx = bb->center.x - bb->size_x / 2;
+                        current_config->autoexposure_starty = bb->center.y - bb->size_y / 2;
+                        current_config->autoexposure_width = bb->size_x;
+                        current_config->autoexposure_height = bb->size_y;
+                        server->updateConfig(*current_config);
+                        triggger_update(*current_config, 16);
+                    }
+            ));
+    keep_alive.push_back(ae_subscriber);
+
+    auto af_subscriber = std::make_shared<::ros::Subscriber>
+            (_pnh.subscribe<vision_msgs::BoundingBox2D>(
+                    name + "/af_bbox", 1,
+                    [=](boost::shared_ptr<const vision_msgs::BoundingBox2D> bb){
+                        current_config->autofocus_startx = bb->center.x - bb->size_x / 2;
+                        current_config->autofocus_starty = bb->center.y - bb->size_y / 2;
+                        current_config->autofocus_width = bb->size_x;
+                        current_config->autofocus_height = bb->size_y;
+                        server->updateConfig(*current_config);
+                        triggger_update(*current_config, 2);
+                    }
+            ));
+    keep_alive.push_back(af_subscriber);
+
     keep_alive.push_back(server);
 }
 
