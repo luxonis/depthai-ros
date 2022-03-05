@@ -67,7 +67,8 @@ class BridgePublisher {
                     ConvertFunc converter,
                     size_t qosHistoryDepth,
                     std::string cameraParamUri = "",
-                    std::string cameraName = "");
+                    std::string cameraName = "",
+                    bool performTransform = false);
 
     BridgePublisher(std::shared_ptr<dai::DataOutputQueue> daiMessageQueue,
                     std::shared_ptr<rclcpp::Node> node,
@@ -75,7 +76,8 @@ class BridgePublisher {
                     ConvertFunc converter,
                     size_t qosHistoryDepth,
                     ImageMsgs::CameraInfo cameraInfoData,
-                    std::string cameraName);
+                    std::string cameraName,
+                    bool performTransform = false);
 
     /**
      * Tag Dispacher function to to overload the Publisher to ImageTransport Publisher
@@ -96,7 +98,8 @@ class BridgePublisher {
                     ConvertFunc converter,
                     int queueSize,
                     std::string cameraParamUri = "",
-                    std::string cameraName = "");
+                    std::string cameraName = "",
+                    bool performTransform = false);
 
     BridgePublisher(std::shared_ptr<dai::DataOutputQueue> daiMessageQueue,
                     rosOrigin::NodeHandle nh,
@@ -104,7 +107,8 @@ class BridgePublisher {
                     ConvertFunc converter,
                     int queueSize,
                     ImageMsgs::CameraInfo cameraInfoData,
-                    std::string cameraName);
+                    std::string cameraName,
+                    bool performTransform = false);
 
     /**
      * Tag Dispacher function to to overload the Publisher to ImageTransport Publisher
@@ -140,6 +144,7 @@ class BridgePublisher {
     static const std::string LOG_TAG;
     std::shared_ptr<dai::DataOutputQueue> _daiMessageQueue;
     ConvertFunc _converter;
+    bool _performTransform = false;
 
 #ifdef IS_ROS2
     std::shared_ptr<rclcpp::Node> _node;
@@ -181,14 +186,16 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(std::shared_ptr<dai::DataOutput
                                                  ConvertFunc converter,
                                                  size_t qosHistoryDepth,
                                                  std::string cameraParamUri,
-                                                 std::string cameraName)
+                                                 std::string cameraName,
+                                                 bool performTransform)
     : _daiMessageQueue(daiMessageQueue),
       _node(node),
       _converter(converter),
       _it(node),
       _rosTopic(rosTopic),
       _cameraParamUri(cameraParamUri),
-      _cameraName(cameraName) {
+      _cameraName(cameraName),
+      _performTransform(performTransform) {
     _rosPublisher = advertise(qosHistoryDepth, std::is_same<RosMsg, ImageMsgs::Image>{});
 }
 
@@ -199,14 +206,16 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(std::shared_ptr<dai::DataOutput
                                                  ConvertFunc converter,
                                                  size_t qosHistoryDepth,
                                                  ImageMsgs::CameraInfo cameraInfoData,
-                                                 std::string cameraName)
+                                                 std::string cameraName,
+                                                 bool performTransform)
     : _daiMessageQueue(daiMessageQueue),
       _node(node),
       _converter(converter),
       _it(node),
       _rosTopic(rosTopic),
       _cameraInfoData(cameraInfoData),
-      _cameraName(cameraName) {
+      _cameraName(cameraName),
+      _performTransform(performTransform) {
     _rosPublisher = advertise(qosHistoryDepth, std::is_same<RosMsg, ImageMsgs::Image>{});
 }
 
@@ -237,14 +246,16 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(std::shared_ptr<dai::DataOutput
                                                  ConvertFunc converter,
                                                  int queueSize,
                                                  std::string cameraParamUri,
-                                                 std::string cameraName)
+                                                 std::string cameraName,
+                                                 bool performTransform)
     : _daiMessageQueue(daiMessageQueue),
       _converter(converter),
       _nh(nh),
       _it(_nh),
       _rosTopic(rosTopic),
       _cameraParamUri(cameraParamUri),
-      _cameraName(cameraName) {
+      _cameraName(cameraName),
+      _performTransform(performTransform) {
     // ROS_DEBUG_STREAM_NAMED(LOG_TAG, "Publisher Type : " << typeid(CustomPublisher).name());
     _rosPublisher = advertise(queueSize, std::is_same<RosMsg, ImageMsgs::Image>{});
 }
@@ -256,14 +267,16 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(std::shared_ptr<dai::DataOutput
                                                  ConvertFunc converter,
                                                  int queueSize,
                                                  ImageMsgs::CameraInfo cameraInfoData,
-                                                 std::string cameraName)
+                                                 std::string cameraName,
+                                                 bool performTransform)
     : _daiMessageQueue(daiMessageQueue),
       _nh(nh),
       _converter(converter),
       _it(_nh),
       _cameraInfoData(cameraInfoData),
       _rosTopic(rosTopic),
-      _cameraName(cameraName) {
+      _cameraName(cameraName),
+      _performTransform(performTransform) {
     // ROS_DEBUG_STREAM_NAMED(LOG_TAG, "Publisher Type : " << typeid(CustomPublisher).name());
     _rosPublisher = advertise(queueSize, std::is_same<RosMsg, ImageMsgs::Image>{});
 }
@@ -393,6 +406,10 @@ void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDa
                 localCameraInfo.header.frame_id = opMsg.header.frame_id;
                 _cameraInfoPublisher->publish(localCameraInfo);
             }
+        }
+    } else {
+        if(_performTransform) {
+            _converter(inDataPtr, opMsg);
         }
     }
 
