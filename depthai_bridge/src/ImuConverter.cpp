@@ -5,7 +5,7 @@ namespace dai {
 
 namespace ros {
 
-    ImuConverter::ImuConverter(const std::string& frameName, ImuSyncMethod syncMode, double linear_accel_cov, double angular_velocity_cov)
+ImuConverter::ImuConverter(const std::string& frameName, ImuSyncMethod syncMode, double linear_accel_cov, double angular_velocity_cov)
     : _frameName(frameName),
       _syncMode(syncMode),
       _linear_accel_cov(linear_accel_cov),
@@ -13,7 +13,7 @@ namespace ros {
       _sequenceNum(0),
       _steadyBaseTime(std::chrono::steady_clock::now()) {
 #ifdef IS_ROS2
-    rosBaseTime = rclcpp::Clock().now();
+    _rosBaseTime = rclcpp::Clock().now();
 #else
     _rosBaseTime = ::ros::Time::now();
 #endif
@@ -26,9 +26,6 @@ void ImuConverter::FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPa
     // std::deque<dai::IMUReportRotationVectorWAcc> rotationVecHist;
 
     for(int i = 0; i < imuPackets.size(); ++i) {
-        // IMUPacket currPacket = imuPackets[0];
-        ROS_DEBUG_STREAM_NAMED("IMU INTERPOLATION: ", "Count  -> " << i <<  " accelHist.size() -> " <<  accelHist.size() << " Accel Serq Number :" << imuPackets[i].acceleroMeter.sequence << std::endl);
-        ROS_DEBUG_STREAM_NAMED("IMU INTERPOLATION: ", "Count  -> " << i <<  " accelHist.size() -> " <<  accelHist.size() << " gyroscope Serq Number :" << imuPackets[i].gyroscope.sequence << std::endl);
 
         if(accelHist.size() == 0) {
             accelHist.push_back(imuPackets[i].acceleroMeter);
@@ -70,16 +67,16 @@ void ImuConverter::FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPa
                         }
                         while(gyroHist.size()) {
                             currGyro = gyroHist.front();
-                            
+
+                            ROS_DEBUG_STREAM_NAMED(
+                                "IMU INTERPOLATION: ",
+                                "Accel 0: Seq => " << accel0.sequence << " timeStamp => " << (accel0.timestamp.get() - _steadyBaseTime).count() << std::endl);
                             ROS_DEBUG_STREAM_NAMED("IMU INTERPOLATION: ",
-                                                   "Accel 0: Seq => " << accel0.sequence 
-                                                                      << " timeStamp => " << (accel0.timestamp.get() - _steadyBaseTime).count() << std::endl);
-                            ROS_DEBUG_STREAM_NAMED("IMU INTERPOLATION: ",
-                                                   "currGyro 0: Seq => " << currGyro.sequence 
-                                                                         << "timeStamp => " << (currGyro.timestamp.get() - _steadyBaseTime).count() << std::endl);
-                            ROS_DEBUG_STREAM_NAMED("IMU INTERPOLATION: ",
-                                                   "Accel 1: Seq => " << accel1.sequence 
-                                                                      << " timeStamp => " << (accel1.timestamp.get() - _steadyBaseTime).count() << std::endl);
+                                                   "currGyro 0: Seq => " << currGyro.sequence << "timeStamp => "
+                                                                         << (currGyro.timestamp.get() - _steadyBaseTime).count() << std::endl);
+                            ROS_DEBUG_STREAM_NAMED(
+                                "IMU INTERPOLATION: ",
+                                "Accel 1: Seq => " << accel1.sequence << " timeStamp => " << (accel1.timestamp.get() - _steadyBaseTime).count() << std::endl);
                             if(currGyro.timestamp.get() > accel0.timestamp.get() && currGyro.timestamp.get() <= accel1.timestamp.get()) {
                                 // auto alpha = std::chrono::duration_cast<std::chrono::nanoseconds>(currGyro.timestamp.get() - accel0.timestamp.get()).count();
                                 // / dt;
@@ -89,16 +86,14 @@ void ImuConverter::FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPa
                                 dai::IMUReportAccelerometer interpAccel = lerpImu(accel0, accel1, alpha);
                                 imuMsgs.push_back(CreateUnitMessage(interpAccel, currGyro));
                                 gyroHist.pop_front();
-                            }
-                            else if (currGyro.timestamp.get() > accel1.timestamp.get()){
+                            } else if(currGyro.timestamp.get() > accel1.timestamp.get()) {
                                 accel0 = accel1;
-                                if (accelHist.size()){
+                                if(accelHist.size()) {
                                     accel1 = accelHist.front();
                                     accelHist.pop_front();
                                     duration_ms = accel1.timestamp.get() - accel0.timestamp.get();
                                     dt = duration_ms.count();
-                                }
-                                else{
+                                } else {
                                     break;
                                 }
                             } else {
@@ -110,7 +105,7 @@ void ImuConverter::FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPa
                         accel0 = accel1;
                     }
                 }
-                ROS_DEBUG_STREAM_NAMED("IMU INTERPOLATION: ", "Count  ->" << i <<  " Placing Accel 0 Seq Number :" << accel0.sequence << std::endl);
+                ROS_DEBUG_STREAM_NAMED("IMU INTERPOLATION: ", "Count  ->" << i << " Placing Accel 0 Seq Number :" << accel0.sequence << std::endl);
 
                 accelHist.push_back(accel0);
             }
@@ -119,9 +114,9 @@ void ImuConverter::FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPa
                 continue;
             } else {
                 dai::IMUReportGyroscope gyro0, gyro1;
+                dai::IMUReportAccelerometer currAccel;
                 gyro0.sequence = -1;
                 ROS_DEBUG_STREAM_NAMED("IMU INTERPOLATION: ", " Interpolating LINEAR_INTERPOLATE_GYRO mode " << std::endl);
-                // accel1.sequence = -1;
                 while(gyroHist.size()) {
                     if(gyro0.sequence == -1) {
                         gyro0 = gyroHist.front();
@@ -131,36 +126,51 @@ void ImuConverter::FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPa
                         gyroHist.pop_front();
                         // remove std::milli to get in seconds
                         std::chrono::duration<double, std::milli> duration_ms = gyro1.timestamp.get() - gyro0.timestamp.get();
-                        const double dt = duration_ms.count();
+                        double dt = duration_ms.count();
 
                         if(!accelHist.size()) {
                             ROS_WARN_STREAM_NAMED("IMU INTERPOLATION: ", "Accel data not found. Dropping data");
                         }
                         while(accelHist.size()) {
-                            dai::IMUReportAccelerometer currAccel = accelHist.front();
-                            accelHist.pop_front();
+                            currAccel = accelHist.front();
                             ROS_DEBUG_STREAM_NAMED("IMU INTERPOLATION: ",
                                                    "gyro 0: Seq => " << gyro0.sequence << std::endl
-                                                                     << "       timeStamp => " << (gyro0.timestamp.get() - _steadyBaseTime).count() << std::endl);
+                                                                     << "       timeStamp => " << (gyro0.timestamp.get() - _steadyBaseTime).count()
+                                                                     << std::endl);
                             ROS_DEBUG_STREAM_NAMED("IMU INTERPOLATION: ",
                                                    "currAccel 0: Seq => " << currAccel.sequence << std::endl
-                                                                          << "       timeStamp => " << (currAccel.timestamp.get() - _steadyBaseTime).count() << std::endl);
+                                                                          << "       timeStamp => " << (currAccel.timestamp.get() - _steadyBaseTime).count()
+                                                                          << std::endl);
                             ROS_DEBUG_STREAM_NAMED("IMU INTERPOLATION: ",
                                                    "gyro 1: Seq => " << gyro1.sequence << std::endl
-                                                                     << "       timeStamp => " << (gyro1.timestamp.get() - _steadyBaseTime).count() << std::endl);
-                            if(currAccel.timestamp.get() > gyro0.timestamp.get()) {
+                                                                     << "       timeStamp => " << (gyro1.timestamp.get() - _steadyBaseTime).count()
+                                                                     << std::endl);
+                            if(currAccel.timestamp.get() > gyro0.timestamp.get() && currAccel.timestamp.get() <= gyro1.timestamp.get()) {
                                 // remove std::milli to get in seconds
                                 std::chrono::duration<double, std::milli> diff = currAccel.timestamp.get() - gyro0.timestamp.get();
                                 const double alpha = diff.count() / dt;
                                 dai::IMUReportGyroscope interpGyro = lerpImu(gyro0, gyro1, alpha);
                                 imuMsgs.push_back(CreateUnitMessage(currAccel, interpGyro));
+                                accelHist.pop_front();
+                            } else if(currAccel.timestamp.get() > gyro1.timestamp.get()) {
+                                gyro0 = gyro1;
+                                if(gyroHist.size()) {
+                                    gyro1 = gyroHist.front();
+                                    gyroHist.pop_front();
+                                    duration_ms = gyro1.timestamp.get() - gyro0.timestamp.get();
+                                    dt = duration_ms.count();
+                                } else {
+                                    break;
+                                }
                             } else {
-                                ROS_DEBUG_STREAM_NAMED("IMU INTERPOLATION: ", "Droppinh ACCEL due to inconsistent timestamps \n");
+                                accelHist.pop_front();
+                                ROS_DEBUG_STREAM_NAMED("IMU INTERPOLATION: ", "Droppinh ACCEL with old timestamps which are below accel10 \n");
                             }
                         }
                         gyro0 = gyro1;
                     }
                 }
+                gyroHist.push_back(gyro0);
             }
         }
     }
