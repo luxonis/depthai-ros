@@ -1,12 +1,11 @@
 #pragma once
 
+#include <depthai/depthai.hpp>
+#include <depthai_bridge/depthaiUtility.hpp>
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <sstream>
 #include <unordered_map>
-
-#include <depthai/depthai.hpp>
-#include <depthai_bridge/depthaiUtility.hpp>
 
 #ifdef IS_ROS2
     #include "rclcpp/rclcpp.hpp"
@@ -30,9 +29,11 @@ using ImuPtr = ImuMsgs::Imu::SharedPtr;
 namespace ImuMsgs = sensor_msgs;
 using ImuPtr = ImuMsgs::Imu::Ptr;
 #endif
+
+enum class ImuSyncMethod { COPY, LINEAR_INTERPOLATE_GYRO, LINEAR_INTERPOLATE_ACCEL };
+
 class ImuConverter {
    public:
-    enum ImuSyncMethod { COPY, LINEAR_INTERPOLATE_GYRO, LINEAR_INTERPOLATE_ACCEL };
 
     ImuConverter(const std::string& frameName,
                  ImuSyncMethod syncMode = ImuSyncMethod::LINEAR_INTERPOLATE_ACCEL,

@@ -11,15 +11,91 @@ namespace dai {
 
 namespace ros {
 
+enum LogLevel { DEBUG, INFO, WARN, ERROR, FATAL };
+
 #ifdef IS_ROS2
 
+    #define DEPTHAI_ROS_LOG_STREAM(loggerName, level, isOnce, args)                 \
+        switch(level) {                                                             \
+            case LogLevel::DEBUG:                                                   \
+                if(isOnce) {                                                        \
+                    RCLCPP_DEBUG_STREAM_ONCE(rclcpp::get_logger(loggerName), args); \
+                } else {                                                            \
+                    RCLCPP_DEBUG_STREAM(rclcpp::get_logger(loggerName), args);      \
+                }                                                                   \
+                break;                                                              \
+            case LogLevel::INFO:                                                    \
+                if(isOnce) {                                                        \
+                    RCLCPP_INFO_STREAM_ONCE(rclcpp::get_logger(loggerName), args);  \
+                } else {                                                            \
+                    RCLCPP_INFO_STREAM(rclcpp::get_logger(loggerName), args);       \
+                }                                                                   \
+                break;                                                              \
+            case LogLevel::WARN:                                                    \
+                if(isOnce) {                                                        \
+                    RCLCPP_WARN_STREAM_ONCE(rclcpp::get_logger(loggerName), args);  \
+                } else {                                                            \
+                    RCLCPP_WARN_STREAM(rclcpp::get_logger(loggerName), args);       \
+                }                                                                   \
+                break;                                                              \
+            case LogLevel::ERROR:                                                   \
+                if(isOnce) {                                                        \
+                    RCLCPP_ERROR_STREAM_ONCE(rclcpp::get_logger(loggerName), args); \
+                } else {                                                            \
+                    RCLCPP_ERROR_STREAM(rclcpp::get_logger(loggerName), args);      \
+                }                                                                   \
+                break;                                                              \
+            case LogLevel::FATAL:                                                   \
+                if(isOnce) {                                                        \
+                    RCLCPP_FATAL_STREAM_ONCE(rclcpp::get_logger(loggerName), args); \
+                } else {                                                            \
+                    RCLCPP_FATAL_STREAM(rclcpp::get_logger(loggerName), args);      \
+                }                                                                   \
+                break;                                                              \
+        }
+
+#else
+    #define DEPTHAI_ROS_LOG_STREAM(loggerName, level, isOnce, args)                                                                       \
+        if(isOnce) {                                                                                                                      \
+            ROS_LOG_STREAM_ONCE(static_cast<::ros::console::Level>(level), std::string(ROSCONSOLE_NAME_PREFIX) + "." + loggerName, args); \
+        } else {                                                                                                                          \
+            ROS_LOG_STREAM(static_cast<::ros::console::Level>(level), std::string(ROSCONSOLE_NAME_PREFIX) + "." + loggerName, args);      \
+        }
+#endif
+
+// DEBUG stream macros on top of ROS logger
+#define DEPTHAI_ROS_DEBUG_STREAM(loggerName, args) DEPTHAI_ROS_LOG_STREAM(loggerName, LogLevel::DEBUG, false, args)
+
+#define DEPTHAI_ROS_DEBUG_STREAM_ONCE(loggerName, args) DEPTHAI_ROS_LOG_STREAM(loggerName, LogLevel::DEBUG, true, args)
+
+// INFO stream macros on top of ROS logger
+#define DEPTHAI_ROS_INFO_STREAM(loggerName, args) DEPTHAI_ROS_LOG_STREAM(loggerName, LogLevel::INFO, false, args)
+
+#define DEPTHAI_ROS_INFO_STREAM_ONCE(loggerName, args) DEPTHAI_ROS_LOG_STREAM(loggerName, LogLevel::INFO, true, args)
+
+// WARN stream macros on top of ROS logger
+#define DEPTHAI_ROS_WARN_STREAM(loggerName, args) DEPTHAI_ROS_LOG_STREAM(loggerName, LogLevel::WARN, false, args)
+
+#define DEPTHAI_ROS_WARN_STREAM_ONCE(loggerName, args) DEPTHAI_ROS_LOG_STREAM(loggerName, LogLevel::WARN, true, args)
+
+// ERROR stream macros on top of ROS logger
+#define DEPTHAI_ROS_ERROR_STREAM(loggerName, args) DEPTHAI_ROS_LOG_STREAM(loggerName, LogLevel::ERROR, false, args)
+
+#define DEPTHAI_ROS_ERROR_STREAM_ONCE(loggerName, args) DEPTHAI_ROS_LOG_STREAM(loggerName, LogLevel::ERROR, true, args)
+
+// FATAL stream macros on top of ROS logger
+#define DEPTHAI_ROS_FATAL_STREAM(loggerName, args) DEPTHAI_ROS_LOG_STREAM(loggerName, LogLevel::FATAL, false, args)
+
+#define DEPTHAI_ROS_FATAL_STREAM_ONCE(loggerName, args) DEPTHAI_ROS_LOG_STREAM(loggerName, LogLevel::FATAL, true, args)
+
+#ifdef IS_ROS2
 rclcpp::Time getFrameTime(rclcpp::Time rclBaseTime,
                           std::chrono::time_point<std::chrono::steady_clock> steadyBaseTime,
                           std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration> currTimePoint) {
     auto elapsedTime = currTimePoint - steadyBaseTime;
     // uint64_t nSec = rosBaseTime.toNSec() + std::chrono::duration_cast<std::chrono::nanoseconds>(elapsedTime).count();
     auto rclStamp = rclBaseTime + elapsedTime;
-    ROS_DEBUG_STREAM_NAMED("PRINT TIMESTAMP: ", "rosStamp -> " << rclStamp << "  rosBaseTime -> " << rclBaseTime);
+    DEPTHAI_ROS_DEBUG_STREAM("PRINT TIMESTAMP: ", "rosStamp -> " << rclStamp << "  rosBaseTime -> " << rclBaseTime);
     return rclStamp;
 }
 
@@ -32,7 +108,7 @@ rclcpp::Time getFrameTime(rclcpp::Time rclBaseTime,
     uint64_t nSec = rosBaseTime.toNSec() + std::chrono::duration_cast<std::chrono::nanoseconds>(elapsedTime).count();
     auto currTime = rosBaseTime;
     auto rosStamp = currTime.fromNSec(nSec);
-    ROS_DEBUG_STREAM_NAMED("PRINT TIMESTAMP: ", "rosStamp -> " << rosStamp << "  rosBaseTime -> " << rosBaseTime);
+    DEPTHAI_ROS_DEBUG_STREAM("PRINT TIMESTAMP: ", "rosStamp -> " << rosStamp << "  rosBaseTime -> " << rosBaseTime);
     return rosStamp;
 }
 #endif
