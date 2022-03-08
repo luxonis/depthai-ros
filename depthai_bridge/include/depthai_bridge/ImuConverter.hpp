@@ -34,7 +34,6 @@ enum class ImuSyncMethod { COPY, LINEAR_INTERPOLATE_GYRO, LINEAR_INTERPOLATE_ACC
 
 class ImuConverter {
    public:
-
     ImuConverter(const std::string& frameName,
                  ImuSyncMethod syncMode = ImuSyncMethod::LINEAR_INTERPOLATE_ACCEL,
                  double linear_accel_cov = 0.0,

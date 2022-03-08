@@ -204,13 +204,23 @@ ImuMsgs::Imu ImuConverter::CreateUnitMessage(dai::IMUReportAccelerometer accel, 
         interpMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, gyro.timestamp.get());
     } else if(_syncMode == ImuSyncMethod::LINEAR_INTERPOLATE_GYRO) {
         interpMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, accel.timestamp.get());
+    } else {
+        interpMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, accel.timestamp.get());
     }
 
     return interpMsg;
 }
 
 void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<ImuMsgs::Imu>& outImuMsgs) {
-    FillImuData_LinearInterpolation(inData->packets, outImuMsgs);
+    if(_syncMode != ImuSyncMethod::COPY) {
+        FillImuData_LinearInterpolation(inData->packets, outImuMsgs);
+    } else {
+        for(int i = 0; i < inData->packets.size(); ++i) {
+            auto accel = inData->packets[i].acceleroMeter;
+            auto gyro = inData->packets[i].gyroscope;
+            outImuMsgs.push_back(CreateUnitMessage(accel, gyro));
+        }
+    }
 }
 
 }  // namespace ros
