@@ -8,14 +8,13 @@
 
 #include "depthai-shared/common/CameraBoardSocket.hpp"
 #include <depthai/depthai.hpp>
+#include <cv_bridge/cv_bridge.h>
 
 #ifdef IS_ROS2
     #include "rclcpp/rclcpp.hpp"
     #include "sensor_msgs/msg/camera_info.hpp"
     #include "sensor_msgs/msg/image.hpp"
     #include "std_msgs/msg/header.hpp"
-    #include <cv_bridge/cv_bridge.hpp>
-
 #else
     #include <ros/ros.h>
 
@@ -25,7 +24,6 @@
     #include "sensor_msgs/CameraInfo.h"
     #include "sensor_msgs/Image.h"
     #include "std_msgs/Header.h"
-    #include <cv_bridge/cv_bridge.h>
 
 #endif
 

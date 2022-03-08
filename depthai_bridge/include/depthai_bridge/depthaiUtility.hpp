@@ -95,7 +95,7 @@ rclcpp::Time getFrameTime(rclcpp::Time rclBaseTime,
     auto elapsedTime = currTimePoint - steadyBaseTime;
     // uint64_t nSec = rosBaseTime.toNSec() + std::chrono::duration_cast<std::chrono::nanoseconds>(elapsedTime).count();
     auto rclStamp = rclBaseTime + elapsedTime;
-    DEPTHAI_ROS_DEBUG_STREAM("PRINT TIMESTAMP: ", "rosStamp -> " << rclStamp << "  rosBaseTime -> " << rclBaseTime);
+    // DEPTHAI_ROS_DEBUG_STREAM("PRINT TIMESTAMP: ", "rosStamp -> " << rclStamp << "  rosBaseTime -> " << rclBaseTime);
     return rclStamp;
 }
 
