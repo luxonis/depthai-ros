@@ -50,6 +50,9 @@ if ( ament_cmake_FOUND )
     find_package(stereo_msgs REQUIRED)
     find_package(std_msgs REQUIRED)
     find_package(vision_msgs REQUIRED)
+    find_package(tf2 REQUIRED)
+    find_package(tf2_ros REQUIRED)
+    find_package(tf2_geometry_msgs REQUIRED)
 
     set(dependencies
         camera_info_manager
@@ -61,6 +64,9 @@ if ( ament_cmake_FOUND )
         stereo_msgs
         std_msgs
         vision_msgs
+        tf2
+        tf2_ros
+        tf2_geometry_msgs
       )
 
     include_directories(
@@ -137,6 +143,9 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
       stereo_msgs
       std_msgs
       vision_msgs
+      tf2
+      tf2_ros
+      tf2_geometry_msgs
     )
     find_package(Boost REQUIRED)
 
@@ -155,7 +164,7 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
     catkin_package(
       INCLUDE_DIRS include
       LIBRARIES ${PROJECT_NAME}
-      CATKIN_DEPENDS depthai_ros_msgs camera_info_manager roscpp sensor_msgs std_msgs vision_msgs image_transport cv_bridge stereo_msgs
+      CATKIN_DEPENDS depthai_ros_msgs camera_info_manager roscpp sensor_msgs std_msgs vision_msgs image_transport cv_bridge stereo_msgs tf2 tf2_ros tf2_geometry_msgs
     )
 
     list(APPEND DEPENDENCY_PUBLIC_LIBRARIES ${catkin_LIBRARIES})
