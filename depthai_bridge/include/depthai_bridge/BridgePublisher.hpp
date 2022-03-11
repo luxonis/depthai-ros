@@ -1,5 +1,6 @@
 #pragma once
 
+#include <deque>
 #include <thread>
 #include <type_traits>
 #include <typeinfo>
@@ -48,7 +49,7 @@ namespace rosOrigin = ::ros;
 template <class RosMsg, class SimMsg>
 class BridgePublisher {
    public:
-    using ConvertFunc = std::function<void(std::shared_ptr<SimMsg>, RosMsg&)>;
+    using ConvertFunc = std::function<void(std::shared_ptr<SimMsg>, std::deque<RosMsg>&)>;
 
 #ifdef IS_ROS2
     using CustomPublisher = typename std::conditional<std::is_same<RosMsg, ImageMsgs::Image>::value,
@@ -119,8 +120,6 @@ class BridgePublisher {
 #endif
 
     BridgePublisher(const BridgePublisher& other);
-
-    [[deprecated("addPubisherCallback is a typo function of addPublisherCallback(). use addPublisherCallback()")]] void addPubisherCallback();
 
     void addPublisherCallback();
 
@@ -343,12 +342,6 @@ void BridgePublisher<RosMsg, SimMsg>::startPublisherThread() {
 }
 
 template <class RosMsg, class SimMsg>
-void BridgePublisher<RosMsg, SimMsg>::addPubisherCallback() {
-    _daiMessageQueue->addCallback(std::bind(&BridgePublisher<RosMsg, SimMsg>::daiCallback, this, std::placeholders::_1, std::placeholders::_2));
-    _isCallbackAdded = true;
-}
-
-template <class RosMsg, class SimMsg>
 void BridgePublisher<RosMsg, SimMsg>::addPublisherCallback() {
     _daiMessageQueue->addCallback(std::bind(&BridgePublisher<RosMsg, SimMsg>::daiCallback, this, std::placeholders::_1, std::placeholders::_2));
     _isCallbackAdded = true;
@@ -356,55 +349,44 @@ void BridgePublisher<RosMsg, SimMsg>::addPublisherCallback() {
 
 template <class RosMsg, class SimMsg>
 void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDataPtr) {
-    RosMsg opMsg;
-    if(_camInfoFrameId.empty()) {
-        _converter(inDataPtr, opMsg);
-        _camInfoFrameId = opMsg.header.frame_id;
-    }
-    int infoSubCount = 0;
+    std::deque<RosMsg> opMsgs;
+
+    int infoSubCount = 0, mainSubCount = 0;
 #ifndef IS_ROS2
     if(_isImageMessage) {
         infoSubCount = _cameraInfoPublisher->getNumSubscribers();
     }
-    int numSub = _rosPublisher->getNumSubscribers();
+    mainSubCount = _rosPublisher->getNumSubscribers();
 #else
     if(_isImageMessage) {
         infoSubCount = _node->count_subscribers(_cameraName + "/camera_info");
     }
-    int numSub = _node->count_subscribers(_rosTopic);
+    mainSubCount = _node->count_subscribers(_rosTopic);
 #endif
-    if(numSub > 0) {
-        _converter(inDataPtr, opMsg);
-        _rosPublisher->publish(opMsg);
 
-        if(_isImageMessage) {
-#ifndef IS_ROS2
-            infoSubCount = _cameraInfoPublisher->getNumSubscribers();
-#else
-            infoSubCount = _node->count_subscribers(_cameraName + "/camera_info");
-#endif
+    if(mainSubCount > 0 || infoSubCount > 0) {
+        _converter(inDataPtr, opMsgs);
+
+        while(opMsgs.size()) {
+            RosMsg currMsg = opMsgs.front();
+            if(mainSubCount > 0) {
+                _rosPublisher->publish(currMsg);
+            }
 
             if(infoSubCount > 0) {
+                // if (_isImageMessage){
+                //     _camInfoFrameId = curr.header.frame_id
+                // }
                 auto localCameraInfo = _camInfoManager->getCameraInfo();
 #ifndef IS_ROS2
-                localCameraInfo.header.seq = opMsg.header.seq;
+                localCameraInfo.header.seq = currMsg.header.seq;
 #endif
-                localCameraInfo.header.stamp = opMsg.header.stamp;
-                localCameraInfo.header.frame_id = opMsg.header.frame_id;
+                localCameraInfo.header.stamp = currMsg.header.stamp;
+                localCameraInfo.header.frame_id = currMsg.header.frame_id;
                 _cameraInfoPublisher->publish(localCameraInfo);
             }
+            opMsgs.pop_front();
         }
-    }
-
-    if(_isImageMessage && numSub == 0 && infoSubCount > 0) {
-        _converter(inDataPtr, opMsg);
-        auto localCameraInfo = _camInfoManager->getCameraInfo();
-#ifndef IS_ROS2
-        localCameraInfo.header.seq = opMsg.header.seq;
-#endif
-        localCameraInfo.header.stamp = opMsg.header.stamp;
-        localCameraInfo.header.frame_id = _camInfoFrameId;
-        _cameraInfoPublisher->publish(localCameraInfo);
     }
 }
 
