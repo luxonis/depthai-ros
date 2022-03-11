@@ -1,14 +1,15 @@
 #pragma once
 
+#include <cv_bridge/cv_bridge.h>
+
+#include <depthai/depthai.hpp>
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <sstream>
-#include <unordered_map>
 #include <tuple>
+#include <unordered_map>
 
-#include "depthai-shared/common/CameraBoardSocket.hpp"
-#include <depthai/depthai.hpp>
-#include <cv_bridge/cv_bridge.h>
+#include <depthai-shared/common/CameraBoardSocket.hpp>
 
 #ifdef IS_ROS2
     #include "rclcpp/rclcpp.hpp"
