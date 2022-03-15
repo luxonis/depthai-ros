@@ -14,7 +14,7 @@ if you don't have opencv installed then try `sudo apt install libopencv-dev`
 
 
 if you don't have rosdep installed and not initialized please execute the following steps:
-1. `sudo apt install python-rosdep2`(melodic) or `sudo apt install python3-rosdep`
+1. `sudo apt install python-rosdep`(melodic) or `sudo apt install python3-rosdep`
 2. `sudo rosdep init`
 3. `rosdep update`
 
