@@ -1,7 +1,11 @@
 <?xml version="1.0"?>
 <robot name="depthai_camera" xmlns:xacro="http://ros.org/wiki/xacro">
 
-<xacro:macro name="depthai_camera" params="camera_name camera_model parent base_frame cam_pos_x cam_pos_y cam_pos_z cam_roll cam_pitch cam_yaw">
+<xacro:macro name="depthai_camera" params="camera_name camera_model parent base_frame 
+                                           cam_pos_x cam_pos_y cam_pos_z 
+                                           cam_roll cam_pitch cam_yaw
+                                           r:=0.8 g:=0.8 b:=0.8 a:=0.8">
+
     <xacro:property name="M_PI"     value="3.1415926535897931" />
     <xacro:property name="model"    value="${camera_model}" />
 
@@ -26,7 +30,7 @@
                 <mesh filename="package://depthai_bridge/urdf/models/${model}.stl" />
             </geometry>
             <material name="mat">
-                <color rgba="0.8 0.8 0.8 0.8"/>
+                <color rgba="${r} ${g} ${b} ${a}"/>
             </material>
         </visual>
     </link>
