@@ -1,9 +1,5 @@
-#include <cv_bridge/cv_bridge.h>
 
-#include <depthai/depthai.hpp>
 #include <depthai_bridge/ImageConverter.hpp>
-#include <ratio>
-#include <tuple>
 
 namespace dai {
 
@@ -29,9 +25,9 @@ ImageConverter::ImageConverter(bool interleaved) : _daiInterleaved(interleaved) 
 
 ImageConverter::ImageConverter(const std::string frameName, bool interleaved) : _frameName(frameName), _daiInterleaved(interleaved) {}
 
-void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, ImageMsgs::Image& outImageMsg) {
+void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs) {
     auto tstamp = inData->getTimestamp();
-
+    ImageMsgs::Image outImageMsg;
     StdMsgs::Header header;
     header.frame_id = _frameName;
 
@@ -131,6 +127,7 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, ImageMsgs::
         // img->data.assign(packet.data->cbegin(), packet.data->cend());
         memcpy(imageMsgDataPtr, daiImgData, size);
     }
+    outImageMsgs.push_back(outImageMsg);
     return;
 }
 
@@ -182,13 +179,15 @@ void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outD
 }
 
 ImagePtr ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
-#ifdef IS_ROS2
-    ImagePtr ptr = std::make_shared<ImageMsgs::Image>();
-#else
-    ImagePtr ptr = boost::make_shared<ImageMsgs::Image>();
-#endif
+    std::deque<ImageMsgs::Image> msgQueue;
+    toRosMsg(inData, msgQueue);
+    auto msg = msgQueue.front();
 
-    toRosMsg(inData, *ptr);
+#ifdef IS_ROS2
+    ImagePtr ptr = std::make_shared<ImageMsgs::Image>(msg);
+#else
+    ImagePtr ptr = boost::make_shared<ImageMsgs::Image>(msg);
+#endif
     return ptr;
 }
 

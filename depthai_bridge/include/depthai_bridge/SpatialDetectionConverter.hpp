@@ -31,7 +31,7 @@ class SpatialDetectionConverter {
     // DetectionConverter() = default;
     SpatialDetectionConverter(std::string frameName, int width, int height, bool normalized = false);
 
-    void toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData, SpatialMessages::SpatialDetectionArray& opDetectionMsg);
+    void toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData, std::deque<SpatialMessages::SpatialDetectionArray>& opDetectionMsg);
 
     SpatialDetectionArrayPtr toRosMsgPtr(std::shared_ptr<dai::SpatialImgDetections> inNetData);
 

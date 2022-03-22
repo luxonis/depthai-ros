@@ -1,9 +1,6 @@
 #pragma once
 
-#include <iostream>
-#include <opencv2/opencv.hpp>
-#include <sstream>
-#include <unordered_map>
+#include <deque>
 
 #include "depthai/depthai.hpp"
 
@@ -39,7 +36,7 @@ class DisparityConverter {
    public:
     DisparityConverter(const std::string frameName, float focalLength, float baseline = 7.5, float minDepth = 80, float maxDepth = 1100);
 
-    void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, DisparityMsgs::DisparityImage& outImageMsg);
+    void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<DisparityMsgs::DisparityImage>& outImageMsg);
     DisparityImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
 
     // void toDaiMsg(const DisparityMsgs::DisparityImage& inMsg, dai::ImgFrame& outData);
