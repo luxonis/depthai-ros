@@ -1,0 +1,7 @@
+string focus_mode
+int32 focus_x
+int32 focus_y
+int32 focus_width
+int32 focus_height
+---
+bool success

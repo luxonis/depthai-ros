@@ -26,6 +26,8 @@ if ( ament_cmake_FOUND )
       "msg/SpatialDetectionArray.msg"
       "srv/TriggerNamed.srv"
       "srv/NormalizedImageCrop.srv"
+      "srv/SetFocus.srv"
+      "srv/SetExposure.srv"
       DEPENDENCIES builtin_interfaces geometry_msgs std_msgs vision_msgs
     )
     
@@ -62,6 +64,8 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
       FILES
       TriggerNamed.srv
       NormalizedImageCrop.srv
+      SetFocus.srv
+      SetExposure.srv
     )
 
     ## Generate added messages and services with any dependencies listed here

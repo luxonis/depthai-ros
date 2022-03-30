@@ -1,0 +1,10 @@
+bool auto_exposure
+int32 exposure_x
+int32 exposure_y
+int32 exposure_width
+int32 exposure_height
+int32 compensation
+int32 exposure_time_us
+int32 sensitivity_iso
+---
+bool success
