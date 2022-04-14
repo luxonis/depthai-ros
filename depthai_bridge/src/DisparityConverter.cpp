@@ -22,7 +22,7 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::de
     auto diffTime = steadyTime - tstamp;
     auto rclStamp = rclNow - diffTime;
     outDispImageMsg.header.stamp = rclStamp;
-    outDispImageMsg.t = _baseline / 100;  // converting cm to meters
+    outDispImageMsg.t = _baseline / 100.0;  // converting cm to meters
     sensor_msgs::msg::Image& outImageMsg = outDispImageMsg.image;
 #else
     auto rosNow = ::ros::Time::now();
@@ -33,7 +33,7 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::de
     outDispImageMsg.header.stamp = rosStamp;
 
     outDispImageMsg.header.seq = inData->getSequenceNum();
-    outDispImageMsg.T = _baseline / 100;  // converting cm to meters
+    outDispImageMsg.T = _baseline / 100.0;  // converting cm to meters
     sensor_msgs::Image& outImageMsg = outDispImageMsg.image;
 #endif
 
@@ -43,7 +43,7 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::de
     outImageMsg.encoding = sensor_msgs::image_encodings::TYPE_32FC1;
     outImageMsg.header = outDispImageMsg.header;
     if(inData->getType() == dai::RawImgFrame::Type::RAW8) {
-        outDispImageMsg.delta_d = 1;
+        outDispImageMsg.delta_d = 1.0;
         size_t size = inData->getData().size() * sizeof(float);
         outImageMsg.data.resize(size);
         outImageMsg.height = inData->getHeight();
@@ -61,7 +61,7 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::de
         memcpy(imageMsgDataPtr, daiImgData, size);
 
     } else {
-        outDispImageMsg.delta_d = 1 / 32;
+        outDispImageMsg.delta_d = 1.0 / 32.0;
         size_t size = inData->getHeight() * inData->getWidth() * sizeof(float);
         outImageMsg.data.resize(size);
         outImageMsg.height = inData->getHeight();
