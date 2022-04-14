@@ -24,7 +24,7 @@ jobs:
 
     - name: Clang-Format lint
       
-      uses: DoozyX/clang-format-lint-action@v0.12
+      uses: DoozyX/clang-format-lint-action@v0.13
       with:
         source: '.'
         extensions: 'h,hpp,c,cpp'
