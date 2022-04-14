@@ -146,3 +146,4 @@ DisparityImagePtr DisparityConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame>
 
 }  // namespace ros
 }  // namespace dai
+
