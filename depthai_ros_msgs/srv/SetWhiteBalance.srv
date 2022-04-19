@@ -1,0 +1,5 @@
+string white_balance_mode
+bool wb_lock
+int32 color_temperature_k
+---
+bool success

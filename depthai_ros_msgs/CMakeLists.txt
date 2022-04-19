@@ -28,6 +28,7 @@ if ( ament_cmake_FOUND )
       "srv/NormalizedImageCrop.srv"
       "srv/SetFocus.srv"
       "srv/SetExposure.srv"
+      "srv/SetWhiteBalance.srv"
       DEPENDENCIES builtin_interfaces geometry_msgs std_msgs vision_msgs
     )
     
@@ -66,6 +67,7 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
       NormalizedImageCrop.srv
       SetFocus.srv
       SetExposure.srv
+      SetWhiteBalance.srv
     )
 
     ## Generate added messages and services with any dependencies listed here
