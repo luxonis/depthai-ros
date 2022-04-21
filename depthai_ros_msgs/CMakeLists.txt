@@ -29,6 +29,13 @@ if ( ament_cmake_FOUND )
       "srv/SetFocus.srv"
       "srv/SetExposure.srv"
       "srv/SetWhiteBalance.srv"
+      "srv/SetPostProcessing.srv"
+      "srv/SetMedian.srv"
+      "srv/SetSpeckle.srv"
+      "srv/SetTemporal.srv"
+      "srv/SetSpatial.srv"
+      "srv/SetThreshold.srv"
+      "srv/SetDecimation.srv"
       DEPENDENCIES builtin_interfaces geometry_msgs std_msgs vision_msgs
     )
     
@@ -68,6 +75,13 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
       SetFocus.srv
       SetExposure.srv
       SetWhiteBalance.srv
+      SetPostProcessing.srv
+      SetMedian.srv
+      SetSpeckle.srv
+      SetTemporal.srv
+      SetSpatial.srv
+      SetThreshold.srv
+      SetDecimation.srv
     )
 
     ## Generate added messages and services with any dependencies listed here

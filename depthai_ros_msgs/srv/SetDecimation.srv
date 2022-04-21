@@ -1,0 +1,5 @@
+bool decimation_enable
+int32 decimation_factor
+string decimation_mode
+---
+bool success

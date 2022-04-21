@@ -1,0 +1,6 @@
+bool temporal_enable
+float32 temporal_alpha
+int32 temporal_delta
+string temporal_mode
+---
+bool success

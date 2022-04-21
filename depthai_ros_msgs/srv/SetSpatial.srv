@@ -1,0 +1,7 @@
+bool spatial_enable
+int32 spatial_radius
+float32 spatial_alpha
+int32 spatial_delta
+int32 spatial_iterations
+---
+bool success

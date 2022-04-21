@@ -1,0 +1,26 @@
+bool median_enable
+string median_mode
+
+bool speckle_enable
+int32 speckle_range
+
+bool temporal_enable
+float32 temporal_alpha
+int32 temporal_delta
+string temporal_mode
+
+bool spatial_enable
+int32 spatial_radius
+float32 spatial_alpha
+int32 spatial_delta
+int32 spatial_iterations
+
+bool threshold_enable
+int32 threshold_min
+int32 threshold_max
+
+bool decimation_enable
+int32 decimation_factor
+string decimation_mode
+---
+bool success

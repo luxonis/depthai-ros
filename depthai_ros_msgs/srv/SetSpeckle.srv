@@ -1,0 +1,4 @@
+bool speckle_enable
+int32 speckle_range
+---
+bool success

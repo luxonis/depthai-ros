@@ -1,0 +1,4 @@
+bool median_enable
+string median_mode
+---
+bool success
