@@ -143,7 +143,7 @@ req_type DepthPostProcessing::setSpeckleRequest(spk_req_msg request, spk_rep_msg
     return (req_type)result;
 }
 
-req_type DepthPostProcessing::setTemporalRequest(tmp_req_msg request, tmp_rep_msg response){ 
+req_type DepthPostProcessing::setTemporalRequest(tmp_req_msg request, tmp_rep_msg response) {
     _temporal_enable = req_get(temporal_enable);
     _temporal_alpha = req_get(temporal_alpha);
     _temporal_delta = req_get(temporal_delta);

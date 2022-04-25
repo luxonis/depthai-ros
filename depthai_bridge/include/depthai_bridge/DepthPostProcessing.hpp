@@ -1,27 +1,26 @@
 #ifndef DEPTH_POST_PROCESSING_HPP_
 #define DEPTH_POST_PROCESSING_HPP_
 
+#include <depthai_bridge/BridgePublisher.hpp>
+#include <depthai_bridge/DisparityConverter.hpp>
+#include <depthai_bridge/ImageConverter.hpp>
 #include <iostream>
 #include <memory>
 #include <string>
 
-#include <depthai_bridge/BridgePublisher.hpp>
-#include <depthai_bridge/DisparityConverter.hpp>
-#include <depthai_bridge/ImageConverter.hpp>
 #include "depthai/depthai.hpp"
 #include "depthai_bridge/RosParameters.hpp"
 
 #ifndef IS_ROS2
 
-#include "depthai_ros_msgs/SetPostProcessing.h"
-#include "depthai_ros_msgs/SetMedian.h"
-#include "depthai_ros_msgs/SetSpeckle.h"
-#include "depthai_ros_msgs/SetTemporal.h"
-#include "depthai_ros_msgs/SetSpatial.h"
-#include "depthai_ros_msgs/SetThreshold.h"
-#include "depthai_ros_msgs/SetDecimation.h"
-
-#include "ros/ros.h"
+    #include "depthai_ros_msgs/SetDecimation.h"
+    #include "depthai_ros_msgs/SetMedian.h"
+    #include "depthai_ros_msgs/SetPostProcessing.h"
+    #include "depthai_ros_msgs/SetSpatial.h"
+    #include "depthai_ros_msgs/SetSpeckle.h"
+    #include "depthai_ros_msgs/SetTemporal.h"
+    #include "depthai_ros_msgs/SetThreshold.h"
+    #include "ros/ros.h"
 
 using pp_req_msg = depthai_ros_msgs::SetPostProcessing::Request&;
 using pp_rep_msg = depthai_ros_msgs::SetPostProcessing::Response&;
@@ -38,20 +37,20 @@ using trh_rep_msg = depthai_ros_msgs::SetThreshold::Response&;
 using dcm_req_msg = depthai_ros_msgs::SetDecimation::Request&;
 using dcm_rep_msg = depthai_ros_msgs::SetDecimation::Response&;
 using ros_node = ros::NodeHandle&;
-#define req_get(x) (request.x)
-#define rep_get(x) (response.x)
-#define set_parameter(a, b) getParamWithWarning(node, a, b)
+    #define req_get(x) (request.x)
+    #define rep_get(x) (response.x)
+    #define set_parameter(a, b) getParamWithWarning(node, a, b)
 
 #else
 
-#include "depthai_ros_msgs/srv/set_post_processing.hpp"
-#include "depthai_ros_msgs/srv/set_median.hpp"
-#include "depthai_ros_msgs/srv/set_speckle.hpp"
-#include "depthai_ros_msgs/srv/set_temporal.hpp"
-#include "depthai_ros_msgs/srv/set_spatial.hpp"
-#include "depthai_ros_msgs/srv/set_threshold.hpp"
-#include "depthai_ros_msgs/srv/set_decimation.hpp"
-#define req_type void
+    #include "depthai_ros_msgs/srv/set_decimation.hpp"
+    #include "depthai_ros_msgs/srv/set_median.hpp"
+    #include "depthai_ros_msgs/srv/set_post_processing.hpp"
+    #include "depthai_ros_msgs/srv/set_spatial.hpp"
+    #include "depthai_ros_msgs/srv/set_speckle.hpp"
+    #include "depthai_ros_msgs/srv/set_temporal.hpp"
+    #include "depthai_ros_msgs/srv/set_threshold.hpp"
+    #define req_type void
 using pp_req_msg = const std::shared_ptr<depthai_ros_msgs::srv::SetPostProcessing::Request>;
 using pp_rep_msg = std::shared_ptr<depthai_ros_msgs::srv::SetPostProcessing::Response>;
 using med_req_msg = const std::shared_ptr<depthai_ros_msgs::srv::SetMedian::Request>;
@@ -67,16 +66,16 @@ using trh_rep_msg = std::shared_ptr<depthai_ros_msgs::srv::SetThreshold::Respons
 using dcm_req_msg = const std::shared_ptr<depthai_ros_msgs::srv::SetDecimation::Request>;
 using dcm_rep_msg = std::shared_ptr<depthai_ros_msgs::srv::SetDecimation::Response>;
 using ros_node = std::shared_ptr<rclcpp::Node>;
-#define req_get(x) ((*request).x)
-#define rep_get(x) ((*response).x)
-#define set_parameter(a, b) setRosParameter(node, a, b)
+    #define req_get(x) ((*request).x)
+    #define rep_get(x) ((*response).x)
+    #define set_parameter(a, b) setRosParameter(node, a, b)
 #endif
 
 class DepthPostProcessing {
     using TemporalMode = dai::RawStereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode;
     using DecimationMode = dai::RawStereoDepthConfig::PostProcessing::DecimationFilter::DecimationMode;
 
-    public:
+   public:
     DepthPostProcessing();
     DepthPostProcessing(ros_node node);
     void setDevice(std::shared_ptr<dai::Device> device);
@@ -92,7 +91,7 @@ class DepthPostProcessing {
     req_type setThresholdRequest(trh_req_msg request, trh_rep_msg response);
     req_type setDecimationRequest(dcm_req_msg request, dcm_rep_msg response);
 
-    private:
+   private:
     dai::MedianFilter getMedianFilter();
     DecimationMode getDecimationMode();
     TemporalMode getTemporalMode();

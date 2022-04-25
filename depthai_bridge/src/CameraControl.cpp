@@ -30,14 +30,13 @@ CameraControl::CameraControl(ros_node node) {
     set_parameter("focus_region_height", _focus.region.at(3));
 }
 
-void CameraControl::setRgbExposure(bool value){
+void CameraControl::setRgbExposure(bool value) {
     _exposure_rgb = value;
 }
 
 void CameraControl::setExposure() {
     setExposure(_stereo);
-    if (_exposure_rgb)
-        setExposure(_rgb);
+    if(_exposure_rgb) setExposure(_rgb);
 }
 
 void CameraControl::setExposure(ExposureParameters exposure) {
@@ -51,8 +50,7 @@ void CameraControl::setExposure(ExposureParameters exposure) {
             dai::ImageManipConfig cfg;
             cfg.setCropRect(exposure.region.at(0), exposure.region.at(1), exposure.region.at(2), exposure.region.at(3));
             configQueue->send(cfg);
-        }
-        else {
+        } else {
             ctrl.setManualExposure(exposure.time_us, exposure.sensitivity_iso);
         }
     }
@@ -65,24 +63,18 @@ void CameraControl::setDevice(std::shared_ptr<dai::Device> device) {
 }
 
 dai::CameraControl::AutoFocusMode CameraControl::getFocusMode() {
-    if (_focus.mode == "AUTO")
-        return dai::CameraControl::AutoFocusMode::AUTO;
-    if (_focus.mode == "CONTINUOUS_PICTURE")
-        return dai::CameraControl::AutoFocusMode::CONTINUOUS_PICTURE;
-    if (_focus.mode == "CONTINUOUS_VIDEO ")
-        return dai::CameraControl::AutoFocusMode::CONTINUOUS_VIDEO;
-    if (_focus.mode == "EDOF")
-        return dai::CameraControl::AutoFocusMode::EDOF;
-    if (_focus.mode == "MACRO")
-        return dai::CameraControl::AutoFocusMode::MACRO;
-    if (_focus.mode == "OFF")
-        return dai::CameraControl::AutoFocusMode::OFF;
+    if(_focus.mode == "AUTO") return dai::CameraControl::AutoFocusMode::AUTO;
+    if(_focus.mode == "CONTINUOUS_PICTURE") return dai::CameraControl::AutoFocusMode::CONTINUOUS_PICTURE;
+    if(_focus.mode == "CONTINUOUS_VIDEO ") return dai::CameraControl::AutoFocusMode::CONTINUOUS_VIDEO;
+    if(_focus.mode == "EDOF") return dai::CameraControl::AutoFocusMode::EDOF;
+    if(_focus.mode == "MACRO") return dai::CameraControl::AutoFocusMode::MACRO;
+    if(_focus.mode == "OFF") return dai::CameraControl::AutoFocusMode::OFF;
     return dai::CameraControl::AutoFocusMode::AUTO;
 }
 
 int clamp(int v, int min, int max) {
-    if (v < min) return min;
-    if (v > max) return max;
+    if(v < min) return min;
+    if(v > max) return max;
     return v;
 }
 
@@ -91,15 +83,15 @@ void CameraControl::setFocus() {
     auto controlQueue = _device->getInputQueue("control");
     auto mode = getFocusMode();
     ctrl.setAutoFocusMode(mode);
-    
-    if (_focus.mode == "OFF") {
+
+    if(_focus.mode == "OFF") {
         auto configQueue = _device->getInputQueue("config");
         dai::ImageManipConfig cfg;
         cfg.setCropRect(_focus.region.at(0), _focus.region.at(1), 0, 0);
         configQueue->send(cfg);
-    } else if (_focus.region.at(2) > 0 && _focus.region.at(3) > 0) {
+    } else if(_focus.region.at(2) > 0 && _focus.region.at(3) > 0) {
         ctrl.setAutoFocusRegion(_focus.region.at(0), _focus.region.at(1), _focus.region.at(2), _focus.region.at(3));
-    } else if (_focus.mode != "AUTO") {
+    } else if(_focus.mode != "AUTO") {
         ctrl.setManualFocus(clamp(_lens_position, 0, 255));
     }
 
@@ -149,15 +141,15 @@ req_type CameraControl::setFocusRequest(foc_req_msg request, foc_rep_msg respons
 }
 
 dai::CameraControl::AutoWhiteBalanceMode CameraControl::getWhiteBalanceMode() {
-    if (_white_balance_mode == "OFF") return dai::CameraControl::AutoWhiteBalanceMode::OFF;
-    if (_white_balance_mode == "AUTO") return dai::CameraControl::AutoWhiteBalanceMode::AUTO;
-    if (_white_balance_mode == "INCANDESCENT") return dai::CameraControl::AutoWhiteBalanceMode::INCANDESCENT;
-    if (_white_balance_mode == "FLUORESCENT") return dai::CameraControl::AutoWhiteBalanceMode::FLUORESCENT;
-    if (_white_balance_mode == "WARM_FLUORESCENT") return dai::CameraControl::AutoWhiteBalanceMode::WARM_FLUORESCENT;
-    if (_white_balance_mode == "DAYLIGHT") return dai::CameraControl::AutoWhiteBalanceMode::DAYLIGHT;
-    if (_white_balance_mode == "CLOUDY_DAYLIGHT") return dai::CameraControl::AutoWhiteBalanceMode::CLOUDY_DAYLIGHT;
-    if (_white_balance_mode == "TWILIGHT") return dai::CameraControl::AutoWhiteBalanceMode::TWILIGHT;
-    if (_white_balance_mode == "SHADE") return dai::CameraControl::AutoWhiteBalanceMode::SHADE;
+    if(_white_balance_mode == "OFF") return dai::CameraControl::AutoWhiteBalanceMode::OFF;
+    if(_white_balance_mode == "AUTO") return dai::CameraControl::AutoWhiteBalanceMode::AUTO;
+    if(_white_balance_mode == "INCANDESCENT") return dai::CameraControl::AutoWhiteBalanceMode::INCANDESCENT;
+    if(_white_balance_mode == "FLUORESCENT") return dai::CameraControl::AutoWhiteBalanceMode::FLUORESCENT;
+    if(_white_balance_mode == "WARM_FLUORESCENT") return dai::CameraControl::AutoWhiteBalanceMode::WARM_FLUORESCENT;
+    if(_white_balance_mode == "DAYLIGHT") return dai::CameraControl::AutoWhiteBalanceMode::DAYLIGHT;
+    if(_white_balance_mode == "CLOUDY_DAYLIGHT") return dai::CameraControl::AutoWhiteBalanceMode::CLOUDY_DAYLIGHT;
+    if(_white_balance_mode == "TWILIGHT") return dai::CameraControl::AutoWhiteBalanceMode::TWILIGHT;
+    if(_white_balance_mode == "SHADE") return dai::CameraControl::AutoWhiteBalanceMode::SHADE;
     return dai::CameraControl::AutoWhiteBalanceMode::AUTO;
 }
 
@@ -166,8 +158,7 @@ void CameraControl::setWhiteBalance() {
     auto controlQueue = _device->getInputQueue("control");
     auto mode = getWhiteBalanceMode();
     ctrl.setAutoWhiteBalanceMode(mode);
-    if (mode == dai::CameraControl::AutoWhiteBalanceMode::OFF)
-        ctrl.setManualWhiteBalance(clamp(_color_temperature_k, 1000, 12000));
+    if(mode == dai::CameraControl::AutoWhiteBalanceMode::OFF) ctrl.setManualWhiteBalance(clamp(_color_temperature_k, 1000, 12000));
     controlQueue->send(ctrl);
 }
 
