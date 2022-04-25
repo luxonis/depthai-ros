@@ -26,6 +26,8 @@ ImageConverter::ImageConverter(bool interleaved) : _daiInterleaved(interleaved) 
 ImageConverter::ImageConverter(const std::string frameName, bool interleaved) : _frameName(frameName), _daiInterleaved(interleaved) {}
 
 void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs) {
+    // auto start = std::chrono::system_clock::now();
+
     auto tstamp = inData->getTimestamp();
     ImageMsgs::Image outImageMsg;
     StdMsgs::Header header;
@@ -46,6 +48,15 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<
     header.stamp = rosStamp;
     header.seq = inData->getSequenceNum();
 #endif
+
+    // auto ts = std::chrono::time_point_cast<std::chrono::milliseconds>(steadyTime);
+    // auto steady_ts = std::chrono::duration_cast<std::chrono::milliseconds >(ts.time_since_epoch()).count();
+
+    // auto dataStamp = inData->getTimestamp();
+    // auto dataTs = std::chrono::time_point_cast<std::chrono::milliseconds>(dataStamp);
+    // auto data_ts = std::chrono::duration_cast<std::chrono::milliseconds >(dataTs.time_since_epoch()).count();
+    // std::cout << "header stamp " << header.stamp << " : data stamp " << data_ts << " : steady stamp " << steady_ts << " : sequence number " << header.seq << std::endl;
+
 
     if(planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end()) {
         // cv::Mat inImg = inData->getCvFrame();
@@ -128,6 +139,11 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<
         memcpy(imageMsgDataPtr, daiImgData, size);
     }
     outImageMsgs.push_back(outImageMsg);
+
+    // auto end = std::chrono::system_clock::now();
+    // double elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds >(end - start).count();
+    // std::cout << "time to create image messsage " << elapsed_seconds << '\n';
+    
     return;
 }
 
@@ -338,7 +354,187 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
     }
     cameraData.distortion_model = "rational_polynomial";
 
+    cx = cameraData.K[2];
+    cy = cameraData.K[5];
+    fx = 1.0f / (cameraData.K[0]);
+    fy = 1.0f / (cameraData.K[4]);
     return cameraData;
+}
+
+void ImageConverter::toRosPointcloudMsg(std::shared_ptr<dai::ImgFrame> depthData, std::shared_ptr<dai::ImgFrame> colorData, sensor_msgs::PointCloud2& outPointcloudMsg) {
+    
+    // auto start = std::chrono::system_clock::now();
+
+    // auto tstampTmp = depthData->getTimestamp();
+    // auto ts = std::chrono::time_point_cast<std::chrono::milliseconds>(tstampTmp);
+    // auto depth_ts = std::chrono::duration_cast<std::chrono::milliseconds >(ts.time_since_epoch()).count();
+
+    // ts = std::chrono::time_point_cast<std::chrono::milliseconds>(colorData->getTimestamp());
+    // auto color_ts = std::chrono::duration_cast<std::chrono::milliseconds >(ts.time_since_epoch()).count();
+
+    // auto steadyTimeTmp = std::chrono::steady_clock::now();
+    // ts = std::chrono::time_point_cast<std::chrono::milliseconds>(steadyTimeTmp);
+    // auto steady_ts = std::chrono::duration_cast<std::chrono::milliseconds >(ts.time_since_epoch()).count();
+
+    // std::cout << "depth: " << depth_ts << " : steady time " << steady_ts << " : " << depthData->getSequenceNum() << std::endl;
+    // std::cout << "rgb:   " << color_ts << " : steady time " << steady_ts + 20 << " : " << colorData->getSequenceNum() << std::endl;
+    
+    // auto wait_time = std::chrono::steady_clock::now();
+    // auto ts_loop = std::chrono::time_point_cast<std::chrono::milliseconds>(wait_time);
+    // auto wait_time_loop = std::chrono::duration_cast<std::chrono::milliseconds >(ts_loop.time_since_epoch()).count();
+    // std::cout << "loop time: " << wait_time_loop << std::endl;
+    // while( (steady_ts + 55) > wait_time_loop) {
+    //     wait_time = std::chrono::steady_clock::now();
+    //     ts_loop = std::chrono::time_point_cast<std::chrono::milliseconds>(wait_time);
+    //     wait_time_loop = std::chrono::duration_cast<std::chrono::milliseconds >(ts_loop.time_since_epoch()).count();
+    //     // std::cout << "loop time: " << wait_time_loop << std::endl;
+    // }
+    // wait_time = std::chrono::steady_clock::now();
+    // ts_loop = std::chrono::time_point_cast<std::chrono::milliseconds>(wait_time);
+    // wait_time_loop = std::chrono::duration_cast<std::chrono::milliseconds >(ts_loop.time_since_epoch()).count();
+    // std::cout << "loop time: " << wait_time_loop << std::endl;
+
+    StdMsgs::Header header;
+    header.frame_id = _frameName;
+    auto tstamp = depthData->getTimestamp();
+
+#ifdef IS_ROS2
+    auto rclNow = rclcpp::Clock().now();
+    auto steadyTime = std::chrono::steady_clock::now();
+    auto diffTime = steadyTime - tstamp;
+    auto rclStamp = rclNow - diffTime;
+    header.stamp = rclStamp;
+#else
+    auto rosNow = ::ros::Time::now();
+    auto steadyTime = std::chrono::steady_clock::now();
+    auto diffTime = steadyTime - tstamp;
+    uint64_t nsec = rosNow.toNSec() - diffTime.count();
+    auto rosStamp = rosNow.fromNSec(nsec);
+    header.stamp = rosStamp;
+    header.seq = depthData->getSequenceNum();
+#endif
+
+    pcl::PointCloud<pcl::PointXYZI> cloud;
+    cloud.width    = depthData->getWidth();
+    cloud.height   = depthData->getHeight();
+    cloud.is_dense = false;
+    cloud.resize (cloud.width * cloud.height);
+
+    int image_idx = 0;
+    const uint16_t* depth_buffer = reinterpret_cast<const uint16_t*>(depthData->getData().data());
+    const uint8_t* color_buffer = reinterpret_cast<const uint8_t*>(colorData->getData().data());
+
+    for (int v = 0; v < cloud.height; ++v) {
+        for (int u = 0; u < cloud.width; ++u, ++image_idx) {
+            
+            float Z = depth_buffer[image_idx] / 1000.0;
+            pcl::PointXYZI *pt = &cloud.at(u,v);
+            
+            if (std::isnan(Z)) {
+                // pt->x = pt->y = pt->z = Z;
+            } else {
+                pt->x = ((u - cx) * Z * fx);
+                pt->y = ((v - cy) * Z * fy);
+                pt->z = Z;
+                pt->intensity = color_buffer[image_idx];
+            }
+        }
+    }
+
+    pcl::toROSMsg(cloud, outPointcloudMsg);
+    outPointcloudMsg.header = header;
+
+    // auto end = std::chrono::system_clock::now();
+    // double elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds >(end - start).count();
+
+    // std::cout << "time to create pointcloud " << elapsed_seconds << '\n';
+
+}
+
+void ImageConverter::toRosPointcloudMsgRGB(std::shared_ptr<dai::ImgFrame> depthData, std::shared_ptr<dai::ImgFrame> colorData, sensor_msgs::PointCloud2& outPointcloudMsg) {
+
+    // auto start = std::chrono::system_clock::now();
+
+    // auto tstampTmp = depthData->getTimestamp();
+    // auto ts = std::chrono::time_point_cast<std::chrono::milliseconds>(tstampTmp);
+    // auto depth_ts = std::chrono::duration_cast<std::chrono::milliseconds >(ts.time_since_epoch()).count();
+
+    // ts = std::chrono::time_point_cast<std::chrono::milliseconds>(colorData->getTimestamp());
+    // auto color_ts = std::chrono::duration_cast<std::chrono::milliseconds >(ts.time_since_epoch()).count();
+
+    // auto steadyTimeTmp = std::chrono::steady_clock::now();
+    // ts = std::chrono::time_point_cast<std::chrono::milliseconds>(steadyTimeTmp);
+    // auto steady_ts = std::chrono::duration_cast<std::chrono::milliseconds >(ts.time_since_epoch()).count();
+
+    // std::cout << "depth: " << depth_ts << " : steady time " << steady_ts << " : " << depthData->getSequenceNum() << std::endl;
+    // std::cout << "rgb:   " << color_ts << " : steady time " << steady_ts << " : " << colorData->getSequenceNum() << std::endl;
+    
+
+    StdMsgs::Header header;
+    header.frame_id = _frameName;
+    auto tstamp = depthData->getTimestamp();
+
+#ifdef IS_ROS2
+    auto rclNow = rclcpp::Clock().now();
+    auto steadyTime = std::chrono::steady_clock::now();
+    auto diffTime = steadyTime - tstamp;
+    auto rclStamp = rclNow - diffTime;
+    header.stamp = rclStamp;
+#else
+    auto rosNow = ::ros::Time::now();
+    auto steadyTime = std::chrono::steady_clock::now();
+    auto diffTime = steadyTime - tstamp;
+    uint64_t nsec = rosNow.toNSec() - diffTime.count();
+    auto rosStamp = rosNow.fromNSec(nsec);
+    header.stamp = rosStamp;
+    header.seq = depthData->getSequenceNum();
+#endif
+
+    pcl::PointCloud<pcl::PointXYZRGB> cloud;
+    cloud.width    = depthData->getWidth();
+    cloud.height   = depthData->getHeight();
+    cloud.is_dense = false;
+    cloud.resize (cloud.width * cloud.height);
+
+    int depth_idx = 0;
+    int color_idx = 0;
+    
+    const uint16_t* depth_buffer = reinterpret_cast<const uint16_t*>(depthData->getData().data());
+    
+    cv::Mat mat, output;
+        cv::Size size = {0, 0};
+        int type = 0;
+        size = cv::Size(colorData->getWidth(), colorData->getHeight() * 3 / 2);
+                type = CV_8UC1;
+        mat = cv::Mat(size, type, colorData->getData().data());
+    cv::cvtColor(mat, output, cv::ColorConversionCodes::COLOR_YUV2BGR_IYUV);
+
+    for (int v = 0; v < cloud.height; ++v) {
+        for (int u = 0; u < cloud.width; ++u, ++depth_idx, color_idx+=3 ) {
+
+            float Z = depth_buffer[depth_idx] / 1000.0;
+            pcl::PointXYZRGB *pt = &cloud.at(u,v);
+            
+            if (std::isnan(Z)) {
+                // pt->x = pt->y = pt->z = Z;
+            } else {
+                pt->x = ((u - cx) * Z * fx);
+                pt->y = ((v - cy) * Z * fy);
+                pt->z = Z;
+                pt->r = output.data[color_idx + 2];
+                pt->g = output.data[color_idx + 1];
+                pt->b = output.data[color_idx];
+            }
+        }
+    }
+
+    pcl::toROSMsg(cloud, outPointcloudMsg);
+    outPointcloudMsg.header = header;
+
+    // auto end = std::chrono::system_clock::now();
+    // double elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds >(end - start).count();
+    // std::cout << elapsed_seconds << '\n';
+
 }
 
 }  // namespace ros

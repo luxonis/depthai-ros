@@ -30,6 +30,7 @@ endif()
 
 # find_package(depthai CONFIG REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake/depthai") 
 find_package(ament_cmake QUIET)
+find_package(PCL 1.2 REQUIRED)
 
 if ( ament_cmake_FOUND )
     # set(IS_ROS2 ON)
@@ -66,6 +67,7 @@ if ( ament_cmake_FOUND )
     include_directories(
         include
         ${BUILD_TOOL_INCLUDE_DIRS}
+        ${PCL_INCLUDE_DIRS}
         # ${OpenCV_INCLUDE_DIRS}
     )
 
@@ -90,7 +92,8 @@ if ( ament_cmake_FOUND )
     target_link_libraries(${PROJECT_NAME} 
                           depthai::core 
                           opencv_imgproc
-                          opencv_highgui) 
+                          opencv_highgui
+                          ${PCL_LIBRARIES}) 
 
     ament_export_targets(depthai_bridgeTargets HAS_LIBRARY_TARGET)
 
@@ -166,6 +169,7 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
       ${BUILD_TOOL_INCLUDE_DIRS}
       ${Boost_INCLUDE_DIRS}
       ${depthai}
+      ${PCL_INCLUDE_DIRS}
     )
 
     ## Declare a C++ library
@@ -182,6 +186,7 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
       depthai::core
       opencv_imgproc
       opencv_highgui
+      ${PCL_LIBRARIES}
     )
 
     install(TARGETS ${PROJECT_NAME}

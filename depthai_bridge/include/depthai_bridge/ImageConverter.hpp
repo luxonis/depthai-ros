@@ -9,6 +9,9 @@
 #include <sstream>
 #include <tuple>
 #include <unordered_map>
+#include <pcl/point_types.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 #ifdef IS_ROS2
     #include "rclcpp/rclcpp.hpp"
@@ -23,6 +26,7 @@
 
     #include "sensor_msgs/CameraInfo.h"
     #include "sensor_msgs/Image.h"
+    #include <sensor_msgs/PointCloud2.h>
     #include "std_msgs/Header.h"
 
 #endif
@@ -65,6 +69,9 @@ class ImageConverter {
                                                   Point2f topLeftPixelId = Point2f(),
                                                   Point2f bottomRightPixelId = Point2f());
 
+    void toRosPointcloudMsg(std::shared_ptr<dai::ImgFrame> depthData, std::shared_ptr<dai::ImgFrame> colorData, sensor_msgs::PointCloud2& outImageMsg);
+    void toRosPointcloudMsgRGB(std::shared_ptr<dai::ImgFrame> depthData, std::shared_ptr<dai::ImgFrame> colorData, sensor_msgs::PointCloud2& outImageMsg);
+
    private:
     static std::unordered_map<dai::RawImgFrame::Type, std::string> encodingEnumMap;
     static std::unordered_map<dai::RawImgFrame::Type, std::string> planarEncodingEnumMap;
@@ -73,6 +80,7 @@ class ImageConverter {
     bool _daiInterleaved;
     // bool c
     const std::string _frameName = "";
+    float cx, cy, fx, fy;
     void planarToInterleaved(const std::vector<uint8_t>& srcData, std::vector<uint8_t>& destData, int w, int h, int numPlanes, int bpp);
     void interleavedToPlanar(const std::vector<uint8_t>& srcData, std::vector<uint8_t>& destData, int w, int h, int numPlanes, int bpp);
 };
