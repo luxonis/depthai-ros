@@ -456,15 +456,7 @@ void ImageConverter::toRosPointcloudMsg(std::shared_ptr<dai::ImgFrame> depthData
     } else {
         pcl::toROSMsg(*cloud, outPointcloudMsg);
     }
-    // pcl::VoxelGrid<pcl::PointXYZI> sor;
-    // sor.setInputCloud(cloud);
-    // sor.setLeafSize(_filters->voxelGrid.leafX, _filters->voxelGrid.leafY, _filters->voxelGrid.leafZ);
-    // sor.setMinimumPointsNumberPerVoxel(_filters->voxelGrid.minPointsPerVoxel);
-    // sor.setFilterFieldName(_filters->voxelGrid.filterFieldName);
-    // sor.setFilterLimits(_filters->voxelGrid.filterMinLimit,_filters->voxelGrid.filterMaxLimit);
-    // sor.filter(*cloud_filtered);
 
-    // pcl::toROSMsg(*cloud_filtered, outPointcloudMsg);
     outPointcloudMsg.header = header;
 
     // auto end = std::chrono::system_clock::now();
@@ -513,11 +505,13 @@ void ImageConverter::toRosPointcloudMsgRGB(std::shared_ptr<dai::ImgFrame> depthD
     header.seq = depthData->getSequenceNum();
 #endif
 
-    pcl::PointCloud<pcl::PointXYZRGB> cloud;
-    cloud.width    = depthData->getWidth();
-    cloud.height   = depthData->getHeight();
-    cloud.is_dense = false;
-    cloud.resize (cloud.width * cloud.height);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>());
+    cloud->width    = depthData->getWidth();
+    cloud->height   = depthData->getHeight();
+    cloud->is_dense = false;
+    cloud->resize (cloud->width * cloud->height);
+
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>());
 
     int depth_idx = 0;
     int color_idx = 0;
@@ -532,11 +526,11 @@ void ImageConverter::toRosPointcloudMsgRGB(std::shared_ptr<dai::ImgFrame> depthD
         mat = cv::Mat(size, type, colorData->getData().data());
     cv::cvtColor(mat, output, cv::ColorConversionCodes::COLOR_YUV2BGR_IYUV);
 
-    for (int v = 0; v < cloud.height; ++v) {
-        for (int u = 0; u < cloud.width; ++u, ++depth_idx, color_idx+=3 ) {
+    for (int v = 0; v < cloud->height; ++v) {
+        for (int u = 0; u < cloud->width; ++u, ++depth_idx, color_idx+=3 ) {
 
             float Z = depth_buffer[depth_idx] / 1000.0;
-            pcl::PointXYZRGB *pt = &cloud.at(u,v);
+            pcl::PointXYZRGB *pt = &cloud->at(u,v);
             
             if (std::isnan(Z)) {
                 // pt->x = pt->y = pt->z = Z;
@@ -551,7 +545,20 @@ void ImageConverter::toRosPointcloudMsgRGB(std::shared_ptr<dai::ImgFrame> depthD
         }
     }
 
-    pcl::toROSMsg(cloud, outPointcloudMsg);
+    if (_filters->voxelGrid.useFilter) {
+        pcl::VoxelGrid<pcl::PointXYZRGB> sor;
+        sor.setInputCloud(cloud);
+        sor.setLeafSize(_filters->voxelGrid.leafX, _filters->voxelGrid.leafY, _filters->voxelGrid.leafZ);
+        sor.setMinimumPointsNumberPerVoxel(_filters->voxelGrid.minPointsPerVoxel);
+        sor.setFilterFieldName(_filters->voxelGrid.filterFieldName);
+        sor.setFilterLimits(_filters->voxelGrid.filterMinLimit,_filters->voxelGrid.filterMaxLimit);
+        sor.filter(*cloud_filtered);
+
+        pcl::toROSMsg(*cloud_filtered, outPointcloudMsg);
+    } else {
+        pcl::toROSMsg(*cloud, outPointcloudMsg);
+    }
+
     outPointcloudMsg.header = header;
 
     // auto end = std::chrono::system_clock::now();
