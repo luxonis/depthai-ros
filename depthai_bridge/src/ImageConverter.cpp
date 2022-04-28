@@ -363,7 +363,7 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
 
 void ImageConverter::toRosPointcloudMsg(std::shared_ptr<dai::ImgFrame> depthData, std::shared_ptr<dai::ImgFrame> colorData, sensor_msgs::PointCloud2& outPointcloudMsg) {
     
-    // auto start = std::chrono::system_clock::now();
+    auto start = std::chrono::system_clock::now();
 
     // auto tstampTmp = depthData->getTimestamp();
     // auto ts = std::chrono::time_point_cast<std::chrono::milliseconds>(tstampTmp);
@@ -421,6 +421,10 @@ void ImageConverter::toRosPointcloudMsg(std::shared_ptr<dai::ImgFrame> depthData
     cloud->resize (cloud->width * cloud->height);
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZI>());
+    cloud_filtered->width    = depthData->getWidth();
+    cloud_filtered->height   = depthData->getHeight();
+    cloud_filtered->is_dense = false;
+    cloud_filtered->resize (cloud->width * cloud->height);
 
     int image_idx = 0;
     const uint16_t* depth_buffer = reinterpret_cast<const uint16_t*>(depthData->getData().data());
@@ -443,32 +447,73 @@ void ImageConverter::toRosPointcloudMsg(std::shared_ptr<dai::ImgFrame> depthData
         }
     }
 
-    if (_filters->voxelGrid.useFilter) {
-        pcl::VoxelGrid<pcl::PointXYZI> sor;
-        sor.setInputCloud(cloud);
-        sor.setLeafSize(_filters->voxelGrid.leafX, _filters->voxelGrid.leafY, _filters->voxelGrid.leafZ);
-        sor.setMinimumPointsNumberPerVoxel(_filters->voxelGrid.minPointsPerVoxel);
-        sor.setFilterFieldName(_filters->voxelGrid.filterFieldName);
-        sor.setFilterLimits(_filters->voxelGrid.filterMinLimit,_filters->voxelGrid.filterMaxLimit);
-        sor.filter(*cloud_filtered);
+    // pcl::PassThrough<pcl::PointXYZI> passFilter;
+    // passFilter.setInputCloud(cloud);
+    // // passFilter.setKeepOrganized(true);
+    // passFilter.setFilterFieldName("z");
+    // passFilter.setFilterLimits(0.15, 10);
+    // passFilter.filter(*cloud_filtered);
 
-        pcl::toROSMsg(*cloud_filtered, outPointcloudMsg);
-    } else {
-        pcl::toROSMsg(*cloud, outPointcloudMsg);
+
+    if (_filters->voxelGrid.useFilter) {
+        pcl::VoxelGrid<pcl::PointXYZI> voxelFilter;
+        voxelFilter.setInputCloud(cloud);
+        voxelFilter.setLeafSize(_filters->voxelGrid.leafX, _filters->voxelGrid.leafY, _filters->voxelGrid.leafZ);
+        voxelFilter.setMinimumPointsNumberPerVoxel(_filters->voxelGrid.minPointsPerVoxel);
+        voxelFilter.setFilterFieldName(_filters->voxelGrid.filterFieldName);
+        voxelFilter.setFilterLimits(_filters->voxelGrid.filterMinLimit,_filters->voxelGrid.filterMaxLimit);
+        voxelFilter.filter(*cloud);
+
     }
 
+    if (_filters->statisticalOutlierRemoval.useFilter) {
+        pcl::StatisticalOutlierRemoval<pcl::PointXYZI> sorFilter;
+        sorFilter.setKeepOrganized(_filters->statisticalOutlierRemoval.keepOrganized);
+        sorFilter.setInputCloud(cloud);
+        sorFilter.setMeanK(_filters->statisticalOutlierRemoval.meanK);
+        sorFilter.setStddevMulThresh(_filters->statisticalOutlierRemoval.stddevMulThresh);
+        sorFilter.filter(*cloud);
+    }
+
+    // pcl::RandomSample<pcl::PointXYZI> randomSampleFilter;
+    
+
+    //TODO expand model selection to add more useful model detection for Segmentaion of pointcloud
+    ///*** Model detection/segmentaion **///
+
+    // pcl::SampleConsensusModelSphere<pcl::PointXYZI>::Ptr model_s(new pcl::SampleConsensusModelSphere<pcl::PointXYZI> (cloud));
+    // pcl::SampleConsensusModelPlane<pcl::PointXYZI>::Ptr model_p (new pcl::SampleConsensusModelPlane<pcl::PointXYZI> (cloud));
+
+    // std::vector<int> inliers;
+    // pcl::RandomSampleConsensus<pcl::PointXYZI> ransac (model_p);
+    // ransac.setDistanceThreshold (.01);
+    // ransac.computeModel();
+    // ransac.getInliers(inliers);
+    // pcl::copyPointCloud (*cloud, inliers, *cloud_filtered);
+
+    ///END*** Model detection/segmentaion **///
+
+
+    // pcl::MedianFilter<pcl::PointXYZI> medianFilter;
+    // medianFilter.setInputCloud(cloud_filtered);
+    // medianFilter.setWindowSize(2);
+    // medianFilter.filter(*cloud_filtered);
+
+
+    pcl::toROSMsg(*cloud, outPointcloudMsg);
+    // pcl::toROSMsg(*cloud, outPointcloudMsg);
     outPointcloudMsg.header = header;
 
-    // auto end = std::chrono::system_clock::now();
-    // double elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds >(end - start).count();
+    auto end = std::chrono::system_clock::now();
+    double elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds >(end - start).count();
 
-    // std::cout << "time to create pointcloud " << elapsed_seconds << '\n';
+    std::cout << "time to create pointcloud " << elapsed_seconds << '\n';
 
 }
 
 void ImageConverter::toRosPointcloudMsgRGB(std::shared_ptr<dai::ImgFrame> depthData, std::shared_ptr<dai::ImgFrame> colorData, sensor_msgs::PointCloud2& outPointcloudMsg) {
 
-    // auto start = std::chrono::system_clock::now();
+    auto start = std::chrono::system_clock::now();
 
     // auto tstampTmp = depthData->getTimestamp();
     // auto ts = std::chrono::time_point_cast<std::chrono::milliseconds>(tstampTmp);
@@ -545,25 +590,52 @@ void ImageConverter::toRosPointcloudMsgRGB(std::shared_ptr<dai::ImgFrame> depthD
         }
     }
 
-    if (_filters->voxelGrid.useFilter) {
-        pcl::VoxelGrid<pcl::PointXYZRGB> sor;
-        sor.setInputCloud(cloud);
-        sor.setLeafSize(_filters->voxelGrid.leafX, _filters->voxelGrid.leafY, _filters->voxelGrid.leafZ);
-        sor.setMinimumPointsNumberPerVoxel(_filters->voxelGrid.minPointsPerVoxel);
-        sor.setFilterFieldName(_filters->voxelGrid.filterFieldName);
-        sor.setFilterLimits(_filters->voxelGrid.filterMinLimit,_filters->voxelGrid.filterMaxLimit);
-        sor.filter(*cloud_filtered);
 
-        pcl::toROSMsg(*cloud_filtered, outPointcloudMsg);
+    if (_filters->voxelGrid.useFilter) {
+        pcl::VoxelGrid<pcl::PointXYZRGB> voxelFilter;
+        voxelFilter.setInputCloud(cloud);
+        voxelFilter.setLeafSize(_filters->voxelGrid.leafX, _filters->voxelGrid.leafY, _filters->voxelGrid.leafZ);
+        voxelFilter.setMinimumPointsNumberPerVoxel(_filters->voxelGrid.minPointsPerVoxel);
+        voxelFilter.setFilterFieldName(_filters->voxelGrid.filterFieldName);
+        voxelFilter.setFilterLimits(_filters->voxelGrid.filterMinLimit,_filters->voxelGrid.filterMaxLimit);
+        voxelFilter.filter(*cloud);
+
+        // pcl::toROSMsg(*cloud_filtered, outPointcloudMsg);
     } else {
         pcl::toROSMsg(*cloud, outPointcloudMsg);
     }
 
+    if (_filters->statisticalOutlierRemoval.useFilter) {
+        pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sorFilter;
+        sorFilter.setKeepOrganized(_filters->statisticalOutlierRemoval.keepOrganized);
+        sorFilter.setInputCloud(cloud);
+        sorFilter.setMeanK(_filters->statisticalOutlierRemoval.meanK);
+        sorFilter.setStddevMulThresh(_filters->statisticalOutlierRemoval.stddevMulThresh);
+        sorFilter.filter(*cloud);
+    }
+
+    //TODO expand model selection to add more useful model detection for Segmentaion of pointcloud
+    ///*** Model detection/segmentaion **///
+
+     // pcl::SampleConsensusModelSphere<pcl::PointXYZI>::Ptr model_s(new pcl::SampleConsensusModelSphere<pcl::PointXYZI> (cloud));
+    pcl::SampleConsensusModelPlane<pcl::PointXYZRGB>::Ptr model_p (new pcl::SampleConsensusModelPlane<pcl::PointXYZRGB> (cloud));
+
+
+    // std::vector<int> inliers;
+    // pcl::RandomSampleConsensus<pcl::PointXYZRGB> ransac (model_p);
+    // ransac.setDistanceThreshold (.01);
+    // ransac.computeModel();
+    // ransac.getInliers(inliers);
+    // pcl::copyPointCloud (*cloud, inliers, *cloud);
+
+    ///END*** Model detection/segmentaion **///
+
+    pcl::toROSMsg(*cloud, outPointcloudMsg);
     outPointcloudMsg.header = header;
 
-    // auto end = std::chrono::system_clock::now();
-    // double elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds >(end - start).count();
-    // std::cout << elapsed_seconds << '\n';
+    auto end = std::chrono::system_clock::now();
+    double elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds >(end - start).count();
+    std::cout << elapsed_seconds << '\n';
 
 }
 

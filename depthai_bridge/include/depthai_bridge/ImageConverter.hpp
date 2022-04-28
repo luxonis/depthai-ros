@@ -13,6 +13,14 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/filters/voxel_grid.h>
+#include <pcl/filters/median_filter.h>
+#include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/filters/random_sample.h>
+#include <pcl/sample_consensus/ransac.h>
+#include <pcl/sample_consensus/sac_model_plane.h>
+#include <pcl/sample_consensus/sac_model_sphere.h>
+#include <pcl/filters/bilateral.h>
+#include <pcl/filters/passthrough.h>
 
 #ifdef IS_ROS2
     #include "rclcpp/rclcpp.hpp"
@@ -74,8 +82,16 @@ class ImageConverter {
         double filterMaxLimit = 5;
     };
 
+    struct StatisticalOutlierRemoval {
+        bool useFilter = false;
+        bool keepOrganized = true;
+        int meanK = 50;
+        double stddevMulThresh = 0.3;
+    };
+
     struct Filters {
         VoxelGrid voxelGrid; 
+        StatisticalOutlierRemoval statisticalOutlierRemoval;
     };
     // ImageConverter() = default;
     ImageConverter(const std::string frameName, bool interleaved, std::shared_ptr<Filters> filters = nullptr );
