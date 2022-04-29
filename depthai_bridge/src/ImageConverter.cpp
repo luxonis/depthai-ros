@@ -458,7 +458,6 @@ void ImageConverter::toRosPointcloudMsg(std::shared_ptr<dai::ImgFrame> depthData
         voxelFilter.setFilterFieldName(_filters->voxelGrid.filterFieldName);
         voxelFilter.setFilterLimits(_filters->voxelGrid.filterMinLimit,_filters->voxelGrid.filterMaxLimit);
         voxelFilter.filter(*cloud);
-
     }
 
     if (_filters->statisticalOutlierRemoval.useFilter) {
@@ -496,13 +495,12 @@ void ImageConverter::toRosPointcloudMsg(std::shared_ptr<dai::ImgFrame> depthData
 
 
     pcl::toROSMsg(*cloud, outPointcloudMsg);
-    // pcl::toROSMsg(*cloud, outPointcloudMsg);
     outPointcloudMsg.header = header;
 
     auto end = std::chrono::system_clock::now();
     double elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds >(end - start).count();
 
-    std::cout << "time to create pointcloud " << elapsed_seconds << '\n';
+    std::cout << "time to create pointcloud: " << elapsed_seconds << '\n';
 
 }
 
@@ -594,10 +592,6 @@ void ImageConverter::toRosPointcloudMsgRGB(std::shared_ptr<dai::ImgFrame> depthD
         voxelFilter.setFilterFieldName(_filters->voxelGrid.filterFieldName);
         voxelFilter.setFilterLimits(_filters->voxelGrid.filterMinLimit,_filters->voxelGrid.filterMaxLimit);
         voxelFilter.filter(*cloud);
-
-        // pcl::toROSMsg(*cloud_filtered, outPointcloudMsg);
-    } else {
-        pcl::toROSMsg(*cloud, outPointcloudMsg);
     }
 
     if (_filters->statisticalOutlierRemoval.useFilter) {
@@ -612,8 +606,8 @@ void ImageConverter::toRosPointcloudMsgRGB(std::shared_ptr<dai::ImgFrame> depthD
     //TODO expand model selection to add more useful model detection for Segmentaion of pointcloud
     ///*** Model detection/segmentaion **///
 
-     // pcl::SampleConsensusModelSphere<pcl::PointXYZI>::Ptr model_s(new pcl::SampleConsensusModelSphere<pcl::PointXYZI> (cloud));
-    pcl::SampleConsensusModelPlane<pcl::PointXYZRGB>::Ptr model_p (new pcl::SampleConsensusModelPlane<pcl::PointXYZRGB> (cloud));
+    // pcl::SampleConsensusModelSphere<pcl::PointXYZI>::Ptr model_s(new pcl::SampleConsensusModelSphere<pcl::PointXYZI> (cloud));
+    // pcl::SampleConsensusModelPlane<pcl::PointXYZRGB>::Ptr model_p (new pcl::SampleConsensusModelPlane<pcl::PointXYZRGB> (cloud));
 
 
     // std::vector<int> inliers;
