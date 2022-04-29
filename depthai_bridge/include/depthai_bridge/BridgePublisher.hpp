@@ -18,6 +18,7 @@
     #include "sensor_msgs/msg/camera_info.hpp"
     #include "sensor_msgs/msg/image.hpp"
     #include "std_msgs/msg/header.hpp"
+    #include <sensor_msgs/msg/point_cloud2.hpp>
 #else
     #include <camera_info_manager/camera_info_manager.h>
     #include <image_transport/image_transport.h>
@@ -50,7 +51,7 @@ namespace rosOrigin = ::ros;
 struct PointcloudQue {
     std::deque<std::shared_ptr<ADatatype>> depth;
     std::deque<std::shared_ptr<ADatatype>> image;
-    sensor_msgs::PointCloud2 pointcloudMsg;
+    ImageMsgs::PointCloud2 pointcloudMsg;
 };
 
 PointcloudQue pointcloudQue;
@@ -59,7 +60,7 @@ template <class RosMsg, class SimMsg>
 class BridgePublisher {
    public:
     using ConvertFunc = std::function<void(std::shared_ptr<SimMsg>, std::deque<RosMsg>&)>;
-    using ConvertPointcloudFunc = std::function<void(std::shared_ptr<SimMsg>, std::shared_ptr<SimMsg>, sensor_msgs::PointCloud2&)>;
+    using ConvertPointcloudFunc = std::function<void(std::shared_ptr<SimMsg>, std::shared_ptr<SimMsg>, ImageMsgs::PointCloud2&)>;
 
 #ifdef IS_ROS2
     using CustomPublisher = typename std::conditional<std::is_same<RosMsg, ImageMsgs::Image>::value,
@@ -165,7 +166,7 @@ class BridgePublisher {
 #ifdef IS_ROS2
     std::shared_ptr<rclcpp::Node> _node;
     rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr _cameraInfoPublisher;
-    //TODO add _pointcloudPublisher
+    rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr _pointcloudPublisher;
 #else
     rosOrigin::NodeHandle _nh;
     std::shared_ptr<rosOrigin::Publisher> _cameraInfoPublisher;
@@ -217,6 +218,9 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(std::shared_ptr<dai::DataOutput
       _publishPointcloud(publishPointcloud),
       _pointcloudConverter(pointcloudConverter){
     _rosPublisher = advertise(qosHistoryDepth, std::is_same<RosMsg, ImageMsgs::Image>{});
+    if( (_publishPointcloud) && (cameraName == "stereo") ) {
+        _pointcloudPublisher = _node->create_publisher<ImageMsgs::PointCloud2>(_cameraName + "/pointcloud", qosHistoryDepth);
+    }
 }
 
 template <class RosMsg, class SimMsg>
@@ -239,6 +243,9 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(std::shared_ptr<dai::DataOutput
       _publishPointcloud(publishPointcloud),
       _pointcloudConverter(pointcloudConverter){
     _rosPublisher = advertise(qosHistoryDepth, std::is_same<RosMsg, ImageMsgs::Image>{});
+    if( (_publishPointcloud) && (cameraName == "stereo") ) {
+        _pointcloudPublisher = _node->create_publisher<ImageMsgs::PointCloud2>(_cameraName + "/pointcloud", qosHistoryDepth);
+    }
 }
 
 template <class RosMsg, class SimMsg>
@@ -382,7 +389,7 @@ void BridgePublisher<RosMsg, SimMsg>::daiPointcloudCallback(std::string name, st
     if( (pointcloudQue.image.size() > 1) && (pointcloudQue.depth.size() > 1) && (name =="depth") ){
         auto daiDataDepthPtr = std::dynamic_pointer_cast<SimMsg>(pointcloudQue.depth.back());
         auto daiDataColoPtr = std::dynamic_pointer_cast<SimMsg>(pointcloudQue.image.back());
-        sensor_msgs::PointCloud2 pointcloudMsg;
+        ImageMsgs::PointCloud2 pointcloudMsg;
         _pointcloudConverter(daiDataDepthPtr, daiDataColoPtr, pointcloudMsg);
         // _pointcloudPublisher->publish(pointcloudMsg);
         pointcloudQue.pointcloudMsg = pointcloudMsg;

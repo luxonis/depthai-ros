@@ -194,19 +194,6 @@ void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outD
     outData.setType(revEncodingIter->first);
 }
 
-ImagePtr ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
-    std::deque<ImageMsgs::Image> msgQueue;
-    toRosMsg(inData, msgQueue);
-    auto msg = msgQueue.front();
-
-#ifdef IS_ROS2
-    ImagePtr ptr = std::make_shared<ImageMsgs::Image>(msg);
-#else
-    ImagePtr ptr = boost::make_shared<ImageMsgs::Image>(msg);
-#endif
-    return ptr;
-}
-
 void ImageConverter::planarToInterleaved(const std::vector<uint8_t>& srcData, std::vector<uint8_t>& destData, int w, int h, int numPlanes, int bpp) {
     if(numPlanes == 3) {
         // optimization (cache)
@@ -354,14 +341,22 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
     }
     cameraData.distortion_model = "rational_polynomial";
 
-    cx = cameraData.K[2];
-    cy = cameraData.K[5];
-    fx = 1.0f / (cameraData.K[0]);
-    fy = 1.0f / (cameraData.K[4]);
+    #ifdef IS_ROS2
+        cx = cameraData.k[2];
+        cy = cameraData.k[5];
+        fx = 1.0f / (cameraData.k[0]);
+        fy = 1.0f / (cameraData.k[4]);
+    #else
+        cx = cameraData.K[2];
+        cy = cameraData.K[5];
+        fx = 1.0f / (cameraData.K[0]);
+        fy = 1.0f / (cameraData.K[4]);
+    #endif
+
     return cameraData;
 }
 
-void ImageConverter::toRosPointcloudMsg(std::shared_ptr<dai::ImgFrame> depthData, std::shared_ptr<dai::ImgFrame> colorData, sensor_msgs::PointCloud2& outPointcloudMsg) {
+void ImageConverter::toRosPointcloudMsg(std::shared_ptr<dai::ImgFrame> depthData, std::shared_ptr<dai::ImgFrame> colorData, ImageMsgs::PointCloud2& outPointcloudMsg) {
     
     auto start = std::chrono::system_clock::now();
 
@@ -476,7 +471,7 @@ void ImageConverter::toRosPointcloudMsg(std::shared_ptr<dai::ImgFrame> depthData
     }
 
     // pcl::RandomSample<pcl::PointXYZI> randomSampleFilter;
-    
+
 
     //TODO expand model selection to add more useful model detection for Segmentaion of pointcloud
     ///*** Model detection/segmentaion **///
@@ -511,7 +506,7 @@ void ImageConverter::toRosPointcloudMsg(std::shared_ptr<dai::ImgFrame> depthData
 
 }
 
-void ImageConverter::toRosPointcloudMsgRGB(std::shared_ptr<dai::ImgFrame> depthData, std::shared_ptr<dai::ImgFrame> colorData, sensor_msgs::PointCloud2& outPointcloudMsg) {
+void ImageConverter::toRosPointcloudMsgRGB(std::shared_ptr<dai::ImgFrame> depthData, std::shared_ptr<dai::ImgFrame> colorData, ImageMsgs::PointCloud2& outPointcloudMsg) {
 
     auto start = std::chrono::system_clock::now();
 
@@ -635,7 +630,7 @@ void ImageConverter::toRosPointcloudMsgRGB(std::shared_ptr<dai::ImgFrame> depthD
 
     auto end = std::chrono::system_clock::now();
     double elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds >(end - start).count();
-    std::cout << elapsed_seconds << '\n';
+    std::cout << "time to create pointcloud: " << elapsed_seconds << '\n';
 
 }
 

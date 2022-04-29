@@ -114,8 +114,8 @@ class ImageConverter {
                                                   Point2f topLeftPixelId = Point2f(),
                                                   Point2f bottomRightPixelId = Point2f());
 
-    void toRosPointcloudMsg(std::shared_ptr<dai::ImgFrame> depthData, std::shared_ptr<dai::ImgFrame> colorData, sensor_msgs::PointCloud2& outImageMsg);
-    void toRosPointcloudMsgRGB(std::shared_ptr<dai::ImgFrame> depthData, std::shared_ptr<dai::ImgFrame> colorData, sensor_msgs::PointCloud2& outImageMsg);
+    void toRosPointcloudMsg(std::shared_ptr<dai::ImgFrame> depthData, std::shared_ptr<dai::ImgFrame> colorData, ImageMsgs::PointCloud2& outImageMsg);
+    void toRosPointcloudMsgRGB(std::shared_ptr<dai::ImgFrame> depthData, std::shared_ptr<dai::ImgFrame> colorData, ImageMsgs::PointCloud2& outImageMsg);
 
    private:
     static std::unordered_map<dai::RawImgFrame::Type, std::string> encodingEnumMap;
