@@ -83,7 +83,7 @@ if ( ament_cmake_FOUND )
       ${dependencies})
     target_compile_definitions(${PROJECT_NAME} PUBLIC IS_ROS2)
     
-    if($ENV{ROS_DISTRO} STREQUAL "galactic")
+    if($ENV{ROS_DISTRO} STREQUAL "galactic" OR $ENV{ROS_DISTRO} STREQUAL "humble" OR $ENV{ROS_DISTRO} STREQUAL "rolling")
       target_compile_definitions(${PROJECT_NAME} PRIVATE IS_GALACTIC)
     endif()
 
