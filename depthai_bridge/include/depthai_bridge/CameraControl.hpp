@@ -64,8 +64,7 @@ struct WhiteBalanceParameters {
 
 class CameraControl {
    public:
-    CameraControl(ros_node node, std::string camName);
-    void setDevice(std::shared_ptr<dai::Device> device);
+    CameraControl(ros_node node, std::shared_ptr<dai::Device> device, std::string camName);
 
     // Exposure
     void setExposure();
@@ -93,7 +92,7 @@ class CameraControl {
     dai::CameraControl::AutoFocusMode getFocusMode();
     // White balance
     dai::CameraControl::AutoWhiteBalanceMode getWhiteBalanceMode();
-    std::string _white_balance_mode = "AUTO";
+    std::string _white_balance_mode = "AUTO", _camName;
     int _color_temperature_k = 6000;
 };
 

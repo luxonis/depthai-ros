@@ -8,8 +8,7 @@ namespace dai {
 
 namespace ros {
 
-CameraControl::CameraControl(ros_node node, std::string camName) {
-    CameraControl();
+CameraControl::CameraControl(ros_node node, std::shared_ptr<dai::Device> device, std::string camName) : _device(device), _camName(camName) {
     set_parameter(camName + "/auto_exposure", _exposure.auto_exposure);
     set_parameter(camName + "/exposure_roi_start_x", _exposure.region.at(0));
     set_parameter(camName + "/exposure_roi_start_y", _exposure.region.at(1));
@@ -31,7 +30,7 @@ void CameraControl::setExposure() {
 }
 
 void CameraControl::setExposure(ExposureParameters exposure) {
-    auto controlQueue = _device->getInputQueue("control_" + exposure.name);
+    auto controlQueue = _device->getInputQueue("control_" + _camName);
     dai::CameraControl ctrl;
     if(exposure.auto_exposure) {
         ctrl.setAutoExposureEnable();
@@ -44,10 +43,6 @@ void CameraControl::setExposure(ExposureParameters exposure) {
     }
     ctrl.setAutoExposureCompensation(exposure.compensation);
     controlQueue->send(ctrl);
-}
-
-void CameraControl::setDevice(std::shared_ptr<dai::Device> device) {
-    _device = device;
 }
 
 dai::CameraControl::AutoFocusMode CameraControl::getFocusMode() {
@@ -68,7 +63,7 @@ int clamp(int v, int min, int max) {
 
 void CameraControl::setFocus() {
     dai::CameraControl ctrl;
-    auto controlQueue = _device->getInputQueue("control");
+    auto controlQueue = _device->getInputQueue("control_" + _camName);
     auto mode = getFocusMode();
     ctrl.setAutoFocusMode(mode);
 
