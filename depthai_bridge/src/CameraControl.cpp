@@ -98,7 +98,7 @@ void CameraControl::setFocus() {
     controlQueue->send(ctrl);
 }
 
-req_type CameraControl::setRgbExposureRequest(exp_req_msg request, exp_rep_msg response) {
+req_type CameraControl::setExposureRequest(exp_req_msg request, exp_rep_msg response) {
     _rgb.auto_exposure = req_get(auto_exposure);
     _rgb.region.at(0) = req_get(exposure_x);
     _rgb.region.at(1) = req_get(exposure_y);
@@ -113,20 +113,6 @@ req_type CameraControl::setRgbExposureRequest(exp_req_msg request, exp_rep_msg r
     return (req_type)result;
 }
 
-req_type CameraControl::setStereoExposureRequest(exp_req_msg request, exp_rep_msg response) {
-    _stereo.auto_exposure = req_get(auto_exposure);
-    _stereo.region.at(0) = req_get(exposure_x);
-    _stereo.region.at(1) = req_get(exposure_y);
-    _stereo.region.at(2) = req_get(exposure_width);
-    _stereo.region.at(3) = req_get(exposure_height);
-    _stereo.compensation = req_get(compensation);
-    _stereo.time_us = clamp(req_get(exposure_time_us), 1, 33000);
-    _stereo.sensitivity_iso = clamp(req_get(exposure_time_us), 1, 33000);
-    setExposure(_stereo);
-    rep_get(success) = true;
-    bool result = true;
-    return (req_type)result;
-}
 
 req_type CameraControl::setFocusRequest(foc_req_msg request, foc_rep_msg response) {
     _focus.mode = req_get(focus_mode);

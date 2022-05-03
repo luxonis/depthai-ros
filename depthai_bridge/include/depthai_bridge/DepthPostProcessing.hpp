@@ -1,5 +1,4 @@
-#ifndef DEPTH_POST_PROCESSING_HPP_
-#define DEPTH_POST_PROCESSING_HPP_
+#pragma once
 
 #include <depthai_bridge/BridgePublisher.hpp>
 #include <depthai_bridge/DisparityConverter.hpp>
@@ -117,5 +116,3 @@ class DepthPostProcessing {
     std::shared_ptr<dai::Device> _device;
     dai::RawStereoDepthConfig _config;
 };
-
-#endif

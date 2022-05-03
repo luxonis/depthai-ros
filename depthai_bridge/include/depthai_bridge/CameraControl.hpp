@@ -1,5 +1,4 @@
-#ifndef CAMERA_CONTROL_HPP_
-#define CAMERA_CONTROL_HPP_
+#pragma once
 
 #include <depthai_bridge/BridgePublisher.hpp>
 #include <depthai_bridge/DisparityConverter.hpp>
@@ -68,8 +67,7 @@ class CameraControl {
     void setDevice(std::shared_ptr<dai::Device> device);
     // Exposure
     void setExposure();
-    req_type setRgbExposureRequest(exp_req_msg request, exp_rep_msg response);
-    req_type setStereoExposureRequest(exp_req_msg request, exp_rep_msg response);
+    req_type setExposureRequest(exp_req_msg request, exp_rep_msg response);
     void setRgbExposure(bool value);
     // Focus
     void setFocus();
@@ -94,5 +92,3 @@ class CameraControl {
     std::string _white_balance_mode = "AUTO";
     int _color_temperature_k = 6000;
 };
-
-#endif

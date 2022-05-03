@@ -1,5 +1,4 @@
-#ifndef ROS_PARAMETERS_HPP_
-#define ROS_PARAMETERS_HPP_
+#pragma once
 
 #include <depthai_bridge/BridgePublisher.hpp>
 #include <depthai_bridge/DisparityConverter.hpp>
@@ -42,6 +41,4 @@ using ros_node = std::shared_ptr<rclcpp::Node>;
     #define req_get(x) ((*request).x)
     #define rep_get(x) ((*response).x)
     #define set_parameter(a, b) setRosParameter(node, a, b)
-#endif
-
 #endif
