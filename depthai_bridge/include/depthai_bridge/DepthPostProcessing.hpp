@@ -75,8 +75,8 @@ class DepthPostProcessing {
     using DecimationMode = dai::RawStereoDepthConfig::PostProcessing::DecimationFilter::DecimationMode;
 
    public:
-    DepthPostProcessing();
-    DepthPostProcessing(ros_node node);
+    // DepthPostProcessing();
+    DepthPostProcessing(ros_node node, std::string camName);
     void setDevice(std::shared_ptr<dai::Device> device);
     void setFilters();
     dai::RawStereoDepthConfig getFilters(dai::RawStereoDepthConfig config);

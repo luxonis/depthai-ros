@@ -3,26 +3,26 @@
 using TemporalMode = dai::RawStereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode;
 using DecimationMode = dai::RawStereoDepthConfig::PostProcessing::DecimationFilter::DecimationMode;
 
-DepthPostProcessing::DepthPostProcessing(ros_node node) {
-    set_parameter("median_enable", _median_enable);
-    set_parameter("median_mode", _median_mode);
-    set_parameter("speckle_enable", _speckle_enable);
-    set_parameter("speckle_range", _speckle_range);
-    set_parameter("temporal_enable", _temporal_enable);
-    set_parameter("temporal_mode", _temporal_mode);
-    set_parameter("temporal_alpha", _temporal_alpha);
-    set_parameter("temporal_delta", _temporal_delta);
-    set_parameter("spatial_enable", _spatial_enable);
-    set_parameter("spatial_radius", _spatial_radius);
-    set_parameter("spatial_alpha", _spatial_alpha);
-    set_parameter("spatial_delta", _spatial_delta);
-    set_parameter("spatial_iterations", _spatial_iterations);
-    set_parameter("threshold_enable", _threshold_enable);
-    set_parameter("threshold_max", _threshold_max);
-    set_parameter("threshold_min", _threshold_min);
-    set_parameter("decimation_enable", _decimation_enable);
-    set_parameter("decimation_mode", _decimation_mode);
-    set_parameter("decimation_factor", _decimation_factor);
+DepthPostProcessing::DepthPostProcessing(ros_node node, std::string camName) {
+    set_parameter(camName + "/median_enable", _median_enable);
+    set_parameter(camName + "/median_mode", _median_mode);
+    set_parameter(camName + "/speckle_enable", _speckle_enable);
+    set_parameter(camName + "/speckle_range", _speckle_range);
+    set_parameter(camName + "/temporal_enable", _temporal_enable);
+    set_parameter(camName + "/temporal_mode", _temporal_mode);
+    set_parameter(camName + "/temporal_alpha", _temporal_alpha);
+    set_parameter(camName + "/temporal_delta", _temporal_delta);
+    set_parameter(camName + "/spatial_enable", _spatial_enable);
+    set_parameter(camName + "/spatial_radius", _spatial_radius);
+    set_parameter(camName + "/spatial_alpha", _spatial_alpha);
+    set_parameter(camName + "/spatial_delta", _spatial_delta);
+    set_parameter(camName + "/spatial_iterations", _spatial_iterations);
+    set_parameter(camName + "/threshold_enable", _threshold_enable);
+    set_parameter(camName + "/threshold_max", _threshold_max);
+    set_parameter(camName + "/threshold_min", _threshold_min);
+    set_parameter(camName + "/decimation_enable", _decimation_enable);
+    set_parameter(camName + "/decimation_mode", _decimation_mode);
+    set_parameter(camName + "/decimation_factor", _decimation_factor);
 }
 
 dai::MedianFilter DepthPostProcessing::getMedianFilter() {

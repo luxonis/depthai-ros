@@ -13,8 +13,7 @@ std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::encoding
                                                                                            {dai::RawImgFrame::Type::RAW8, "mono8"},
                                                                                            {dai::RawImgFrame::Type::RAW16, "16UC1"},
                                                                                            {dai::RawImgFrame::Type::YUV420p, "YUV420"}};
-// TODO(sachin) : Move Planare to encodingEnumMap and use default planar namings. And convertt those that are not supported in ROS using ImageTransport in the
-// bridge.
+
 std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::planarEncodingEnumMap = {
     {dai::RawImgFrame::Type::BGR888p, "rgb8"},  // 3_1_bgr8 represents 3 planes/channels and 1 byte per pixel in BGR format
     {dai::RawImgFrame::Type::RGB888p, "rgb8"},

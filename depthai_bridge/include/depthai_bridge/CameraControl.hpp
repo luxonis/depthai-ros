@@ -38,7 +38,9 @@ using wb_rep_msg = std::shared_ptr<depthai_ros_msgs::srv::SetWhiteBalance::Respo
 using ros_node = std::shared_ptr<rclcpp::Node>;
 
 #endif
+namespace dai {
 
+namespace ros {
 struct ExposureParameters {
     int compensation = 0;
     int time_us = 8333;
@@ -62,27 +64,29 @@ struct WhiteBalanceParameters {
 
 class CameraControl {
    public:
-    CameraControl();
-    CameraControl(ros_node node);
+    CameraControl(ros_node node, std::string camName);
     void setDevice(std::shared_ptr<dai::Device> device);
+
     // Exposure
     void setExposure();
     req_type setExposureRequest(exp_req_msg request, exp_rep_msg response);
-    void setRgbExposure(bool value);
+
     // Focus
     void setFocus();
     req_type setFocusRequest(foc_req_msg request, foc_rep_msg response);
+
     // White Balance
     void setWhiteBalance();
     req_type setWhiteBalanceRequest(wb_req_msg request, wb_rep_msg response);
 
    private:
-    void set_ros_parameters(ros_node node);
+    // void set_ros_parameters(ros_node node);
+
     // Exposure
-    ExposureParameters _rgb, _stereo;
+    ExposureParameters _exposure;
     std::shared_ptr<dai::Device> _device;
-    bool _exposure_rgb = false;
     void setExposure(ExposureParameters exposure);
+
     // Focus
     FocusParameters _focus;
     int _lens_position = 0;
@@ -92,3 +96,6 @@ class CameraControl {
     std::string _white_balance_mode = "AUTO";
     int _color_temperature_k = 6000;
 };
+
+}  // namespace ros
+}  // namespace dai

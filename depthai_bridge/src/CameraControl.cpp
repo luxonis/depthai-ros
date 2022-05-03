@@ -1,55 +1,43 @@
 #include "depthai_bridge/CameraControl.hpp"
 
-CameraControl::CameraControl() {
-    _rgb.name = "rgb";
-    _stereo.name = "stereo";
-}
+// CameraControl::CameraControl() {
+//     .name = "rgb";
+//     _stereo.name = "stereo";
+// }
+namespace dai {
 
-CameraControl::CameraControl(ros_node node) {
+namespace ros {
+
+CameraControl::CameraControl(ros_node node, std::string camName) {
     CameraControl();
-    set_parameter("auto_exposure_rgb", _rgb.auto_exposure);
-    set_parameter("exposure_start_x_rgb", _rgb.region.at(0));
-    set_parameter("exposure_start_y_rgb", _rgb.region.at(1));
-    set_parameter("exposure_width_rgb", _rgb.region.at(2));
-    set_parameter("exposure_height_rgb", _rgb.region.at(3));
-    set_parameter("exposure_compensation_rgb", _rgb.compensation);
-    set_parameter("exposure_time_us_rgb", _rgb.time_us);
-    set_parameter("exposure_iso_rgb", _rgb.sensitivity_iso);
-    set_parameter("auto_exposure_stereo", _stereo.auto_exposure);
-    set_parameter("exposure_start_x_stereo", _stereo.region.at(0));
-    set_parameter("exposure_start_y_stereo", _stereo.region.at(1));
-    set_parameter("exposure_width_stereo", _stereo.region.at(2));
-    set_parameter("exposure_height_stereo", _stereo.region.at(3));
-    set_parameter("exposure_compensation_stereo", _stereo.compensation);
-    set_parameter("exposure_time_us_stereo", _stereo.time_us);
-    set_parameter("exposure_iso_stereo", _stereo.sensitivity_iso);
-    set_parameter("focus_mode", _focus.mode);
-    set_parameter("focus_region_x", _focus.region.at(0));
-    set_parameter("focus_region_y", _focus.region.at(1));
-    set_parameter("focus_region_width", _focus.region.at(2));
-    set_parameter("focus_region_height", _focus.region.at(3));
-}
+    set_parameter(camName + "/auto_exposure", _exposure.auto_exposure);
+    set_parameter(camName + "/exposure_roi_start_x", _exposure.region.at(0));
+    set_parameter(camName + "/exposure_roi_start_y", _exposure.region.at(1));
+    set_parameter(camName + "/exposure_roi_width", _exposure.region.at(2));
+    set_parameter(camName + "/exposure_roi_height", _exposure.region.at(3));
+    set_parameter(camName + "/exposure_compensation", _exposure.compensation);
+    set_parameter(camName + "/exposure_time_us", _exposure.time_us);
+    set_parameter(camName + "/exposure_iso", _exposure.sensitivity_iso);
 
-void CameraControl::setRgbExposure(bool value) {
-    _exposure_rgb = value;
+    set_parameter(camName + "/focus_mode", _focus.mode);
+    set_parameter(camName + "/focus_region_x", _focus.region.at(0));
+    set_parameter(camName + "/focus_region_y", _focus.region.at(1));
+    set_parameter(camName + "/focus_region_width", _focus.region.at(2));
+    set_parameter(camName + "/focus_region_height", _focus.region.at(3));
 }
 
 void CameraControl::setExposure() {
-    setExposure(_stereo);
-    if(_exposure_rgb) setExposure(_rgb);
+    setExposure(_exposure);
 }
 
 void CameraControl::setExposure(ExposureParameters exposure) {
     auto controlQueue = _device->getInputQueue("control_" + exposure.name);
-    auto configQueue = _device->getInputQueue("config_" + exposure.name);
     dai::CameraControl ctrl;
     if(exposure.auto_exposure) {
         ctrl.setAutoExposureEnable();
     } else {
         if(exposure.region.at(2) != 0 || exposure.region.at(3) != 0) {
-            dai::ImageManipConfig cfg;
-            cfg.setCropRect(exposure.region.at(0), exposure.region.at(1), exposure.region.at(2), exposure.region.at(3));
-            configQueue->send(cfg);
+            ctrl.setAutoExposureRegion(exposure.region.at(0), exposure.region.at(1), exposure.region.at(2), exposure.region.at(3));
         } else {
             ctrl.setManualExposure(exposure.time_us, exposure.sensitivity_iso);
         }
@@ -85,10 +73,7 @@ void CameraControl::setFocus() {
     ctrl.setAutoFocusMode(mode);
 
     if(_focus.mode == "OFF") {
-        auto configQueue = _device->getInputQueue("config");
-        dai::ImageManipConfig cfg;
-        cfg.setCropRect(_focus.region.at(0), _focus.region.at(1), 0, 0);
-        configQueue->send(cfg);
+        return;
     } else if(_focus.region.at(2) > 0 && _focus.region.at(3) > 0) {
         ctrl.setAutoFocusRegion(_focus.region.at(0), _focus.region.at(1), _focus.region.at(2), _focus.region.at(3));
     } else if(_focus.mode != "AUTO") {
@@ -99,20 +84,19 @@ void CameraControl::setFocus() {
 }
 
 req_type CameraControl::setExposureRequest(exp_req_msg request, exp_rep_msg response) {
-    _rgb.auto_exposure = req_get(auto_exposure);
-    _rgb.region.at(0) = req_get(exposure_x);
-    _rgb.region.at(1) = req_get(exposure_y);
-    _rgb.region.at(2) = req_get(exposure_width);
-    _rgb.region.at(3) = req_get(exposure_height);
-    _rgb.compensation = req_get(compensation);
-    _rgb.time_us = clamp(req_get(exposure_time_us), 1, 33000);
-    _rgb.sensitivity_iso = clamp(req_get(exposure_time_us), 1, 33000);
-    setExposure(_rgb);
+    _exposure.auto_exposure = req_get(auto_exposure);
+    _exposure.region.at(0) = req_get(exposure_x);
+    _exposure.region.at(1) = req_get(exposure_y);
+    _exposure.region.at(2) = req_get(exposure_width);
+    _exposure.region.at(3) = req_get(exposure_height);
+    _exposure.compensation = req_get(compensation);
+    _exposure.time_us = clamp(req_get(exposure_time_us), 1, 33000);
+    _exposure.sensitivity_iso = clamp(req_get(exposure_time_us), 1, 33000);
+    setExposure(_exposure);
     rep_get(success) = true;
     bool result = true;
     return (req_type)result;
 }
-
 
 req_type CameraControl::setFocusRequest(foc_req_msg request, foc_rep_msg response) {
     _focus.mode = req_get(focus_mode);
@@ -156,3 +140,6 @@ req_type CameraControl::setWhiteBalanceRequest(wb_req_msg request, wb_rep_msg re
     bool result = true;
     return (req_type)result;
 }
+
+}  // namespace ros
+}  // namespace dai
