@@ -83,8 +83,12 @@ if ( ament_cmake_FOUND )
       ${dependencies})
     target_compile_definitions(${PROJECT_NAME} PUBLIC IS_ROS2)
     
-    if($ENV{ROS_DISTRO} STREQUAL "galactic" OR $ENV{ROS_DISTRO} STREQUAL "humble" OR $ENV{ROS_DISTRO} STREQUAL "rolling")
+    if($ENV{ROS_DISTRO} STREQUAL "galactic")
       target_compile_definitions(${PROJECT_NAME} PRIVATE IS_GALACTIC)
+    endif()
+
+    if($ENV{ROS_DISTRO} STREQUAL "humble" OR $ENV{ROS_DISTRO} STREQUAL "rolling")
+      target_compile_definitions(${PROJECT_NAME} PRIVATE IS_HUMBLE)
     endif()
 
     target_link_libraries(${PROJECT_NAME} 

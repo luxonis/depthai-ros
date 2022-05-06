@@ -54,7 +54,7 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
 
         opDetectionMsg.detections[i].results.resize(1);
 
-#ifdef IS_GALACTIC
+#if defined (IS_GALACTIC) || defined (IS_HUMBLE)
         opDetectionMsg.detections[i].results[0].class_id = std::to_string(inNetData->detections[i].label);
 #elif IS_ROS2
         opDetectionMsg.detections[i].results[0].id = std::to_string(inNetData->detections[i].label);
@@ -64,8 +64,13 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
 
         opDetectionMsg.detections[i].results[0].score = inNetData->detections[i].confidence;
 
+#ifdef IS_HUMBLE
+        opDetectionMsg.detections[i].bbox.center.position.x = xCenter;
+        opDetectionMsg.detections[i].bbox.center.position.y = yCenter;
+#elif IS_ROS2
         opDetectionMsg.detections[i].bbox.center.x = xCenter;
         opDetectionMsg.detections[i].bbox.center.y = yCenter;
+#endif
         opDetectionMsg.detections[i].bbox.size_x = xSize;
         opDetectionMsg.detections[i].bbox.size_y = ySize;
         // opDetectionMsg.detections[i].is_tracking = _isTracking;
