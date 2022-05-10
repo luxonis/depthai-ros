@@ -11,6 +11,10 @@ if(POLICY CMP0057)
     cmake_policy(SET CMP0057 NEW)
 endif()
 
+execute_process (
+  COMMAND bash -c "lsb_release -r | cut -f2"
+  OUTPUT_VARIABLE ubuntu_version
+)
 
 set(opencv_version 4)
 find_package(OpenCV ${opencv_version} QUIET COMPONENTS imgproc highgui)
@@ -83,11 +87,11 @@ if ( ament_cmake_FOUND )
       ${dependencies})
     target_compile_definitions(${PROJECT_NAME} PUBLIC IS_ROS2)
     
-    if($ENV{ROS_DISTRO} STREQUAL "galactic")
+    if($ENV{ROS_DISTRO} STREQUAL "galactic" OR ($ENV{ROS_DISTRO} STREQUAL "rolling" AND "${ubuntu_version}" STREQUAL "20.04\n"))
       target_compile_definitions(${PROJECT_NAME} PRIVATE IS_GALACTIC)
     endif()
 
-    if($ENV{ROS_DISTRO} STREQUAL "humble" OR $ENV{ROS_DISTRO} STREQUAL "rolling")
+    if($ENV{ROS_DISTRO} STREQUAL "humble" OR ($ENV{ROS_DISTRO} STREQUAL "rolling" AND "${ubuntu_version}" STREQUAL "22.04\n"))
       target_compile_definitions(${PROJECT_NAME} PRIVATE IS_HUMBLE)
     endif()
 
