@@ -29,8 +29,8 @@ The following setup procedure assumes you have cmake version >= 3.10.2 and OpenC
 4. `vcs import src < underlay.repos`
 5. `rosdep install --from-paths src --ignore-src -r -y`
 6. `source /opt/ros/<ros-distro>/setup.bash`
-7. `catkin_make`
-8. `source devel/setup.bash` 
+7. `catkin_make` (For ROS1) `colon build` (for ROS2)
+8. `source devel/setup.bash` (For ROS1) & `source install/setup.bash` (for ROS2) 
 
 
 <!-- 
