@@ -188,7 +188,7 @@ ImuMsgs::Imu ImuConverter::CreateUnitMessage(dai::IMUReportAccelerometer accel, 
     interpMsg.orientation.x = 0.0;
     interpMsg.orientation.y = 0.0;
     interpMsg.orientation.z = 0.0;
-    interpMsg.orientation.w = 0.0;
+    interpMsg.orientation.w = 1.0;
 
     interpMsg.orientation_covariance = {-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     interpMsg.linear_acceleration_covariance = {_linear_accel_cov, 0.0, 0.0, 0.0, _linear_accel_cov, 0.0, 0.0, 0.0, _linear_accel_cov};

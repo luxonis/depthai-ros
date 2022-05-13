@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
 
-project (depthai_ros_msgs VERSION 1.0.0)
+project (depthai_ros_msgs VERSION 2.5.0)
 
 if(POLICY CMP0057)
     cmake_policy(SET CMP0057 NEW)
@@ -22,6 +22,10 @@ if ( ament_cmake_FOUND )
 
     rosidl_generate_interfaces(${PROJECT_NAME}
       "msg/AutoFocusCtrl.msg"
+      "msg/HandLandmark.msg"
+      "msg/HandLandmarkArray.msg"
+      # "msg/ImageMarker.msg"
+      # "msg/ImageMarkerArray.msg"
       "msg/SpatialDetection.msg"
       "msg/SpatialDetectionArray.msg"
       "srv/TriggerNamed.srv"
@@ -51,11 +55,13 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
     add_message_files (
       FILES
       AutoFocusCtrl.msg
-      SpatialDetection.msg
-      SpatialDetectionArray.msg
       HandLandmark.msg
       HandLandmarkArray.msg
-    )
+      # ImageMarker.msg
+      # ImageMarkerArray.msg
+      SpatialDetection.msg
+      SpatialDetectionArray.msg
+  )
 
     ## Generate services in the 'srv' folder
     add_service_files (
