@@ -22,6 +22,10 @@ if ( ament_cmake_FOUND )
 
     rosidl_generate_interfaces(${PROJECT_NAME}
       "msg/AutoFocusCtrl.msg"
+      "msg/HandLandmark.msg"
+      "msg/HandLandmarkArray.msg"
+      "msg/ImageTextMarker.msg"
+      "msg/ImageTextMarkerArray.msg"
       "msg/SpatialDetection.msg"
       "msg/SpatialDetectionArray.msg"
       "srv/TriggerNamed.srv"
@@ -51,11 +55,13 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
     add_message_files (
       FILES
       AutoFocusCtrl.msg
-      SpatialDetection.msg
-      SpatialDetectionArray.msg
       HandLandmark.msg
       HandLandmarkArray.msg
-    )
+      ImageTextMarker.msg
+      ImageTextMarkerArray.msg
+      SpatialDetection.msg
+      SpatialDetectionArray.msg
+  )
 
     ## Generate services in the 'srv' folder
     add_service_files (
