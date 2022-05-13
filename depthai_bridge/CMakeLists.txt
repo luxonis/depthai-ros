@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.2)
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-project(depthai_bridge)
+project(depthai_bridge VERSION 2.5.0 LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
