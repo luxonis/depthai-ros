@@ -24,8 +24,8 @@ if ( ament_cmake_FOUND )
       "msg/AutoFocusCtrl.msg"
       "msg/HandLandmark.msg"
       "msg/HandLandmarkArray.msg"
-      "msg/ImageTextMarker.msg"
-      "msg/ImageTextMarkerArray.msg"
+      # "msg/ImageMarker.msg"
+      # "msg/ImageMarkerArray.msg"
       "msg/SpatialDetection.msg"
       "msg/SpatialDetectionArray.msg"
       "srv/TriggerNamed.srv"
@@ -57,8 +57,8 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
       AutoFocusCtrl.msg
       HandLandmark.msg
       HandLandmarkArray.msg
-      ImageTextMarker.msg
-      ImageTextMarkerArray.msg
+      # ImageMarker.msg
+      # ImageMarkerArray.msg
       SpatialDetection.msg
       SpatialDetectionArray.msg
   )

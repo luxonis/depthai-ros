@@ -1,1 +1,0 @@
-ImageTextMarker[] markers
