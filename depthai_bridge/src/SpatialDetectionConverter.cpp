@@ -54,7 +54,7 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
 
         opDetectionMsg.detections[i].results.resize(1);
 
-#if defined (IS_GALACTIC) || defined (IS_HUMBLE)
+#if defined(IS_GALACTIC) || defined(IS_HUMBLE)
         opDetectionMsg.detections[i].results[0].class_id = std::to_string(inNetData->detections[i].label);
 #elif IS_ROS2
         opDetectionMsg.detections[i].results[0].id = std::to_string(inNetData->detections[i].label);

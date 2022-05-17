@@ -53,7 +53,7 @@ void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetDa
 
         opDetectionMsg.detections[i].results.resize(1);
 
-#if defined (IS_GALACTIC) || defined (IS_HUMBLE)
+#if defined(IS_GALACTIC) || defined(IS_HUMBLE)
         opDetectionMsg.detections[i].id = std::to_string(inNetData->detections[i].label);
         opDetectionMsg.detections[i].results[0].hypothesis.class_id = std::to_string(inNetData->detections[i].label);
         opDetectionMsg.detections[i].results[0].hypothesis.score = inNetData->detections[i].confidence;
