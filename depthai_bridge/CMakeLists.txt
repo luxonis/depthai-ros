@@ -27,7 +27,6 @@ endif()
 message(STATUS "----------------Did not find OpenCV 4, trying OpenCV 3--------------")
 
 find_package(depthai CONFIG REQUIRED)
-message(STATUS ${depthai_VERSION})
 if(depthai_VERSION LESS_EQUAL 2.14.1)
   message( FATAL_ERROR "Installed DEPTHAI VERSION is less than 2.15.0.  Please upgrade to the latest version which solves the timesync issues" )
 endif()
