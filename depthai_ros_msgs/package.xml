@@ -23,7 +23,7 @@
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>vision_msgs</depend>
-  <member_of_group condition="$ROS_VERSION == 2">rosidl_interface_packages</member_of_group>
+  <member_of_group>rosidl_interface_packages</member_of_group>
   
   <export>
       <build_type condition="$ROS_VERSION == 1">catkin</build_type>

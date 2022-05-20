@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required (VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 project(depthai_bridge VERSION 2.5.0 LANGUAGES CXX C)
@@ -11,11 +11,6 @@ if(POLICY CMP0057)
     cmake_policy(SET CMP0057 NEW)
 endif()
 
-execute_process (
-  COMMAND bash -c "lsb_release -r | cut -f2"
-  OUTPUT_VARIABLE ubuntu_version
-)
-
 set(opencv_version 4)
 find_package(OpenCV ${opencv_version} QUIET COMPONENTS imgproc highgui)
 if(NOT OpenCV_FOUND)
@@ -27,7 +22,6 @@ endif()
 message(STATUS "----------------Did not find OpenCV 4, trying OpenCV 3--------------")
 
 find_package(depthai CONFIG REQUIRED)
-message(STATUS ${depthai_VERSION})
 if(depthai_VERSION LESS_EQUAL 2.14.1)
   message( FATAL_ERROR "Installed DEPTHAI VERSION is less than 2.15.0.  Please upgrade to the latest version which solves the timesync issues" )
 endif()
@@ -86,12 +80,14 @@ if ( ament_cmake_FOUND )
     ament_target_dependencies(${PROJECT_NAME}
       ${dependencies})
     target_compile_definitions(${PROJECT_NAME} PUBLIC IS_ROS2)
-    
-    if($ENV{ROS_DISTRO} STREQUAL "galactic" OR ($ENV{ROS_DISTRO} STREQUAL "rolling" AND "${ubuntu_version}" STREQUAL "20.04\n"))
+    message(STATUS "--------------------------$ENV{ROS_DISTRO} ---")
+    message(STATUS $ENV{ROS_DISTRO})
+
+    if($ENV{ROS_DISTRO} STREQUAL "galactic")
       target_compile_definitions(${PROJECT_NAME} PRIVATE IS_GALACTIC)
     endif()
 
-    if($ENV{ROS_DISTRO} STREQUAL "humble" OR ($ENV{ROS_DISTRO} STREQUAL "rolling" AND "${ubuntu_version}" STREQUAL "22.04\n"))
+    if($ENV{ROS_DISTRO} STREQUAL "humble" )
       target_compile_definitions(${PROJECT_NAME} PRIVATE IS_HUMBLE)
     endif()
 
