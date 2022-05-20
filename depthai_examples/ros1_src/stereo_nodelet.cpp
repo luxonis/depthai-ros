@@ -191,9 +191,9 @@ namespace depthai_examples{
         }
 
         // MonoCamera
-        monoLeft->setResolution(dai::MonoCameraProperties::SensorResolution::THE_720_P);
+        monoLeft->setResolution(monoResolution);
         monoLeft->setBoardSocket(dai::CameraBoardSocket::LEFT);
-        monoRight->setResolution(dai::MonoCameraProperties::SensorResolution::THE_720_P);
+        monoRight->setResolution(monoResolution);
         monoRight->setBoardSocket(dai::CameraBoardSocket::RIGHT);
 
         // int maxDisp = 96;

@@ -14,7 +14,9 @@
     <arg name="cam_yaw"             default="0.0"     /> <!-- Orientation respect to base frame (i.e. "base_link) -->
 
     <arg name="sync_nn"             default="true"         />
+    <arg name="nnName"              default=""         />
     <arg name="camera_param_uri"    default="package://depthai_examples/params/camera" />
+    <arg name="resourceBaseFolder"  default="$(find depthai_examples)/resources" />
 
     <include file="$(find depthai_bridge)/launch/urdf.launch">
         <arg name="base_frame"      value="$(arg  base_frame)"  />
@@ -30,9 +32,11 @@
     </include>
 
     <node name="mobilenet_publisher" pkg="depthai_examples" type="mobilenet_node" output="screen" required="true">
-        <param name="tf_prefix"         value="$(arg tf_prefix)"     />
-        <param name="camera_param_uri"  value="$(arg camera_param_uri)"/>
-        <param name="sync_nn"           value="$(arg sync_nn)"/>
+        <param name="tf_prefix"           value="$(arg tf_prefix)"     />
+        <param name="camera_param_uri"    value="$(arg camera_param_uri)"/>
+        <param name="sync_nn"             value="$(arg sync_nn)"/>
+        <param name="nnName"              value="$(arg nnName)"/>
+        <param name="resourceBaseFolder"  value="$(arg resourceBaseFolder)"/>
     </node>            
 
 </launch>

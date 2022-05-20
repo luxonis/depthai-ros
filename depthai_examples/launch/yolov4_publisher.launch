@@ -19,6 +19,8 @@
     <arg name="confidence"            default="200" /> 
     <arg name="LRchecktresh"          default="5"   /> 
     <arg name="monoResolution"        default="400p"/> <!-- '720p', '800p', 400p' for OAK-D & '480p' for OAK-D-Lite -->
+    <arg name="nnName"                default=""         />
+    <arg name="resourceBaseFolder"    default="$(find depthai_examples)/resources" />
 
     <include file="$(find depthai_bridge)/launch/urdf.launch">
         <arg name="base_frame"      value="$(arg  base_frame)"  />
@@ -34,13 +36,15 @@
     </include>
 
     <node name="yolov4_publisher" pkg="depthai_examples" type="yolov4_spatial_node" output="screen" required="true">
-        <param name="tf_prefix"        value="$(arg tf_prefix)"     />
-        <param name="camera_param_uri" value="$(arg camera_param_uri)"/>
-        <param name="sync_nn"          value="$(arg sync_nn)"/>
-        <param name="subpixel"         value="$(arg subpixel)"/>
-        <param name="confidence"       value="$(arg confidence)"/>
-        <param name="LRchecktresh"     value="$(arg LRchecktresh)"/>
-        <param name="monoResolution"   value="$(arg monoResolution)"/>
+        <param name="tf_prefix"           value="$(arg tf_prefix)"     />
+        <param name="camera_param_uri"    value="$(arg camera_param_uri)"/>
+        <param name="sync_nn"             value="$(arg sync_nn)"/>
+        <param name="subpixel"            value="$(arg subpixel)"/>
+        <param name="confidence"          value="$(arg confidence)"/>
+        <param name="LRchecktresh"        value="$(arg LRchecktresh)"/>
+        <param name="monoResolution"      value="$(arg monoResolution)"/>
+        <param name="nnName"              value="$(arg nnName)"/>
+        <param name="resourceBaseFolder"  value="$(arg resourceBaseFolder)"/>
     </node>
 
 </launch>

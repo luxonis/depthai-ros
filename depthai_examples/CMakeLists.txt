@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
-project(depthai_examples VERSION 2.5.0 LANGUAGES CXX C)
+project(depthai_examples)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-# add_compile_options(-g)
+add_compile_options(-g)
 
 ## is used, also find other catkin packages
 if(POLICY CMP0057)
@@ -14,21 +14,22 @@ endif()
 set(_opencv_version 4)
 find_package(OpenCV 4 QUIET COMPONENTS imgproc highgui)
 if(NOT OpenCV_FOUND)
-  message(STATUS "----------------Did not find OpenCV 4, trying OpenCV 3--------------")
   set(_opencv_version 3)
   find_package(OpenCV 3 REQUIRED COMPONENTS imgproc highgui)
 endif()
 find_package(depthai CONFIG REQUIRED)
 # find_package(depthai CONFIG REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake/depthai")
+set(tiny_yolo_v4_blob_name "yolov4_tiny_coco_416x416_openvino_2021.4_6shave_bgr.blob")
+set(mobilenet_blob_name "mobilenet-ssd_openvino_2021.2_6shave.blob")
 
-set(mobilenet_blob "${PROJECT_SOURCE_DIR}/resources/mobilenet-ssd_openvino_2021.2_6shave.blob")
+set(mobilenet_blob "${PROJECT_SOURCE_DIR}/resources/${mobilenet_blob_name}")
 file(DOWNLOAD "https://artifacts.luxonis.com/artifactory/luxonis-depthai-data-local/network/mobilenet-ssd_openvino_2021.2_6shave.blob" 
 ${mobilenet_blob}
 TIMEOUT 60  # seconds
 EXPECTED_HASH SHA1=f0e14978b3f77a4f93b9f969cd39e58bb7aef490
 TLS_VERIFY ON)
 
-set(tiny_yolo_v4_blob "${PROJECT_SOURCE_DIR}/resources/tiny-yolo-v4_openvino_2021.2_6shave.blob")
+set(tiny_yolo_v4_blob "${PROJECT_SOURCE_DIR}/resources/${tiny_yolo_v4_blob_name}")
 file(DOWNLOAD "https://artifacts.luxonis.com/artifactory/luxonis-depthai-data-local/network/tiny-yolo-v4_openvino_2021.2_6shave.blob"
   ${tiny_yolo_v4_blob}
   TIMEOUT 60  # seconds
@@ -68,6 +69,7 @@ if ( ament_cmake_FOUND )
     ${ament_INCLUDE_DIRS}
   )
 
+
   macro(dai_add_node_ros2 node_name node_src)
     add_executable("${node_name}" "${node_src}")
 
@@ -97,9 +99,13 @@ if ( ament_cmake_FOUND )
   dai_add_node_ros2(stereo_node ros2_src/stereo_publisher.cpp)
   dai_add_node_ros2(yolov4_spatial_node ros2_src/yolov4_spatial_publisher.cpp)
     
-  target_compile_definitions(mobilenet_node PRIVATE BLOB_PATH="${mobilenet_blob}")
-  target_compile_definitions(yolov4_spatial_node PRIVATE BLOB_PATH="${tiny_yolo_v4_blob}")
+  target_compile_definitions(mobilenet_node PRIVATE BLOB_NAME="${mobilenet_blob_name}")
+  target_compile_definitions(yolov4_spatial_node PRIVATE BLOB_NAME="${tiny_yolo_v4_blob_name}")
+  target_compile_definitions(stereo_inertial_node PRIVATE BLOB_NAME="${tiny_yolo_v4_blob_name}")
   
+  if($ENV{ROS_DISTRO} STREQUAL "galactic")
+    target_compile_definitions(rgb_stereo_node PRIVATE IS_GALACTIC)
+  endif()
   # ament_export_include_directories(include)
   # ament_export_libraries(${PROJECT_NAME})
   # ament_export_dependencies(${dependencies}
@@ -108,6 +114,7 @@ if ( ament_cmake_FOUND )
 
   install(DIRECTORY params DESTINATION share/${PROJECT_NAME})
   install(DIRECTORY rviz DESTINATION share/${PROJECT_NAME})
+  install(DIRECTORY resources DESTINATION share/${PROJECT_NAME})
   install(DIRECTORY launch/ DESTINATION share/${PROJECT_NAME}/launch
   FILES_MATCHING PATTERN "*.py")
 
@@ -116,15 +123,12 @@ if ( ament_cmake_FOUND )
           mobilenet_node
           rgb_node
           rgb_stereo_node
-          # rgb_subscriber_node
-          # stereo_mimic_node
           stereo_inertial_node
           stereo_node
           yolov4_spatial_node
           DESTINATION lib/${PROJECT_NAME})
           
   ament_package()
-
 
 elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
 
@@ -142,7 +146,6 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
   )
 
   catkin_package(
-    # INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
     CATKIN_DEPENDS depthai_ros_msgs roscpp sensor_msgs std_msgs camera_info_manager depthai_bridge vision_msgs cv_bridge message_filters
     DEPENDS
@@ -198,7 +201,34 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
   dai_add_node(stereo_node ros1_src/stereo_publisher.cpp)
   dai_add_node(yolov4_spatial_node ros1_src/yolov4_spatial_publisher.cpp)
 
+  target_compile_definitions(mobilenet_node PRIVATE BLOB_NAME="${mobilenet_blob_name}")
+  target_compile_definitions(yolov4_spatial_node PRIVATE BLOB_NAME="${tiny_yolo_v4_blob_name}")
+  target_compile_definitions(stereo_inertial_node PRIVATE BLOB_NAME="${tiny_yolo_v4_blob_name}")
+  
+  catkin_install_python(PROGRAMS
+  ros1_scripts/markerPublisher.py
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/markerPublisher
+)
 
-  target_compile_definitions(mobilenet_node PRIVATE BLOB_PATH="${mobilenet_blob}")
-  target_compile_definitions(yolov4_spatial_node PRIVATE BLOB_PATH="${tiny_yolo_v4_blob}")
+  ## Install these nodes
+  install(TARGETS
+          crop_control_service
+          mobilenet_node
+          rgb_node
+          rgb_stereo_node
+          rgb_subscriber_node
+          stereo_inertial_node
+          stereo_node
+          yolov4_spatial_node
+          RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  )
+
+  install(DIRECTORY params DESTINATION share/${PROJECT_NAME})
+  install(DIRECTORY rviz DESTINATION share/${PROJECT_NAME})
+  install(DIRECTORY resources DESTINATION share/${PROJECT_NAME})
+  install(DIRECTORY launch/
+	DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+	PATTERN ".svn" EXCLUDE
+  )
+
 endif()

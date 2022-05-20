@@ -12,13 +12,16 @@
 
   <license>MIT</license>
 
+
   <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
   <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
   
   <depend condition="$ROS_VERSION == 1">roscpp</depend>
-  <depend condition="$ROS_VERSION == 2">rclcpp</depend>
+  <depend condition="$ROS_VERSION == 1">rospy</depend>
   <depend condition="$ROS_VERSION == 1">message_filters</depend>
-
+  
+  <depend condition="$ROS_VERSION == 2">rclcpp</depend>
+  
   <depend>cv_bridge</depend>
   <depend>camera_info_manager</depend>
   <depend>depthai_ros_msgs</depend>
@@ -29,6 +32,7 @@
   <depend>std_msgs</depend>
   <depend>stereo_msgs</depend>
   <depend>vision_msgs</depend>
+  <depend>foxglove_msgs</depend>
 
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>depth_image_proc</exec_depend>
