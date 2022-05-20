@@ -80,7 +80,9 @@ if ( ament_cmake_FOUND )
     ament_target_dependencies(${PROJECT_NAME}
       ${dependencies})
     target_compile_definitions(${PROJECT_NAME} PUBLIC IS_ROS2)
-    
+    message(STATUS "--------------------------$ENV{ROS_DISTRO} ---")
+    message(STATUS $ENV{ROS_DISTRO})
+
     if($ENV{ROS_DISTRO} STREQUAL "galactic")
       target_compile_definitions(${PROJECT_NAME} PRIVATE IS_GALACTIC)
     endif()
