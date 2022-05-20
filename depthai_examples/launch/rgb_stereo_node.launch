@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- <args for urdf/> -->
+    <arg name="camera_model"         default="OAK-D" /> <!-- 'zed' or 'zedm' -->
+    <arg name="tf_prefix"            default="oak" />
+    <arg name="base_frame"           default="oak-d_frame" />
+    <arg name="parent_frame"         default="oak-d-base-frame" />
+
+    <arg name="cam_pos_x"             default="0.0" /> <!-- Position respect to base frame (i.e. "base_link) -->
+    <arg name="cam_pos_y"             default="0.0" /> <!-- Position respect to base frame (i.e. "base_link) -->
+    <arg name="cam_pos_z"             default="0.0" /> <!-- Position respect to base frame (i.e. "base_link) -->
+    <arg name="cam_roll"              default="0.0" /> <!-- Orientation respect to base frame (i.e. "base_link) -->
+    <arg name="cam_pitch"             default="0.0" /> <!-- Orientation respect to base frame (i.e. "base_link) -->
+    <arg name="cam_yaw"               default="0.0" /> <!-- Orientation respect to base frame (i.e. "base_link) -->
+
+    <arg name="lrcheck"               default="true" /> 
+    <arg name="extended"              default="false" /> 
+    <arg name="subpixel"              default="false" />
+    <arg name="confidence"            default="200" />
+    <arg name="LRchecktresh"          default="5" />
+  
+    <!-- args for stereo node -->
+    <!-- <arg name="outputDepth"           default="true" />
+    <arg name="outputRectified"       default="true" /> -->
+    <arg name="camera_param_uri"      default="package://depthai_examples/params/camera" />
+
+ 
+    <include file="$(find depthai_bridge)/launch/urdf.launch">
+        <arg name="base_frame"      value="$(arg  base_frame)"  />
+        <arg name="parent_frame"    value="$(arg  parent_frame)"/>
+        <arg name="camera_model"    value="$(arg  camera_model)"/>
+        <arg name="tf_prefix"       value="$(arg  tf_prefix)" />
+        <arg name="cam_pos_x"       value="$(arg  cam_pos_x)"   />
+        <arg name="cam_pos_y"       value="$(arg  cam_pos_y)"   />
+        <arg name="cam_pos_z"       value="$(arg  cam_pos_z)"   />
+        <arg name="cam_roll"        value="$(arg  cam_roll)"    />
+        <arg name="cam_pitch"       value="$(arg  cam_pitch)"   />
+        <arg name="cam_yaw"         value="$(arg  cam_yaw)"     />
+    </include>
+
+    <node name="rgb_stereo_publisher" pkg="depthai_examples" type="rgb_stereo_node" output="screen" required="true">
+        <param name="tf_prefix" value="$(arg tf_prefix)"/>
+        <param name="camera_param_uri" value="$(arg camera_param_uri)"/>
+        <param name="lrcheck" value="$(arg lrcheck)"/>
+        <param name="extended" value="$(arg extended)"/>
+        <param name="subpixel" value="$(arg subpixel)"/>
+        <param name="confidence" value="$(arg confidence)"/>
+        <param name="LRchecktresh" value="$(arg LRchecktresh)"/>
+    </node>            
+
+
+ <!-- <param name="outputDepth" value="$(arg outputDepth)"/>
+        <param name="outputRectified" value="$(arg outputRectified)"/>
+        <param name="lrcheck" value="$(arg lrcheck)"/>
+        <param name="extended" value="$(arg extended)"/>
+        <param name="subpixel" value="$(arg subpixel)"/> -->
+
+</launch>

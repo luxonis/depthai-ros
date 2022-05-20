@@ -43,7 +43,7 @@ if ( ament_cmake_FOUND )
     message(STATUS "Depthai Bridge is being built using AMENT.")
     message(STATUS "------------------------------------------")
 
-    set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS}})
+    set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
 
     find_package(camera_info_manager REQUIRED)
     find_package(cv_bridge REQUIRED)
@@ -213,71 +213,3 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
     )
 
 endif()
-
-
-# find_package(catkin REQUIRED COMPONENTS  
-#   cv_bridge
-#   camera_info_manager
-#   depthai_ros_msgs
-#   image_transport
-#   roscpp
-#   sensor_msgs
-#   stereo_msgs
-#   std_msgs
-#   vision_msgs
-# )
-
-
-# catkin_package(
-#   INCLUDE_DIRS include
-#   LIBRARIES ${PROJECT_NAME}
-#   CATKIN_DEPENDS depthai_ros_msgs camera_info_manager roscpp sensor_msgs std_msgs vision_msgs image_transport cv_bridge stereo_msgs
-# )
-
-# list(APPEND DEPENDENCY_PUBLIC_LIBRARIES ${catkin_LIBRARIES})
-# set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
-
-# include_directories(
-#   include
-#   ${BUILD_TOOL_INCLUDE_DIRS}
-#   ${Boost_INCLUDE_DIRS}
-#   ${depthai}
-# )
-
-# FILE(GLOB LIB_SRC
-#    "src/*Converter.cpp"
-# )
-
-# ## Declare a C++ library
-# add_library(${PROJECT_NAME}  
-# ${LIB_SRC}
-# )
-
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS}
-#   ${catkin_EXPORTED_TARGETS}
-# )
-
-# target_link_libraries(${PROJECT_NAME}
-#   ${catkin_LIBRARIES}
-#   depthai::core
-#   opencv_imgproc
-#   opencv_highgui
-# )
-
-# install(TARGETS ${PROJECT_NAME}
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-# )
-
-# ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.hpp"
-# )
-
-# install(DIRECTORY
-#   launch
-#   urdf
-#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-# )

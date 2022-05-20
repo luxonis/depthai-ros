@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<launch>
+       
+    <arg name="camera_model"         default="OAK-D" /> <!-- 'zed' or 'zedm' -->
+    <arg name="tf_prefix"            default="oak" />
+    <arg name="mode"                 default="depth" />
+    <arg name="base_frame"           default="oak-d_frame" />
+    <arg name="parent_frame"         default="oak-d-base-frame" />
+
+    <arg name="cam_pos_x"             default="0.0" /> <!-- Position respect to base frame (i.e. "base_link) -->
+    <arg name="cam_pos_y"             default="0.0" /> <!-- Position respect to base frame (i.e. "base_link) -->
+    <arg name="cam_pos_z"             default="0.0" /> <!-- Position respect to base frame (i.e. "base_link) -->
+    <arg name="cam_roll"              default="0.0" /> <!-- Orientation respect to base frame (i.e. "base_link) -->
+    <arg name="cam_pitch"             default="0.0" /> <!-- Orientation respect to base frame (i.e. "base_link) -->
+    <arg name="cam_yaw"               default="0.0" /> <!-- Orientation respect to base frame (i.e. "base_link) -->
+
+    <arg name="lrcheck"               default="true" />
+    <arg name="extended"              default="false" />
+    <arg name="subpixel"              default="true" />
+    <arg name="camera_param_uri"      default="package://depthai_examples/params/camera" />
+    <arg name="confidence"            default="200" /> 
+    <arg name="LRchecktresh"          default="5" /> 
+    <arg name="monoResolution"    default="720p" /> 
+
+    <include file="$(find depthai_bridge)/launch/urdf.launch">
+        <arg name="base_frame"      value="$(arg  base_frame)"  />
+        <arg name="parent_frame"    value="$(arg  parent_frame)"/>
+        <arg name="camera_model"    value="$(arg  camera_model)"/>
+        <arg name="tf_prefix"       value="$(arg  tf_prefix)" />
+        <arg name="cam_pos_x"       value="$(arg  cam_pos_x)"   />
+        <arg name="cam_pos_y"       value="$(arg  cam_pos_y)"   />
+        <arg name="cam_pos_z"       value="$(arg  cam_pos_z)"   />
+        <arg name="cam_roll"        value="$(arg  cam_roll)"    />
+        <arg name="cam_pitch"       value="$(arg  cam_pitch)"   />
+        <arg name="cam_yaw"         value="$(arg  cam_yaw)"     />
+    </include>
+
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~  depth_image_proc nodelet below ~~~~~~~~~~~~~~~~~~~ -->
+
+    <node pkg="nodelet" type="nodelet" name="nodelet_manager"  args="manager" output="screen"/>
+
+    <node name="stereo_publisher" pkg="nodelet" type="nodelet" output="screen" required="true"
+        args="load depthai_examples/StereoNodelet nodelet_manager">
+        <param name="tf_prefix" value="$(arg tf_prefix)"/>
+        <param name="camera_param_uri" value="$(arg camera_param_uri)"/>
+        <param name="mode" value="$(arg mode)"/>
+        <param name="lrcheck" value="$(arg lrcheck)"/>
+        <param name="extended" value="$(arg extended)"/>
+        <param name="subpixel" value="$(arg subpixel)"/>
+        <param name="confidence" value="$(arg confidence)"/>
+        <param name="LRchecktresh" value="$(arg LRchecktresh)"/>
+        <param name="monoResolution" value="$(arg monoResolution)"/>
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="depth_image_convertion_nodelet"
+        args="load depth_image_proc/convert_metric nodelet_manager">
+        <remap from="image_raw" to="/stereo_publisher/stereo/depth"/>    
+        <remap from="image" to="/stereo_publisher/stereo/image"/>
+    </node>
+
+
+    <node pkg="nodelet" type="nodelet" name="depth_image_to_pointcloud_nodelet"
+        args="load depth_image_proc/point_cloud_xyz nodelet_manager">
+        <remap from="camera_info" to="/stereo_publisher/stereo/camera_info"/>
+        <remap from="image_rect" to="/stereo_publisher/stereo/image"/>    
+        <remap from="points" to="/stereo_publisher/stereo/points"/>
+    </node>
+
+    <!-- Rviz configuration -->
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find depthai_examples)/rviz/stereo_nodelet.rviz" />
+
+</launch>
