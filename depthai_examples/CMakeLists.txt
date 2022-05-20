@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required (VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
 project(depthai_examples VERSION 2.5.0 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
