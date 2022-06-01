@@ -64,10 +64,12 @@ int main(int argc, char** argv) {
         throw std::runtime_error("Couldn't find one of the parameters");
     }
 
-    // Uses the path from param if passed or else uses from BLOB_PATH from CMAKE
-    if(pnh.hasParam("nnName")) {
+    std::string nnParam;
+    pnh.getParam("nnName", nnParam);
+    if(nnParam != "x") {
         pnh.getParam("nnName", nnName);
     }
+
 
     if(resourceBaseFolder.empty()) {
         throw std::runtime_error("Send the path to the resouce folder containing NNBlob in \'resourceBaseFolder\' ");

@@ -19,12 +19,11 @@ if(NOT OpenCV_FOUND)
   find_package(OpenCV ${opencv_version} REQUIRED COMPONENTS imgproc highgui)
 endif()
 
-message(STATUS "----------------Did not find OpenCV 4, trying OpenCV 3--------------")
 
-find_package(depthai CONFIG REQUIRED)
-if(depthai_VERSION LESS_EQUAL 2.14.1)
-  message( FATAL_ERROR "Installed DEPTHAI VERSION is less than 2.15.0.  Please upgrade to the latest version which solves the timesync issues" )
-endif()
+# message(STATUS ${depthai_VERSION})
+# if(depthai_VERSION LESS_EQUAL 2.14.1)
+#   message( FATAL_ERROR "Installed DEPTHAI VERSION is less than 2.15.0.  Please upgrade to the latest version which solves the timesync issues" )
+# endif()
 
 # find_package(depthai CONFIG REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake/depthai") 
 find_package(ament_cmake QUIET)
@@ -42,6 +41,7 @@ if ( ament_cmake_FOUND )
     find_package(camera_info_manager REQUIRED)
     find_package(cv_bridge REQUIRED)
     find_package(depthai_ros_msgs REQUIRED)
+    find_package(depthai CONFIG REQUIRED)
     find_package(image_transport REQUIRED)
     find_package(rclcpp REQUIRED)
     find_package(sensor_msgs REQUIRED)
@@ -129,7 +129,10 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
     set(catkin_FOUND 1)
     add_definitions( -DUSING_ROS )
 
-    find_package(Boost REQUIRED)
+    message(STATUS "------------------------------------------")
+    message(STATUS "Depthai Bridge is being built using CATKIN.")
+    message(STATUS "------------------------------------------")
+
 
     find_package(catkin REQUIRED COMPONENTS  
       cv_bridge
@@ -143,6 +146,7 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
       vision_msgs
     )
     find_package(Boost REQUIRED)
+    find_package(depthai CONFIG REQUIRED)
 
     FILE(GLOB LIB_SRC
     "src/DisparityConverter.cpp"
@@ -152,10 +156,6 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
     "src/ImuConverter.cpp"
     )
     
-    message(STATUS "------------------------------------------")
-    message(STATUS "Depthai Bridge is being built using CATKIN.")
-    message(STATUS "------------------------------------------")
-
     catkin_package(
       INCLUDE_DIRS include
       LIBRARIES ${PROJECT_NAME}

@@ -17,7 +17,6 @@ if(NOT OpenCV_FOUND)
   set(_opencv_version 3)
   find_package(OpenCV 3 REQUIRED COMPONENTS imgproc highgui)
 endif()
-find_package(depthai CONFIG REQUIRED)
 # find_package(depthai CONFIG REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake/depthai")
 set(tiny_yolo_v4_blob_name "yolov4_tiny_coco_416x416_openvino_2021.4_6shave_bgr.blob")
 set(mobilenet_blob_name "mobilenet-ssd_openvino_2021.2_6shave.blob")
@@ -44,6 +43,7 @@ if ( ament_cmake_FOUND )
 
   find_package(camera_info_manager REQUIRED)
   find_package(cv_bridge REQUIRED)
+  find_package(depthai CONFIG REQUIRED)
   find_package(depthai_ros_msgs REQUIRED)
   find_package(depthai_bridge REQUIRED)
   find_package(rclcpp REQUIRED)
@@ -144,6 +144,7 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
     message_filters
     nodelet
   )
+  find_package(depthai CONFIG REQUIRED)
 
   catkin_package(
     LIBRARIES ${PROJECT_NAME}

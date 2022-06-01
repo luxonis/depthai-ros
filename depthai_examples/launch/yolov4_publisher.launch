@@ -19,7 +19,7 @@
     <arg name="confidence"            default="200" /> 
     <arg name="LRchecktresh"          default="5"   /> 
     <arg name="monoResolution"        default="400p"/> <!-- '720p', '800p', 400p' for OAK-D & '480p' for OAK-D-Lite -->
-    <arg name="nnName"                default=""         />
+    <arg name="nnName"                default="x"         />
     <arg name="resourceBaseFolder"    default="$(find depthai_examples)/resources" />
 
     <include file="$(find depthai_bridge)/launch/urdf.launch">

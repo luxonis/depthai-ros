@@ -27,8 +27,8 @@
 
     <arg name="enableSpatialDetection" default="true" />
     <arg name="syncNN"                 default="true" />
-    <arg name="nnName"              default=""         />
-    <arg name="resourceBaseFolder"  default="$(find depthai_examples)/resources" />
+    <arg name="nnName"                 default="x"         />
+    <arg name="resourceBaseFolder"     default="$(find depthai_examples)/resources" />
 
     <!-- <arg name="nnPath"                 default="" /> -->
 
