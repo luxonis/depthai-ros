@@ -11,7 +11,7 @@ find_package(ament_cmake QUIET)
 if ( ament_cmake_FOUND )
     # Not adding -DUSING_ROS since xml_parsing.cpp hasn't been ported to ROS2
     message(STATUS "------------------------------------------")
-    message(STATUS "Depthai Bridge is being built using AMENT.")
+    message(STATUS "Depthai ROS Interfaces is being built using AMENT.")
     message(STATUS "------------------------------------------")
     
     find_package(geometry_msgs REQUIRED)
