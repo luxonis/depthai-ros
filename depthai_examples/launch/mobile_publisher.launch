@@ -14,7 +14,7 @@
     <arg name="cam_yaw"             default="0.0"     /> <!-- Orientation respect to base frame (i.e. "base_link) -->
 
     <arg name="sync_nn"             default="true"         />
-    <arg name="nnName"              default=""         />
+    <arg name="nnName"              default="x"         />
     <arg name="camera_param_uri"    default="package://depthai_examples/params/camera" />
     <arg name="resourceBaseFolder"  default="$(find depthai_examples)/resources" />
 

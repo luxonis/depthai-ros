@@ -2,6 +2,11 @@
 Changelog for package depthai_ros_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.5.2 (2022-06-01)
+-------------------
+* Upgraded examples
+* Fixed bugs for Noetic
+
 2.5.1 (2022-05-20)
 -------------------
 * Fix Build farm issues

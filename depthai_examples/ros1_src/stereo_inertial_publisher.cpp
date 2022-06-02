@@ -185,8 +185,6 @@ int main(int argc, char** argv) {
 
     std::string tfPrefix, mode, mxId, resourceBaseFolder, nnPath;
     std::string monoResolution = "720p";
-    std::string nnPath(BLOB_PATH);
-    std::cout << " nn path..." << nnPath << std::endl;
     int badParams = 0, stereo_fps, confidence, LRchecktresh, imuModeParam;
     bool lrcheck, extended, subpixel, enableDepth, rectify, depth_aligned;
     bool enableSpatialDetection, enableDotProjector, enableFloodLight;
@@ -229,8 +227,9 @@ int main(int argc, char** argv) {
         std::cout << " Bad parameters -> " << badParams << std::endl;
         throw std::runtime_error("Couldn't find %d of the parameters");
     }
-
-    if(pnh.hasParam("nnName")) {
+    std::string nnParam;
+    pnh.getParam("nnName", nnParam);
+    if(nnParam != "x") {
         pnh.getParam("nnName", nnName);
     }
 
@@ -238,7 +237,7 @@ int main(int argc, char** argv) {
         throw std::runtime_error("Send the path to the resouce folder containing NNBlob in \'resourceBaseFolder\' ");
     }
     nnPath = resourceBaseFolder + "/" + nnName;
-
+    std::cout << " nnPath ,, " << nnPath << std::endl;
     if(mode == "depth") {
         enableDepth = true;
     } else {
