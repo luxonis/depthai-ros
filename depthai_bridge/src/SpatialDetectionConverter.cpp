@@ -52,8 +52,6 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
         float xCenter = xMin + xSize / 2;
         float yCenter = yMin + ySize / 2;
 
-        opDetectionMsg.detections[i].results.resize(1);
-
 #if defined(IS_GALACTIC) || defined(IS_HUMBLE)
         opDetectionMsg.detections[i].results[0].class_id = std::to_string(inNetData->detections[i].label);
 #elif IS_ROS2
@@ -67,7 +65,7 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
 #ifdef IS_HUMBLE
         opDetectionMsg.detections[i].bbox.center.position.x = xCenter;
         opDetectionMsg.detections[i].bbox.center.position.y = yCenter;
-#elif IS_ROS2
+#else
         opDetectionMsg.detections[i].bbox.center.x = xCenter;
         opDetectionMsg.detections[i].bbox.center.y = yCenter;
 #endif
