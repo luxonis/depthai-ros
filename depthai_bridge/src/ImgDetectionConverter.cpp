@@ -68,7 +68,7 @@ void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetDa
 #ifdef IS_HUMBLE
         opDetectionMsg.detections[i].bbox.center.position.x = xCenter;
         opDetectionMsg.detections[i].bbox.center.position.y = yCenter;
-#elif IS_ROS2
+#else
         opDetectionMsg.detections[i].bbox.center.x = xCenter;
         opDetectionMsg.detections[i].bbox.center.y = yCenter;
 #endif
