@@ -21,10 +21,10 @@ if you don't have rosdep installed and not initialized please execute the follow
 install the following vcstool
 `sudo apt install python3-vcstool`
 ### Setting up procedure
-The following setup procedure assumes you have cmake version >= 3.10.2 and OpenCV version >= 4.0.0
+The following setup procedure assumes you have cmake version >= 3.10.2 and OpenCV version >= 4.0.0. We selected `ros_ws` as the name for a new folder, as it will be our workspace for the ros.
 
-1. `mkdir -p <directory_for_workspaces>/src`
-2. `cd <directory_for_workspaces>`
+1. `mkdir -p ros_ws/src`
+2. `cd ros_ws`
 3. `wget https://raw.githubusercontent.com/luxonis/depthai-ros/main/underlay.repos`
 4. `vcs import src < underlay.repos`
 5. `rosdep install --from-paths src --ignore-src -r -y`
@@ -70,8 +70,8 @@ The following setup procedure assumes you have cmake version >= 3.10.2 and OpenC
 
 ### Executing an example
 
-1. `cd ~/ros_ws`
-2. `source ~/ros_ws/devel/setup.bash`
+1. `cd ros_ws` (Our workspace)
+2. `source devel/setup.bash`
 3. `roslaunch depthai_examples stereo_node.launch` - example node
 
 
