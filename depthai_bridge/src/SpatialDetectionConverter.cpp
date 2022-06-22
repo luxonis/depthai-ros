@@ -11,7 +11,6 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
     // setting the header
     auto tstamp = inNetData->getTimestamp();
     SpatialMessages::SpatialDetectionArray opDetectionMsg;
-
 #ifndef IS_ROS2
     auto rosNow = ::ros::Time::now();
     auto steadyTime = std::chrono::steady_clock::now();
@@ -51,6 +50,7 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
         float ySize = yMax - yMin;
         float xCenter = xMin + xSize / 2;
         float yCenter = yMin + ySize / 2;
+        opDetectionMsg.detections[i].results.resize(1);
 
 #if defined(IS_GALACTIC) || defined(IS_HUMBLE)
         opDetectionMsg.detections[i].results[0].class_id = std::to_string(inNetData->detections[i].label);
@@ -59,7 +59,6 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
 #else
         opDetectionMsg.detections[i].results[0].id = inNetData->detections[i].label;
 #endif
-
         opDetectionMsg.detections[i].results[0].score = inNetData->detections[i].confidence;
 
 #ifdef IS_HUMBLE
