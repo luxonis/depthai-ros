@@ -70,9 +70,17 @@ The following setup procedure assumes you have cmake version >= 3.10.2 and OpenC
 
 ### Executing an example
 
+## ROS1
 1. `cd dai_ws` (Our workspace)
 2. `source devel/setup.bash`
-3. `roslaunch depthai_examples stereo_node.launch` - example node
+3. `roslaunch depthai_examples stereo_inertial_node.launch` - example node
+For more exaples please check the launch files.
+
+## ROS2
+1. `cd dai_ws` (Our workspace)
+2. `source install/setup.bash`
+3. `ros2 launch depthai_examples stereo_inertial_node.launch.py` - example node
+For more exaples please check the launch files.
 
 
 ## Testing results
