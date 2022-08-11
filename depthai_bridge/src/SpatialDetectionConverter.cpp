@@ -4,29 +4,30 @@ namespace dai {
 namespace ros {
 
 SpatialDetectionConverter::SpatialDetectionConverter(std::string frameName, int width, int height, bool normalized)
-    : _frameName(frameName), _width(width), _height(height), _normalized(normalized) {}
+    : _frameName(frameName), _width(width), _height(height), _normalized(normalized), _steadyBaseTime(std::chrono::steady_clock::now()) {}
 
 void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData,
                                          std::deque<SpatialMessages::SpatialDetectionArray>& opDetectionMsgs) {
     // setting the header
     auto tstamp = inNetData->getTimestamp();
     SpatialMessages::SpatialDetectionArray opDetectionMsg;
-#ifndef IS_ROS2
-    auto rosNow = ::ros::Time::now();
-    auto steadyTime = std::chrono::steady_clock::now();
-    auto diffTime = steadyTime - tstamp;
-    uint64_t nsec = rosNow.toNSec() - diffTime.count();
-    auto rosStamp = rosNow.fromNSec(nsec);
-    opDetectionMsg.header.stamp = rosStamp;
-    opDetectionMsg.header.seq = inNetData->getSequenceNum();
-#else
-    auto rclNow = rclcpp::Clock().now();
-    auto steadyTime = std::chrono::steady_clock::now();
-    auto diffTime = steadyTime - tstamp;
-    auto rclStamp = rclNow - diffTime;
-    opDetectionMsg.header.stamp = rclStamp;
-#endif
+    /* #ifndef IS_ROS2
+        auto rosNow = ::ros::Time::now();
+        auto steadyTime = std::chrono::steady_clock::now();
+        auto diffTime = steadyTime - tstamp;
+        uint64_t nsec = rosNow.toNSec() - diffTime.count();
+        auto rosStamp = rosNow.fromNSec(nsec);
+        opDetectionMsg.header.stamp = rosStamp;
+        opDetectionMsg.header.seq = inNetData->getSequenceNum();
+    #else
+        auto rclNow = rclcpp::Clock().now();
+        auto steadyTime = std::chrono::steady_clock::now();
+        auto diffTime = steadyTime - tstamp;
+        auto rclStamp = rclNow - diffTime;
+        opDetectionMsg.header.stamp = rclStamp;
+    #endif */
 
+    opDetectionMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
     opDetectionMsg.header.frame_id = _frameName;
     opDetectionMsg.detections.resize(inNetData->detections.size());
 

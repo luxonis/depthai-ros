@@ -89,7 +89,7 @@ enum LogLevel { DEBUG, INFO, WARN, ERROR, FATAL };
 #define DEPTHAI_ROS_FATAL_STREAM_ONCE(loggerName, args) DEPTHAI_ROS_LOG_STREAM(loggerName, LogLevel::FATAL, true, args)
 
 #ifdef IS_ROS2
-rclcpp::Time getFrameTime(rclcpp::Time rclBaseTime,
+inline rclcpp::Time getFrameTime(rclcpp::Time rclBaseTime,
                           std::chrono::time_point<std::chrono::steady_clock> steadyBaseTime,
                           std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration> currTimePoint) {
     auto elapsedTime = currTimePoint - steadyBaseTime;
@@ -101,7 +101,7 @@ rclcpp::Time getFrameTime(rclcpp::Time rclBaseTime,
 
 #else
 
-::ros::Time getFrameTime(::ros::Time rosBaseTime,
+inline ::ros::Time getFrameTime(::ros::Time rosBaseTime,
                          std::chrono::time_point<std::chrono::steady_clock> steadyBaseTime,
                          std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration> currTimePoint) {
     auto elapsedTime = currTimePoint - steadyBaseTime;

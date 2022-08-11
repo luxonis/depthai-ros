@@ -6,7 +6,18 @@ namespace dai {
 namespace ros {
 
 DisparityConverter::DisparityConverter(const std::string frameName, float focalLength, float baseline, float minDepth, float maxDepth)
-    : _frameName(frameName), _focalLength(focalLength), _baseline(baseline / 100.0), _minDepth(minDepth / 100.0), _maxDepth(maxDepth / 100.0) {}
+    : _frameName(frameName),
+      _focalLength(focalLength),
+      _baseline(baseline / 100.0),
+      _minDepth(minDepth / 100.0),
+      _maxDepth(maxDepth / 100.0),
+      _steadyBaseTime(std::chrono::steady_clock::now()) {
+#ifdef IS_ROS2
+    _rosBaseTime = rclcpp::Clock().now();
+#else
+    _rosBaseTime = ::ros::Time::now();
+#endif
+}
 
 void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<DisparityMsgs::DisparityImage>& outDispImageMsgs) {
     auto tstamp = inData->getTimestamp();
@@ -17,29 +28,17 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::de
     outDispImageMsg.max_disparity = _focalLength * _baseline / _minDepth;
 
 #ifdef IS_ROS2
-    auto rclNow = rclcpp::Clock().now();
-    auto steadyTime = std::chrono::steady_clock::now();
-    auto diffTime = steadyTime - tstamp;
-    auto rclStamp = rclNow - diffTime;
-    outDispImageMsg.header.stamp = rclStamp;
     outDispImageMsg.t = _baseline / 100.0;  // converting cm to meters
-    sensor_msgs::msg::Image& outImageMsg = outDispImageMsg.image;
 #else
-    auto rosNow = ::ros::Time::now();
-    auto steadyTime = std::chrono::steady_clock::now();
-    auto diffTime = steadyTime - tstamp;
-    uint64_t nsec = rosNow.toNSec() - diffTime.count();
-    auto rosStamp = rosNow.fromNSec(nsec);
-    outDispImageMsg.header.stamp = rosStamp;
-
-    outDispImageMsg.header.seq = inData->getSequenceNum();
     outDispImageMsg.T = _baseline / 100.0;  // converting cm to meters
-    sensor_msgs::Image& outImageMsg = outDispImageMsg.image;
 #endif
 
     // copying the data to ros msg
     // outDispImageMsg.header       = imgHeader;
     // std::string temp_str(encodingEnumMap[inData->getType()]);
+    ImageMsgs::Image& outImageMsg = outDispImageMsg.image;
+    outDispImageMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
+
     outImageMsg.encoding = sensor_msgs::image_encodings::TYPE_32FC1;
     outImageMsg.header = outDispImageMsg.header;
     if(inData->getType() == dai::RawImgFrame::Type::RAW8) {

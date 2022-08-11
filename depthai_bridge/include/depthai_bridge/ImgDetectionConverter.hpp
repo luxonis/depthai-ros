@@ -1,6 +1,7 @@
 #pragma once
 
 #include <depthai/depthai.hpp>
+#include <depthai_bridge/depthaiUtility.hpp>
 #include <deque>
 
 #ifdef IS_ROS2
@@ -39,6 +40,12 @@ class ImgDetectionConverter {
     int _width, _height;
     const std::string _frameName;
     bool _normalized;
+    std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
+#ifdef IS_ROS2
+    rclcpp::Time _rosBaseTime;
+#else
+    ::ros::Time _rosBaseTime;
+#endif
 };
 
 /** TODO(sachin): Do we need to have ros msg -> dai bounding box ?
