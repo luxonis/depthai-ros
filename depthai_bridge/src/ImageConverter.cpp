@@ -21,9 +21,22 @@ std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::planarEn
     {dai::RawImgFrame::Type::NV12, "rgb8"},
     {dai::RawImgFrame::Type::YUV420p, "rgb8"}};
 
-ImageConverter::ImageConverter(bool interleaved) : _daiInterleaved(interleaved) {}
+ImageConverter::ImageConverter(bool interleaved) : _daiInterleaved(interleaved), _steadyBaseTime(std::chrono::steady_clock::now()) {
+#ifdef IS_ROS2
+    _rosBaseTime = rclcpp::Clock().now();
+#else
+    _rosBaseTime = ::ros::Time::now();
+#endif
+}
 
-ImageConverter::ImageConverter(const std::string frameName, bool interleaved) : _frameName(frameName), _daiInterleaved(interleaved) {}
+ImageConverter::ImageConverter(const std::string frameName, bool interleaved)
+    : _frameName(frameName), _daiInterleaved(interleaved), _steadyBaseTime(std::chrono::steady_clock::now()) {
+#ifdef IS_ROS2
+    _rosBaseTime = rclcpp::Clock().now();
+#else
+    _rosBaseTime = ::ros::Time::now();
+#endif
+}
 
 void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs) {
     auto tstamp = inData->getTimestamp();
@@ -31,21 +44,22 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<
     StdMsgs::Header header;
     header.frame_id = _frameName;
 
-#ifdef IS_ROS2
-    auto rclNow = rclcpp::Clock().now();
-    auto steadyTime = std::chrono::steady_clock::now();
-    auto diffTime = steadyTime - tstamp;
-    auto rclStamp = rclNow - diffTime;
-    header.stamp = rclStamp;
-#else
-    auto rosNow = ::ros::Time::now();
-    auto steadyTime = std::chrono::steady_clock::now();
-    auto diffTime = steadyTime - tstamp;
-    uint64_t nsec = rosNow.toNSec() - diffTime.count();
-    auto rosStamp = rosNow.fromNSec(nsec);
-    header.stamp = rosStamp;
-    header.seq = inData->getSequenceNum();
-#endif
+    /* #ifdef IS_ROS2
+        auto rclNow = rclcpp::Clock().now();
+        auto steadyTime = std::chrono::steady_clock::now();
+        auto diffTime = steadyTime - tstamp;
+        auto rclStamp = rclNow - diffTime;
+        header.stamp = rclStamp;
+    #else
+        auto rosNow = ::ros::Time::now();
+        auto steadyTime = std::chrono::steady_clock::now();
+        auto diffTime = steadyTime - tstamp;
+        uint64_t nsec = rosNow.toNSec() - diffTime.count();
+        auto rosStamp = rosNow.fromNSec(nsec);
+        header.stamp = rosStamp;
+        header.seq = inData->getSequenceNum();
+    #endif */
+    header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
 
     if(planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end()) {
         // cv::Mat inImg = inData->getCvFrame();

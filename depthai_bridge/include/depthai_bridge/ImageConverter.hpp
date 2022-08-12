@@ -4,6 +4,7 @@
 
 #include <depthai-shared/common/CameraBoardSocket.hpp>
 #include <depthai/depthai.hpp>
+#include <depthai_bridge/depthaiUtility.hpp>
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <sstream>
@@ -75,6 +76,13 @@ class ImageConverter {
     const std::string _frameName = "";
     void planarToInterleaved(const std::vector<uint8_t>& srcData, std::vector<uint8_t>& destData, int w, int h, int numPlanes, int bpp);
     void interleavedToPlanar(const std::vector<uint8_t>& srcData, std::vector<uint8_t>& destData, int w, int h, int numPlanes, int bpp);
+    std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
+
+#ifdef IS_ROS2
+    rclcpp::Time _rosBaseTime;
+#else
+    ::ros::Time _rosBaseTime;
+#endif
 };
 
 }  // namespace ros

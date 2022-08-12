@@ -1,5 +1,6 @@
 #pragma once
 
+#include <depthai_bridge/depthaiUtility.hpp>
 #include <deque>
 
 #include "depthai/depthai.hpp"
@@ -25,9 +26,13 @@ namespace ros {
 
 #ifdef IS_ROS2
 namespace DisparityMsgs = stereo_msgs::msg;
+namespace ImageMsgs = sensor_msgs::msg;
+using ImagePtr = ImageMsgs::Image::SharedPtr;
 using DisparityImagePtr = DisparityMsgs::DisparityImage::SharedPtr;
 #else
 namespace DisparityMsgs = stereo_msgs;
+namespace ImageMsgs = sensor_msgs;
+using ImagePtr = ImageMsgs::ImagePtr;
 using DisparityImagePtr = DisparityMsgs::DisparityImage::Ptr;
 #endif
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration>;
@@ -44,6 +49,12 @@ class DisparityConverter {
    private:
     const std::string _frameName = "";
     const float _focalLength = 882.2, _baseline = 7.5, _minDepth = 80, _maxDepth;
+    std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
+#ifdef IS_ROS2
+    rclcpp::Time _rosBaseTime;
+#else
+    ::ros::Time _rosBaseTime;
+#endif
 };
 
 }  // namespace ros
