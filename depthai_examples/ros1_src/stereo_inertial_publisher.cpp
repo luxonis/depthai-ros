@@ -44,7 +44,7 @@ std::tuple<dai::Pipeline, int, int> createPipeline(bool enableDepth,
                                                    bool syncNN,
                                                    std::string nnPath) {
     dai::Pipeline pipeline;
-
+    pipeline.setXLinkChunkSize(0);
     auto monoLeft = pipeline.create<dai::node::MonoCamera>();
     auto monoRight = pipeline.create<dai::node::MonoCamera>();
     auto stereo = pipeline.create<dai::node::StereoDepth>();
@@ -112,6 +112,7 @@ std::tuple<dai::Pipeline, int, int> createPipeline(bool enableDepth,
         auto xoutRgb = pipeline.create<dai::node::XLinkOut>();
         xoutRgb->setStreamName("rgb");
         camRgb->setBoardSocket(dai::CameraBoardSocket::RGB);
+        camRgb->setFps(stereo_fps);
         dai::node::ColorCamera::Properties::SensorResolution rgbResolution;
 
         if(rgbResolutionStr == "1080p") {

@@ -2,9 +2,21 @@
 main branch supports ROS Melodic, ROS Noetic, ROS2 Foxy & Galactic. Might also work on kinetic too.
 
 
-## Getting Started
 
-### Install Dependencies
+### Install from ros binaries
+
+Add USB rules to your system
+```
+echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="03e7", MODE="0666"' | sudo tee /etc/udev/rules.d/80-movidius.rules
+sudo udevadm control --reload-rules && sudo udevadm trigger
+```
+Install depthai-ros. (Available for Noetic, foxy, galactic and humble)
+`sudo apt install ros-<distro>-depthai-ros`
+
+## Install from source
+
+### Install dependencies
+
 The following script will install depthai-core and update usb rules and install depthai devices
 
 ```
@@ -18,15 +30,13 @@ if you don't have rosdep installed and not initialized please execute the follow
 2. `sudo rosdep init`
 3. `rosdep update`
 
-install the following vcstool
-`sudo apt install python3-vcstool`
 ### Setting up procedure
 The following setup procedure assumes you have cmake version >= 3.10.2 and OpenCV version >= 4.0.0. We selected `dai_ws` as the name for a new folder, as it will be our depthai ros workspace.
 
 1. `mkdir -p dai_ws/src`
-2. `cd dai_ws`
-3. `wget https://raw.githubusercontent.com/luxonis/depthai-ros/main/underlay.repos`
-4. `vcs import src < underlay.repos`
+2. `cd dai_ws/src`
+3. `git clone https://github.com/luxonis/depthai-ros.git`
+4. `cd ../..`
 5. `rosdep install --from-paths src --ignore-src -r -y`
 6. `source /opt/ros/<ros-distro>/setup.bash`
 7. `catkin_make` (For ROS1) `colcon build` (for ROS2)
@@ -68,25 +78,25 @@ The following setup procedure assumes you have cmake version >= 3.10.2 and OpenC
 16. `catkin_make_isolated --cmake-args -Ddepthai_DIR=~/depthai-core/build/install/lib/cmake/depthai` (Melodic)
 17. `catkin_make_isolated --cmake-args -D depthai_DIR=~/depthai-core/build/install/lib/cmake/depthai` (Noetic) -->
 
-### Executing an example
+## Executing an example
 
-## ROS1
+### ROS1
 1. `cd dai_ws` (Our workspace)
 2. `source devel/setup.bash`
 3. `roslaunch depthai_examples stereo_inertial_node.launch` - example node
-For more exaples please check the launch files.
+For more examples please check the launch files.
 
-## ROS2
+### ROS2
 1. `cd dai_ws` (Our workspace)
 2. `source install/setup.bash`
 3. `ros2 launch depthai_examples stereo_inertial_node.launch.py` - example node
-For more exaples please check the launch files.
+For more examples please check the launch files.
 
 
-## Testing results
-- ImageConverter - Tested using `roslaunch depthai_examples stereo_node.launch` && `roslaunch depthai_examples stereo_nodelet.launch` && `roslaunch depthai_examples rgb_publisher.launch`'
+### Testing results
+- ImageConverter - Tested using `roslaunch depthai_examples stereo_inertial_node.launch` && `roslaunch depthai_examples rgb_publisher.launch`'
 - ImgDetectionCnverter - tested using `roslaunch depthai_examples mobile_publisher.launch`
-- SpatialImgDetectionConverter - Not tested yet. (Will add an example on this soon) 
+- SpatialImgDetectionConverter - Ntested using `roslaunch depthai_examples stereo_inertial_node.launch`
 
 
 ### Users can write Custom converters and plug them in for bridge Publisher. 
