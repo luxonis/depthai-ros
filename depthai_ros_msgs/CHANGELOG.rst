@@ -2,6 +2,12 @@
 Changelog for package depthai_ros_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.5.3 (2022-08-21)
+-----------
+* Updated release version
+* moved the depthai bridge position of find package (`#115 <https://github.com/luxonis/depthai-ros/issues/115>`_)
+* Contributors: Sachin, Sachin Guruswamy
+
 2.5.2 (2022-06-01)
 -------------------
 * Upgraded examples

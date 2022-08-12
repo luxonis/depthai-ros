@@ -2,6 +2,11 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.5.3 (2022-08-21)
+-----------
+* Updated release version
+* Contributors: Sachin
+
 2.5.2 (2022-06-01)
 -------------------
 * Upgraded examples
