@@ -93,6 +93,37 @@ For more examples please check the launch files.
 For more examples please check the launch files.
 
 
+
+## Running Examples
+
+### Mobilenet Publisher:
+#### ROS1:
+##### OAK-D
+```
+roslaunch depthai_examples mobile_publisher.launch camera_model:=OAK-D
+```
+##### OAK-D-LITE
+```
+roslaunch depthai_examples mobile_publisher.launch camera_model:=OAK-D-LITE
+```
+##### With visualizer
+```
+roslaunch depthai_examples mobile_publisher.launch | rqt_image_view -t /mobilenet_publisher/color/image
+```
+
+#### ROS2:
+
+##### OAK-D
+```
+ros2 launch depthai_examples mobile_publisher.launch.py camera_model:=OAK-D
+```
+
+##### OAK-D-LITE
+```
+ros2 launch depthai_examples mobile_publisher.launch.py camera_model:=OAK-D-LITE
+```
+
+
 ### Testing results
 - ImageConverter - Tested using `roslaunch depthai_examples stereo_inertial_node.launch` && `roslaunch depthai_examples rgb_publisher.launch`'
 - ImgDetectionCnverter - tested using `roslaunch depthai_examples mobile_publisher.launch`
