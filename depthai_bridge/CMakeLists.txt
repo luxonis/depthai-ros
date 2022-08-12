@@ -2,6 +2,7 @@ cmake_minimum_required (VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 project(depthai_bridge VERSION 2.5.2 LANGUAGES CXX C)
+
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -83,7 +84,7 @@ if ( ament_cmake_FOUND )
     message(STATUS "--------------------------$ENV{ROS_DISTRO} ---")
     message(STATUS $ENV{ROS_DISTRO})
 
-    if($ENV{ROS_DISTRO} STREQUAL "galactic")
+    if($ENV{ROS_DISTRO} STREQUAL "galactic" OR ($ENV{ROS_DISTRO} STREQUAL "rolling" AND "${ubuntu_version}" STREQUAL "20.04\n"))
       target_compile_definitions(${PROJECT_NAME} PRIVATE IS_GALACTIC)
     endif()
 
