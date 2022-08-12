@@ -27,6 +27,7 @@
 
     <arg name="enableSpatialDetection" default="true" />
     <arg name="syncNN"                 default="true" />
+    <arg name="detectionClassesCount"  default="80"   />
     <arg name="nnName"                 default="x"         />
     <arg name="resourceBaseFolder"     default="$(find depthai_examples)/resources" />
 
@@ -36,9 +37,16 @@
     <arg name="stereo_fps"            default="15"  />
     <arg name="confidence"            default="200" />
     <arg name="LRchecktresh"          default="5"   />
-    <arg name="monoResolution"        default="720p"/> 
-    <arg name="angularVelCovariance"  default="0"   /> 
-    <arg name="linearAccelCovariance" default="0"   /> 
+    <arg name="monoResolution"        default="720p"/>
+
+    <arg name="rgbResolution"           default="1080p"/>
+    <arg name="rgbScaleNumerator"       default="2"/>
+    <arg name="rgbScaleDinominator"     default="3"/>
+    <arg name="previewWidth"            default="416"/>
+    <arg name="previewHeight"           default="416"/>
+
+    <arg name="angularVelCovariance"  default="0"   />
+    <arg name="linearAccelCovariance" default="0"   />
 
     <arg name="enableDotProjector"    default="false"/>
     <arg name="enableFloodLight"      default="false"/>
@@ -78,6 +86,7 @@
         
         <param name="enableSpatialDetection"   value="$(arg enableSpatialDetection)" />
         <param name="syncNN"                   value="$(arg syncNN)" />
+        <param name="detectionClassesCount"    value="$(arg detectionClassesCount)" />
         <param name="nnName"                   value="$(arg nnName)"/>
         <param name="resourceBaseFolder"       value="$(arg resourceBaseFolder)"/>
 
@@ -85,6 +94,13 @@
         <param name="confidence"            value="$(arg confidence)" />
         <param name="LRchecktresh"          value="$(arg LRchecktresh)" />
         <param name="monoResolution"        value="$(arg monoResolution)" />
+
+        <param name="rgbResolution"         value="$(arg rgbResolution)" />
+        <param name="rgbScaleNumerator"     value="$(arg rgbScaleNumerator)" />
+        <param name="rgbScaleDinominator"   value="$(arg rgbScaleDinominator)" />
+        <param name="previewWidth"          value="$(arg previewWidth)" />
+        <param name="previewHeight"         value="$(arg previewHeight)" />
+
         <param name="angularVelCovariance"  value="$(arg angularVelCovariance)" />
         <param name="linearAccelCovariance" value="$(arg linearAccelCovariance)" />
 

@@ -215,12 +215,14 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
   install(TARGETS
           crop_control_service
           mobilenet_node
+          nodelet_stereo
           rgb_node
           rgb_stereo_node
           rgb_subscriber_node
           stereo_inertial_node
           stereo_node
           yolov4_spatial_node
+          LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
           RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   )
 
@@ -231,5 +233,7 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
 	DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
 	PATTERN ".svn" EXCLUDE
   )
+  install(FILES nodelet_plugins.xml
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 endif()
