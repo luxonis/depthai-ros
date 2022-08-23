@@ -2,8 +2,4 @@ repositories:
   luxonis/depthai-ros:
     type: git
     url: https://github.com/luxonis/depthai-ros.git
-    version: main
-  luxonis/depthai-ros-examples:
-    type: git
-    url: https://github.com/luxonis/depthai-ros-examples.git
-    version: main
+    version: ros-release
