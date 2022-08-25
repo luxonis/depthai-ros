@@ -21,6 +21,7 @@
 #include <depthai_bridge/SpatialDetectionConverter.hpp>
 
 #include "depthai/depthai.hpp"
+#include "depthai/build/version.hpp"
 
 std::vector<std::string> usbStrings = {"UNKNOWN", "LOW", "FULL", "HIGH", "SUPER", "SUPER_PLUS"};
 
@@ -269,6 +270,8 @@ std::tuple<dai::Pipeline, int, int> createPipeline(bool enableDepth,
 int main(int argc, char** argv) {
     ros::init(argc, argv, "stereo_inertial_node");
     ros::NodeHandle pnh("~");
+
+    std::cout << "Depthai build version in use ->" << dai::build::VERSION << std::endl;
 
     std::string tfPrefix, mode, mxId, resourceBaseFolder, nnPath;
     std::string monoResolution = "720p", rgbResolution = "1080p";

@@ -49,6 +49,7 @@ if ( ament_cmake_FOUND )
     find_package(stereo_msgs REQUIRED)
     find_package(std_msgs REQUIRED)
     find_package(vision_msgs REQUIRED)
+    message(STATUS "-----------------${depthai_VERSION}-------------------------")
 
     set(dependencies
         camera_info_manager
@@ -148,6 +149,9 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE )
     )
     find_package(Boost REQUIRED)
     find_package(depthai CONFIG REQUIRED)
+    message(STATUS "-----------------${depthai_VERSION}-------------------------")
+
+    message(STATUS ${depthai_VERSION})
 
     FILE(GLOB LIB_SRC
     "src/DisparityConverter.cpp"
