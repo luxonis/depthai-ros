@@ -369,6 +369,7 @@ void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDa
 
         while(opMsgs.size()) {
             RosMsg currMsg = opMsgs.front();
+            std::cout <<"Timestamp at " << _cameraName << ": " << currMsg.header.stamp << std::endl;
             if(mainSubCount > 0) {
                 _rosPublisher->publish(currMsg);
             }

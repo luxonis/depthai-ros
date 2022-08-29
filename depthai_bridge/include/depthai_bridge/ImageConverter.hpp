@@ -64,7 +64,8 @@ class ImageConverter {
                                                   int width = -1,
                                                   int height = -1,
                                                   Point2f topLeftPixelId = Point2f(),
-                                                  Point2f bottomRightPixelId = Point2f());
+                                                  Point2f bottomRightPixelId = Point2f(),
+                                                  bool keepAspectRatio = true);
 
    private:
     static std::unordered_map<dai::RawImgFrame::Type, std::string> encodingEnumMap;

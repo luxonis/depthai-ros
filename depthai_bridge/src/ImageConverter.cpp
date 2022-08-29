@@ -269,7 +269,7 @@ cv::Mat ImageConverter::rosMsgtoCvMat(ImageMsgs::Image& inMsg) {
 }
 
 ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
-    dai::CalibrationHandler calibHandler, dai::CameraBoardSocket cameraId, int width, int height, Point2f topLeftPixelId, Point2f bottomRightPixelId) {
+    dai::CalibrationHandler calibHandler, dai::CameraBoardSocket cameraId, int width, int height, Point2f topLeftPixelId, Point2f bottomRightPixelId, bool keepAspectRatio) {
     std::vector<std::vector<float>> camIntrinsics, rectifiedRotation;
     std::vector<float> distCoeffs;
     std::vector<double> flatIntrinsics, distCoeffsDouble;
@@ -289,7 +289,7 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
         cameraData.height = static_cast<uint32_t>(height);
     }
 
-    camIntrinsics = calibHandler.getCameraIntrinsics(cameraId, cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);
+    camIntrinsics = calibHandler.getCameraIntrinsics(cameraId, static_cast<int>(cameraData.width), static_cast<int>(cameraData.height), topLeftPixelId, bottomRightPixelId, keepAspectRatio);
 
     flatIntrinsics.resize(9);
     for(int i = 0; i < 3; i++) {
@@ -324,7 +324,7 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
     if(calibHandler.getStereoRightCameraId() != dai::CameraBoardSocket::AUTO && calibHandler.getStereoLeftCameraId() != dai::CameraBoardSocket::AUTO) {
         if(calibHandler.getStereoRightCameraId() == cameraId || calibHandler.getStereoLeftCameraId() == cameraId) {
             std::vector<std::vector<float>> stereoIntrinsics = calibHandler.getCameraIntrinsics(
-                calibHandler.getStereoRightCameraId(), cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);
+                calibHandler.getStereoRightCameraId(), static_cast<int>(cameraData.width), static_cast<int>(cameraData.height), topLeftPixelId, bottomRightPixelId, keepAspectRatio);
             std::vector<double> stereoFlatIntrinsics(12), flatRectifiedRotation(9);
             for(int i = 0; i < 3; i++) {
                 std::copy(stereoIntrinsics[i].begin(), stereoIntrinsics[i].end(), stereoFlatIntrinsics.begin() + 4 * i);
