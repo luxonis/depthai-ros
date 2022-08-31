@@ -30,6 +30,8 @@ Please also provide a screenshot of your pipeline using the [DepthAI Pipeline Gr
 
 **Attach system log**
  - Provide output of [log_system_information.py](https://github.com/luxonis/depthai/blob/main/log_system_information.py)
+ - Which OS/OS version are you using?
+ - Which ROS version are you using?
 
 **Additional context**
 Add any other context about the problem here.
