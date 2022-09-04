@@ -272,9 +272,9 @@ int main(int argc, char** argv) {
 
     std::string tfPrefix, mode, mxId, resourceBaseFolder, nnPath;
     std::string monoResolution = "720p", rgbResolution = "1080p";
-    int badParams = 0, stereo_fps, confidence, LRchecktresh, imuModeParam, detectionClassesCount;
+    int badParams = 0, stereo_fps, confidence, LRchecktresh, imuModeParam, detectionClassesCount, expTime, sensIso;
     int rgbScaleNumerator, rgbScaleDinominator, previewWidth, previewHeight;
-    bool lrcheck, extended, subpixel, enableDepth, rectify, depth_aligned;
+    bool lrcheck, extended, subpixel, enableDepth, rectify, depth_aligned, manualExposure;
     bool enableSpatialDetection, enableDotProjector, enableFloodLight;
     bool usb2Mode, poeMode, syncNN;
     double angularVelCovariance, linearAccelCovariance;
@@ -301,6 +301,9 @@ int main(int argc, char** argv) {
     badParams += !pnh.getParam("LRchecktresh", LRchecktresh);
     badParams += !pnh.getParam("monoResolution", monoResolution);
     badParams += !pnh.getParam("rgbResolution", rgbResolution);
+    badParams += !pnh.getParam("manualExposure", manualExposure);
+    badParams += !pnh.getParam("expTime", expTime);
+    badParams += !pnh.getParam("sensIso", sensIso);
 
     badParams += !pnh.getParam("rgbScaleNumerator", rgbScaleNumerator);
     badParams += !pnh.getParam("rgbScaleDinominator", rgbScaleDinominator);
@@ -397,6 +400,17 @@ int main(int argc, char** argv) {
     if(!poeMode) {
         std::cout << "Device USB status: " << usbStrings[static_cast<int32_t>(device->getUsbSpeed())] << std::endl;
     }
+
+    // Apply camera controls
+    auto controlQueue = device->getInputQueue("control");
+
+    //Set manual exposure
+    if(manualExposure){
+        dai::CameraControl ctrl;
+        ctrl.setManualExposure(expTime, sensIso);
+        controlQueue->send(ctrl);
+    }
+
 
     std::shared_ptr<dai::DataOutputQueue> stereoQueue;
     if(enableDepth) {

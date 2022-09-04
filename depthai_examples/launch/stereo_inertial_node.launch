@@ -24,6 +24,9 @@
     <arg name="subpixel"              default="true" />
     <arg name="rectify"               default="true" />
     <arg name="depth_aligned"         default="true" />
+    <arg name="manualExposure"        default="false"/>
+    <arg name="expTime"               default="20000"/>
+    <arg name="sensIso"               default="800" />
 
     <arg name="enableSpatialDetection" default="true" />
     <arg name="syncNN"                 default="true" />
