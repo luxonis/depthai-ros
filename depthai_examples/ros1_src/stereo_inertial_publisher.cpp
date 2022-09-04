@@ -45,12 +45,17 @@ std::tuple<dai::Pipeline, int, int> createPipeline(bool enableDepth,
                                                    std::string nnPath) {
     dai::Pipeline pipeline;
     pipeline.setXLinkChunkSize(0);
+    auto controlIn = pipeline.create<dai::node::XLinkIn>();
     auto monoLeft = pipeline.create<dai::node::MonoCamera>();
     auto monoRight = pipeline.create<dai::node::MonoCamera>();
     auto stereo = pipeline.create<dai::node::StereoDepth>();
     auto xoutDepth = pipeline.create<dai::node::XLinkOut>();
     auto imu = pipeline.create<dai::node::IMU>();
     auto xoutImu = pipeline.create<dai::node::XLinkOut>();
+
+    controlIn->setStreamName("control");
+    controlIn->out.link(monoRight->inputControl);
+    controlIn->out.link(monoLeft->inputControl);
 
     if(enableDepth) {
         xoutDepth->setStreamName("depth");
