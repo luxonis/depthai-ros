@@ -86,6 +86,9 @@
         <param name="subpixel"              value="$(arg subpixel)"/>
         <param name="rectify"               value="$(arg rectify)" />
         <param name="depth_aligned"         value="$(arg depth_aligned)" />
+        <param name="manualExposure"        value="$(arg manualExposure)" />
+        <param name="expTime"               value="$(arg expTime)" />
+        <param name="sensIso"               value="$(arg sensIso)" />
         
         <param name="enableSpatialDetection"   value="$(arg enableSpatialDetection)" />
         <param name="syncNN"                   value="$(arg syncNN)" />
