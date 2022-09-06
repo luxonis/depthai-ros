@@ -413,8 +413,8 @@ int main(int argc, char** argv) {
         width = 640;
         height = 480;
     }
-
-    if(boardName.find("PRO") != std::string::npos) {
+    std::vector<std::tuple<std::string, int, int>> irDrivers = device->getIrDrivers();
+    if(!irDrivers.empty()) {
         if(enableDotProjector) {
             device->setIrLaserDotProjectorBrightness(dotProjectormA);
         }
