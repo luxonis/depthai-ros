@@ -305,7 +305,7 @@ int main(int argc, char** argv) {
     node->declare_parameter("LRchecktresh", 5);
     node->declare_parameter("monoResolution", "720p");
     node->declare_parameter("rgbResolution", "1080p");
-    node->declare_parameter("manualExposure", true);
+    node->declare_parameter("manualExposure", false);
     node->declare_parameter("expTime", 20000);
     node->declare_parameter("sensIso", 800);
     
