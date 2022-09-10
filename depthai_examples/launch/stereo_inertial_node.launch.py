@@ -45,6 +45,9 @@ def generate_launch_description():
     subpixel       = LaunchConfiguration('subpixel', default = True)
     rectify        = LaunchConfiguration('rectify', default = True)
     depth_aligned  = LaunchConfiguration('depth_aligned', default = True)
+    manualExposure = LaunchConfiguration('manualExposure', default = False)
+    expTime        = LaunchConfiguration('expTime', default = 20000)
+    sensIso        = LaunchConfiguration('sensIso', default = 800)
 
     enableSpatialDetection  = LaunchConfiguration('enableSpatialDetection', default = True)
     syncNN                  = LaunchConfiguration('syncNN', default = True)
@@ -175,6 +178,21 @@ def generate_launch_description():
         'depth_aligned',
         default_value=depth_aligned,
         description='When depth_aligned is enabled depth map from stereo will be aligned to the RGB camera in the center.')
+
+    declare_manualExposure_cmd = DeclareLaunchArgument(
+        'manualExposure',
+        default_value=manualExposure,
+        description='When manualExposure is enabled, you can set the exposure time(expTime) and ISO(sensIso) of the stereo camera.')
+    
+    declare_expTime_cmd = DeclareLaunchArgument(
+        'expTime',
+        default_value=expTime,
+        description='Set the exposure time of the stereo camera. Default value is 20000')
+
+    declare_sensIso_cmd = DeclareLaunchArgument(
+        'sensIso',
+        default_value=sensIso,
+        description='Set the ISO of the stereo camera. Default value is 800')
 
     declare_enableSpatialDetection_cmd = DeclareLaunchArgument(
         'enableSpatialDetection',
@@ -315,6 +333,9 @@ def generate_launch_description():
                         {'rectify':                 rectify},
 
                         {'depth_aligned':           depth_aligned},
+                        {'manualExposure':          manualExposure},
+                        {'expTime':                 expTime},
+                        {'sensIso':                 sensIso},
                         {'stereo_fps':              stereo_fps},
                         {'confidence':              confidence},
                         {'LRchecktresh':            LRchecktresh},
@@ -424,6 +445,9 @@ def generate_launch_description():
     ld.add_action(declare_subpixel_cmd)
     ld.add_action(declare_rectify_cmd)
     ld.add_action(declare_depth_aligned_cmd)
+    ld.add_action(declare_manualExposure_cmd)
+    ld.add_action(declare_expTime_cmd)
+    ld.add_action(declare_sensIso_cmd)
 
     ld.add_action(declare_enableSpatialDetection_cmd)
     ld.add_action(declare_syncNN_cmd)
