@@ -24,6 +24,9 @@
     <arg name="subpixel"              default="true" />
     <arg name="rectify"               default="true" />
     <arg name="depth_aligned"         default="true" />
+    <arg name="manualExposure"        default="false"/>
+    <arg name="expTime"               default="20000"/>
+    <arg name="sensIso"               default="800" />
 
     <arg name="enableSpatialDetection" default="true" />
     <arg name="syncNN"                 default="true" />
@@ -83,6 +86,9 @@
         <param name="subpixel"              value="$(arg subpixel)"/>
         <param name="rectify"               value="$(arg rectify)" />
         <param name="depth_aligned"         value="$(arg depth_aligned)" />
+        <param name="manualExposure"        value="$(arg manualExposure)" />
+        <param name="expTime"               value="$(arg expTime)" />
+        <param name="sensIso"               value="$(arg sensIso)" />
         
         <param name="enableSpatialDetection"   value="$(arg enableSpatialDetection)" />
         <param name="syncNN"                   value="$(arg syncNN)" />

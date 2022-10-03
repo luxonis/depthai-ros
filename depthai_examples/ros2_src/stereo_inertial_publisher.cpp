@@ -45,12 +45,17 @@ std::tuple<dai::Pipeline, int, int> createPipeline(bool enableDepth,
                                                    std::string nnPath) {
     dai::Pipeline pipeline;
 
+    auto controlIn = pipeline.create<dai::node::XLinkIn>();
     auto monoLeft = pipeline.create<dai::node::MonoCamera>();
     auto monoRight = pipeline.create<dai::node::MonoCamera>();
     auto stereo = pipeline.create<dai::node::StereoDepth>();
     auto xoutDepth = pipeline.create<dai::node::XLinkOut>();
     auto imu = pipeline.create<dai::node::IMU>();
     auto xoutImu = pipeline.create<dai::node::XLinkOut>();
+
+    controlIn->setStreamName("control");
+    controlIn->out.link(monoRight->inputControl);
+    controlIn->out.link(monoLeft->inputControl);
 
     if(enableDepth) {
         xoutDepth->setStreamName("depth");
@@ -271,9 +276,9 @@ int main(int argc, char** argv) {
 
     std::string tfPrefix, mode, mxId, resourceBaseFolder, nnPath;
     std::string monoResolution = "720p", rgbResolution = "1080p";
-    int badParams = 0, stereo_fps, confidence, LRchecktresh, imuModeParam, detectionClassesCount;
+    int badParams = 0, stereo_fps, confidence, LRchecktresh, imuModeParam, detectionClassesCount, expTime, sensIso;
     int rgbScaleNumerator, rgbScaleDinominator, previewWidth, previewHeight;
-    bool lrcheck, extended, subpixel, enableDepth, rectify, depth_aligned;
+    bool lrcheck, extended, subpixel, enableDepth, rectify, depth_aligned, manualExposure;
     bool enableSpatialDetection, enableDotProjector, enableFloodLight;
     bool usb2Mode, poeMode, syncNN;
     double angularVelCovariance, linearAccelCovariance;
@@ -300,6 +305,9 @@ int main(int argc, char** argv) {
     node->declare_parameter("LRchecktresh", 5);
     node->declare_parameter("monoResolution", "720p");
     node->declare_parameter("rgbResolution", "1080p");
+    node->declare_parameter("manualExposure", false);
+    node->declare_parameter("expTime", 20000);
+    node->declare_parameter("sensIso", 800);
     
     node->declare_parameter("rgbScaleNumerator",   2);
     node->declare_parameter("rgbScaleDinominator", 3);
@@ -341,6 +349,9 @@ int main(int argc, char** argv) {
     node->get_parameter("LRchecktresh", LRchecktresh);
     node->get_parameter("monoResolution", monoResolution);
     node->get_parameter("rgbResolution", rgbResolution);
+    node->get_parameter("manualExposure", manualExposure);
+    node->get_parameter("expTime", expTime);
+    node->get_parameter("sensIso", sensIso);
 
     node->get_parameter("rgbScaleNumerator", rgbScaleNumerator);
     node->get_parameter("rgbScaleDinominator", rgbScaleDinominator);
@@ -430,6 +441,17 @@ int main(int argc, char** argv) {
 
     if(!poeMode) {
         std::cout << "Device USB status: " << usbStrings[static_cast<int32_t>(device->getUsbSpeed())] << std::endl;
+    }
+
+
+    // Apply camera controls
+    auto controlQueue = device->getInputQueue("control");
+
+    //Set manual exposure
+    if(manualExposure){
+        dai::CameraControl ctrl;
+        ctrl.setManualExposure(expTime, sensIso);
+        controlQueue->send(ctrl);
     }
 
     std::shared_ptr<dai::DataOutputQueue> stereoQueue;
