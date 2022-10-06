@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <robot name="rae" xmlns:xacro="http://ros.org/wiki/xacro">
 
-
+    <link name="base_frame"/>
     <link name="chassis">
       <inertial>
         <mass value="1.0"/>
-        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
         <inertia
           ixx = "0.166667"
           ixy = "0"
@@ -24,17 +24,32 @@
       </collision>
 
       <visual>
-        <origin rpy="0.049227 0.011061 0.000747" xyz="-0 -1e-06 3.14159"/>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
         <geometry>
           <mesh filename="package://depthai_bridge/urdf/models/rae_chassis.stl" scale="1.0 1.0 1.0"/>
         </geometry>
+        <material name="mat">
+          <lighting>1</lighting>
+          <!-- <color rgba="0.1 0.1 0.1 1.0"/> -->
+          <shader type='pixel'/>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      
       </visual>
     </link>
+
+    <joint name="base_chassis_joint" type="fixed">
+        <parent link="base_frame"/>
+        <child link="chassis"/>
+        <origin rpy="1.57 0.0 1.57" xyz="0.0 0.0 0.0" />
+    </joint>
 
     <link name="left_wheel">
       <inertial>
         <mass value="1.0"/>
-        <origin rpy="-0 -1e-06 3.14159" xyz="0.049227 0.011061 0.000747"/>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
         <inertia
           ixx = "0.166667"
           ixy = "0"
@@ -63,7 +78,7 @@
     <link name="right_wheel">
       <inertial>
         <mass value="1.0"/>
-        <origin rpy="0 0 0" xyz="-0.048887 0.00846 0.000728"/>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
         <inertia
           ixx = "0.166667"
           ixy = "0"
@@ -91,7 +106,7 @@
 
 
     <joint name='left_wheel_hinge' type='revolute'>
-      <origin rpy="0.0 0.0 0.0 " xyz="0.0 0.0 0.0"/>
+      <origin rpy="0.0 0.0 0.0 " xyz="-0.0497 0.00518 -0.03048"/>
       <child  link="left_wheel"/>
       <parent link="chassis"/>
       <axis rpy="0 0 0" xyz="1 0 0"/>
@@ -99,7 +114,7 @@
     </joint>
 
     <joint name='right_wheel_hinge' type='revolute'>
-      <origin rpy="0.0 0.0 0.0 " xyz="0.0 0.0 0.0"/>
+      <origin rpy="0.0 3.14159 0.0 " xyz="0.0497 0.00518 -0.03048"/>
       <child  link="right_wheel"/>
       <parent link="chassis"/>
       <axis rpy="0 0 0" xyz="1 0 0"/>

@@ -26,7 +26,14 @@ def generate_launch_description():
                     'xacro', ' ', xacro_path, ' ',
                 ])}]
         )
-    
+
+    joint_state_publisher = Node(
+            package='joint_state_publisher',
+            executable='joint_state_publisher',
+            name='joint_state_publisher')
+
+
     ld = LaunchDescription()
+    ld.add_action(joint_state_publisher)
     ld.add_action(rsp_node)
     return ld
