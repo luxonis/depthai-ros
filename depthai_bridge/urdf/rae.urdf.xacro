@@ -1,0 +1,196 @@
+<?xml version="1.0"?>
+<robot name="rae" xmlns:xacro="http://ros.org/wiki/xacro">
+
+
+    <link name="chassis">
+      <inertial>
+        <mass value="1.0"/>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <inertia
+          ixx = "0.166667"
+          ixy = "0"
+          ixz = "0"
+          iyy = "0.166667"
+          iyz = "0"
+          izz = "0.166667"
+        />
+      </inertial>
+
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+          <mesh filename="package://depthai_bridge/urdf/models/rae_chassis.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+
+      <visual>
+        <origin rpy="0.049227 0.011061 0.000747" xyz="-0 -1e-06 3.14159"/>
+        <geometry>
+          <mesh filename="package://depthai_bridge/urdf/models/rae_chassis.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="left_wheel">
+      <inertial>
+        <mass value="1.0"/>
+        <origin rpy="-0 -1e-06 3.14159" xyz="0.049227 0.011061 0.000747"/>
+        <inertia
+          ixx = "0.166667"
+          ixy = "0"
+          ixz = "0"
+          iyy = "0.166667"
+          iyz = "0"
+          izz = "0.166667"
+        />
+      </inertial>
+
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+            <mesh filename="package://depthai_bridge/urdf/models/rae_wheel.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+
+      <visual>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+            <mesh filename="package://depthai_bridge/urdf/models/rae_wheel.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="right_wheel">
+      <inertial>
+        <mass value="1.0"/>
+        <origin rpy="0 0 0" xyz="-0.048887 0.00846 0.000728"/>
+        <inertia
+          ixx = "0.166667"
+          ixy = "0"
+          ixz = "0"
+          iyy = "0.166667"
+          iyz = "0"
+          izz = "0.166667"
+        />
+      </inertial>
+
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+            <mesh filename="package://depthai_bridge/urdf/models/rae_wheel.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+
+      <visual>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+            <mesh filename="package://depthai_bridge/urdf/models/rae_wheel.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </visual>
+    </link>
+
+
+    <joint name='left_wheel_hinge' type='revolute'>
+      <origin rpy="0.0 0.0 0.0 " xyz="0.0 0.0 0.0"/>
+      <child  link="left_wheel"/>
+      <parent link="chassis"/>
+      <axis rpy="0 0 0" xyz="1 0 0"/>
+      <limit lower="-1e+16" upper="1e+16" effort="100" velocity="100"/>
+    </joint>
+
+    <joint name='right_wheel_hinge' type='revolute'>
+      <origin rpy="0.0 0.0 0.0 " xyz="0.0 0.0 0.0"/>
+      <child  link="right_wheel"/>
+      <parent link="chassis"/>
+      <axis rpy="0 0 0" xyz="1 0 0"/>
+      <limit lower="-1e+16" upper="1e+16" effort="100" velocity="100"/>
+    </joint>
+
+    <!-- <link name='body'>
+      <inertial>
+        <mass value="1.0"/>
+        <inertia
+          ixx ="0.166667"
+          ixy = "0"
+          ixz = "0"
+          iyy = "0.166667"
+          iyz = "0"
+          izz = "0.166667"
+        />
+      </inertial>
+
+      
+      <visual>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh filename = "/home/sags/Downloads/RAE-ASSY-1006.stl"/>
+        </geometry>
+        <material>
+          <lighting>1</lighting>
+            <color rgba="0.8 0.8 0.8 0.8"/>
+          <shader type='pixel'/>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+      
+      <collision name='collision'>
+        <laser_retro>0</laser_retro>
+        <max_contacts>10</max_contacts>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>/home/sags/Downloads/RAE-ASSY-1006.stl</uri>
+            <scale>1 1 1</scale>
+          </mesh>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+              <fdir1>0 0 0</fdir1>
+              <slip1>0</slip1>
+              <slip2>0</slip2>
+            </ode>
+            <torsional>
+              <coefficient>1</coefficient>
+              <patch_radius>0</patch_radius>
+              <surface_radius>0</surface_radius>
+              <use_patch_radius>1</use_patch_radius>
+              <ode>
+                <slip>0</slip>
+              </ode>
+            </torsional>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0</restitution_coefficient>
+            <threshold>1e+06</threshold>
+          </bounce>
+          <contact>
+            <collide_without_contact>0</collide_without_contact>
+            <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+            <collide_bitmask>1</collide_bitmask>
+            <ode>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0</min_depth>
+            </ode>
+            <bullet>
+              <split_impulse>1</split_impulse>
+              <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+            </bullet>
+          </contact>
+        </surface>
+      </collision>
+    </link> -->
+
+</robot>
