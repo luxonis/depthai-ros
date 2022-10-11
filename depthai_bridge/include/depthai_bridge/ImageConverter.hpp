@@ -3,6 +3,7 @@
 #include <cv_bridge/cv_bridge.h>
 
 #include <depthai-shared/common/CameraBoardSocket.hpp>
+#include <depthai-shared/common/Point2f.hpp>
 #include <depthai/depthai.hpp>
 #include <depthai_bridge/depthaiUtility.hpp>
 #include <iostream>
