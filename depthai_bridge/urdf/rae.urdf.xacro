@@ -2,6 +2,8 @@
 <robot name="rae" xmlns:xacro="http://ros.org/wiki/xacro">
 
 
+    <link name="base_frame"/>
+
     <link name="chassis">
       <inertial>
         <mass value="1.0"/>
@@ -89,6 +91,11 @@
       </visual>
     </link>
 
+    <joint name="base_joint" type="fixed">
+        <parent link="base_frame"/>
+        <child link="chassis"/>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+    </joint>
 
     <joint name='left_wheel_hinge' type='revolute'>
       <origin rpy="0.0 0.0 0.0 " xyz="0.0 0.0 0.0"/>

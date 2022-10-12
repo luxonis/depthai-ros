@@ -20,13 +20,17 @@ def generate_launch_description():
     rsp_node =  Node(
             package='robot_state_publisher',
             executable='robot_state_publisher',
-            name='oak_state_publisher',
+            name='robot_state_publisher',
             parameters=[{'robot_description': Command(
                 [
                     'xacro', ' ', xacro_path, ' ',
                 ])}]
         )
-    
+    joint_state_publisher_node = Node(
+    package='joint_state_publisher',
+    executable='joint_state_publisher',
+    name='joint_state_publisher')
     ld = LaunchDescription()
     ld.add_action(rsp_node)
+    ld.add_action(joint_state_publisher_node)
     return ld
