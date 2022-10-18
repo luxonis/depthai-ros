@@ -5,6 +5,7 @@ from launch.actions import DeclareLaunchArgument
 from launch_ros.actions import Node
 from launch.substitutions import LaunchConfiguration, Command
 from ament_index_python.packages import get_package_share_directory
+from ppmt_nav_common import common_utils
 
 
 def generate_launch_description():
@@ -135,6 +136,7 @@ def generate_launch_description():
                 )
             }
         ],
+        remappings=[("/tf", "/" + common_utils.get_robot_name() + "/tf"), ("/tf_static", "/" + common_utils.get_robot_name() + "/tf_static")]
     )
 
     ld.add_action(declare_namespace_cmd)
