@@ -136,7 +136,7 @@ def generate_launch_description():
                 )
             }
         ],
-        remappings=[("/tf", "/" + common_utils.get_robot_name() + "/tf"), ("/tf_static", "/" + common_utils.get_robot_name() + "/tf_static")]
+        remappings=[("/tf", "tf"), ("/tf_static", "tf_static")]
     )
 
     ld.add_action(declare_namespace_cmd)
