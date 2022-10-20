@@ -5,8 +5,6 @@ from launch.actions import DeclareLaunchArgument
 from launch_ros.actions import Node
 from launch.substitutions import LaunchConfiguration, Command
 from ament_index_python.packages import get_package_share_directory
-from ppmt_nav_common import common_utils
-
 
 def generate_launch_description():
     ld = LaunchDescription()
