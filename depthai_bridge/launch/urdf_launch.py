@@ -26,7 +26,12 @@ def generate_launch_description():
     cam_roll     = LaunchConfiguration('cam_roll',      default = '1.5708')
     cam_pitch    = LaunchConfiguration('cam_pitch',     default = '0.0')
     cam_yaw      = LaunchConfiguration('cam_yaw',       default = '1.5708')
+    namespace    = LaunchConfiguration('namespace',     default = '')
 
+    declare_namespace_cmd = DeclareLaunchArgument(
+        'namespace',
+        default_value=namespace,
+        description='Specifies the namespace of the robot state publisher node. Default value will be ""')
 
     declare_camera_model_cmd = DeclareLaunchArgument(
         'camera_model',
@@ -82,6 +87,7 @@ def generate_launch_description():
             package='robot_state_publisher',
             executable='robot_state_publisher',
             name='oak_state_publisher',
+            namespace=namespace,
             parameters=[{'robot_description': Command(
                 [
                     'xacro', ' ', xacro_path, ' ',
@@ -109,6 +115,7 @@ def generate_launch_description():
     ld.add_action(declare_roll_cmd)
     ld.add_action(declare_pitch_cmd)
     ld.add_action(declare_yaw_cmd)
+    ld.add_action(declare_namespace_cmd)
 
     ld.add_action(rsp_node)
     return ld
