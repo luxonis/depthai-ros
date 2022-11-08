@@ -3,9 +3,6 @@ set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 project(depthai_bridge VERSION 2.5.3 LANGUAGES CXX C)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 # Update the policy setting to avoid an error when loading the ament_cmake package
 # at the current cmake version level
 if(POLICY CMP0057)
