@@ -12,15 +12,11 @@
 
   <license>MIT</license>
 
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  
 
-  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
-  <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
   
-  <depend condition="$ROS_VERSION == 1">roscpp</depend>
-  <depend condition="$ROS_VERSION == 1">rospy</depend>
-  <depend condition="$ROS_VERSION == 1">message_filters</depend>
-  
-  <depend condition="$ROS_VERSION == 2">rclcpp</depend>
+  <depend>rclcpp</depend>
   
   <depend>cv_bridge</depend>
   <depend>camera_info_manager</depend>
@@ -40,12 +36,8 @@
   <exec_depend>depth_image_proc</exec_depend>
   <exec_depend>xacro</exec_depend>
 
-  <depend condition="$ROS_VERSION == 1">nodelet</depend>
-
   <export>
-    <nodelet condition="$ROS_VERSION == 1" plugin="${prefix}/nodelet_plugins.xml" />
-    <build_type condition="$ROS_VERSION == 1">catkin</build_type>
-    <build_type condition="$ROS_VERSION == 2">ament_cmake</build_type>
+    <build_type>ament_cmake</build_type>
   </export>
 
 </package>

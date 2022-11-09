@@ -12,11 +12,7 @@ DisparityConverter::DisparityConverter(const std::string frameName, float focalL
       _minDepth(minDepth / 100.0),
       _maxDepth(maxDepth / 100.0),
       _steadyBaseTime(std::chrono::steady_clock::now()) {
-#ifdef IS_ROS2
     _rosBaseTime = rclcpp::Clock().now();
-#else
-    _rosBaseTime = ::ros::Time::now();
-#endif
 }
 
 void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<DisparityMsgs::DisparityImage>& outDispImageMsgs) {
@@ -27,11 +23,7 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::de
     outDispImageMsg.min_disparity = _focalLength * _baseline / _maxDepth;
     outDispImageMsg.max_disparity = _focalLength * _baseline / _minDepth;
 
-#ifdef IS_ROS2
     outDispImageMsg.t = _baseline / 100.0;  // converting cm to meters
-#else
-    outDispImageMsg.T = _baseline / 100.0;  // converting cm to meters
-#endif
 
     // copying the data to ros msg
     // outDispImageMsg.header       = imgHeader;
@@ -84,62 +76,13 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::de
     return;
 }
 
-/* void DisparityConverter::toDaiMsg(const DisparityMsgs::DisparityImage &inMsg,
-                              dai::ImgFrame& outData) {
-
-  std::unordered_map<dai::RawImgFrame::Type, std::string>::iterator
-      revEncodingIter;
-  if (_daiInterleaved) {
-    revEncodingIter = std::find_if(
-        encodingEnumMap.begin(), encodingEnumMap.end(),
-        [&](const std::pair<dai::RawImgFrame::Type, std::string> &pair) {
-          return pair.second == inMsg.encoding;
-        });
-    if (revEncodingIter == encodingEnumMap.end())
-      std::runtime_error("Unable to find DAI encoding for the corresponding "
-                         "DisparityMsgs::DisparityImage.encoding stream");
-
-    outData.setData(inMsg.data);
-  } else {
-    revEncodingIter = std::find_if(
-        encodingEnumMap.begin(), encodingEnumMap.end(),
-        [&](const std::pair<dai::RawImgFrame::Type, std::string> &pair) {
-          return pair.second.find(inMsg.encoding) != std::string::npos;
-        });
-
-    std::istringstream f(revEncodingIter->second);
-    std::vector<std::string> encoding_info;
-    std::string s;
-
-    while (getline(f, s, '_'))
-      encoding_info.push_back(s);
-
-    std::vector<std::uint8_t> opData(inMsg.data.size());
-    interleavedToPlanar(inMsg.data, opData, inMsg.height, inMsg.width,
-                        std::stoi(encoding_info[0]),
-                        std::stoi(encoding_info[1]));
-    outData.setData(opData);
-  }
-
-
-  TimePoint ts(std::chrono::seconds((int)inMsg.header.stamp.toSec()) +
-               std::chrono::nanoseconds(inMsg.header.stamp.toNSec()));
-  outData.setTimestamp(ts);
-  outData.setSequenceNum(inMsg.header.seq);
-  outData.setWidth(inMsg.width);
-  outData.setHeight(inMsg.height);
-  outData.setType(revEncodingIter->first);
-} */
-
 DisparityImagePtr DisparityConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
     std::deque<DisparityMsgs::DisparityImage> msgQueue;
     toRosMsg(inData, msgQueue);
     auto msg = msgQueue.front();
-#ifdef IS_ROS2
+
     DisparityImagePtr ptr = std::make_shared<DisparityMsgs::DisparityImage>(msg);
-#else
-    DisparityImagePtr ptr = boost::make_shared<DisparityMsgs::DisparityImage>(msg);
-#endif
+
     return ptr;
 }
 

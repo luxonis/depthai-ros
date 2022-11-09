@@ -7,28 +7,18 @@
 #include <sstream>
 #include <unordered_map>
 
-#ifdef IS_ROS2
+
     #include "rclcpp/rclcpp.hpp"
     #include "sensor_msgs/msg/imu.hpp"
-#else
-    #include <ros/ros.h>
 
-    #include <boost/make_shared.hpp>
-
-    #include "sensor_msgs/Imu.h"
-#endif
 
 namespace dai {
 
 namespace ros {
 
-#ifdef IS_ROS2
 namespace ImuMsgs = sensor_msgs::msg;
 using ImuPtr = ImuMsgs::Imu::SharedPtr;
-#else
-namespace ImuMsgs = sensor_msgs;
-using ImuPtr = ImuMsgs::Imu::Ptr;
-#endif
+
 
 enum class ImuSyncMethod { COPY, LINEAR_INTERPOLATE_GYRO, LINEAR_INTERPOLATE_ACCEL };
 
@@ -50,11 +40,8 @@ class ImuConverter {
     const std::string _frameName = "";
     ImuSyncMethod _syncMode;
     std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
-#ifdef IS_ROS2
     rclcpp::Time _rosBaseTime;
-#else
-    ::ros::Time _rosBaseTime;
-#endif
+
 };
 
 }  // namespace ros

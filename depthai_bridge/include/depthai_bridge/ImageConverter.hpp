@@ -12,36 +12,19 @@
 #include <tuple>
 #include <unordered_map>
 
-#ifdef IS_ROS2
     #include "rclcpp/rclcpp.hpp"
     #include "sensor_msgs/msg/camera_info.hpp"
     #include "sensor_msgs/msg/image.hpp"
     #include "std_msgs/msg/header.hpp"
-#else
-    #include <ros/ros.h>
-
-    #include <boost/make_shared.hpp>
-    #include <boost/range/algorithm.hpp>
-
-    #include "sensor_msgs/CameraInfo.h"
-    #include "sensor_msgs/Image.h"
-    #include "std_msgs/Header.h"
-
-#endif
 
 namespace dai {
 
 namespace ros {
 
-#ifdef IS_ROS2
 namespace StdMsgs = std_msgs::msg;
 namespace ImageMsgs = sensor_msgs::msg;
 using ImagePtr = ImageMsgs::Image::SharedPtr;
-#else
-namespace StdMsgs = std_msgs;
-namespace ImageMsgs = sensor_msgs;
-using ImagePtr = ImageMsgs::ImagePtr;
-#endif
+
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration>;
 
 class ImageConverter {
@@ -79,11 +62,8 @@ class ImageConverter {
     void interleavedToPlanar(const std::vector<uint8_t>& srcData, std::vector<uint8_t>& destData, int w, int h, int numPlanes, int bpp);
     std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
 
-#ifdef IS_ROS2
     rclcpp::Time _rosBaseTime;
-#else
-    ::ros::Time _rosBaseTime;
-#endif
+
 };
 
 }  // namespace ros

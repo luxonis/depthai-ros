@@ -22,20 +22,13 @@ std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::planarEn
     {dai::RawImgFrame::Type::YUV420p, "rgb8"}};
 
 ImageConverter::ImageConverter(bool interleaved) : _daiInterleaved(interleaved), _steadyBaseTime(std::chrono::steady_clock::now()) {
-#ifdef IS_ROS2
     _rosBaseTime = rclcpp::Clock().now();
-#else
-    _rosBaseTime = ::ros::Time::now();
-#endif
+
 }
 
 ImageConverter::ImageConverter(const std::string frameName, bool interleaved)
     : _frameName(frameName), _daiInterleaved(interleaved), _steadyBaseTime(std::chrono::steady_clock::now()) {
-#ifdef IS_ROS2
     _rosBaseTime = rclcpp::Clock().now();
-#else
-    _rosBaseTime = ::ros::Time::now();
-#endif
 }
 
 void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs) {
@@ -44,21 +37,6 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<
     StdMsgs::Header header;
     header.frame_id = _frameName;
 
-    /* #ifdef IS_ROS2
-        auto rclNow = rclcpp::Clock().now();
-        auto steadyTime = std::chrono::steady_clock::now();
-        auto diffTime = steadyTime - tstamp;
-        auto rclStamp = rclNow - diffTime;
-        header.stamp = rclStamp;
-    #else
-        auto rosNow = ::ros::Time::now();
-        auto steadyTime = std::chrono::steady_clock::now();
-        auto diffTime = steadyTime - tstamp;
-        uint64_t nsec = rosNow.toNSec() - diffTime.count();
-        auto rosStamp = rosNow.fromNSec(nsec);
-        header.stamp = rosStamp;
-        header.seq = inData->getSequenceNum();
-    #endif */
     header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
 
     if(planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end()) {
@@ -197,11 +175,7 @@ ImagePtr ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
     toRosMsg(inData, msgQueue);
     auto msg = msgQueue.front();
 
-#ifdef IS_ROS2
     ImagePtr ptr = std::make_shared<ImageMsgs::Image>(msg);
-#else
-    ImagePtr ptr = boost::make_shared<ImageMsgs::Image>(msg);
-#endif
     return ptr;
 }
 
@@ -296,17 +270,10 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
         std::copy(camIntrinsics[i].begin(), camIntrinsics[i].end(), flatIntrinsics.begin() + 3 * i);
     }
 
-#ifdef IS_ROS2
     auto& intrinsics = cameraData.k;
     auto& distortions = cameraData.d;
     auto& projection = cameraData.p;
     auto& rotation = cameraData.r;
-#else
-    auto& intrinsics = cameraData.K;
-    auto& distortions = cameraData.D;
-    auto& projection = cameraData.P;
-    auto& rotation = cameraData.R;
-#endif
     // Set rotation to reasonable default even for non-stereo pairs
     rotation[0] = rotation[4] = rotation[8] = 1;
     for(size_t i = 0; i < 3; i++) {
