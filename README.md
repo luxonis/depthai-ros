@@ -1,5 +1,5 @@
 # depthai-ros
-main branch supports ROS Melodic, ROS Noetic, ROS2 Foxy & Galactic. Might also work on kinetic too.
+main branch supports ROS Melodic, ROS Noetic, ROS2 Foxy, Galactic and Humble. Might also work on kinetic too.
 
 
 
