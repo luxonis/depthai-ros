@@ -12,18 +12,13 @@ ImuConverter::ImuConverter(const std::string& frameName, ImuSyncMethod syncMode,
       _angular_velocity_cov(angular_velocity_cov),
       _sequenceNum(0),
       _steadyBaseTime(std::chrono::steady_clock::now()) {
-#ifdef IS_ROS2
-    _rosBaseTime = rclcpp::Clock().now();
-#else
     _rosBaseTime = ::ros::Time::now();
-#endif
+
 }
 
 void ImuConverter::FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPackets, std::deque<ImuMsgs::Imu>& imuMsgs) {
-    // int accelSequenceNum = -1, gyroSequenceNum = -1;
     static std::deque<dai::IMUReportAccelerometer> accelHist;
     static std::deque<dai::IMUReportGyroscope> gyroHist;
-    // std::deque<dai::IMUReportRotationVectorWAcc> rotationVecHist;
 
     for(int i = 0; i < imuPackets.size(); ++i) {
         if(accelHist.size() == 0) {
@@ -53,9 +48,6 @@ void ImuConverter::FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPa
                     } else {
                         accel1 = accelHist.front();
                         accelHist.pop_front();
-                        // auto dt = 1e-9
-                        //           * static_cast<double>(
-                        //               std::chrono::duration_cast<std::chrono::nanoseconds>(accel1.timestamp.get() - accel0.timestamp.get()).count());
 
                         // remove std::milli to get in seconds
                         std::chrono::duration<double, std::milli> duration_ms = accel1.timestamp.get() - accel0.timestamp.get();
@@ -77,8 +69,6 @@ void ImuConverter::FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPa
                                 "IMU INTERPOLATION: ",
                                 "Accel 1: Seq => " << accel1.sequence << " timeStamp => " << (accel1.timestamp.get() - _steadyBaseTime).count() << std::endl);
                             if(currGyro.timestamp.get() > accel0.timestamp.get() && currGyro.timestamp.get() <= accel1.timestamp.get()) {
-                                // auto alpha = std::chrono::duration_cast<std::chrono::nanoseconds>(currGyro.timestamp.get() - accel0.timestamp.get()).count();
-                                // / dt;
                                 // remove std::milli to get in seconds
                                 std::chrono::duration<double, std::milli> diff = currGyro.timestamp.get() - accel0.timestamp.get();
                                 const double alpha = diff.count() / dt;
@@ -195,10 +185,8 @@ ImuMsgs::Imu ImuConverter::CreateUnitMessage(dai::IMUReportAccelerometer accel, 
     interpMsg.angular_velocity_covariance = {_angular_velocity_cov, 0.0, 0.0, 0.0, _angular_velocity_cov, 0.0, 0.0, 0.0, _angular_velocity_cov};
 
     interpMsg.header.frame_id = _frameName;
-#ifndef IS_ROS2
     interpMsg.header.seq = _sequenceNum;
     _sequenceNum++;
-#endif
 
     if(_syncMode == ImuSyncMethod::LINEAR_INTERPOLATE_ACCEL) {
         interpMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, gyro.timestamp.get());
