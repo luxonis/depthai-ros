@@ -3,218 +3,35 @@
     <!-- Multiple camera args -->
     <arg name="enable_camera1"            default="true"/>
     <arg name="enable_camera2"            default="false"/>
-    <arg name="enable_camera3"            default="false"/>
     <arg name="useWithIP_camera1"         default="false"/>
     <arg name="useWithIP_camera2"         default="false"/>
-    <arg name="useWithIP_camera3"         default="false"/>
     <arg name="ip_address_camera1"    	  default=""/>
     <arg name="ip_address_camera2"    	  default=""/>
-    <arg name="ip_address_camera3"    	  default=""/>
-    <arg name="tf_prefix_camera1"         default="front"/>
-    <arg name="tf_prefix_camera2"         default="back_left"/>
-    <arg name="tf_prefix_camera3"         default="back_right"/>
+    <arg name="useWithMxId_camera1"       default="false"/>
+    <arg name="useWithMxId_camera2"       default="false"/>
+    <arg name="mxId_camera1"    	      default=""/>
+    <arg name="mxId_camera2"    	      default=""/>
+    <arg name="tf_prefix_camera1"         default="oak_front"/>
+    <arg name="tf_prefix_camera2"         default="oak_back"/>
 
-    <!-- <args for urdf/> -->
-    <arg name="mxId"                 default=""/>
-    <arg name="usb2Mode"             default="false"/>
-    <arg name="poeMode"              default="false"/>
-
-    <arg name="camera_model"         default="OAK-D"            /> <!-- 'zed' or 'zedm' -->
-    <arg name="tf_prefix"            default="oak"              />
-    <arg name="mode"                 default="depth"            />
-    <arg name="base_frame"           default="oak-d_frame"      />
-    <arg name="parent_frame"         default="oak-d-base-frame" /> 
-    <arg name="imuMode"              default="1"                />   <!-- 0 -> COPY, 1 -> LINEAR_INTERPOLATE_GYRO, 2 -> LINEAR_INTERPOLATE_ACCEL -->
-
-    <arg name="cam_pos_x"             default="0.0" /> <!-- Position respect to base frame (i.e. "base_link) -->
-    <arg name="cam_pos_y"             default="0.0" /> <!-- Position respect to base frame (i.e. "base_link) -->
-    <arg name="cam_pos_z"             default="0.0" /> <!-- Position respect to base frame (i.e. "base_link) -->
-    <arg name="cam_roll"              default="0.0" /> <!-- Orientation respect to base frame (i.e. "base_link) -->
-    <arg name="cam_pitch"             default="0.0" /> <!-- Orientation respect to base frame (i.e. "base_link) -->
-    <arg name="cam_yaw"               default="0.0" /> <!-- Orientation respect to base frame (i.e. "base_link) -->
-
-    <arg name="lrcheck"               default="true" /> 
-    <arg name="extended"              default="false"/> 
-    <arg name="subpixel"              default="true" />
-    <arg name="rectify"               default="true" />
-    <arg name="depth_aligned"         default="false" />
-
-    <arg name="enableSpatialDetection" default="false" />
-    <arg name="syncNN"                 default="false" />
-    <arg name="detectionClassesCount"  default="80"   />
-    <arg name="nnName"                 default="x"         />
-    <arg name="resourceBaseFolder"     default="$(find depthai_examples)/resources" />
-    <arg name="nnPath"                 default="" /> 
-
-     <!-- see https://docs.luxonis.com/projects/api/en/latest/components/nodes/stereo_depth/#currently-configurable-blocks for possible combination of optionf for higher fps-->
-    <arg name="stereo_fps"            default="40"  />
-    <arg name="confidence"            default="90" />
-    <arg name="LRchecktresh"          default="1"   />
-    <arg name="monoResolution"        default="720p"/>
-    <arg name="angularVelCovariance"  default="0"   />
-    <arg name="linearAccelCovariance" default="0"   />
-
-    <arg name="enableDotProjector"    default="true"/>
-    <arg name="enableFloodLight"      default="true"/>
-    <arg name="dotProjectormA"        default="400.0"/>
-    <arg name="floodLightmA"          default="400.0"/>
-    <arg name="enableRviz"            default="false"/>
-    <arg name="enableMarkerPublish"   default="false" />
-
-    <include file="$(find depthai_bridge)/launch/urdf.launch">
-        <arg name="base_frame"      value="$(arg  base_frame)"  />
-        <arg name="parent_frame"    value="$(arg  parent_frame)"/>
-        <arg name="camera_model"    value="$(arg  camera_model)"/>
-        <arg name="tf_prefix"       value="$(arg  tf_prefix)" />
-        <arg name="cam_pos_x"       value="$(arg  cam_pos_x)"   />
-        <arg name="cam_pos_y"       value="$(arg  cam_pos_y)"   />
-        <arg name="cam_pos_z"       value="$(arg  cam_pos_z)"   />
-        <arg name="cam_roll"        value="$(arg  cam_roll)"    />
-        <arg name="cam_pitch"       value="$(arg  cam_pitch)"   />
-        <arg name="cam_yaw"         value="$(arg  cam_yaw)"     />
+    <!-- First Camera -->
+    <include if="$(eval arg('enable_camera1') == true)" file="$(find depthai_examples)/launch/stereo_inertial_node.launch">
+        <arg name="tf_prefix"       value="$(arg tf_prefix_camera1)" />
+        <arg name="useWithIP"       value="$(arg useWithIP_camera1)"/>
+        <arg name="ipAddress"       value="$(arg ip_address_camera1)"/>
+        <arg name="useWithMxId"     value="$(arg useWithMxId_camera1)"/>
+        <arg name="mxId"            value="$(arg mxId_camera1)"/>
     </include>
 
-    <!-- launch-prefix="xterm -e gdb (add [- - args] without space) -->
-    <node if="$(eval arg('enable_camera1') == true)" name="stereo_inertial_publisher_front" pkg="depthai_examples" type="cassie_oak" output="screen" required="true">
-        <param name="ipAddress"             value="$(arg ip_address_camera1)"/>
-        <param name="useWithIP"             value="$(arg useWithIP_camera1)"/>
-        
-        <param name="mxId"                  value="$(arg mxId)"/>
-        <param name="usb2Mode"              value="$(arg usb2Mode)"/>
-        <param name="poeMode"               value="$(arg poeMode)"/>
+    <!-- Second Camera -->
+    <include if="$(eval arg('enable_camera2') == true)" file="$(find depthai_examples)/launch/stereo_inertial_node.launch">
+        <arg name="tf_prefix"       value="$(arg tf_prefix_camera2)" />
+        <arg name="useWithIP"       value="$(arg useWithIP_camera2)"/>
+        <arg name="ipAddress"       value="$(arg ip_address_camera2)"/>
+        <arg name="useWithMxId"     value="$(arg useWithMxId_camera2)"/>
+        <arg name="mxId"            value="$(arg mxId_camera2)"/>
+    </include>
 
-        <param name="tf_prefix"             value="$(arg tf_prefix_camera1)"/>
-        <param name="mode"                  value="$(arg mode)"/>
-        <param name="imuMode"               value="$(arg imuMode)"/>
-
-        <param name="lrcheck"               value="$(arg lrcheck)"/>
-        <param name="extended"              value="$(arg extended)"/>
-        <param name="subpixel"              value="$(arg subpixel)"/>
-        <param name="rectify"               value="$(arg rectify)" />
-        <param name="depth_aligned"         value="$(arg depth_aligned)" />
-        
-        <param name="enableSpatialDetection"   value="$(arg enableSpatialDetection)" />
-        <param name="syncNN"                   value="$(arg syncNN)" />
-        <param name="detectionClassesCount"    value="$(arg detectionClassesCount)" />
-        <param name="nnName"                   value="$(arg nnName)"/>
-        <param name="resourceBaseFolder"       value="$(arg resourceBaseFolder)"/>
-
-        <param name="stereo_fps"            value="$(arg stereo_fps)" />
-        <param name="confidence"            value="$(arg confidence)" />
-        <param name="LRchecktresh"          value="$(arg LRchecktresh)" />
-        <param name="monoResolution"        value="$(arg monoResolution)" />
-        <param name="angularVelCovariance"  value="$(arg angularVelCovariance)" />
-        <param name="linearAccelCovariance" value="$(arg linearAccelCovariance)" />
-
-        <param name="enableDotProjector"    value="$(arg enableDotProjector)" />
-        <param name="enableFloodLight"      value="$(arg enableFloodLight)" />
-        <param name="dotProjectormA"        value="$(arg dotProjectormA)" />
-        <param name="floodLightmA"          value="$(arg floodLightmA)" />
-    </node>            
-
-    <node if="$(eval arg('enable_camera2') == true)" name="stereo_inertial_publisher_back_left" pkg="depthai_examples" type="cassie_oak" output="screen" required="true">
-        <param name="ipAddress"             value="$(arg ip_address_camera2)"/>
-        <param name="useWithIP"             value="$(arg useWithIP_camera2)"/>
-        
-        <param name="mxId"                  value="$(arg mxId)"/>
-        <param name="usb2Mode"              value="$(arg usb2Mode)"/>
-        <param name="poeMode"               value="$(arg poeMode)"/>
-
-        <param name="tf_prefix"             value="$(arg tf_prefix_camera2)"/>
-        <param name="mode"                  value="$(arg mode)"/>
-        <param name="imuMode"               value="$(arg imuMode)"/>
-
-        <param name="lrcheck"               value="$(arg lrcheck)"/>
-        <param name="extended"              value="$(arg extended)"/>
-        <param name="subpixel"              value="$(arg subpixel)"/>
-        <param name="rectify"               value="$(arg rectify)" />
-        <param name="depth_aligned"         value="$(arg depth_aligned)" />
-        
-        <param name="enableSpatialDetection"   value="$(arg enableSpatialDetection)" />
-        <param name="syncNN"                   value="$(arg syncNN)" />
-        <param name="detectionClassesCount"    value="$(arg detectionClassesCount)" />
-        <param name="nnName"                   value="$(arg nnName)"/>
-        <param name="resourceBaseFolder"       value="$(arg resourceBaseFolder)"/>
-
-        <param name="stereo_fps"            value="$(arg stereo_fps)" />
-        <param name="confidence"            value="$(arg confidence)" />
-        <param name="LRchecktresh"          value="$(arg LRchecktresh)" />
-        <param name="monoResolution"        value="$(arg monoResolution)" />
-        <param name="angularVelCovariance"  value="$(arg angularVelCovariance)" />
-        <param name="linearAccelCovariance" value="$(arg linearAccelCovariance)" />
-
-        <param name="enableDotProjector"    value="$(arg enableDotProjector)" />
-        <param name="enableFloodLight"      value="$(arg enableFloodLight)" />
-        <param name="dotProjectormA"        value="$(arg dotProjectormA)" />
-        <param name="floodLightmA"          value="$(arg floodLightmA)" />
-    </node>    
-
-    <node if="$(eval arg('enable_camera3') == true)" name="stereo_inertial_publisher_back_right" pkg="depthai_examples" type="cassie_oak" output="screen" required="true">
-        <param name="ipAddress"             value="$(arg ip_address_camera3)"/>
-        <param name="useWithIP"             value="$(arg useWithIP_camera3)"/>
-        
-        <param name="mxId"                  value="$(arg mxId)"/>
-        <param name="usb2Mode"              value="$(arg usb2Mode)"/>
-        <param name="poeMode"               value="$(arg poeMode)"/>
-
-        <param name="tf_prefix"             value="$(arg tf_prefix_camera3)"/>
-        <param name="mode"                  value="$(arg mode)"/>
-        <param name="imuMode"               value="$(arg imuMode)"/>
-
-        <param name="lrcheck"               value="$(arg lrcheck)"/>
-        <param name="extended"              value="$(arg extended)"/>
-        <param name="subpixel"              value="$(arg subpixel)"/>
-        <param name="rectify"               value="$(arg rectify)" />
-        <param name="depth_aligned"         value="$(arg depth_aligned)" />
-        
-        <param name="enableSpatialDetection"   value="$(arg enableSpatialDetection)" />
-        <param name="syncNN"                   value="$(arg syncNN)" />
-        <param name="detectionClassesCount"    value="$(arg detectionClassesCount)" />
-        <param name="nnName"                   value="$(arg nnName)"/>
-        <param name="resourceBaseFolder"       value="$(arg resourceBaseFolder)"/>
-
-        <param name="stereo_fps"            value="$(arg stereo_fps)" />
-        <param name="confidence"            value="$(arg confidence)" />
-        <param name="LRchecktresh"          value="$(arg LRchecktresh)" />
-        <param name="monoResolution"        value="$(arg monoResolution)" />
-        <param name="angularVelCovariance"  value="$(arg angularVelCovariance)" />
-        <param name="linearAccelCovariance" value="$(arg linearAccelCovariance)" />
-
-        <param name="enableDotProjector"    value="$(arg enableDotProjector)" />
-        <param name="enableFloodLight"      value="$(arg enableFloodLight)" />
-        <param name="dotProjectormA"        value="$(arg dotProjectormA)" />
-        <param name="floodLightmA"          value="$(arg floodLightmA)" />
-    </node>    
-
-    <node pkg="nodelet" type="nodelet" name="nodelet_manager"  args="manager" output="screen"/>
-
-    <node if="$(eval arg('enable_camera1') == true)" pkg="nodelet" type="nodelet" name="depth_image_convertion_nodelet_front"
-        args="load depth_image_proc/convert_metric nodelet_manager">
-        <remap from="image_raw" to="/stereo_inertial_publisher_front/stereo/depth"/>    
-        <remap from="image" to="/stereo_inertial_publisher_front/stereo/image"/>
-    </node>
-
-    <node if="$(eval arg('enable_camera2') == true)" pkg="nodelet" type="nodelet" name="depth_image_convertion_nodelet_back_left"
-        args="load depth_image_proc/convert_metric nodelet_manager">
-        <remap from="image_raw" to="/stereo_inertial_publisher_back_left/stereo/depth"/>    
-        <remap from="image" to="/stereo_inertial_publisher_back_left/stereo/image"/>
-    </node>
-
-    <node if="$(eval arg('enable_camera3') == true)" pkg="nodelet" type="nodelet" name="depth_image_convertion_nodelet_back_right"
-        args="load depth_image_proc/convert_metric nodelet_manager">
-        <remap from="image_raw" to="/stereo_inertial_publisher_back_right/stereo/depth"/>    
-        <remap from="image" to="/stereo_inertial_publisher_back_right/stereo/image"/>
-    </node>
-
-    <!-- Visualizations for only the first camera -->
-    <node if="$(eval arg('enableMarkerPublish') == true)" type="markerPublisher.py" name="markerPublisher" pkg="depthai_examples">
-        <remap from="spatialDetections" to="/stereo_inertial_publisher_front/color/yolov4_Spatial_detections"/>
-        <remap from="spatialDetectionMarkers" to="/stereo_inertial_publisher_front/color/spatialDetectionMarkers"/>
-    </node>
-
-  <group if="$(eval arg('enableRviz') == true)">
-    <node if="$(eval arg('depth_aligned') == true)" type="rviz" name="rviz" pkg="rviz" args="-d $(find depthai_examples)/rviz/stereoInertialDepthAlign.rviz" />
-    <node if="$(eval arg('depth_aligned') == false)" type="rviz" name="rviz" pkg="rviz" args="-d $(find depthai_examples)/rviz/stereoInertialROS1.rviz" />
-  </group>
-
+    <!-- More cameras can be added in the same fashion -->
+ 
 </launch>
