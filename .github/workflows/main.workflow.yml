@@ -6,13 +6,19 @@ on:
   push:
     branches:
       - main
-      - devel
+      - humble
+      - galactic
+      - foxy
+      - noetic
     tags:
       - 'v*'
   pull_request:
     branches:
       - main
-      - devel
+      - humble
+      - galactic
+      - foxy
+      - noetic
 
 jobs:
 
@@ -104,19 +110,44 @@ jobs:
           target-ros2-distro: ${{ matrix.ros_distribution }}
           skip-tests: true
 
+    build:
+    name: Build and Upload to Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
 
-  # build_:
-  #   runs-on: ubuntu-18.04
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: ros-tooling/setup-ros@v0.2
-  #       with:
-  #         required-ros-distributions: melodic
-  #     - run: sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencies.sh | sudo bash
-  #     - uses: ros-tooling/action-ros-ci@v0.2
-  #       with:
-  #         # vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/examples.repos"
-  #         # package-name: depthai_examples
-  #         target-ros1-distro: melodic
-  #         skip-tests: true
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
+
+      - name: Build and push (development)
+        if: startsWith(github.ref, 'refs/tags/v') != true
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm/v7,linux/arm64 \
+            --build-arg USE_RVIZ=1 \
+            --tag luxonis/depthai_ros:${{ github.sha }} \
+            --output "type=image,push=true" .
+      - name: Get Version
+        if: startsWith(github.ref, 'refs/tags/v')
+        id: vars
+        run: echo ::set-output name=short_ref::${GITHUB_REF#refs/*/}
+
+      - name: Build and push (release)
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm/v7,linux/arm64 \
+            --build-arg USE_RVIZ=1 \
+            --tag luxonis/depthai_ros:${{ steps.vars.outputs.short_ref }} \
+            --tag luxonis/depthai_ros:latest \
+            --output "type=image,push=true" .
