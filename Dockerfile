@@ -1,4 +1,4 @@
-FROM ros:galactic-ros-base
+FROM ros:foxy-ros-base
 ARG USE_RVIZ
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
@@ -16,8 +16,8 @@ ENV WS=/ws
 RUN mkdir -p $WS/src
 COPY ./ .$WS/src/depthai_ros
 RUN cd .$WS/ && rosdep install --from-paths src --ignore-src -y
-RUN cd .$WS/ && . /opt/ros/galactic/setup.sh && colcon build
-RUN if [ "$USE_RVIZ" = "1" ] ; then echo "RVIZ ENABLED" && sudo apt install -y ros-galactic-rviz2 ros-galactic-rviz-imu-plugin ; else echo "RVIZ NOT ENABLED"; fi
+RUN cd .$WS/ && . /opt/ros/foxy/setup.sh && colcon build
+RUN if [ "$USE_RVIZ" = "1" ] ; then echo "RVIZ ENABLED" && sudo apt install -y ros-foxy-rviz2 ros-foxy-rviz-imu-plugin ; else echo "RVIZ NOT ENABLED"; fi
 RUN echo "if [ -f ${WS}/install/setup.zsh ]; then source ${WS}/install/setup.zsh; fi" >> $HOME/.zshrc
 RUN echo 'eval "$(register-python-argcomplete3 ros2)"' >> $HOME/.zshrc
 RUN echo 'eval "$(register-python-argcomplete3 colcon)"' >> $HOME/.zshrc
