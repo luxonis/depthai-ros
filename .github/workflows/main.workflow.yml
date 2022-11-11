@@ -110,9 +110,9 @@ jobs:
           target-ros2-distro: ${{ matrix.ros_distribution }}
           skip-tests: true
 
-    build:
+  build:
     name: Build and Upload to Docker Hub
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -134,7 +134,7 @@ jobs:
         run: |
           docker buildx build \
             --platform linux/amd64,linux/arm/v7,linux/arm64 \
-            --tag luxonis/depthai_ros:${{ github.sha }} \
+            --tag luxonis/depthai-ros-noetic:${{ github.sha }} \
             --output "type=image,push=true" .
       - name: Get Version
         if: startsWith(github.ref, 'refs/tags/v')
@@ -146,6 +146,6 @@ jobs:
         run: |
           docker buildx build \
             --platform linux/amd64,linux/arm/v7,linux/arm64 \
-            --tag luxonis/depthai_ros:${{ steps.vars.outputs.short_ref }} \
-            --tag luxonis/depthai_ros:latest \
+            --tag luxonis/depthai-ros-noetic:${{ steps.vars.outputs.short_ref }} \
+            --tag luxonis/depthai-ros-noetic:latest \
             --output "type=image,push=true" .
