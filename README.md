@@ -21,7 +21,7 @@ Install depthai-ros. (Available for Noetic, foxy, galactic and humble)
 ## Docker
 You can additionally build and run docker images on your local machine. To do that, add USB rules as in above step, clone the repository and inside it run:
 ```
-docker build --build-arg USE_RVIZ=1 -f ./desktop.dockerfile -t depthai .
+docker build --build-arg USE_RVIZ=1 -f ./desktop.dockerfile -t depthai_ros .
 ```
 `RUN_RVIZ` arg means rviz will be installed inside docker. If you want to run it you need to also execute following command (you'll have to do it again after restarting your PC):
 ```
@@ -30,12 +30,12 @@ xhost +local:docker
 
 Then you can run your image in following way:
 ```
-docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai
+docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai_ros
 ```
 will run an interactive docker session.
 
 ```
-docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai roslaunch depthai_examples stereo_inertial_node.launch
+docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai_ros roslaunch depthai_examples stereo_inertial_node.launch
 ```
 Will only start `stereo_inertial_node` launch file (you can try different commands).
 
