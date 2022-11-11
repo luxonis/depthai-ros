@@ -422,7 +422,7 @@ int main(int argc, char** argv) {
     if(useWithIP) // Connecting to a camera with specific IP, requires static IP config beforehand
     {
         auto deviceInfo = dai::DeviceInfo(ipAddress);
-        if(deviceInfo.state == X_LINK_UNBOOTED || deviceInfo.state == X_LINK_BOOTLOADER || deviceInfo.state == X_LINK_FLASH_BOOTED) {
+        if(deviceInfo.state == X_LINK_ANY_STATE || deviceInfo.state == X_LINK_UNBOOTED || deviceInfo.state == X_LINK_BOOTLOADER || deviceInfo.state == X_LINK_FLASH_BOOTED) {
             std::cout << "Device found with IP Address: " << ipAddress <<  std::endl;
             if(poeMode) {
                 device = std::make_shared<dai::Device>(pipeline, deviceInfo);
@@ -439,7 +439,7 @@ int main(int argc, char** argv) {
     else if(useWithMxId) // Connecting to a camera with unique MxID
     {
         auto deviceInfo = dai::DeviceInfo(mxId);
-        if(deviceInfo.state == X_LINK_UNBOOTED || deviceInfo.state == X_LINK_BOOTLOADER || deviceInfo.state == X_LINK_FLASH_BOOTED) {
+        if(deviceInfo.state == X_LINK_ANY_STATE || deviceInfo.state == X_LINK_UNBOOTED || deviceInfo.state == X_LINK_BOOTLOADER || deviceInfo.state == X_LINK_FLASH_BOOTED) {
             std::cout << "Connecting to device with MxID : " << mxId <<  std::endl;
             if(poeMode) {
                 device = std::make_shared<dai::Device>(pipeline, deviceInfo);
