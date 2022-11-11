@@ -19,7 +19,7 @@ Install depthai-ros. (Available for Noetic, foxy, galactic and humble)
 `sudo apt install ros-<distro>-depthai-ros`
 
 ## Docker
-You can additionally build and run docker images on your local machine. To do that, add USB rules as in above step, clone the repository and inside it run:
+You can additionally build and run docker images on your local machine. To do that, add USB rules as in above step, clone the repository and inside it run (it matters on which branch you are on):
 ```
 docker build --build-arg USE_RVIZ=1 -f ./desktop.dockerfile -t depthai_ros .
 ```
@@ -33,12 +33,15 @@ Then you can run your image in following way:
 docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai_ros
 ```
 will run an interactive docker session.
-
+### Running on ROS1
 ```
 docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai_ros roslaunch depthai_examples stereo_inertial_node.launch
 ```
 Will only start `stereo_inertial_node` launch file (you can try different commands).
-
+### Running on ROS2
+```
+docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai_ros roslaunch depthai_examples stereo_inertial_node.launch.py
+```
 ## Install from source
 
 ### Install dependencies
