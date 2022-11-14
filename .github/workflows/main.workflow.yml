@@ -34,7 +34,7 @@ jobs:
     - uses: ros-tooling/action-ros2-lint@0.0.6
       with:
         linter: ${{ matrix.linter }}
-        package-name: ${{ matrix.package }}
+        package-name: ${{ matrix.packages }}
 
   docker-build:
     name: Build and Upload to Docker Hub
