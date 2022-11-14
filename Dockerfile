@@ -1,4 +1,5 @@
-FROM ros:noetic-ros-base
+ARG ROS_DISTRO=noetic
+FROM ros:${ROS_DISTRO}-ros-base
 ARG USE_RVIZ
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
