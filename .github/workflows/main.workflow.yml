@@ -21,7 +21,7 @@ on:
 jobs:
 
   linting:
-    name: ament_${{ matrix.linter }}
+    name: ament_${{ matrix.linter }} ${{ matrix.package }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false 
@@ -29,9 +29,9 @@ jobs:
         linter: [clang_format, cpplint, xmllint, pep257, lint_cmake]
         packages: [depthai_bridge, depthai_examples, depthai_ros_msgs, depthai_ros_msgs]
     steps:
-    - uses: actions/checkout@v1
-    - uses: ros-tooling/setup-ros2@0.0.11
-    - uses: ros-tooling/action-ros2-lint@0.0.5
+    - uses: actions/checkout@v2.3.4
+    - uses: ros-tooling/setup-ros@0.3.2
+    - uses: ros-tooling/action-ros2-lint@0.0.6
       with:
         linter: ${{ matrix.linter }}
         package-name: ${{ matrix.package }}
@@ -42,7 +42,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: 
-        ROS_DISTRO: [humble, rolling]
+        ROS_DISTRO: [humble]
     env: 
       PUSH: ${{ (github.event_name != 'pull_request') && (github.repository == 'luxonis/depthai-ros') }}
     steps:
@@ -68,7 +68,7 @@ jobs:
           build-args: |
             ROS_DISTRO=${{ matrix.ROS_DISTRO }}
             USE_RVIZ=1
-          platform: |
+          platforms: |
             amd64
             arm64
           push: ${{ env.PUSH }}
