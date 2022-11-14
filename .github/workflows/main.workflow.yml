@@ -28,13 +28,13 @@ jobs:
       matrix:
         linter: [clang_format, cpplint, xmllint, pep257, lint_cmake]
         packages: [depthai_bridge, depthai_examples, depthai_ros_msgs, depthai_ros_msgs]
-      steps:
-      - uses: actions/checkout@v1
-      - uses: ros-tooling/setup-ros2@0.0.11
-      - uses: ros-tooling/action-ros2-lint@0.0.5
-        with:
-          linter: ${{ matrix.linter }}
-          package-name: ${{ matrix.package }}
+    steps:
+    - uses: actions/checkout@v1
+    - uses: ros-tooling/setup-ros2@0.0.11
+    - uses: ros-tooling/action-ros2-lint@0.0.5
+      with:
+        linter: ${{ matrix.linter }}
+        package-name: ${{ matrix.package }}
 
   docker-build:
     name: Build and Upload to Docker Hub
