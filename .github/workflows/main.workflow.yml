@@ -80,7 +80,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: 
-        ROS_DISTRO: [${BRANCH_NAME}]
+        ROS_DISTRO: [noetic]
     env: 
       PUSH: ${{ (github.event_name != 'pull_request') && (github.repository == 'luxonis/depthai-ros') }}
     steps:
