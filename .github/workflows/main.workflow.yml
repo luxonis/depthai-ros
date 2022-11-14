@@ -108,4 +108,4 @@ jobs:
             USE_RVIZ=1
           push: ${{ env.PUSH }}
           no-cache: true
-          tags: luxonis/depthai-ros:{{ matrix.ROS_DISTRO }}
+          tags: luxonis/depthai-ros:${{ matrix.ROS_DISTRO }}
