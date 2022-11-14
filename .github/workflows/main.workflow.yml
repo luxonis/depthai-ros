@@ -27,14 +27,18 @@ jobs:
       fail-fast: false 
       matrix:
         linter: [clang_format, cpplint, xmllint, pep257, lint_cmake]
-        packages: [depthai_bridge, depthai_examples, depthai_ros_msgs, depthai_ros_msgs]
     steps:
     - uses: actions/checkout@v2.3.4
     - uses: ros-tooling/setup-ros@0.3.2
     - uses: ros-tooling/action-ros2-lint@0.0.6
       with:
+        distribution: humble
         linter: ${{ matrix.linter }}
-        package-name: ${{ matrix.packages }}
+        package-name: |
+          depthai_bridge
+          depthai_examples
+          depthai_ros_msgs
+          depthai_ros
 
   docker-build:
     name: Build and Upload to Docker Hub
