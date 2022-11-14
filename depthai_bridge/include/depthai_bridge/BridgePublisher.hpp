@@ -5,27 +5,23 @@
 #include <type_traits>
 #include <typeinfo>
 
-#include "depthai/depthai.hpp"
-
+#include "boost/make_shared.hpp"
+#include "boost/shared_ptr.hpp"
 #include "camera_info_manager/camera_info_manager.h"
+#include "depthai/depthai.hpp"
 #include "image_transport/image_transport.h"
 #include "ros/console.h"
 #include "ros/ros.h"
-#include "boost/make_shared.hpp"
-#include "boost/shared_ptr.hpp"
 #include "sensor_msgs/Image.h"
-
 
 namespace dai {
 
 namespace ros {
 
-
 namespace StdMsgs = std_msgs;
 namespace ImageMsgs = sensor_msgs;
 using ImagePtr = ImageMsgs::ImagePtr;
 namespace rosOrigin = ::ros;
-
 
 template <class RosMsg, class SimMsg>
 class BridgePublisher {
@@ -60,7 +56,6 @@ class BridgePublisher {
      * Tag Dispacher function to to overload the Publisher to use Default ros::Publisher
      */
     std::shared_ptr<rosOrigin::Publisher> advertise(int queueSize, std::false_type);
-
 
     BridgePublisher(const BridgePublisher& other);
 
@@ -171,7 +166,6 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(const BridgePublisher& other) {
         _cameraInfoPublisher = rosOrigin::Publisher(other._cameraInfoPublisher);
     }
 }
-
 
 template <class RosMsg, class SimMsg>
 void BridgePublisher<RosMsg, SimMsg>::daiCallback(std::string name, std::shared_ptr<ADatatype> data) {

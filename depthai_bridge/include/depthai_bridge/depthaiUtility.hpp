@@ -1,8 +1,8 @@
 #pragma once
 
-#include <chrono>
 #include <ros/ros.h>
 
+#include <chrono>
 
 namespace dai {
 
@@ -10,12 +10,12 @@ namespace ros {
 
 enum LogLevel { DEBUG, INFO, WARN, ERROR, FATAL };
 
-    #define DEPTHAI_ROS_LOG_STREAM(loggerName, level, isOnce, args)                                                                       \
-        if(isOnce) {                                                                                                                      \
-            ROS_LOG_STREAM_ONCE(static_cast<::ros::console::Level>(level), std::string(ROSCONSOLE_NAME_PREFIX) + "." + loggerName, args); \
-        } else {                                                                                                                          \
-            ROS_LOG_STREAM(static_cast<::ros::console::Level>(level), std::string(ROSCONSOLE_NAME_PREFIX) + "." + loggerName, args);      \
-        }
+#define DEPTHAI_ROS_LOG_STREAM(loggerName, level, isOnce, args)                                                                       \
+    if(isOnce) {                                                                                                                      \
+        ROS_LOG_STREAM_ONCE(static_cast<::ros::console::Level>(level), std::string(ROSCONSOLE_NAME_PREFIX) + "." + loggerName, args); \
+    } else {                                                                                                                          \
+        ROS_LOG_STREAM(static_cast<::ros::console::Level>(level), std::string(ROSCONSOLE_NAME_PREFIX) + "." + loggerName, args);      \
+    }
 
 // DEBUG stream macros on top of ROS logger
 #define DEPTHAI_ROS_DEBUG_STREAM(loggerName, args) DEPTHAI_ROS_LOG_STREAM(loggerName, dai::ros::LogLevel::DEBUG, false, args)
@@ -42,10 +42,9 @@ enum LogLevel { DEBUG, INFO, WARN, ERROR, FATAL };
 
 #define DEPTHAI_ROS_FATAL_STREAM_ONCE(loggerName, args) DEPTHAI_ROS_LOG_STREAM(loggerName, dai::ros::LogLevel::FATAL, true, args)
 
-
 inline ::ros::Time getFrameTime(::ros::Time rosBaseTime,
-                         std::chrono::time_point<std::chrono::steady_clock> steadyBaseTime,
-                         std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration> currTimePoint) {
+                                std::chrono::time_point<std::chrono::steady_clock> steadyBaseTime,
+                                std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration> currTimePoint) {
     auto elapsedTime = currTimePoint - steadyBaseTime;
     uint64_t nSec = rosBaseTime.toNSec() + std::chrono::duration_cast<std::chrono::nanoseconds>(elapsedTime).count();
     auto currTime = rosBaseTime;
