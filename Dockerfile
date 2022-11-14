@@ -1,4 +1,5 @@
-FROM ros:humble-ros-base
+ARG ROS_DISTRO=humble
+FROM ros:${ROS_DISTRO}-ros-base
 ARG USE_RVIZ
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
