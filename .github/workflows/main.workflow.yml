@@ -106,6 +106,9 @@ jobs:
           build-args: |
             ROS_DISTRO=${{ matrix.ROS_DISTRO }}
             USE_RVIZ=1
+          platform: |
+            amd64
+            arm64
           push: ${{ env.PUSH }}
           no-cache: true
           tags: luxonis/depthai-ros:${{ matrix.ROS_DISTRO }}
