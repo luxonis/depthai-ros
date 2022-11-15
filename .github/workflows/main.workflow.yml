@@ -22,7 +22,7 @@ env:
 
 jobs:
   clang-format-lint:
-    name: ament_clang format
+    name: ament_clang_format
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
