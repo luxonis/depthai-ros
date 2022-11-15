@@ -20,13 +20,34 @@ on:
 
 jobs:
 
+  clang-format-lint:
+    name: ament_clang format
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+    steps:
+    - uses: actions/checkout@v2.3.4
+    - uses: ros-tooling/setup-ros@0.3.2
+      with:
+        required-ros-distributions: humble
+    - uses: ros-tooling/action-ros2-lint@0.0.6
+      with:
+        distribution: humble
+        linter: clang_format
+        arguments: |
+          --config ./.clang-format
+        package-name: |
+          depthai_bridge
+          depthai_examples
+          depthai_ros_msgs
+          depthai_ros
   linting:
-    name: ament_${{ matrix.linter }} ${{ matrix.package }}
+    name: ament_${{ matrix.linter }}
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false 
       matrix:
-        linter: [clang_format, cpplint, xmllint, pep257, lint_cmake]
+        linter: [xmllint, pep257, lint_cmake]
     steps:
     - uses: actions/checkout@v2.3.4
     - uses: ros-tooling/setup-ros@0.3.2
