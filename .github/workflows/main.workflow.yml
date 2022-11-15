@@ -24,7 +24,7 @@ env:
 jobs:
   clang-format-lint:
     name: ament_clang format
-    runs-on: env.PLATFORM
+    runs-on: ${{ env.PLATFORM }}
     strategy:
       fail-fast: false
     steps:
@@ -44,7 +44,7 @@ jobs:
           depthai_ros
   linting:
     name: ament_${{ matrix.linter }}
-    runs-on: env.PLATFORM
+    runs-on: ${{ env.PLATFORM }}
     strategy:
       fail-fast: false 
       matrix:
