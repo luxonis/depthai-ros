@@ -18,13 +18,12 @@ on:
       - galactic
       - foxy
 env:
-  PLATFORM: ubuntu-22.04
   ROS_DISTRO: humble
 
 jobs:
   clang-format-lint:
     name: ament_clang format
-    runs-on: ${{ env.PLATFORM }}
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
     steps:
@@ -44,7 +43,7 @@ jobs:
           depthai_ros
   linting:
     name: ament_${{ matrix.linter }}
-    runs-on: ${{ env.PLATFORM }}
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false 
       matrix:
@@ -66,7 +65,7 @@ jobs:
 
   docker-build:
     name: Build and Upload to Docker Hub
-    runs-on: env.PLATFORM
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
     env: 
