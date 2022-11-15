@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
+cmake_minimum_required(VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
 project(depthai_examples VERSION 2.5.3 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
@@ -22,7 +22,7 @@ set(tiny_yolo_v4_blob_name "yolov4_tiny_coco_416x416_openvino_2021.4_6shave_bgr.
 set(mobilenet_blob_name "mobilenet-ssd_openvino_2021.2_6shave.blob")
 
 set(mobilenet_blob "${PROJECT_SOURCE_DIR}/resources/${mobilenet_blob_name}")
-file(DOWNLOAD "https://artifacts.luxonis.com/artifactory/luxonis-depthai-data-local/network/mobilenet-ssd_openvino_2021.2_6shave.blob" 
+file(DOWNLOAD "https://artifacts.luxonis.com/artifactory/luxonis-depthai-data-local/network/mobilenet-ssd_openvino_2021.2_6shave.blob"
 ${mobilenet_blob}
 TIMEOUT 60  # seconds
 EXPECTED_HASH SHA1=f0e14978b3f77a4f93b9f969cd39e58bb7aef490
@@ -73,15 +73,15 @@ include_directories(
 macro(dai_add_node_ros2 node_name node_src)
   add_executable("${node_name}" "${node_src}")
 
-  target_link_libraries("${node_name}"  
-                        depthai::core 
+  target_link_libraries("${node_name}"
+                        depthai::core
                         opencv_imgproc
                         opencv_highgui)
 
-  ament_target_dependencies("${node_name}"  
-                            ${dependencies})    
+  ament_target_dependencies("${node_name}"
+                            ${dependencies})
 
-endmacro() 
+endmacro()
 
 
 dai_add_node_ros2(crop_control_service src/crop_control_service.cpp)
@@ -92,7 +92,7 @@ dai_add_node_ros2(rgb_stereo_node src/rgb_stereo_node.cpp)
 dai_add_node_ros2(stereo_inertial_node src/stereo_inertial_publisher.cpp)
 dai_add_node_ros2(stereo_node src/stereo_publisher.cpp)
 dai_add_node_ros2(yolov4_spatial_node src/yolov4_spatial_publisher.cpp)
-  
+
 target_compile_definitions(mobilenet_node PRIVATE BLOB_NAME="${mobilenet_blob_name}")
 target_compile_definitions(yolov4_spatial_node PRIVATE BLOB_NAME="${tiny_yolo_v4_blob_name}")
 target_compile_definitions(stereo_inertial_node PRIVATE BLOB_NAME="${tiny_yolo_v4_blob_name}")
@@ -117,6 +117,6 @@ install(TARGETS
         stereo_node
         yolov4_spatial_node
         DESTINATION lib/${PROJECT_NAME})
-        
+
 ament_package()
 
