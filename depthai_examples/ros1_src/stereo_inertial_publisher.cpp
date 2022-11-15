@@ -381,11 +381,7 @@ int main(int argc, char** argv) {
         auto deviceInfo = dai::DeviceInfo(ipAddress);
         if(deviceInfo.state == X_LINK_ANY_STATE || deviceInfo.state == X_LINK_UNBOOTED || deviceInfo.state == X_LINK_BOOTLOADER || deviceInfo.state == X_LINK_FLASH_BOOTED) {
             std::cout << "Device found with IP Address: " << ipAddress <<  std::endl;
-            if(poeMode) {
-                device = std::make_shared<dai::Device>(pipeline, deviceInfo);
-            } else {
-                device = std::make_shared<dai::Device>(pipeline, deviceInfo, usb2Mode);
-            }
+            device = std::make_shared<dai::Device>(pipeline, deviceInfo);
         } else if(deviceInfo.state == X_LINK_BOOTED) {
             throw std::runtime_error("ros::NodeHandle() from Node \"" + pnh.getNamespace() + "\" DepthAI Device with ipAddress  \"" + ipAddress
                                      + "\" is already booted on different process.  \"");
