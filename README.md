@@ -21,7 +21,7 @@ Install depthai-ros. (Available for Noetic, foxy, galactic and humble)
 ## Docker
 You can additionally build and run docker images on your local machine. To do that, add USB rules as in above step, clone the repository and inside it run (it matters on which branch you are on):
 ```
-docker build --build-arg USE_RVIZ=1 -f ./desktop.dockerfile -t depthai_ros .
+docker build --build-arg USE_RVIZ=1 -t depthai_ros .
 ```
 `RUN_RVIZ` arg means rviz will be installed inside docker. If you want to run it you need to also execute following command (you'll have to do it again after restarting your PC):
 ```
