@@ -34,8 +34,7 @@ jobs:
       with:
         distribution: humble
         linter: clang_format
-        arguments: |
-          --config ./.clang-format
+        arguments: --config ./.clang-format
         package-name: |
           depthai_bridge
           depthai_examples
