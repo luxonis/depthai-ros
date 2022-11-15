@@ -103,8 +103,22 @@ jobs:
         if: env.PUSH == 'true'
         id: vars
         run: echo ::set-output name=short_ref::${GITHUB_REF#refs/*/}
+
+      - name: Build
+        uses: docker/build-push-action@v3
+        if: env.PUSH == 'false'
+        with:
+          build-args: |
+            ROS_DISTRO=${{ matrix.ROS_DISTRO }}
+            USE_RVIZ=1
+          platforms: |
+            amd64
+            arm64
+          no-cache: true
+
       - name: Build and Push
         uses: docker/build-push-action@v3
+        if: env.PUSH == 'true'
         with:
           build-args: |
             ROS_DISTRO=${{ matrix.ROS_DISTRO }}
