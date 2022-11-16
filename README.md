@@ -23,7 +23,7 @@ You can additionally build and run docker images on your local machine. To do th
 ```
 docker build --build-arg USE_RVIZ=1 -t depthai_ros .
 ```
-If you find out that you run out of RAM during building, you can also set `COLCON_SEQUENTIAL=1` to build packages one at a time, it should take longer, but use less RAM.
+If you find out that you run out of RAM during building, you can also set `BUILD_SEQUENTIAL=1` to build packages one at a time, it should take longer, but use less RAM.
 
 `RUN_RVIZ` arg means rviz will be installed inside docker. If you want to run it you need to also execute following command (you'll have to do it again after restarting your PC):
 ```
