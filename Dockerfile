@@ -1,6 +1,7 @@
 ARG ROS_DISTRO=humble
 FROM ros:${ROS_DISTRO}-ros-base
 ARG USE_RVIZ
+ARG COLCON_SEQUENTIAL=0
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
    && apt-get -y install --no-install-recommends software-properties-common git libusb-1.0-0-dev wget zsh python3-colcon-common-extensions
@@ -12,7 +13,7 @@ ENV WS=/ws
 RUN mkdir -p $WS/src
 COPY ./ .$WS/src/depthai_ros
 RUN cd .$WS/ && rosdep install --from-paths src --ignore-src -y
-RUN cd .$WS/ && . /opt/ros/humble/setup.sh && colcon build
+RUN if [ "$COLCON_SEQUENTIAL" = "1" ] ; then cd .$WS/ && . /opt/ros/humble/setup.sh && colcon build --executor sequential --cmake-args -DCMAKE_BUILD_TYPE=Release ; else cd .$WS/ && . /opt/ros/humble/setup.sh && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release; fi
 RUN if [ "$USE_RVIZ" = "1" ] ; then echo "RVIZ ENABLED" && sudo apt install -y ros-humble-rviz2 ros-humble-rviz-imu-plugin ; else echo "RVIZ NOT ENABLED"; fi
 RUN echo "if [ -f ${WS}/install/setup.zsh ]; then source ${WS}/install/setup.zsh; fi" >> $HOME/.zshrc
 RUN echo 'eval "$(register-python-argcomplete3 ros2)"' >> $HOME/.zshrc
