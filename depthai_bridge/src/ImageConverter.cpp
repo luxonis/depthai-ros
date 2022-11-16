@@ -23,13 +23,11 @@ std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::planarEn
 
 ImageConverter::ImageConverter(bool interleaved) : _daiInterleaved(interleaved), _steadyBaseTime(std::chrono::steady_clock::now()) {
     _rosBaseTime = ::ros::Time::now();
-
 }
 
 ImageConverter::ImageConverter(const std::string frameName, bool interleaved)
     : _frameName(frameName), _daiInterleaved(interleaved), _steadyBaseTime(std::chrono::steady_clock::now()) {
     _rosBaseTime = ::ros::Time::now();
-
 }
 
 void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs) {

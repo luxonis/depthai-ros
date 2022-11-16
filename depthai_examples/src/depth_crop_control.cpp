@@ -2,32 +2,29 @@
  * This example shows usage of depth camera in crop mode with the possibility to move the crop.
  * Use 'WASD' in order to do it.
  */
-#include "ros/ros.h"
-
-#include <iostream>
-#include <memory>
-
 #include <depthai_ros_msgs/NormalizedImageCrop.h>
-#include "sensor_msgs/Image.h"
 
 #include <depthai_bridge/BridgePublisher.hpp>
 #include <depthai_bridge/ImageConverter.hpp>
-#include "depthai/depthai.hpp"
+#include <iostream>
+#include <memory>
 
+#include "depthai/depthai.hpp"
+#include "ros/ros.h"
+#include "sensor_msgs/Image.h"
 
 // Step size ('W','A','S','D' controls)
 static constexpr float stepSize = 0.02;
 std::shared_ptr<dai::DataInputQueue> configQueue;
 
-bool cropDepthImage(depthai_ros_msgs::NormalizedImageCrop::Request request, depthai_ros_msgs::NormalizedImageCrop::Response response){
+bool cropDepthImage(depthai_ros_msgs::NormalizedImageCrop::Request request, depthai_ros_msgs::NormalizedImageCrop::Response response) {
     dai::ImageManipConfig cfg;
     cfg.setCropRect(request.topLeft.x, request.topLeft.y, request.bottomRight.x, request.bottomRight.y);
     configQueue->send(cfg);
-    return true;    
+    return true;
 }
 
 int main() {
-
     ros::init(argc, argv, "depth_crop_control");
     ros::NodeHandle pnh("~");
     std::string cameraName;
@@ -37,18 +34,17 @@ int main() {
 
     int badParams = 0;
     badParams += !pnh.getParam("tf_prefix", cameraName);
-    badParams += !pnh.getParam("lrcheck",      lrcheck);
-    badParams += !pnh.getParam("extended",     extended);
-    badParams += !pnh.getParam("subpixel",     subpixel);
-    badParams += !pnh.getParam("confidence",   confidence);
+    badParams += !pnh.getParam("lrcheck", lrcheck);
+    badParams += !pnh.getParam("extended", extended);
+    badParams += !pnh.getParam("subpixel", subpixel);
+    badParams += !pnh.getParam("confidence", confidence);
     badParams += !pnh.getParam("LRchecktresh", LRchecktresh);
 
-    badParams += !pnh.getParam("monoResolution",   monoResolution);
+    badParams += !pnh.getParam("monoResolution", monoResolution);
 
-    if (badParams > 0)
-    {   
+    if(badParams > 0) {
         std::cout << " Bad parameters -> " << badParams << std::endl;
-        throw std::runtime_error("Couldn't find the parameters",);
+        throw std::runtime_error("Couldn't find the parameters", );
     }
 
     ros::ServiceServer service = n.advertiseService("crop_control_srv", cropDepthImage);
@@ -72,25 +68,25 @@ int main() {
     dai::Point2f topLeft(0.2, 0.2);
     dai::Point2f bottomRight(0.8, 0.8);
 
-    dai::node::MonoCamera::Properties::SensorResolution monoRes; 
+    dai::node::MonoCamera::Properties::SensorResolution monoRes;
     int monoWidth, monoHeight;
-    if(monoResolution == "720p"){
-        monoRes = dai::node::MonoCamera::Properties::SensorResolution::THE_720_P; 
-        monoWidth  = 1280;
+    if(monoResolution == "720p") {
+        monoRes = dai::node::MonoCamera::Properties::SensorResolution::THE_720_P;
+        monoWidth = 1280;
         monoHeight = 720;
-    }else if(monoResolution == "400p" ){
-        monoRes = dai::node::MonoCamera::Properties::SensorResolution::THE_400_P; 
-        monoWidth  = 640;
+    } else if(monoResolution == "400p") {
+        monoRes = dai::node::MonoCamera::Properties::SensorResolution::THE_400_P;
+        monoWidth = 640;
         monoHeight = 400;
-    }else if(monoResolution == "800p" ){
-        monoRes = dai::node::MonoCamera::Properties::SensorResolution::THE_800_P; 
-        monoWidth  = 1280;
+    } else if(monoResolution == "800p") {
+        monoRes = dai::node::MonoCamera::Properties::SensorResolution::THE_800_P;
+        monoWidth = 1280;
         monoHeight = 800;
-    }else if(monoResolution == "480p" ){
-        monoRes = dai::node::MonoCamera::Properties::SensorResolution::THE_480_P; 
-        monoWidth  = 640;
+    } else if(monoResolution == "480p") {
+        monoRes = dai::node::MonoCamera::Properties::SensorResolution::THE_480_P;
+        monoWidth = 640;
         monoHeight = 480;
-    }else{
+    } else {
         ROS_ERROR("Invalid parameter. -> monoResolution: %s", monoResolution.c_str());
         throw std::runtime_error("Invalid mono camera resolution.");
     }
@@ -108,7 +104,7 @@ int main() {
     stereo->setLeftRightCheck(lrcheck);
     stereo->setExtendedDisparity(extended);
     stereo->setSubpixel(subpixel);
-    
+
     // Linking
     configIn->out.link(manip->inputConfig);
     stereo->depth.link(manip->inputImage);
@@ -126,23 +122,23 @@ int main() {
     auto calibrationHandler = device.readCalibration();
 
     auto boardName = calibrationHandler.getEepromData().boardName;
-    if (monoHeight > 480 && boardName == "OAK-D-LITE") {
+    if(monoHeight > 480 && boardName == "OAK-D-LITE") {
         monoWidth = 640;
         monoHeight = 480;
     }
 
     dai::rosBridge::ImageConverter depthConverter(cameraName + "_right_camera_optical_frame", true);
     // TODO(sachin): Modify the calibration based on crop from service
-    auto rightCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RIGHT, monoWidth, monoHeight); 
+    auto rightCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RIGHT, monoWidth, monoHeight);
 
     dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame> depthPublish(depthQueue,
-                                                                                    pnh, 
+                                                                                    pnh,
                                                                                     std::string("stereo/depth"),
-                                                                                    std::bind(&dai::rosBridge::ImageConverter::toRosMsg, 
-                                                                                    &depthConverter, // since the converter has the same frame name
-                                                                                                    // and image type is also same we can reuse it
-                                                                                    std::placeholders::_1, 
-                                                                                    std::placeholders::_2) , 
+                                                                                    std::bind(&dai::rosBridge::ImageConverter::toRosMsg,
+                                                                                              &depthConverter,  // since the converter has the same frame name
+                                                                                                                // and image type is also same we can reuse it
+                                                                                              std::placeholders::_1,
+                                                                                              std::placeholders::_2),
                                                                                     30,
                                                                                     rightCameraInfo,
                                                                                     "stereo");

@@ -30,7 +30,6 @@ class SpatialDetectionConverter {
     bool _normalized;
     std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
     ::ros::Time _rosBaseTime;
-
 };
 
 /** TODO(sachin): Do we need to have ros msg -> dai bounding box ?

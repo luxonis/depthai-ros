@@ -13,7 +13,6 @@ ImuConverter::ImuConverter(const std::string& frameName, ImuSyncMethod syncMode,
       _sequenceNum(0),
       _steadyBaseTime(std::chrono::steady_clock::now()) {
     _rosBaseTime = ::ros::Time::now();
-
 }
 
 void ImuConverter::FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPackets, std::deque<ImuMsgs::Imu>& imuMsgs) {

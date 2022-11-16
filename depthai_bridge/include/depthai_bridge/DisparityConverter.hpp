@@ -33,7 +33,6 @@ class DisparityConverter {
     std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
 
     ::ros::Time _rosBaseTime;
-
 };
 
 }  // namespace ros

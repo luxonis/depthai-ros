@@ -73,7 +73,6 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::de
     return;
 }
 
-
 DisparityImagePtr DisparityConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
     std::deque<DisparityMsgs::DisparityImage> msgQueue;
     toRosMsg(inData, msgQueue);

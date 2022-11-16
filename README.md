@@ -18,6 +18,31 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 Install depthai-ros. (Available for Noetic, foxy, galactic and humble)
 `sudo apt install ros-<distro>-depthai-ros`
 
+## Docker
+You can additionally build and run docker images on your local machine. To do that, add USB rules as in above step, clone the repository and inside it run (it matters on which branch you are on):
+```
+docker build --build-arg USE_RVIZ=1 -t depthai-ros .
+```
+If you find out that you run out of RAM during building, you can also set `BUILD_SEQUENTIAL=1` to build packages one at a time, it should take longer, but use less RAM.
+`RUN_RVIZ` arg means rviz will be installed inside docker. If you want to run it you need to also execute following command (you'll have to do it again after restarting your PC):
+```
+xhost +local:docker
+```
+
+Then you can run your image in following way:
+```
+docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai-ros
+```
+will run an interactive docker session.
+### Running on ROS1
+```
+docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai_ros roslaunch depthai_examples stereo_inertial_node.launch
+```
+Will only start `stereo_inertial_node` launch file (you can try different commands).
+### Running on ROS2
+```
+docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai_ros roslaunch depthai_examples stereo_inertial_node.launch.py
+```
 ## Install from source
 
 ### Install dependencies
