@@ -1,0 +1,25 @@
+/**:
+  pipeline_type: "RGB"
+  enable_imu: True
+  usb_speed: "SUPER"
+  cam_type: "auto"
+  mxid: ""
+  ip: ""
+  RGB.i_id: 0
+  RGB.i_topic_name: "color"
+  RGB.i_fps: 30.0
+  RGB.i_preview_size: 256
+  RGB.i_rgb_width: 1920
+  RGB.i_rgb_heigh: 1080
+  RGB.i_resolution: "1080"
+  RGB.i_max_q_size: 4
+  RGB.i_set_isp: False
+  RGB.i_interleaved: False
+  RGB.i_keep_preview_aspect_ratio: True
+  RGB.r_exposure: 1000
+  RGB.r_iso: 100
+  RGB.r_man_focus: 1
+  RGB.r_whitebalance: 3300
+  RGB.r_man_focus: True
+  RGB.r_man_exposure: False
+  RGB.r_man_whitebalance: False
