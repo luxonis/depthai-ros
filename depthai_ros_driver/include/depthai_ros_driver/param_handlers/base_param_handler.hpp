@@ -29,6 +29,14 @@ class BaseParamHandler {
         log_param(node->get_logger(), full_name, p.as_string());
         return node->declare_parameter(full_name, value);
     }
+    template <typename T>
+    T declareAndLogParam(rclcpp::Node *node, const std::string &param_name, T value, rcl_interfaces::msg::ParameterDescriptor int_range){
+        std::string full_name = dai_node_name_ + "." + param_name;
+        
+        auto p = rclcpp::Parameter(full_name, value);
+        log_param(node->get_logger(), full_name, p.as_string());
+        return node->declare_parameter(full_name, value, int_range);
+    }
     inline void log_param(const rclcpp::Logger& logger, const std::string & name,std::string &value){
         RCLCPP_INFO(logger, "Setting param %s with value %s", name, value);
     };

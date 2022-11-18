@@ -11,19 +11,15 @@ namespace depthai_ros_driver {
 namespace dai_nodes {
 class BaseNode {
    public:
-    virtual void initialize(const std::string &name, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
-    virtual void declareParams(rclcpp::Node* node);
+    virtual void initialize(const std::string &dai_node_name, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
     virtual void updateParams(const std::vector<rclcpp::Parameter>& params);
     virtual void link(dai::Node::Input & in);
     virtual void setupQueues(std::shared_ptr<dai::Device> device);
    protected:
-    std::thread readout_thread_;
+    rclcpp::Node* node_;
     std::unique_ptr<param_handlers::BaseParamHandler> params_handler_;
-    std::unique_ptr<dai::DataOutputQueue> output_q_;
-    std::unique_ptr<dai::DataInputQueue> control_q_;
-    std::shared_ptr<dai::node::XLinkOut> xlink_out_;
-    friend class Camera;
+    std::string dai_node_name_;
     BaseNode(){};
-}
+};
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver
