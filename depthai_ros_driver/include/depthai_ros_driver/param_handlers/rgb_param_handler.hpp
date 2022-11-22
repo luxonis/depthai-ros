@@ -3,14 +3,16 @@
 #include <string>
 #include <unordered_map>
 
-#include "depthai/include/depthai-shared/properties/ColorCameraProperties.hpp"
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
+#include "depthai/depthai.hpp"
+#include "depthai_ros_driver/visibility.h"
 
 namespace depthai_ros_driver {
 namespace param_handlers {
 class RGBParamHandler : public BaseParamHandler {
    public:
-    RGBParamHandler(const std::string &dai_node_name);
+    explicit RGBParamHandler(const std::string &dai_node_name);
+    ~RGBParamHandler() {};
     void declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::ColorCamera> color_cam);
     dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;
    private:

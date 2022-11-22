@@ -6,17 +6,26 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 # find dependencies
-find_package(ament_cmake REQUIRED)
-find_package(pluginlib REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(ament_cmake_auto REQUIRED)
+ament_auto_find_build_dependencies()
 include_directories(include)
 
-install(
-  DIRECTORY include/
-  DESTINATION include
+ament_auto_add_library(
+  ${PROJECT_NAME} SHARED
+  src/camera.cpp
+  src/dai_nodes/rgb.cpp
+  src/param_handlers/rgb_param_handler.cpp
 )
+
+ament_target_dependencies(${PROJECT_NAME} ${DEPENDENCIES})
+target_link_libraries(
+  ${PROJECT_NAME}
+  depthai::opencv
+  depthai::core
+  ${OpenCV_LIBRARIES}
+)
+rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::Camera")
+ament_export_include_directories(include)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -29,7 +38,23 @@ if(BUILD_TESTING)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
+
+install(DIRECTORY launch config DESTINATION share/${PROJECT_NAME})
+
+install(
+  TARGETS
+  ${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
 ament_export_include_directories(
   include
 )
+install(
+    DIRECTORY include/
+    DESTINATION include
+)
+
 ament_package()

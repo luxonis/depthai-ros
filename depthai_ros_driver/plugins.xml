@@ -1,5 +1,0 @@
-<library path="depthai_ros_driver">
-  <class type="dai_nodes::RGB" base_class_type="dai_nodes::BaseNode">
-    <description>RGB Camera plugin.</description>
-  </class>
-</library>
