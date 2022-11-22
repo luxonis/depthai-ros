@@ -7,10 +7,8 @@
 #include <sstream>
 #include <unordered_map>
 
-
-    #include "rclcpp/rclcpp.hpp"
-    #include "sensor_msgs/msg/imu.hpp"
-
+#include "rclcpp/rclcpp.hpp"
+#include "sensor_msgs/msg/imu.hpp"
 
 namespace dai {
 
@@ -18,7 +16,6 @@ namespace ros {
 
 namespace ImuMsgs = sensor_msgs::msg;
 using ImuPtr = ImuMsgs::Imu::SharedPtr;
-
 
 enum class ImuSyncMethod { COPY, LINEAR_INTERPOLATE_GYRO, LINEAR_INTERPOLATE_ACCEL };
 
@@ -41,7 +38,6 @@ class ImuConverter {
     ImuSyncMethod _syncMode;
     std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
     rclcpp::Time _rosBaseTime;
-
 };
 
 }  // namespace ros

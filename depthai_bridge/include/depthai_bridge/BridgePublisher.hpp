@@ -1,21 +1,17 @@
 #pragma once
 
+#include <camera_info_manager/camera_info_manager.hpp>
 #include <deque>
+#include <image_transport/image_transport.hpp>
 #include <thread>
 #include <type_traits>
 #include <typeinfo>
 
 #include "depthai/depthai.hpp"
-
-
-#include <camera_info_manager/camera_info_manager.hpp>
-#include <image_transport/image_transport.hpp>
-
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "std_msgs/msg/header.hpp"
-
 
 namespace dai {
 
@@ -25,7 +21,6 @@ namespace StdMsgs = std_msgs::msg;
 namespace ImageMsgs = sensor_msgs::msg;
 using ImagePtr = ImageMsgs::Image::SharedPtr;
 namespace rosOrigin = ::rclcpp;
-
 
 template <class RosMsg, class SimMsg>
 class BridgePublisher {
@@ -66,7 +61,6 @@ class BridgePublisher {
      * Tag Dispacher function to to overload the Publisher to use Default ros::Publisher
      */
     typename rclcpp::Publisher<RosMsg>::SharedPtr advertise(int queueSize, std::false_type);
-
 
     BridgePublisher(const BridgePublisher& other);
 
@@ -169,8 +163,6 @@ std::shared_ptr<image_transport::Publisher> BridgePublisher<RosMsg, SimMsg>::adv
     }
     return std::make_shared<image_transport::Publisher>(_it.advertise(_rosTopic, queueSize));
 }
-
-
 
 template <class RosMsg, class SimMsg>
 void BridgePublisher<RosMsg, SimMsg>::daiCallback(std::string name, std::shared_ptr<ADatatype> data) {

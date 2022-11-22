@@ -12,10 +12,10 @@
 #include <tuple>
 #include <unordered_map>
 
-    #include "rclcpp/rclcpp.hpp"
-    #include "sensor_msgs/msg/camera_info.hpp"
-    #include "sensor_msgs/msg/image.hpp"
-    #include "std_msgs/msg/header.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "sensor_msgs/msg/camera_info.hpp"
+#include "sensor_msgs/msg/image.hpp"
+#include "std_msgs/msg/header.hpp"
 
 namespace dai {
 
@@ -63,7 +63,6 @@ class ImageConverter {
     std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
 
     rclcpp::Time _rosBaseTime;
-
 };
 
 }  // namespace ros

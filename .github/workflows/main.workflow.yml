@@ -6,117 +6,115 @@ on:
   push:
     branches:
       - main
-      - devel
+      - humble
+      - galactic
+      - foxy
     tags:
       - 'v*'
   pull_request:
     branches:
       - main
-      - devel
+      - humble
+      - galactic
+      - foxy
+env:
+  ROS_DISTRO: galactic
 
 jobs:
-
-  style:
+  clang-format-lint:
+    name: ament_clang_format
     runs-on: ubuntu-20.04
-
+    strategy:
+      fail-fast: false
     steps:
-    - uses: actions/checkout@v2
-
-    - name: Clang-Format lint
-      
-      uses: DoozyX/clang-format-lint-action@v0.13
+    - uses: actions/checkout@v2.3.4
+    - uses: ros-tooling/setup-ros@0.4.1
       with:
-        source: '.'
-        extensions: 'h,hpp,c,cpp'
-        clangFormatVersion: 10
-  
-  ROS1-build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
-    
-    steps:
-      - uses: actions/checkout@v2
-      
-      - name: Melodic build
-        if: matrix.os == 'ubuntu-18.04'
-        uses: ros-tooling/setup-ros@v0.2
-        with:
-          required-ros-distributions: melodic
-      
-      - name: Noetic build
-        if: matrix.os == 'ubuntu-20.04'
-        uses: ros-tooling/setup-ros@v0.2
-        with:
-          required-ros-distributions: noetic
-
-      - name: Installing libusb
-        run: sudo apt-get install libusb-1.0-0-dev
-
-      - name: Installing DepthAi Core
-        run: sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/$GITHUB_SHA/install_dependencies.sh | sudo bash
-      
-      - name: Build depthai-bridge melodic
-        if: matrix.os == 'ubuntu-18.04'  
-        uses: ros-tooling/action-ros-ci@v0.2
-        with:
-          # vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/examples.repos"
-          # package-name: depthai_examples
-          target-ros1-distro: melodic
-          skip-tests: true
-
-      - name: Build depthai-bridge noetic
-        if: matrix.os == 'ubuntu-20.04'
-        uses: ros-tooling/action-ros-ci@v0.2
-        with:
-          # vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/examples.repos"
-          # package-name: depthai_examples
-          target-ros1-distro: noetic
-          skip-tests: true
-      
-
-  ROS2-build:
+        required-ros-distributions: ${{ env.ROS_DISTRO }}
+    - uses: ros-tooling/action-ros2-lint@0.1.3
+      with:
+        distribution: ${{ env.ROS_DISTRO }}
+        linter: clang_format
+        arguments: --config ./.clang-format
+        package-name: |
+          depthai_bridge
+          depthai_examples
+          depthai_ros_msgs
+          depthai_ros
+  linting:
+    name: ament_${{ matrix.linter }}
     runs-on: ubuntu-20.04
     strategy:
+      fail-fast: false 
       matrix:
-        ros_distribution: [foxy]
-
+        linter: [xmllint, pep257, lint_cmake]
     steps:
-      - uses: actions/checkout@v2
-      
-      - name: ${{ matrix.ros_distribution }} build
-        uses: ros-tooling/setup-ros@v0.2
+    - uses: actions/checkout@v2.3.4
+    - uses: ros-tooling/setup-ros@0.4.1
+      with:
+        required-ros-distributions: ${{ env.ROS_DISTRO }}
+    - uses: ros-tooling/action-ros2-lint@0.1.3
+      with:
+        distribution: ${{ env.ROS_DISTRO }}
+        linter: ${{ matrix.linter }}
+        package-name: |
+          depthai_bridge
+          depthai_examples
+          depthai_ros_msgs
+          depthai_ros
+
+  docker-build:
+    name: Build and Upload to Docker Hub
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+    env: 
+      PUSH: ${{ (github.event_name != 'pull_request') && (github.repository == 'luxonis/depthai-ros') && startsWith(github.ref, 'refs/tags/v') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        if: env.PUSH == 'true'
         with:
-          required-ros-distributions: ${{ matrix.ros_distribution }}
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
+      - name: Get Version
+        if: env.PUSH == 'true'
+        id: vars
+        run: echo ::set-output name=short_ref::${GITHUB_REF#refs/*/}
 
-      - name: Installing libusb
-        run: sudo apt-get install libusb-1.0-0-dev
-
-      - name: Installing DepthAi Core
-        run: sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/$GITHUB_SHA/install_dependencies.sh | sudo bash
-      
-      - name: Build depthai-bridge ${{ matrix.ros_distribution }}
-        uses: ros-tooling/action-ros-ci@v0.2
+      - name: Build
+        uses: docker/build-push-action@v3
+        if: env.PUSH == 'false'
         with:
-          # vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/examples.repos"
-          # package-name: depthai_examples
-          target-ros2-distro: ${{ matrix.ros_distribution }}
-          skip-tests: true
+          build-args: |
+            ROS_DISTRO=${{ env.ROS_DISTRO }}
+            USE_RVIZ=1
+          platforms: |
+            amd64
+            arm64
+          no-cache: true
 
-
-
-  # build_:
-  #   runs-on: ubuntu-18.04
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: ros-tooling/setup-ros@v0.2
-  #       with:
-  #         required-ros-distributions: melodic
-  #     - run: sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencies.sh | sudo bash
-  #     - uses: ros-tooling/action-ros-ci@v0.2
-  #       with:
-  #         # vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/examples.repos"
-  #         # package-name: depthai_examples
-  #         target-ros1-distro: melodic
-  #         skip-tests: true
+      - name: Build and Push
+        uses: docker/build-push-action@v3
+        if: env.PUSH == 'true'
+        with:
+          build-args: |
+            ROS_DISTRO=${{ env.ROS_DISTRO }}
+            USE_RVIZ=1
+          platforms: |
+            amd64
+            arm64
+          push: ${{ env.PUSH }}
+          no-cache: true
+          tags: | 
+            luxonis/depthai-ros:${{ env.ROS_DISTRO }}-${{ steps.vars.outputs.short_ref }}
+            luxonis/depthai-ros:${{ env.ROS_DISTRO }}-latest
