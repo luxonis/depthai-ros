@@ -14,7 +14,9 @@ ament_auto_add_library(
   ${PROJECT_NAME} SHARED
   src/camera.cpp
   src/dai_nodes/rgb.cpp
+  src/dai_nodes/mono.cpp
   src/param_handlers/rgb_param_handler.cpp
+  src/param_handlers/mono_param_handler.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME} ${DEPENDENCIES})

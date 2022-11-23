@@ -1,6 +1,8 @@
 #include "depthai_ros_driver/camera.hpp"
 
 #include "depthai_ros_driver/dai_nodes/rgb.hpp"
+#include "depthai_ros_driver/dai_nodes/mono.hpp"
+
 
 namespace depthai_ros_driver {
 
@@ -10,18 +12,45 @@ Camera::Camera(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : rcl
 void Camera::on_configure() {
     declareParams();
     createPipeline();
+    startDevice();
+    setupQueues();
+    param_cb_handle_ = this->add_on_set_parameters_callback(
+    std::bind(&Camera::parameterCB, this, std::placeholders::_1));
+    RCLCPP_INFO(this->get_logger(), "Camera ready!");
 }
+
 void Camera::createPipeline() {
     pipeline_ = std::make_shared<dai::Pipeline>();
     if(this->get_parameter("pipeline_type").as_string() == "RGB") {
-        rgb_ = std::make_unique<dai_nodes::RGB>();
-        rgb_->initialize("color", this, pipeline_);
-        startDevice();
-        rgb_->setupQueues(device_);
+        dai_nodes::RGBFactory rgb_fac;
+        auto rgb = rgb_fac.create();
+        rgb->initialize("color", this, pipeline_);
+        dai_nodes_.push_back(std::move(rgb));
     }
+    else if (this->get_parameter("pipeline_type").as_string() == "RGBD")
+    {
+        dai_nodes::RGBFactory rgb_fac;
+        auto rgb = rgb_fac.create();
+        rgb->initialize("color", this, pipeline_);
+        dai_nodes_.push_back(std::move(rgb));
 
-    RCLCPP_INFO(this->get_logger(), "Camera ready!");
+        dai_nodes::MonoFactory mono_fac;
+        auto mono_left = mono_fac.create();
+        mono_left->initialize("mono_left", this, pipeline_);
+        dai_nodes_.push_back(std::move(mono_left));
+        auto mono_right = mono_fac.create();
+        mono_right->initialize("mono_right", this, pipeline_);
+        dai_nodes_.push_back(std::move(mono_right));
+    }
+    
 }
+
+void Camera::setupQueues(){
+    for (const auto &node : dai_nodes_){
+        node->setupQueues(device_);
+    }
+}
+
 void Camera::startDevice() {
     // dai::DeviceInfo info;
     // bool device_found;
@@ -52,8 +81,12 @@ void Camera::startDevice() {
 
     device_ = std::make_shared<dai::Device>(*pipeline_);
 }
+
+rcl_interfaces::msg::SetParametersResult Camera::parameterCB(const std::vector<rclcpp::Parameter> & params){
+
+}
 void Camera::declareParams() {
-    this->declare_parameter<std::string>("pipeline_type", "RGB");
+    this->declare_parameter<std::string>("pipeline_type", "RGBD");
     this->declare_parameter<bool>("enable_imu", true);
     this->declare_parameter<std::string>("usb_speed", "SUPER");
     this->declare_parameter<std::string>("cam_type", "auto");

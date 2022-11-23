@@ -2,7 +2,7 @@
 
 #include "depthai/depthai.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
-#include "depthai_ros_driver/param_handlers/rgb_param_handler.hpp"
+#include "depthai_ros_driver/param_handlers/mono_param_handler.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -10,13 +10,11 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-namespace link_types {
-enum class RGBLinkType { color, preview };
-};
-class RGB : public BaseNode {
+
+class Mono : public BaseNode {
    public:
-    explicit RGB(){};
-    virtual ~RGB() = default;
+    explicit Mono(){};
+    virtual ~Mono() = default;
     void initialize(const std::string& dai_node_name, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) override;
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
@@ -25,21 +23,21 @@ class RGB : public BaseNode {
     void set_xin_xout(std::shared_ptr<dai::Pipeline> pipeline) override;
 
    private:
-    void color_q_cb(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
-    image_transport::CameraPublisher rgb_pub_, preview_pub_;
-    sensor_msgs::msg::CameraInfo rgb_info_, preview_info_;
-    std::shared_ptr<dai::node::ColorCamera> color_cam_node_;
-    std::unique_ptr<param_handlers::RGBParamHandler> param_handler_;
-    std::shared_ptr<dai::DataOutputQueue> color_q_, preview_q_;
+    void mono_q_cb(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
+    image_transport::CameraPublisher mono_pub_;
+    sensor_msgs::msg::CameraInfo mono_info_;
+    std::shared_ptr<dai::node::MonoCamera> mono_cam_node_;
+    std::unique_ptr<param_handlers::MonoParamHandler> param_handler_;
+    std::shared_ptr<dai::DataOutputQueue> mono_q_;
     std::shared_ptr<dai::DataInputQueue> control_q_;
-    std::shared_ptr<dai::node::XLinkOut> xout_color_, xout_preview_;
+    std::shared_ptr<dai::node::XLinkOut> xout_mono_;
     std::shared_ptr<dai::node::XLinkIn> xin_control_;
-    std::string color_q_name_, preview_q_name_, control_q_name_;
+    std::string mono_q_name_, control_q_name_;
 };
-class RGBFactory : public BaseNodeFactory {
+class MonoFactory : public BaseNodeFactory {
    public:
     std::unique_ptr<BaseNode> create() {
-        return std::make_unique<RGB>();
+        return std::make_unique<Mono>();
     };
 };
 }  // namespace dai_nodes
