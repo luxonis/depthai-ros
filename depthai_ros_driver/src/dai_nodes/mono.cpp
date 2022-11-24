@@ -5,24 +5,23 @@
 #include "image_transport/image_transport.hpp"
 namespace depthai_ros_driver {
 namespace dai_nodes {
-void Mono::initialize(const std::string& dai_node_name, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) {
+Mono::Mono(const std::string& dai_node_name, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(dai_node_name, node, pipeline) {
     RCLCPP_INFO(node->get_logger(), "Creating node %s", dai_node_name.c_str());
-    setROSNodePointer(node);
-    set_names(dai_node_name);
+    set_names();
     mono_cam_node_ = pipeline->create<dai::node::MonoCamera>();
     param_handler_ = std::make_unique<param_handlers::MonoParamHandler>(dai_node_name);
     param_handler_->declareParams(node, mono_cam_node_);
     set_xin_xout(pipeline);
     RCLCPP_INFO(node->get_logger(), "Node %s created", dai_node_name.c_str());
-    if (getName()=="mono_left"){
-    mono_cam_node_->setBoardSocket(dai::CameraBoardSocket::LEFT);
-    }
-    else{
+    if(getName() == "mono_left") {
+        mono_cam_node_->setBoardSocket(dai::CameraBoardSocket::LEFT);
+    } else if(getName() == "mono_right") {
         mono_cam_node_->setBoardSocket(dai::CameraBoardSocket::RIGHT);
-    }
+    } else {
+        mono_cam_node_->setBoardSocket(static_cast<dai::CameraBoardSocket>(param_handler_->get_param<int>(getROSNode(), "i_board_socket")));
+    };
 };
-void Mono::set_names(const std::string& dai_node_name) {
-    setNodeName(dai_node_name);
+void Mono::set_names() {
     mono_q_name_ = getName() + "_mono";
     control_q_name_ = getName() + "_control";
 }
@@ -56,8 +55,12 @@ void Mono::mono_q_cb(const std::string& name, const std::shared_ptr<dai::ADataty
     mono_pub_.publish(img_msg, mono_info_);
 }
 
-void Mono::link(dai::Node::Input& in, int link_type) {
+void Mono::link(const dai::Node::Input& in, int /*link_type*/) {
     mono_cam_node_->out.link(in);
+}
+
+dai::Node::Input Mono::get_input(int link_type) {
+    throw(std::runtime_error("Class Mono has no input."));
 }
 
 void Mono::updateParams(const std::vector<rclcpp::Parameter>& params) {

@@ -13,10 +13,14 @@ include_directories(include)
 ament_auto_add_library(
   ${PROJECT_NAME} SHARED
   src/camera.cpp
+  src/dai_nodes/imu.cpp
   src/dai_nodes/rgb.cpp
   src/dai_nodes/mono.cpp
+  src/dai_nodes/stereo.cpp
+  src/param_handlers/imu_param_handler.cpp
   src/param_handlers/rgb_param_handler.cpp
   src/param_handlers/mono_param_handler.cpp
+  src/param_handlers/stereo_param_handler.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME} ${DEPENDENCIES})

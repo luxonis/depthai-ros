@@ -15,13 +15,13 @@ enum class RGBLinkType { color, preview };
 };
 class RGB : public BaseNode {
    public:
-    explicit RGB(){};
+    explicit RGB(const std::string& dai_node_name, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
     virtual ~RGB() = default;
-    void initialize(const std::string& dai_node_name, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) override;
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
-    void link(dai::Node::Input& in, int link_type = 0) override;
-    void set_names(const std::string& dai_node_name) override;
+    void link(const dai::Node::Input& in, int link_type = 0) override;
+    dai::Node::Input get_input(int link_type = 0) override;
+    void set_names() override;
     void set_xin_xout(std::shared_ptr<dai::Pipeline> pipeline) override;
 
    private:
@@ -38,8 +38,8 @@ class RGB : public BaseNode {
 };
 class RGBFactory : public BaseNodeFactory {
    public:
-    std::unique_ptr<BaseNode> create() {
-        return std::make_unique<RGB>();
+    std::unique_ptr<BaseNode> create(const std::string& dai_node_name, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) {
+        return std::make_unique<RGB>(dai_node_name, node, pipeline);
     };
 };
 }  // namespace dai_nodes

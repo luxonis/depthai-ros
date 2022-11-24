@@ -1,16 +1,14 @@
 #pragma once
 
 #include "depthai/depthai.hpp"
-
 #include "depthai_ros_driver/dai_nodes/rgb.hpp"
 #include "depthai_ros_driver/visibility.h"
 #include "rclcpp/rclcpp.hpp"
 
 namespace depthai_ros_driver {
 class Camera : public rclcpp::Node {
-
    public:
-    explicit Camera(const rclcpp::NodeOptions & options);
+    explicit Camera(const rclcpp::NodeOptions& options);
     void on_configure();
 
    private:
@@ -20,7 +18,7 @@ class Camera : public rclcpp::Node {
     void startDevice();
     void rgbPipeline();
     void setupQueues();
-    rcl_interfaces::msg::SetParametersResult parameterCB(const std::vector<rclcpp::Parameter> & params);
+    rcl_interfaces::msg::SetParametersResult parameterCB(const std::vector<rclcpp::Parameter>& params);
     OnSetParametersCallbackHandle::SharedPtr param_cb_handle_;
     // enum class PipelineTypes{
     //     RGB
@@ -42,6 +40,5 @@ class Camera : public rclcpp::Node {
     std::shared_ptr<dai::Device> device_;
     std::unique_ptr<dai_nodes::BaseNode> rgb_;
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> dai_nodes_;
-    
 };
 }  // namespace depthai_ros_driver

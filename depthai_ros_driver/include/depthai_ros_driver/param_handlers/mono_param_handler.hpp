@@ -11,7 +11,7 @@ namespace depthai_ros_driver {
 namespace param_handlers {
 class MonoParamHandler : public BaseParamHandler {
    public:
-    explicit MonoParamHandler(const std::string& dai_node_name);
+    explicit MonoParamHandler(const std::string& name);
     ~MonoParamHandler(){};
     void declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::MonoCamera> mono_cam);
     dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;

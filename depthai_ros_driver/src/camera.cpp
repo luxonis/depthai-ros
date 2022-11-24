@@ -1,8 +1,9 @@
 #include "depthai_ros_driver/camera.hpp"
 
-#include "depthai_ros_driver/dai_nodes/rgb.hpp"
+#include "depthai_ros_driver/dai_nodes/imu.hpp"
 #include "depthai_ros_driver/dai_nodes/mono.hpp"
-
+#include "depthai_ros_driver/dai_nodes/rgb.hpp"
+#include "depthai_ros_driver/dai_nodes/stereo.hpp"
 
 namespace depthai_ros_driver {
 
@@ -14,39 +15,41 @@ void Camera::on_configure() {
     createPipeline();
     startDevice();
     setupQueues();
-    param_cb_handle_ = this->add_on_set_parameters_callback(
-    std::bind(&Camera::parameterCB, this, std::placeholders::_1));
+    param_cb_handle_ = this->add_on_set_parameters_callback(std::bind(&Camera::parameterCB, this, std::placeholders::_1));
     RCLCPP_INFO(this->get_logger(), "Camera ready!");
 }
 
 void Camera::createPipeline() {
     pipeline_ = std::make_shared<dai::Pipeline>();
+    dai_nodes::RGBFactory rgb_fac;
+    dai_nodes::MonoFactory mono_fac;
+    dai_nodes::StereoFactory stereo_fac;
+    dai_nodes::ImuFactory imu_fac;
     if(this->get_parameter("pipeline_type").as_string() == "RGB") {
-        dai_nodes::RGBFactory rgb_fac;
-        auto rgb = rgb_fac.create();
-        rgb->initialize("color", this, pipeline_);
+        auto rgb = rgb_fac.create("color", this, pipeline_);
         dai_nodes_.push_back(std::move(rgb));
-    }
-    else if (this->get_parameter("pipeline_type").as_string() == "RGBD")
-    {
-        dai_nodes::RGBFactory rgb_fac;
-        auto rgb = rgb_fac.create();
-        rgb->initialize("color", this, pipeline_);
-        dai_nodes_.push_back(std::move(rgb));
+    } else if(this->get_parameter("pipeline_type").as_string() == "RGBD") {
+        auto rgb = rgb_fac.create("color", this, pipeline_);
+        auto mono_left = mono_fac.create("mono_left", this, pipeline_);
+        auto mono_right = mono_fac.create("mono_right", this, pipeline_);
+        auto stereo = stereo_fac.create("stereo", this, pipeline_);
 
-        dai_nodes::MonoFactory mono_fac;
-        auto mono_left = mono_fac.create();
-        mono_left->initialize("mono_left", this, pipeline_);
-        dai_nodes_.push_back(std::move(mono_left));
-        auto mono_right = mono_fac.create();
-        mono_right->initialize("mono_right", this, pipeline_);
+        mono_left->link(stereo->get_input(static_cast<int>(dai_nodes::link_types::StereoLinkType::left)),
+                        static_cast<int>(dai_nodes::link_types::StereoLinkType::left));
+        mono_right->link(stereo->get_input(static_cast<int>(dai_nodes::link_types::StereoLinkType::right)),
+                         static_cast<int>(dai_nodes::link_types::StereoLinkType::right));
+        dai_nodes_.push_back(std::move(rgb));
         dai_nodes_.push_back(std::move(mono_right));
+        dai_nodes_.push_back(std::move(mono_left));
+        dai_nodes_.push_back(std::move(stereo));
     }
-    
+    auto imu = imu_fac.create("imu", this, pipeline_);
+    dai_nodes_.push_back(std::move(imu));
+    RCLCPP_INFO(this->get_logger(), "Finished setting up pipeline.");
 }
 
-void Camera::setupQueues(){
-    for (const auto &node : dai_nodes_){
+void Camera::setupQueues() {
+    for(const auto& node : dai_nodes_) {
         node->setupQueues(device_);
     }
 }
@@ -82,8 +85,13 @@ void Camera::startDevice() {
     device_ = std::make_shared<dai::Device>(*pipeline_);
 }
 
-rcl_interfaces::msg::SetParametersResult Camera::parameterCB(const std::vector<rclcpp::Parameter> & params){
-
+rcl_interfaces::msg::SetParametersResult Camera::parameterCB(const std::vector<rclcpp::Parameter>& params) {
+    for(const auto& node : dai_nodes_) {
+        node->updateParams(params);
+    }
+    rcl_interfaces::msg::SetParametersResult res;
+    res.successful = true;
+    return res;
 }
 void Camera::declareParams() {
     this->declare_parameter<std::string>("pipeline_type", "RGBD");

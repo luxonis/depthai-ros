@@ -1,12 +1,11 @@
 #include "depthai_ros_driver/param_handlers/rgb_param_handler.hpp"
 
-
-#include "depthai/pipeline/nodes.hpp"
 #include "depthai/depthai.hpp"
+#include "depthai/pipeline/nodes.hpp"
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-RGBParamHandler::RGBParamHandler(const std::string& dai_node_name) : BaseParamHandler(dai_node_name){};
+RGBParamHandler::RGBParamHandler(const std::string& name) : BaseParamHandler(name){};
 void RGBParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::ColorCamera> color_cam) {
     declareAndLogParam<int>(node, "i_max_q_size", 4);
     declareAndLogParam<bool>(node, "i_publish_preview", false);
@@ -34,8 +33,8 @@ void RGBParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::nod
     if(declareAndLogParam(node, "r_set_man_whitebalance", false)) {
         color_cam->initialControl.setManualWhiteBalance(whitebalance);
     }
-} 
-dai::CameraControl RGBParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& params){
+}
+dai::CameraControl RGBParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& params) {
     dai::CameraControl ctrl;
     return ctrl;
 }
