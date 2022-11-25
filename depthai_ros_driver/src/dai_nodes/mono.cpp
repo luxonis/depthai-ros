@@ -64,7 +64,7 @@ dai::Node::Input Mono::get_input(int link_type) {
 }
 
 void Mono::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    auto ctrl = param_handler_->setRuntimeParams(params);
+    auto ctrl = param_handler_->setRuntimeParams(getROSNode(),params);
     control_q_->send(ctrl);
 }
 

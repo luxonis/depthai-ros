@@ -14,7 +14,7 @@ class MonoParamHandler : public BaseParamHandler {
     explicit MonoParamHandler(const std::string& name);
     ~MonoParamHandler(){};
     void declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::MonoCamera> mono_cam);
-    dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;
+    dai::CameraControl setRuntimeParams(rclcpp::Node* node,const std::vector<rclcpp::Parameter>& params) override;
 
    private:
     std::unordered_map<std::string, dai::MonoCameraProperties::SensorResolution> mono_resolution_map_ = {

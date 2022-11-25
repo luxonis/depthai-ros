@@ -29,6 +29,7 @@ void RGB::set_xin_xout(std::shared_ptr<dai::Pipeline> pipeline) {
     xin_control_->out.link(color_cam_node_->inputControl);
     if(param_handler_->get_param<bool>(getROSNode(), "i_enable_preview")) {
         xout_preview_ = pipeline->create<dai::node::XLinkOut>();
+        xout_preview_->setStreamName(preview_q_name_);
         color_cam_node_->preview.link(xout_preview_->input);
     }
 }
@@ -46,8 +47,8 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
     }
 }
 
+
 void RGB::color_q_cb(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
-    auto names = name;
     auto frame = std::dynamic_pointer_cast<dai::ImgFrame>(data);
     cv::Mat cv_frame = frame->getCvFrame();
     auto curr_time = getROSNode()->get_clock()->now();
@@ -56,7 +57,12 @@ void RGB::color_q_cb(const std::string& name, const std::shared_ptr<dai::ADataty
     std_msgs::msg::Header header;
     img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, cv_frame);
     img_bridge.toImageMsg(img_msg);
+    if (name == color_q_name_){
     rgb_pub_.publish(img_msg, rgb_info_);
+    }
+    else if(name==preview_q_name_){
+        preview_pub_.publish(img_msg, rgb_info_);
+    }
 }
 
 void RGB::link(const dai::Node::Input& in, int link_type) {
@@ -72,7 +78,7 @@ dai::Node::Input RGB::get_input(int link_type) {
 }
 
 void RGB::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    auto ctrl = param_handler_->setRuntimeParams(params);
+    auto ctrl = param_handler_->setRuntimeParams(getROSNode(),params);
     control_q_->send(ctrl);
 }
 

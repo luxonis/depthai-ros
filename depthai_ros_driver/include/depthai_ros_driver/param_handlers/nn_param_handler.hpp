@@ -9,11 +9,11 @@
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-class ImuParamHandler : public BaseParamHandler {
+class NNParamHandler : public BaseParamHandler {
    public:
-    explicit ImuParamHandler(const std::string& name);
-    ~ImuParamHandler(){};
-    void declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::IMU> imu);
+    explicit NNParamHandler(const std::string& name);
+    ~NNParamHandler(){};
+    void declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::NeuralNetwork> nn);
     dai::CameraControl setRuntimeParams(rclcpp::Node* node,const std::vector<rclcpp::Parameter>& params) override;
 
 };

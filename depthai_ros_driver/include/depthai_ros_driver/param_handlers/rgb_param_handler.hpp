@@ -14,7 +14,7 @@ class RGBParamHandler : public BaseParamHandler {
     explicit RGBParamHandler(const std::string& name);
     ~RGBParamHandler(){};
     void declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::ColorCamera> color_cam);
-    dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;
+    dai::CameraControl setRuntimeParams(rclcpp::Node* node,const std::vector<rclcpp::Parameter>& params) override;
 
    private:
     std::unordered_map<std::string, dai::ColorCameraProperties::SensorResolution> rgb_resolution_map_ = {

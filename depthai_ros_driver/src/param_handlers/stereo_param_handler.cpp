@@ -28,10 +28,10 @@ void StereoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::
     config.postProcessing.spatialFilter.numIterations = declareAndLogParam<int>(node, "i_spatal_filter_iterations", 1);
     config.postProcessing.thresholdFilter.minRange = declareAndLogParam<int>(node, "i_threshold_filter_min_range", 400);
     config.postProcessing.thresholdFilter.maxRange = declareAndLogParam<int>(node, "i_threshold_filter_max_range", 15000);
-    config.postProcessing.decimationFilter.decimationFactor = declareAndLogParam<int>(node, "i_dedcimation_factor", 1);
+    config.postProcessing.decimationFilter.decimationFactor = declareAndLogParam<int>(node, "i_decimation_factor", 1);
     stereo->initialConfig.set(config);
 }
-dai::CameraControl StereoParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& params) {
+dai::CameraControl StereoParamHandler::setRuntimeParams(rclcpp::Node* node,const std::vector<rclcpp::Parameter>& params) {
     dai::CameraControl ctrl;
     return ctrl;
 }

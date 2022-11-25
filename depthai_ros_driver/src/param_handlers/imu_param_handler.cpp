@@ -13,7 +13,7 @@ void ImuParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::nod
   imu->setBatchReportThreshold(1);
   imu->setMaxBatchReports(10);
 }
-dai::CameraControl ImuParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& params) {
+dai::CameraControl ImuParamHandler::setRuntimeParams(rclcpp::Node* node,const std::vector<rclcpp::Parameter>& params) {
     dai::CameraControl ctrl;
     return ctrl;
 }

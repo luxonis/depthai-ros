@@ -74,7 +74,7 @@ dai::Node::Input Imu::get_input(int link_type) {
 }
 
 void Imu::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    param_handler_->setRuntimeParams(params);
+    param_handler_->setRuntimeParams(getROSNode(),params);
 }
 
 }  // namespace dai_nodes

@@ -29,6 +29,7 @@ class Camera : public rclcpp::Node {
     // std::unordered_map<PipelineTypes, std::function<void>()> pipeline_creation ={
     //     {RGBD, }
     // };
+    std::vector<std::string> usbStrings = {"UNKNOWN", "LOW", "FULL", "HIGH", "SUPER", "SUPER_PLUS"};
     std::unordered_map<std::string, dai::UsbSpeed> usb_speed_map_ = {
         {"LOW", dai::UsbSpeed::LOW},
         {"FULL", dai::UsbSpeed::FULL},

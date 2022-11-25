@@ -56,7 +56,7 @@ dai::Node::Input Stereo::get_input(int link_type) {
 }
 
 void Stereo::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    auto ctrl = param_handler_->setRuntimeParams(params);
+    param_handler_->setRuntimeParams(getROSNode(),params);
 }
 
 }  // namespace dai_nodes

@@ -16,8 +16,10 @@ ament_auto_add_library(
   src/dai_nodes/imu.cpp
   src/dai_nodes/rgb.cpp
   src/dai_nodes/mono.cpp
+  src/dai_nodes/nn.cpp
   src/dai_nodes/stereo.cpp
   src/param_handlers/imu_param_handler.cpp
+  src/param_handlers/nn_param_handler.cpp
   src/param_handlers/rgb_param_handler.cpp
   src/param_handlers/mono_param_handler.cpp
   src/param_handlers/stereo_param_handler.cpp
@@ -45,7 +47,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-install(DIRECTORY launch config DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY launch models config DESTINATION share/${PROJECT_NAME})
 
 install(
   TARGETS
