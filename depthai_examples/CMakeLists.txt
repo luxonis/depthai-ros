@@ -1,6 +1,10 @@
 cmake_minimum_required (VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
 project(depthai_examples VERSION 2.5.3 LANGUAGES CXX C)
 
+if(CMAKE_CXX_STANDARD LESS 14)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 add_compile_options(-g)
 
