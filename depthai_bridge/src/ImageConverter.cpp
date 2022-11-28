@@ -23,7 +23,6 @@ std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::planarEn
 
 ImageConverter::ImageConverter(bool interleaved) : _daiInterleaved(interleaved), _steadyBaseTime(std::chrono::steady_clock::now()) {
     _rosBaseTime = rclcpp::Clock().now();
-
 }
 
 ImageConverter::ImageConverter(const std::string frameName, bool interleaved)
