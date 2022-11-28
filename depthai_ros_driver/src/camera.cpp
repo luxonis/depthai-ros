@@ -1,10 +1,12 @@
 #include "depthai_ros_driver/camera.hpp"
 
+#include "ament_index_cpp/get_package_share_directory.hpp"
 #include "depthai_ros_driver/dai_nodes/imu.hpp"
 #include "depthai_ros_driver/dai_nodes/mono.hpp"
 #include "depthai_ros_driver/dai_nodes/nn.hpp"
 #include "depthai_ros_driver/dai_nodes/rgb.hpp"
 #include "depthai_ros_driver/dai_nodes/stereo.hpp"
+#include "depthai_ros_driver/types.hpp"
 
 namespace depthai_ros_driver {
 
@@ -13,6 +15,7 @@ Camera::Camera(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : rcl
 }
 void Camera::on_configure() {
     declareParams();
+    getDeviceName();
     createPipeline();
     startDevice();
     setupQueues();
@@ -20,38 +23,53 @@ void Camera::on_configure() {
     RCLCPP_INFO(this->get_logger(), "Camera ready!");
 }
 
-void Camera::createPipeline() {
+void Camera::getDeviceName() {
     pipeline_ = std::make_shared<dai::Pipeline>();
+    startDevice();
+    auto name = device_->getDeviceName();
+    RCLCPP_INFO(this->get_logger(), "Device type: %s", name.c_str());
+    cam_type_ = std::make_unique<types::cam_types::CamType>(name);
+    device_.reset();
+}
+
+void Camera::createPipeline() {
+    // pipeline_ = std::make_shared<dai::Pipeline>();
     dai_nodes::RGBFactory rgb_fac;
     dai_nodes::MonoFactory mono_fac;
     dai_nodes::StereoFactory stereo_fac;
     dai_nodes::ImuFactory imu_fac;
     dai_nodes::NNFactory nn_fac;
-    if(this->get_parameter("pipeline_type").as_string() == "RGB") {
+    if(this->get_parameter("i_pipeline_type").as_string() == "RGB") {
         auto rgb = rgb_fac.create("color", this, pipeline_);
         dai_nodes_.push_back(std::move(rgb));
-    } else if(this->get_parameter("pipeline_type").as_string() == "RGBD") {
+    } else if(this->get_parameter("i_pipeline_type").as_string() == "RGBD") {
         auto rgb = rgb_fac.create("color", this, pipeline_);
         auto mono_left = mono_fac.create("mono_left", this, pipeline_);
         auto mono_right = mono_fac.create("mono_right", this, pipeline_);
         auto stereo = stereo_fac.create("stereo", this, pipeline_);
-        auto nn = nn_fac.create("nn", this, pipeline_);
-
-        rgb->link(nn->get_input(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
-
         mono_left->link(stereo->get_input(static_cast<int>(dai_nodes::link_types::StereoLinkType::left)),
                         static_cast<int>(dai_nodes::link_types::StereoLinkType::left));
         mono_right->link(stereo->get_input(static_cast<int>(dai_nodes::link_types::StereoLinkType::right)),
                          static_cast<int>(dai_nodes::link_types::StereoLinkType::right));
 
+        std::string nn_config_path = this->get_parameter("i_nn_config_path").as_string();
+        if(!nn_config_path.empty()) {
+            auto nn = nn_fac.create("nn", this, pipeline_);
+            rgb->link(nn->get_input(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
+            dai_nodes_.push_back(std::move(nn));
+        }
         dai_nodes_.push_back(std::move(rgb));
-        dai_nodes_.push_back(std::move(nn));
         dai_nodes_.push_back(std::move(mono_right));
         dai_nodes_.push_back(std::move(mono_left));
         dai_nodes_.push_back(std::move(stereo));
+    } else {
+        std::string configuration = this->get_parameter("i_pipeline_type").as_string() + " " + this->get_parameter("i_cam_type").as_string();
+        throw std::runtime_error("UNKNOWN PIPELINE TYPE SPECIFIED/CAMERA DOESN'T SUPPORT GIVEN PIPELINE. Configuration: " + configuration);
     }
-    auto imu = imu_fac.create("imu", this, pipeline_);
-    dai_nodes_.push_back(std::move(imu));
+    if(this->get_parameter("i_enable_imu").as_bool() && cam_type_->imu_available()) {
+        auto imu = imu_fac.create("imu", this, pipeline_);
+        dai_nodes_.push_back(std::move(imu));
+    }
     RCLCPP_INFO(this->get_logger(), "Finished setting up pipeline.");
 }
 
@@ -63,8 +81,8 @@ void Camera::setupQueues() {
 
 void Camera::startDevice() {
     dai::DeviceInfo info;
-    auto mxid = this->get_parameter("mx_id").as_string();
-    auto ip = this->get_parameter("ip").as_string();
+    auto mxid = this->get_parameter("i_mx_id").as_string();
+    auto ip = this->get_parameter("i_ip").as_string();
     if(!mxid.empty()) {
         RCLCPP_INFO(this->get_logger(), "Connecting to the camera using mxid: %s", mxid.c_str());
         info = dai::DeviceInfo(mxid);
@@ -78,20 +96,12 @@ void Camera::startDevice() {
     bool cam_running;
     while(!cam_running) {
         try {
-            dai::UsbSpeed speed = usb_speed_map_.at(this->get_parameter("usb_speed").as_string());
-            bool usb2mode = this->get_parameter("usb2mode").as_bool();
+            dai::UsbSpeed speed = usb_speed_map_.at(this->get_parameter("i_usb_speed").as_string());
             if(mxid.empty() && ip.empty()) {
-                if(usb2mode) {
-                    device_ = std::make_shared<dai::Device>(*pipeline_, usb2mode);
-                } else {
-                    device_ = std::make_shared<dai::Device>(*pipeline_, speed);
-                }
+                device_ = std::make_shared<dai::Device>(*pipeline_, speed);
+
             } else {
-                if(usb2mode) {
-                    device_ = std::make_shared<dai::Device>(*pipeline_, info, usb2mode);
-                } else {
-                    device_ = std::make_shared<dai::Device>(*pipeline_, info, speed);
-                }
+                device_ = std::make_shared<dai::Device>(*pipeline_, info, speed);
             }
             cam_running = true;
         } catch(const std::runtime_error& e) {
@@ -110,10 +120,10 @@ void Camera::startDevice() {
 
 rcl_interfaces::msg::SetParametersResult Camera::parameterCB(const std::vector<rclcpp::Parameter>& params) {
     for(const auto& p : params) {
-        if(this->get_parameter("enable_ir").as_bool()) {
-            if(p.get_name() == "laser_dot_brightness") {
+        if(this->get_parameter("i_enable_ir").as_bool() && cam_type_->ir_available()) {
+            if(p.get_name() == "i_laser_dot_brightness") {
                 device_->setIrLaserDotProjectorBrightness(p.get_value<int>());
-            } else if(p.get_name() == "floodlight_brightness") {
+            } else if(p.get_name() == "i_floodlight_brightness") {
                 device_->setIrFloodLightBrightness(p.get_value<int>());
             }
         }
@@ -126,16 +136,18 @@ rcl_interfaces::msg::SetParametersResult Camera::parameterCB(const std::vector<r
     return res;
 }
 void Camera::declareParams() {
-    this->declare_parameter<std::string>("pipeline_type", "RGBD");
-    this->declare_parameter<bool>("enable_imu", true);
-    this->declare_parameter<bool>("enable_ir", true);
-    this->declare_parameter<std::string>("usb_speed", "SUPER_PLUS");
-    this->declare_parameter<bool>("usb2mode", false);
-    this->declare_parameter<std::string>("mx_id", "");
-    this->declare_parameter<std::string>("ip", "");
-    this->declare_parameter<int>("laser_dot_brightness", 0, param_handlers::get_ranged_int_descriptor(0, 1200));
-    this->declare_parameter<int>("floodlight_brightness", 0, param_handlers::get_ranged_int_descriptor(0, 1500));
+    this->declare_parameter<std::string>("i_pipeline_type", "RGBD");
+    this->declare_parameter<std::string>("i_nn_config_path", ament_index_cpp::get_package_share_directory("depthai_ros_driver") + "/config/mobilenet.json");
+    this->declare_parameter<bool>("i_use_spatial_nn", false);
+    this->declare_parameter<bool>("i_enable_imu", true);
+    this->declare_parameter<bool>("i_enable_ir", true);
+    this->declare_parameter<std::string>("i_usb_speed", "SUPER_PLUS");
+    this->declare_parameter<std::string>("i_mx_id", "");
+    this->declare_parameter<std::string>("i_ip", "");
+    this->declare_parameter<int>("i_laser_dot_brightness", 0, param_handlers::get_ranged_int_descriptor(0, 1200));
+    this->declare_parameter<int>("i_floodlight_brightness", 0, param_handlers::get_ranged_int_descriptor(0, 1500));
 }
+
 }  // namespace depthai_ros_driver
 #include "rclcpp_components/register_node_macro.hpp"
 RCLCPP_COMPONENTS_REGISTER_NODE(depthai_ros_driver::Camera);

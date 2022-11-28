@@ -60,7 +60,7 @@ void RGB::color_q_cb(const std::string& name, const std::shared_ptr<dai::ADataty
     if (name == color_q_name_){
     rgb_pub_.publish(img_msg, rgb_info_);
     }
-    else if(name==preview_q_name_){
+    else{
         preview_pub_.publish(img_msg, rgb_info_);
     }
 }
