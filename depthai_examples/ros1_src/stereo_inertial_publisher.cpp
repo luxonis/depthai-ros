@@ -355,6 +355,7 @@ int main(int argc, char** argv) {
 
     dai::Pipeline pipeline;
     int width, height;
+    bool isDeviceFound = false;
     std::tie(pipeline, width, height) = createPipeline(enableDepth,
                                                         enableSpatialDetection,
                                                         lrcheck,
@@ -376,54 +377,60 @@ int main(int argc, char** argv) {
                                                         nnPath);
 
     std::shared_ptr<dai::Device> device;
-    if(useWithIP) { // Connecting to a camera with specific IP, requires static IP config beforehand
-        if(ipAddress.empty()) {
-            throw std::runtime_error("You have to specify MxID of the device!");
-        } else {        
-            auto deviceInfo = dai::DeviceInfo(ipAddress);
-            if(deviceInfo.state == X_LINK_ANY_STATE || deviceInfo.state == X_LINK_UNBOOTED || deviceInfo.state == X_LINK_BOOTLOADER || deviceInfo.state == X_LINK_FLASH_BOOTED) {
-                std::cout << "Device found with IP Address: " << ipAddress <<  std::endl;
-                device = std::make_shared<dai::Device>(pipeline, deviceInfo);
-            } else if(deviceInfo.state == X_LINK_BOOTED) {
-                throw std::runtime_error("ros::NodeHandle() from Node \"" + pnh.getNamespace() + "\" DepthAI Device with ipAddress  \"" + ipAddress
-                                         + "\" is already booted on different process.  \"");
-            } else {
-                throw std::runtime_error("Could NOT connect to device with IP Address: " + ipAddress);
-            }
-        }    
-    } else if(useWithMxId) { // Connecting to a camera with unique MxID
-        if(mxId.empty()) {
-            throw std::runtime_error("You have to specify MxID of the device!");
-        } else {
-            auto deviceInfo = dai::DeviceInfo(mxId);
-            if(deviceInfo.state == X_LINK_ANY_STATE || deviceInfo.state == X_LINK_UNBOOTED || deviceInfo.state == X_LINK_BOOTLOADER || deviceInfo.state == X_LINK_FLASH_BOOTED) {
-                std::cout << "Connecting to device with MxID : " << mxId <<  std::endl;
+    std::vector<dai::DeviceInfo> availableDevices = dai::Device::getAllAvailableDevices();
+
+    std::cout << "Listing available devices..." << std::endl;
+    for(auto deviceInfo : availableDevices) {
+        std::cout << "Device Mx ID: " << deviceInfo.getMxId() << std::endl;
+        if(useWithMxId) {
+            if(deviceInfo.getMxId() == mxId) {
+                if(deviceInfo.state == X_LINK_UNBOOTED || deviceInfo.state == X_LINK_BOOTLOADER) {
+                    isDeviceFound = true;
+                    std::cout << "Connecting to device with MxID : " << mxId <<  std::endl;
+                    device = std::make_shared<dai::Device>(pipeline, deviceInfo, usb2Mode);
+                    break;
+                } else if(deviceInfo.state == X_LINK_BOOTED) {
+                    throw std::runtime_error("ros::NodeHandle() from Node \"" + pnh.getNamespace() + "\" DepthAI Device with MxId  \"" + mxId
+                                             + "\" is already booted on different process.  \"");
+                } else {
+                    throw std::runtime_error("Could NOT connect to device with MxID: " + mxId);
+                } 
+            }             
+        } else if(useWithIP) {
+            if(deviceInfo.name == ipAddress) {
+                if(deviceInfo.state == X_LINK_UNBOOTED || deviceInfo.state == X_LINK_BOOTLOADER) {
+                    isDeviceFound = true;
+                    std::cout << "Connecting to device with IP Address: " << ipAddress <<  std::endl;
+                    device = std::make_shared<dai::Device>(pipeline, deviceInfo);
+                    break;
+                } else if(deviceInfo.state == X_LINK_BOOTED) {
+                    throw std::runtime_error("ros::NodeHandle() from Node \"" + pnh.getNamespace() + "\" DepthAI Device with MxId  \"" + mxId
+                                             + "\" is already booted on different process.  \"");
+                } else {
+                    throw std::runtime_error("Could NOT connect to device with IP Address: " + ipAddress);
+                }
+            }                 
+        } else if(!useWithIP && !useWithMxId) {
+            if(deviceInfo.state == X_LINK_UNBOOTED || deviceInfo.state == X_LINK_BOOTLOADER) {
+                isDeviceFound = true;
                 if(poeMode) {
                     device = std::make_shared<dai::Device>(pipeline, deviceInfo);
                 } else {
                     device = std::make_shared<dai::Device>(pipeline, deviceInfo, usb2Mode);
                 }
+                break;
             } else if(deviceInfo.state == X_LINK_BOOTED) {
                 throw std::runtime_error("ros::NodeHandle() from Node \"" + pnh.getNamespace() + "\" DepthAI Device with MxId  \"" + mxId
                                          + "\" is already booted on different process.  \"");
-            } else {
-                throw std::runtime_error("Could NOT connect to device with MxID: " + mxId);
-            }    
-        }
-    } else if(!useWithIP && !useWithMxId) {// List all available devices and connect one of them automatically 
-        std::vector<dai::DeviceInfo> availableDevices = dai::Device::getAllAvailableDevices();
-        std::cout << "Listing available devices..." << std::endl;
-        for(auto deviceInfo : availableDevices) {
-            std::cout << "Device Mx ID: " << deviceInfo.getMxId() << std::endl;
-            device = std::make_shared<dai::Device>(pipeline);
-        }
-        if (availableDevices.empty())
-        {
-            throw std::runtime_error("Could NOT find any available device!");
-        }
-    } else {
-        throw std::runtime_error("You need to specify to either connect automatically (no MxId or IP Address"
+            }        
+        } else {
+            throw std::runtime_error("You need to specify to either connect automatically (no MxId or IP Address"
                                  ") or connect with IP or connect with MxId");
+        } 
+    }
+
+    if(!isDeviceFound) {
+        throw std::runtime_error("ros::NodeHandle() from Node \"" + pnh.getNamespace() + "\" DepthAI Device with MxId  \"" + mxId + "\" not found.  \"");
     }
 
     if(!poeMode) {
