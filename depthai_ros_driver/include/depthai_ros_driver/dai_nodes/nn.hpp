@@ -11,6 +11,10 @@
 namespace depthai_ros_driver {
 namespace dai_nodes {
 
+namespace link_types {
+enum class NNLinkType { input, inputDepth };
+};
+
 class NN : public BaseNode {
    public:
     explicit NN(const std::string& dai_node_name, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
@@ -28,6 +32,7 @@ class NN : public BaseNode {
     image_transport::CameraPublisher nn_pub_;
     sensor_msgs::msg::CameraInfo nn_info_;
     std::shared_ptr<dai::node::NeuralNetwork> nn_node_;
+    std::shared_ptr<dai::node::ImageManip> image_manip_;
     std::unique_ptr<param_handlers::NNParamHandler> param_handler_;
     std::shared_ptr<dai::DataOutputQueue> nn_q_;
     std::shared_ptr<dai::node::XLinkOut> xout_nn_;

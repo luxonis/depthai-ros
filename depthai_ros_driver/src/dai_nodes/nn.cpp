@@ -9,8 +9,10 @@ NN::NN(const std::string& dai_node_name, rclcpp::Node* node, std::shared_ptr<dai
     RCLCPP_INFO(node->get_logger(), "Creating node %s", dai_node_name.c_str());
     set_names();
     nn_node_ = pipeline->create<dai::node::NeuralNetwork>();
+    image_manip_ = pipeline->create<dai::node::ImageManip>();
     param_handler_ = std::make_unique<param_handlers::NNParamHandler>(dai_node_name);
-    param_handler_->declareParams(node, nn_node_);
+    param_handler_->declareParams(node, nn_node_, image_manip_);
+    image_manip_->out.link(nn_node_->input);
     set_xin_xout(pipeline);
     RCLCPP_INFO(node->get_logger(), "Node %s created", dai_node_name.c_str());
 };
@@ -50,7 +52,7 @@ void NN::link(const dai::Node::Input& in, int link_type) {
 }
 
 dai::Node::Input NN::get_input(int link_type) {
-    return nn_node_->input;
+    return image_manip_->inputImage;
 }
 
 void NN::updateParams(const std::vector<rclcpp::Parameter>& params) {

@@ -9,13 +9,14 @@
 namespace depthai_ros_driver {
 
 
+
 class Camera : public rclcpp::Node {
    public:
     explicit Camera(const rclcpp::NodeOptions& options);
     void on_configure();
 
    private:
-    void getDeviceName();
+    void getDeviceType();
     void createPipeline();
     void loadNodes();
     void declareParams();
@@ -32,6 +33,12 @@ class Camera : public rclcpp::Node {
         {"HIGH", dai::UsbSpeed::HIGH},
         {"SUPER", dai::UsbSpeed::SUPER},
         {"SUPER_PLUS", dai::UsbSpeed::SUPER_PLUS},
+    };
+    std::unordered_map<std::string, types::NNType> nn_type_map_ = {
+        {"", types::NNType::None},
+        {"none", types::NNType::None},
+        {"default", types::NNType::Default},
+        {"spatial", types::NNType::Spatial},
     };
     std::shared_ptr<dai::Pipeline> pipeline_;
     std::shared_ptr<dai::Device> device_;

@@ -8,6 +8,11 @@
 namespace depthai_ros_driver {
 namespace types {
 
+enum class NNType{
+    None,
+    Default,
+    Spatial
+};
 namespace cam_types {
 enum class CamName { OAK_D, OAK_D_W, OAK_D_PRO_AF, OAK_D_PRO_W, OAK_D_S2, OAK_D_LITE, OAK_1, OAK_1_W, OAK_1_LITE, OAK_1_MAX };
 std::unordered_map<std::string, CamName> cam_names = {

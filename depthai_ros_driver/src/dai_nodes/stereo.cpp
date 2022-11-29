@@ -31,7 +31,6 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
 }
 
 void Stereo::stereo_q_cb(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
-    auto names = name;
     auto frame = std::dynamic_pointer_cast<dai::ImgFrame>(data);
     cv::Mat cv_frame = frame->getCvFrame();
     auto curr_time = getROSNode()->get_clock()->now();

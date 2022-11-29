@@ -4,6 +4,7 @@
 #include "depthai_ros_driver/dai_nodes/imu.hpp"
 #include "depthai_ros_driver/dai_nodes/mono.hpp"
 #include "depthai_ros_driver/dai_nodes/nn.hpp"
+#include "depthai_ros_driver/dai_nodes/spatial_detection.hpp"
 #include "depthai_ros_driver/dai_nodes/rgb.hpp"
 #include "depthai_ros_driver/dai_nodes/stereo.hpp"
 #include "depthai_ros_driver/types.hpp"
@@ -15,7 +16,7 @@ Camera::Camera(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : rcl
 }
 void Camera::on_configure() {
     declareParams();
-    getDeviceName();
+    getDeviceType();
     createPipeline();
     startDevice();
     setupQueues();
@@ -23,7 +24,7 @@ void Camera::on_configure() {
     RCLCPP_INFO(this->get_logger(), "Camera ready!");
 }
 
-void Camera::getDeviceName() {
+void Camera::getDeviceType() {
     pipeline_ = std::make_shared<dai::Pipeline>();
     startDevice();
     auto name = device_->getDeviceName();
@@ -33,16 +34,16 @@ void Camera::getDeviceName() {
 }
 
 void Camera::createPipeline() {
-    // pipeline_ = std::make_shared<dai::Pipeline>();
     dai_nodes::RGBFactory rgb_fac;
     dai_nodes::MonoFactory mono_fac;
     dai_nodes::StereoFactory stereo_fac;
     dai_nodes::ImuFactory imu_fac;
     dai_nodes::NNFactory nn_fac;
+    dai_nodes::SpatialDetectionFactory spat_fac;
     if(this->get_parameter("i_pipeline_type").as_string() == "RGB") {
         auto rgb = rgb_fac.create("color", this, pipeline_);
         dai_nodes_.push_back(std::move(rgb));
-    } else if(this->get_parameter("i_pipeline_type").as_string() == "RGBD") {
+    } else if(this->get_parameter("i_pipeline_type").as_string() == "RGBD" && cam_type_->stereo()) {
         auto rgb = rgb_fac.create("color", this, pipeline_);
         auto mono_left = mono_fac.create("mono_left", this, pipeline_);
         auto mono_right = mono_fac.create("mono_right", this, pipeline_);
@@ -52,12 +53,27 @@ void Camera::createPipeline() {
         mono_right->link(stereo->get_input(static_cast<int>(dai_nodes::link_types::StereoLinkType::right)),
                          static_cast<int>(dai_nodes::link_types::StereoLinkType::right));
 
-        std::string nn_config_path = this->get_parameter("i_nn_config_path").as_string();
-        if(!nn_config_path.empty()) {
-            auto nn = nn_fac.create("nn", this, pipeline_);
-            rgb->link(nn->get_input(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
-            dai_nodes_.push_back(std::move(nn));
+        auto nn_type = nn_type_map_.at(this->get_parameter("i_nn_type").as_string());
+        switch (nn_type){
+            case types::NNType::None:
+                break;
+            case types::NNType::Default:{
+                auto nn = nn_fac.create("nn", this, pipeline_);
+                rgb->link(nn->get_input(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
+                dai_nodes_.push_back(std::move(nn));
+                break;
+            }
+            case types::NNType::Spatial:{
+                auto nn = spat_fac.create("spatial_nn", this, pipeline_);
+                rgb->link(nn->get_input(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
+                stereo->link(nn->get_input(static_cast<int>(dai_nodes::link_types::SpatialDetectionLinkType::inputDepth)));
+                dai_nodes_.push_back(std::move(nn));
+                break;
+            }
+            default:
+                break;
         }
+
         dai_nodes_.push_back(std::move(rgb));
         dai_nodes_.push_back(std::move(mono_right));
         dai_nodes_.push_back(std::move(mono_left));
@@ -70,6 +86,8 @@ void Camera::createPipeline() {
         auto imu = imu_fac.create("imu", this, pipeline_);
         dai_nodes_.push_back(std::move(imu));
     }
+    auto json = pipeline_->serializeToJson();
+    RCLCPP_INFO(this->get_logger(), "Pipeline. %s", json.dump().c_str());
     RCLCPP_INFO(this->get_logger(), "Finished setting up pipeline.");
 }
 
@@ -137,8 +155,7 @@ rcl_interfaces::msg::SetParametersResult Camera::parameterCB(const std::vector<r
 }
 void Camera::declareParams() {
     this->declare_parameter<std::string>("i_pipeline_type", "RGBD");
-    this->declare_parameter<std::string>("i_nn_config_path", ament_index_cpp::get_package_share_directory("depthai_ros_driver") + "/config/mobilenet.json");
-    this->declare_parameter<bool>("i_use_spatial_nn", false);
+    this->declare_parameter<std::string>("i_nn_type", "default");
     this->declare_parameter<bool>("i_enable_imu", true);
     this->declare_parameter<bool>("i_enable_ir", true);
     this->declare_parameter<std::string>("i_usb_speed", "SUPER_PLUS");

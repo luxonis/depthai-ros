@@ -37,29 +37,29 @@ def generate_launch_description():
                 executable="component_container",
                 composable_node_descriptions=[
                     # Driver itself
-                    ComposableNode(
-                        package="depth_image_proc",
-                        plugin="depth_image_proc::ConvertMetricNode",
-                        name="convert_metric_node",
-                        remappings=[
-                            ("image_raw", "/camera/depth/image_raw"),
-                            ("camera_info", "/camera/depth/camera_info"),
-                            ("image", "/camera/depth/converted_depth"),
-                        ],
-                    ),
-                    ComposableNode(
-                        package="depth_image_proc",
-                        plugin="depth_image_proc::PointCloudXyzNode",
-                        name="point_cloud_xyz_node",
-                        remappings=[
-                            ("camera_info", "/camera/depth/camera_info"),
-                            ("image", "/camera/depth/image_raw"),
-                            (
-                                "image_rect",
-                                "/camera/depth/converted_depth",
-                            ),
-                        ],
-                    ),
+                    # ComposableNode(
+                    #     package="depth_image_proc",
+                    #     plugin="depth_image_proc::ConvertMetricNode",
+                    #     name="convert_metric_node",
+                    #     remappings=[
+                    #         ("image_raw", "/camera/depth/image_raw"),
+                    #         ("camera_info", "/camera/depth/camera_info"),
+                    #         ("image", "/camera/depth/converted_depth"),
+                    #     ],
+                    # ),
+                    # ComposableNode(
+                    #     package="depth_image_proc",
+                    #     plugin="depth_image_proc::PointCloudXyzNode",
+                    #     name="point_cloud_xyz_node",
+                    #     remappings=[
+                    #         ("camera_info", "/camera/depth/camera_info"),
+                    #         ("image", "/camera/depth/image_raw"),
+                    #         (
+                    #             "image_rect",
+                    #             "/camera/depth/converted_depth",
+                    #         ),
+                    #     ],
+                    # ),
                     ComposableNode(
                         package="depthai_ros_driver",
                         plugin="depthai_ros_driver::Camera",
