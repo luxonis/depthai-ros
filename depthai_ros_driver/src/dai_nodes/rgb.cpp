@@ -4,51 +4,53 @@
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 namespace depthai_ros_driver {
-namespace dai_nodes {
-RGB::RGB(const std::string& dai_node_name, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(dai_node_name, node, pipeline) {
-    RCLCPP_INFO(node->get_logger(), "Creating node %s", dai_node_name.c_str());
-    set_names();
-    color_cam_node_ = pipeline->create<dai::node::ColorCamera>();
-    param_handler_ = std::make_unique<param_handlers::RGBParamHandler>(dai_node_name);
-    param_handler_->declareParams(node, color_cam_node_);
-    set_xin_xout(pipeline);
-    RCLCPP_INFO(node->get_logger(), "Node %s created", dai_node_name.c_str());
+namespace daiNodes {
+RGB::RGB(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
+    RCLCPP_INFO(node->get_logger(), "Creating node %s", daiNodeName.c_str());
+    setNames();
+    colorCamNode = pipeline->create<dai::node::ColorCamera>();
+    paramHandler = std::make_unique<paramHandlers::RGBParamHandler>(daiNodeName);
+    paramHandler->declareParams(node, colorCamNode);
+    setXinXout(pipeline);
+    RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
 };
-void RGB::set_names() {
-    color_q_name_ = getName() + "_color";
-    preview_q_name_ = getName() + "_preview";
-    control_q_name_ = getName() + "_control";
+void RGB::setNames() {
+    colorQName = getName() + "_color";
+    previewQName = getName() + "_preview";
+    controlQName = getName() + "_control";
 }
 
-void RGB::set_xin_xout(std::shared_ptr<dai::Pipeline> pipeline) {
-    xout_color_ = pipeline->create<dai::node::XLinkOut>();
-    xout_color_->setStreamName(color_q_name_);
-    xin_control_ = pipeline->create<dai::node::XLinkIn>();
-    xin_control_->setStreamName(control_q_name_);
-    color_cam_node_->video.link(xout_color_->input);
-    xin_control_->out.link(color_cam_node_->inputControl);
-    if(param_handler_->get_param<bool>(getROSNode(), "i_enable_preview")) {
-        xout_preview_ = pipeline->create<dai::node::XLinkOut>();
-        xout_preview_->setStreamName(preview_q_name_);
-        color_cam_node_->preview.link(xout_preview_->input);
+void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
+    xoutColor = pipeline->create<dai::node::XLinkOut>();
+    xoutColor->setStreamName(colorQName);
+    xinControl = pipeline->create<dai::node::XLinkIn>();
+    xinControl->setStreamName(controlQName);
+    colorCamNode->video.link(xoutColor->input);
+    xinControl->out.link(colorCamNode->inputControl);
+    if(paramHandler->get_param<bool>(getROSNode(), "i_enable_preview")) {
+        xoutPreview = pipeline->create<dai::node::XLinkOut>();
+        xoutPreview->setStreamName(previewQName);
+        xoutPreview->input.setQueueSize(2);
+        xoutPreview->input.setBlocking(false);
+        colorCamNode->preview.link(xoutPreview->input);
     }
 }
 
 void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
-    color_q_ = device->getOutputQueue(color_q_name_, param_handler_->get_param<int>(getROSNode(), "i_max_q_size"), false);
-    color_q_->addCallback(std::bind(&RGB::color_q_cb, this, std::placeholders::_1, std::placeholders::_2));
-    control_q_ = device->getInputQueue(control_q_name_);
-    rgb_pub_ = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
+    colorQ = device->getOutputQueue(colorQName, paramHandler->get_param<int>(getROSNode(), "i_max_q_size"), false);
+    colorQ->addCallback(std::bind(&RGB::colorQCB, this, std::placeholders::_1, std::placeholders::_2));
+    controlQ = device->getInputQueue(controlQName);
+    rgbPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
 
-    if(param_handler_->get_param<bool>(getROSNode(), "i_enable_preview")) {
-        preview_q_ = device->getOutputQueue(preview_q_name_, param_handler_->get_param<int>(getROSNode(), "i_max_q_size"), false);
-        preview_q_->addCallback(std::bind(&RGB::color_q_cb, this, std::placeholders::_1, std::placeholders::_2));
-        preview_pub_ = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/preview/image_raw");
+    if(paramHandler->get_param<bool>(getROSNode(), "i_enable_preview")) {
+        previewQ = device->getOutputQueue(previewQName, paramHandler->get_param<int>(getROSNode(), "i_max_q_size"), false);
+        previewQ->addCallback(std::bind(&RGB::colorQCB, this, std::placeholders::_1, std::placeholders::_2));
+        previewPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/preview/image_raw");
     }
 }
 
 
-void RGB::color_q_cb(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
+void RGB::colorQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
     auto frame = std::dynamic_pointer_cast<dai::ImgFrame>(data);
     cv::Mat cv_frame = frame->getCvFrame();
     auto curr_time = getROSNode()->get_clock()->now();
@@ -57,30 +59,30 @@ void RGB::color_q_cb(const std::string& name, const std::shared_ptr<dai::ADataty
     std_msgs::msg::Header header;
     img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, cv_frame);
     img_bridge.toImageMsg(img_msg);
-    if (name == color_q_name_){
-    rgb_pub_.publish(img_msg, rgb_info_);
+    if (name == colorQName){
+    rgbPub.publish(img_msg, rgbInfo);
     }
     else{
-        preview_pub_.publish(img_msg, rgb_info_);
+        previewPub.publish(img_msg, rgbInfo);
     }
 }
 
-void RGB::link(const dai::Node::Input& in, int link_type) {
-    if(link_type == static_cast<int>(link_types::RGBLinkType::color)) {
-        color_cam_node_->video.link(in);
-    } else if(link_type == static_cast<int>(link_types::RGBLinkType::preview)) {
-        color_cam_node_->preview.link(in);
+void RGB::link(const dai::Node::Input& in, int linkType) {
+    if(linkType == static_cast<int>(linkTypes::RGBLinkType::color)) {
+        colorCamNode->video.link(in);
+    } else if(linkType == static_cast<int>(linkTypes::RGBLinkType::preview)) {
+        colorCamNode->preview.link(in);
     }
 }
 
-dai::Node::Input RGB::get_input(int link_type) {
+dai::Node::Input RGB::getInput(int linkType) {
     throw(std::runtime_error("Class RGB has no input."));
 }
 
 void RGB::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    auto ctrl = param_handler_->setRuntimeParams(getROSNode(),params);
-    control_q_->send(ctrl);
+    auto ctrl = paramHandler->setRuntimeParams(getROSNode(),params);
+    controlQ->send(ctrl);
 }
 
-}  // namespace dai_nodes
+}  // namespace daiNodes
 }  // namespace depthai_ros_driver

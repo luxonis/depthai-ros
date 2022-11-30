@@ -5,10 +5,10 @@
 
 #include "depthai/depthai.hpp"
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
-#include "depthai_ros_driver/visibility.h"
+
 
 namespace depthai_ros_driver {
-namespace param_handlers {
+namespace paramHandlers {
 class MonoParamHandler : public BaseParamHandler {
    public:
     explicit MonoParamHandler(const std::string& name);
@@ -17,12 +17,12 @@ class MonoParamHandler : public BaseParamHandler {
     dai::CameraControl setRuntimeParams(rclcpp::Node* node,const std::vector<rclcpp::Parameter>& params) override;
 
    private:
-    std::unordered_map<std::string, dai::MonoCameraProperties::SensorResolution> mono_resolution_map_ = {
+    std::unordered_map<std::string, dai::MonoCameraProperties::SensorResolution> monoResolutionMap = {
         {"400", dai::MonoCameraProperties::SensorResolution::THE_400_P},
         {"480", dai::MonoCameraProperties::SensorResolution::THE_480_P},
         {"720", dai::MonoCameraProperties::SensorResolution::THE_720_P},
         {"800", dai::MonoCameraProperties::SensorResolution::THE_800_P},
     };
 };
-}  // namespace param_handlers
+}  // namespace paramHandlers
 }  // namespace depthai_ros_driver

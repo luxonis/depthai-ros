@@ -6,42 +6,42 @@
 #include "rclcpp/rclcpp.hpp"
 
 namespace depthai_ros_driver {
-namespace dai_nodes {
+namespace daiNodes {
 class BaseNode {
    public:
-    BaseNode(const std::string& dai_node_name, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) {
-        setNodeName(dai_node_name);
+    BaseNode(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> /*pipeline*/) {
+        setNodeName(daiNodeName);
         setROSNodePointer(node);
     };
     virtual ~BaseNode(){};
     virtual void updateParams(const std::vector<rclcpp::Parameter>& params) = 0;
-    virtual void link(const dai::Node::Input& in, int link_type = 0) = 0;
-    virtual dai::Node::Input get_input(int link_type = 0) = 0;
+    virtual void link(const dai::Node::Input& in, int linkType = 0) = 0;
+    virtual dai::Node::Input getInput(int linkType = 0) = 0;
     virtual void setupQueues(std::shared_ptr<dai::Device> device) = 0;
-    virtual void set_names() = 0;
-    virtual void set_xin_xout(std::shared_ptr<dai::Pipeline> pipeline) = 0;
+    virtual void setNames() = 0;
+    virtual void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) = 0;
 
-    void setNodeName(const std::string& dai_node_name) {
-        dai_node_name_ = dai_node_name;
+    void setNodeName(const std::string& daiNodeName) {
+        baseDAINodeName = daiNodeName;
     };
     void setROSNodePointer(rclcpp::Node* node) {
-        node_ = node;
+        baseNode = node;
     };
     rclcpp::Node* getROSNode() {
-        return node_;
+        return baseNode;
     };
     std::string getName() {
-        return dai_node_name_;
+        return baseDAINodeName;
     };
 
    private:
-    rclcpp::Node* node_;
-    std::string dai_node_name_;
+    rclcpp::Node* baseNode;
+    std::string baseDAINodeName;
 };
 class BaseNodeFactory {
    public:
-    virtual std::unique_ptr<BaseNode> create(const std::string& dai_node_name, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) = 0;
+    virtual std::unique_ptr<BaseNode> create(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) = 0;
     virtual ~BaseNodeFactory(){};
 };
-}  // namespace dai_nodes
+}  // namespace daiNodes
 }  // namespace depthai_ros_driver

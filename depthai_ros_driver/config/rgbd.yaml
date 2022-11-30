@@ -1,5 +1,5 @@
 /**:
-  i_pipeline_type: "RGBDM"
+  i_pipelinetype: "RGBDM"
   i_enable_imu: True
   i_usb_speed: "SUPER"
   i_cam_type: "auto"

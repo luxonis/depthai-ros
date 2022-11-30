@@ -5,10 +5,10 @@
 
 #include "depthai/depthai.hpp"
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
-#include "depthai_ros_driver/visibility.h"
+
 
 namespace depthai_ros_driver {
-namespace param_handlers {
+namespace paramHandlers {
 class ImuParamHandler : public BaseParamHandler {
    public:
     explicit ImuParamHandler(const std::string& name);
@@ -17,5 +17,5 @@ class ImuParamHandler : public BaseParamHandler {
     dai::CameraControl setRuntimeParams(rclcpp::Node* node,const std::vector<rclcpp::Parameter>& params) override;
 
 };
-}  // namespace param_handlers
+}  // namespace paramHandlers
 }  // namespace depthai_ros_driver

@@ -4,33 +4,33 @@
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 namespace depthai_ros_driver {
-namespace dai_nodes {
-Stereo::Stereo(const std::string& dai_node_name, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(dai_node_name, node, pipeline) {
-    RCLCPP_INFO(node->get_logger(), "Creating node %s", dai_node_name.c_str());
-    set_names();
-    stereo_cam_node_ = pipeline->create<dai::node::StereoDepth>();
-    param_handler_ = std::make_unique<param_handlers::StereoParamHandler>(dai_node_name);
-    param_handler_->declareParams(node, stereo_cam_node_);
-    set_xin_xout(pipeline);
-    RCLCPP_INFO(node->get_logger(), "Node %s created", dai_node_name.c_str());
+namespace daiNodes {
+Stereo::Stereo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
+    RCLCPP_INFO(node->get_logger(), "Creating node %s", daiNodeName.c_str());
+    setNames();
+    stereoCamNode = pipeline->create<dai::node::StereoDepth>();
+    paramHandler = std::make_unique<paramHandlers::StereoParamHandler>(daiNodeName);
+    paramHandler->declareParams(node, stereoCamNode);
+    setXinXout(pipeline);
+    RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
 };
-void Stereo::set_names() {
-    stereo_q_name_ = getName() + "_stereo";
+void Stereo::setNames() {
+    stereoQName = getName() + "_stereo";
 }
 
-void Stereo::set_xin_xout(std::shared_ptr<dai::Pipeline> pipeline) {
-    xout_stereo_ = pipeline->create<dai::node::XLinkOut>();
-    xout_stereo_->setStreamName(stereo_q_name_);
-    stereo_cam_node_->depth.link(xout_stereo_->input);
+void Stereo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
+    xoutStereo = pipeline->create<dai::node::XLinkOut>();
+    xoutStereo->setStreamName(stereoQName);
+    stereoCamNode->depth.link(xoutStereo->input);
 }
 
 void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
-    stereo_q_ = device->getOutputQueue(stereo_q_name_, param_handler_->get_param<int>(getROSNode(), "i_max_q_size"), false);
-    stereo_q_->addCallback(std::bind(&Stereo::stereo_q_cb, this, std::placeholders::_1, std::placeholders::_2));
-    stereo_pub_ = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
+    stereoQ = device->getOutputQueue(stereoQName, paramHandler->get_param<int>(getROSNode(), "i_max_q_size"), false);
+    stereoQ->addCallback(std::bind(&Stereo::stereoQCB, this, std::placeholders::_1, std::placeholders::_2));
+    stereoPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
 }
 
-void Stereo::stereo_q_cb(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
+void Stereo::stereoQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
     auto frame = std::dynamic_pointer_cast<dai::ImgFrame>(data);
     cv::Mat cv_frame = frame->getCvFrame();
     auto curr_time = getROSNode()->get_clock()->now();
@@ -39,24 +39,24 @@ void Stereo::stereo_q_cb(const std::string& name, const std::shared_ptr<dai::ADa
     std_msgs::msg::Header header;
     img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::TYPE_16UC1, cv_frame);
     img_bridge.toImageMsg(img_msg);
-    stereo_pub_.publish(img_msg, stereo_info_);
+    stereoPub.publish(img_msg, stereoInfo);
 }
 
-void Stereo::link(const dai::Node::Input& in, int link_type) {
-    stereo_cam_node_->depth.link(in);
+void Stereo::link(const dai::Node::Input& in, int linkType) {
+    stereoCamNode->depth.link(in);
 }
 
-dai::Node::Input Stereo::get_input(int link_type) {
-    if(link_type == static_cast<int>(link_types::StereoLinkType::left)) {
-        return stereo_cam_node_->left;
-    } else {
-        return stereo_cam_node_->right;
+dai::Node::Input Stereo::getInput(int linkType) {
+    if(linkType == static_cast<int>(linkTypes::StereoLinkType::left)) {
+        return stereoCamNode->left;
+    } else if(linkType == static_cast<int>(linkTypes::StereoLinkType::right)) {
+        return stereoCamNode->right;
     }
 }
 
 void Stereo::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    param_handler_->setRuntimeParams(getROSNode(),params);
+    paramHandler->setRuntimeParams(getROSNode(), params);
 }
 
-}  // namespace dai_nodes
+}  // namespace daiNodes
 }  // namespace depthai_ros_driver

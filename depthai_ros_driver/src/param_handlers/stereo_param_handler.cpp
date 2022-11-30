@@ -4,7 +4,7 @@
 #include "depthai/pipeline/nodes.hpp"
 
 namespace depthai_ros_driver {
-namespace param_handlers {
+namespace paramHandlers {
 StereoParamHandler::StereoParamHandler(const std::string& name) : BaseParamHandler(name){};
 void StereoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::StereoDepth> stereo) {
     declareAndLogParam<int>(node, "i_max_q_size", 4);
@@ -12,11 +12,11 @@ void StereoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::
     if(declareAndLogParam<bool>(node, "i_align_depth", true)) {
         stereo->setDepthAlign(dai::CameraBoardSocket::RGB);
     }
-    stereo->setDefaultProfilePreset(depth_preset_map_.at(declareAndLogParam<std::string>(node, "i_depth_preset", "HIGH_DENSITY")));
+    stereo->setDefaultProfilePreset(depthPresetMap.at(declareAndLogParam<std::string>(node, "i_depth_preset", "HIGH_DENSITY")));
     stereo->initialConfig.setLeftRightCheckThreshold(declareAndLogParam<int>(node, "i_lrc_threshold", 5));
     stereo->initialConfig.setMedianFilter(static_cast<dai::MedianFilter>(declareAndLogParam<int>(node, "i_depth_filter_size", 7)));
     stereo->initialConfig.setConfidenceThreshold(declareAndLogParam<int>(node, "i_stereo_conf_threshold", 255));
-    stereo->initialConfig.setSubpixel(declareAndLogParam<bool>(node, "i_subpixel", true));
+    // stereo->initialConfig.setSubpixel(declareAndLogParam<bool>(node, "i_subpixel", true));
     stereo->setExtendedDisparity(declareAndLogParam<bool>(node, "i_extender_disp", false));
     stereo->setRectifyEdgeFillColor(declareAndLogParam<int>(node, "i_rectify_edge_fill_color", -1));
     auto config = stereo->initialConfig.get();
@@ -35,5 +35,5 @@ dai::CameraControl StereoParamHandler::setRuntimeParams(rclcpp::Node* node,const
     dai::CameraControl ctrl;
     return ctrl;
 }
-}  // namespace param_handlers
+}  // namespace paramHandlers
 }  // namespace depthai_ros_driver

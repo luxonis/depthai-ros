@@ -3,17 +3,14 @@
 #include "depthai/depthai.hpp"
 #include "depthai_ros_driver/types.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
-#include "depthai_ros_driver/visibility.h"
 #include "rclcpp/rclcpp.hpp"
 
 namespace depthai_ros_driver {
 
-
-
 class Camera : public rclcpp::Node {
    public:
     explicit Camera(const rclcpp::NodeOptions& options);
-    void on_configure();
+    void onConfigure();
 
    private:
     void getDeviceType();
@@ -24,24 +21,24 @@ class Camera : public rclcpp::Node {
     void rgbPipeline();
     void setupQueues();
     rcl_interfaces::msg::SetParametersResult parameterCB(const std::vector<rclcpp::Parameter>& params);
-    OnSetParametersCallbackHandle::SharedPtr param_cb_handle_;
-    std::unique_ptr<types::cam_types::CamType> cam_type_;
+    OnSetParametersCallbackHandle::SharedPtr paramCBHandle;
+    std::unique_ptr<types::cam_types::CamType> cam_type;
     std::vector<std::string> usbStrings = {"UNKNOWN", "LOW", "FULL", "HIGH", "SUPER", "SUPER_PLUS"};
-    std::unordered_map<std::string, dai::UsbSpeed> usb_speed_map_ = {
+    std::unordered_map<std::string, dai::UsbSpeed> usbSpeedMap = {
         {"LOW", dai::UsbSpeed::LOW},
         {"FULL", dai::UsbSpeed::FULL},
         {"HIGH", dai::UsbSpeed::HIGH},
         {"SUPER", dai::UsbSpeed::SUPER},
         {"SUPER_PLUS", dai::UsbSpeed::SUPER_PLUS},
     };
-    std::unordered_map<std::string, types::NNType> nn_type_map_ = {
+    std::unordered_map<std::string, types::NNType> nnTypeMap = {
         {"", types::NNType::None},
         {"none", types::NNType::None},
         {"default", types::NNType::Default},
         {"spatial", types::NNType::Spatial},
     };
-    std::shared_ptr<dai::Pipeline> pipeline_;
-    std::shared_ptr<dai::Device> device_;
-    std::vector<std::unique_ptr<dai_nodes::BaseNode>> dai_nodes_;
+    std::shared_ptr<dai::Pipeline> pipeline;
+    std::shared_ptr<dai::Device> device;
+    std::vector<std::unique_ptr<daiNodes::BaseNode>> daiNodes;
 };
 }  // namespace depthai_ros_driver

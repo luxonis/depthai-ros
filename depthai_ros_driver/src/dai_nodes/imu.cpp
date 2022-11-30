@@ -4,33 +4,33 @@
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 namespace depthai_ros_driver {
-namespace dai_nodes {
-Imu::Imu(const std::string& dai_node_name, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(dai_node_name, node, pipeline) {
-    RCLCPP_INFO(node->get_logger(), "Creating node %s", dai_node_name.c_str());
-    set_names();
-    imu_node_ = pipeline->create<dai::node::IMU>();
-    param_handler_ = std::make_unique<param_handlers::ImuParamHandler>(dai_node_name);
-    param_handler_->declareParams(node, imu_node_);
-    set_xin_xout(pipeline);
-    RCLCPP_INFO(node->get_logger(), "Node %s created", dai_node_name.c_str());
+namespace daiNodes {
+Imu::Imu(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
+    RCLCPP_INFO(node->get_logger(), "Creating node %s", daiNodeName.c_str());
+    setNames();
+    imuNode = pipeline->create<dai::node::IMU>();
+    paramHandler = std::make_unique<paramHandlers::ImuParamHandler>(daiNodeName);
+    paramHandler->declareParams(node, imuNode);
+    setXinXout(pipeline);
+    RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
 };
-void Imu::set_names() {
-    imu_q_name_ = getName() + "_imu";
+void Imu::setNames() {
+    imuQName = getName() + "_imu";
 }
 
-void Imu::set_xin_xout(std::shared_ptr<dai::Pipeline> pipeline) {
-    xout_imu_ = pipeline->create<dai::node::XLinkOut>();
-    xout_imu_->setStreamName(imu_q_name_);
-    imu_node_->out.link(xout_imu_->input);
+void Imu::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
+    xoutImu = pipeline->create<dai::node::XLinkOut>();
+    xoutImu->setStreamName(imuQName);
+    imuNode->out.link(xoutImu->input);
 }
 
 void Imu::setupQueues(std::shared_ptr<dai::Device> device) {
-    imu_q_ = device->getOutputQueue(imu_q_name_, param_handler_->get_param<int>(getROSNode(), "i_max_q_size"), false);
-    imu_q_->addCallback(std::bind(&Imu::imu_q_cb, this, std::placeholders::_1, std::placeholders::_2));
-    imu_pub_ = getROSNode()->create_publisher<sensor_msgs::msg::Imu>("~/" + getName() + "/data",10);
+    imuQ = device->getOutputQueue(imuQName, paramHandler->get_param<int>(getROSNode(), "i_max_q_size"), false);
+    imuQ->addCallback(std::bind(&Imu::imuQCB, this, std::placeholders::_1, std::placeholders::_2));
+    imuPub = getROSNode()->create_publisher<sensor_msgs::msg::Imu>("~/" + getName() + "/data",10);
 }
 
-void Imu::imu_q_cb(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
+void Imu::imuQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
     auto imu_data = std::dynamic_pointer_cast<dai::IMUData>(data);
     auto packets = imu_data->packets;
     for(const auto& packet : packets) {
@@ -61,21 +61,21 @@ void Imu::imu_q_cb(const std::string& name, const std::shared_ptr<dai::ADatatype
                 imu_msg.linear_acceleration_covariance[row * 3 + col] = (row == col ? 0.60 : 0.);  // +-80mg
             }
         }
-        imu_pub_->publish(imu_msg);
+        imuPub->publish(imu_msg);
     }
 }
 
-void Imu::link(const dai::Node::Input& in, int /*link_type*/) {
-    imu_node_->out.link(in);
+void Imu::link(const dai::Node::Input& in, int /*linkType*/) {
+    imuNode->out.link(in);
 }
 
-dai::Node::Input Imu::get_input(int link_type) {
+dai::Node::Input Imu::getInput(int linkType) {
     throw(std::runtime_error("Class Imu has no input."));
 }
 
 void Imu::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    param_handler_->setRuntimeParams(getROSNode(),params);
+    paramHandler->setRuntimeParams(getROSNode(),params);
 }
 
-}  // namespace dai_nodes
+}  // namespace daiNodes
 }  // namespace depthai_ros_driver

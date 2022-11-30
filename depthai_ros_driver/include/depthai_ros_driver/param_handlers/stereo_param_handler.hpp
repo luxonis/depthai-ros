@@ -5,10 +5,10 @@
 
 #include "depthai/depthai.hpp"
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
-#include "depthai_ros_driver/visibility.h"
+
 
 namespace depthai_ros_driver {
-namespace param_handlers {
+namespace paramHandlers {
 class StereoParamHandler : public BaseParamHandler {
    public:
     explicit StereoParamHandler(const std::string& name);
@@ -17,11 +17,11 @@ class StereoParamHandler : public BaseParamHandler {
     dai::CameraControl setRuntimeParams(rclcpp::Node* node,const std::vector<rclcpp::Parameter>& params) override;
 
    private:
-    std::unordered_map<std::string, dai::node::StereoDepth::PresetMode> depth_preset_map_ = {
+    std::unordered_map<std::string, dai::node::StereoDepth::PresetMode> depthPresetMap = {
         {"HIGH_DENSITY", dai::node::StereoDepth::PresetMode::HIGH_DENSITY},
         {"HIGH_ACCURACY", dai::node::StereoDepth::PresetMode::HIGH_ACCURACY},
 
     };
 };
-}  // namespace param_handlers
+}  // namespace paramHandlers
 }  // namespace depthai_ros_driver

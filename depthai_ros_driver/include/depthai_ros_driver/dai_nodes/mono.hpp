@@ -9,36 +9,36 @@
 #include "sensor_msgs/msg/camera_info.hpp"
 
 namespace depthai_ros_driver {
-namespace dai_nodes {
+namespace daiNodes {
 
 class Mono : public BaseNode {
    public:
-    explicit Mono(const std::string& dai_node_name, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
+    explicit Mono(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
     virtual ~Mono() = default;
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
-    void link(const dai::Node::Input& in, int link_type = 0) override;
-    dai::Node::Input get_input(int link_type = 0) override;
-    void set_names() override;
-    void set_xin_xout(std::shared_ptr<dai::Pipeline> pipeline) override;
+    void link(const dai::Node::Input& in, int linkType = 0) override;
+    dai::Node::Input getInput(int linkType = 0) override;
+    void setNames() override;
+    void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
 
    private:
-    void mono_q_cb(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
-    image_transport::CameraPublisher mono_pub_;
-    sensor_msgs::msg::CameraInfo mono_info_;
-    std::shared_ptr<dai::node::MonoCamera> mono_cam_node_;
-    std::unique_ptr<param_handlers::MonoParamHandler> param_handler_;
-    std::shared_ptr<dai::DataOutputQueue> mono_q_;
-    std::shared_ptr<dai::DataInputQueue> control_q_;
-    std::shared_ptr<dai::node::XLinkOut> xout_mono_;
-    std::shared_ptr<dai::node::XLinkIn> xin_control_;
-    std::string mono_q_name_, control_q_name_;
+    void monoQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
+    image_transport::CameraPublisher monoPub;
+    sensor_msgs::msg::CameraInfo monoInfo;
+    std::shared_ptr<dai::node::MonoCamera> monoCamNode;
+    std::unique_ptr<paramHandlers::MonoParamHandler> paramHandler;
+    std::shared_ptr<dai::DataOutputQueue> monoQ;
+    std::shared_ptr<dai::DataInputQueue> controlQ;
+    std::shared_ptr<dai::node::XLinkOut> xoutMono;
+    std::shared_ptr<dai::node::XLinkIn> xinControl;
+    std::string monoQName, controlQName;
 };
 class MonoFactory : public BaseNodeFactory {
    public:
-    std::unique_ptr<BaseNode> create(const std::string& dai_node_name, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) {
-        return std::make_unique<Mono>(dai_node_name, node, pipeline);
+    std::unique_ptr<BaseNode> create(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) {
+        return std::make_unique<Mono>(daiNodeName, node, pipeline);
     };
 };
-}  // namespace dai_nodes
+}  // namespace daiNodes
 }  // namespace depthai_ros_driver

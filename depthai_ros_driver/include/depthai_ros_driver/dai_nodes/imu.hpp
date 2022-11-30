@@ -7,33 +7,33 @@
 #include "sensor_msgs/msg/imu.hpp"
 
 namespace depthai_ros_driver {
-namespace dai_nodes {
+namespace daiNodes {
 
 class Imu : public BaseNode {
    public:
-    explicit Imu(const std::string& dai_node_name, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
+    explicit Imu(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
     virtual ~Imu() = default;
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
-    void link(const dai::Node::Input& in, int link_type = 0) override;
-    dai::Node::Input get_input(int link_type = 0) override;
-    void set_names() override;
-    void set_xin_xout(std::shared_ptr<dai::Pipeline> pipeline) override;
+    void link(const dai::Node::Input& in, int linkType = 0) override;
+    dai::Node::Input getInput(int linkType = 0) override;
+    void setNames() override;
+    void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
 
    private:
-    void imu_q_cb(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
-    rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_;
-    std::shared_ptr<dai::node::IMU> imu_node_;
-    std::unique_ptr<param_handlers::ImuParamHandler> param_handler_;
-    std::shared_ptr<dai::DataOutputQueue> imu_q_;
-    std::shared_ptr<dai::node::XLinkOut> xout_imu_;
-    std::string imu_q_name_;
+    void imuQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
+    rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imuPub;
+    std::shared_ptr<dai::node::IMU> imuNode;
+    std::unique_ptr<paramHandlers::ImuParamHandler> paramHandler;
+    std::shared_ptr<dai::DataOutputQueue> imuQ;
+    std::shared_ptr<dai::node::XLinkOut> xoutImu;
+    std::string imuQName;
 };
 class ImuFactory : public BaseNodeFactory {
    public:
-    std::unique_ptr<BaseNode> create(const std::string& dai_node_name, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) {
-        return std::make_unique<Imu>(dai_node_name, node, pipeline);
+    std::unique_ptr<BaseNode> create(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) {
+        return std::make_unique<Imu>(daiNodeName, node, pipeline);
     };
 };
-}  // namespace dai_nodes
+}  // namespace daiNodes
 }  // namespace depthai_ros_driver
