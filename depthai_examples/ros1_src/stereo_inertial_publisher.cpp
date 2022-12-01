@@ -281,14 +281,12 @@ int main(int argc, char** argv) {
     int rgbScaleNumerator, rgbScaleDinominator, previewWidth, previewHeight;
     bool lrcheck, extended, subpixel, enableDepth, rectify, depth_aligned, manualExposure;
     bool enableSpatialDetection, enableDotProjector, enableFloodLight;
-    bool usb2Mode, poeMode, syncNN, useWithIP, useWithMxId;
+    bool usb2Mode, poeMode, syncNN;
     double angularVelCovariance, linearAccelCovariance;
     double dotProjectormA, floodLightmA;
     std::string nnName(BLOB_NAME);  // Set your blob name for the model here
 
-    badParams += !pnh.getParam("useWithIP", useWithIP);
     badParams += !pnh.getParam("ipAddress", ipAddress);
-    badParams += !pnh.getParam("useWithMxId", useWithMxId);
     badParams += !pnh.getParam("mxId", mxId);
     badParams += !pnh.getParam("usb2Mode", usb2Mode);
     badParams += !pnh.getParam("poeMode", poeMode);

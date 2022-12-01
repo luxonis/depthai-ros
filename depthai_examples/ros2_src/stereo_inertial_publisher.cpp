@@ -280,14 +280,12 @@ int main(int argc, char** argv) {
     int rgbScaleNumerator, rgbScaleDinominator, previewWidth, previewHeight;
     bool lrcheck, extended, subpixel, enableDepth, rectify, depth_aligned, manualExposure;
     bool enableSpatialDetection, enableDotProjector, enableFloodLight;
-    bool usb2Mode, poeMode, syncNN, useWithIP, useWithMxId;;
+    bool usb2Mode, poeMode, syncNN;
     double angularVelCovariance, linearAccelCovariance;
     double dotProjectormA, floodLightmA;
     std::string nnName(BLOB_NAME);  // Set your blob name for the model here
 
-    node->declare_parameter("useWithIP", false);
     node->declare_parameter("ipAddress", "");
-    node->declare_parameter("useWithMxId", false);
     node->declare_parameter("mxId", "");
     node->declare_parameter("usb2Mode", false);
     node->declare_parameter("poeMode", false);
@@ -332,9 +330,7 @@ int main(int argc, char** argv) {
 
     // updating parameters if defined in launch file.
 
-    node->get_parameter("useWithIP", useWithIP);
     node->get_parameter("ipAddress", ipAddress);
-    node->get_parameter("useWithMxId", useWithMxId);
     node->get_parameter("mxId", mxId);
     node->get_parameter("usb2Mode", usb2Mode);
     node->get_parameter("poeMode", poeMode);

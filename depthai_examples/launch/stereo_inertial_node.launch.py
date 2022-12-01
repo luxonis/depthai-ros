@@ -21,9 +21,7 @@ def generate_launch_description():
                                 'rviz', 'stereoInertial.rviz')
     default_resources_path = os.path.join(depthai_examples_path,
                                 'resources')
-    useWithIP    = LaunchConfiguration('useWithIP',     default = False)
     ipAddress    = LaunchConfiguration('ipAddress',     default = 'x')
-    useWithMxId  = LaunchConfiguration('useWithMxId',   default = False)
     mxId         = LaunchConfiguration('mxId',      default = 'x')
     usb2Mode     = LaunchConfiguration('usb2Mode',  default = False)
     poeMode      = LaunchConfiguration('poeMode',   default = False)
@@ -80,21 +78,11 @@ def generate_launch_description():
     enableRviz         = LaunchConfiguration('enableRviz', default = True)
 
 
-    declare_useWithIP_cmd = DeclareLaunchArgument(
-        'useWithIP',
-        default_value=useWithIP,
-        description='Set this to true to enable connecting the device by specifying IP address.')
-
     declare_ipAddress_cmd = DeclareLaunchArgument(
         'ipAddress',
         default_value=ipAddress,
-        description='select the device by passing the IP address of the device. It will give error if left empty and useWithIPAddress is enabled.')
+        description='select the device by passing the IP address of the device.')
 
-    declare_useWithMxId_cmd = DeclareLaunchArgument(
-        'useWithMxId',
-        default_value=useWithMxId,
-        description='Set this to true to enable connecting the device by specifying MxID.')
-        
     declare_mxId_cmd = DeclareLaunchArgument(
         'mxId',
         default_value=mxId,
@@ -335,9 +323,7 @@ def generate_launch_description():
     stereo_node = launch_ros.actions.Node(
             package='depthai_examples', executable='stereo_inertial_node',
             output='screen',
-            parameters=[{'useWithIP':               useWithIP},
-                        {'ipAddress':               ipAddress},
-                        {'useWithMxId':             useWithMxId},
+            parameters=[{'ipAddress':               ipAddress},
                         {'mxId':                    mxId},
                         {'usb2Mode':                usb2Mode},
                         {'poeMode':                 poeMode},
@@ -442,9 +428,7 @@ def generate_launch_description():
 
     ld = LaunchDescription()
 
-    ld.add_action(declare_useWithIP_cmd)
     ld.add_action(declare_ipAddress_cmd)
-    ld.add_action(declare_useWithMxId_cmd)
     ld.add_action(declare_mxId_cmd)
     ld.add_action(declare_usb2Mode_cmd)
     ld.add_action(declare_poeMode_cmd)

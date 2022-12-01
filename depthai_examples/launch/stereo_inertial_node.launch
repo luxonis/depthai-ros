@@ -1,9 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <!-- <args for urdf/> -->
-    <arg name="useWithIP"            default="false"/>
     <arg name="ipAddress"    	     default=""/>
-    <arg name="useWithMxId"          default="false"/>
     <arg name="mxId"                 default=""/>
     <arg name="usb2Mode"             default="false"/>
     <arg name="poeMode"              default="false"/>
@@ -58,7 +56,7 @@
     <arg name="enableFloodLight"      default="false"/>
     <arg name="dotProjectormA"        default="200.0"/>
     <arg name="floodLightmA"          default="200.0"/>
-    <arg name="enableRviz"            default="true"/>
+    <arg name="enableRviz"            default="false"/>
     <arg name="enableMarkerPublish"   default="false" />
 
     <include file="$(find depthai_bridge)/launch/urdf.launch">
@@ -76,9 +74,7 @@
 
     <!-- launch-prefix="xterm -e gdb (add [- - args] without space) -->
     <node name="stereo_inertial_publisher" pkg="depthai_examples" type="stereo_inertial_node" output="screen" required="true">
-        <param name="useWithIP"             value="$(arg useWithIP)"/>
         <param name="ipAddress"             value="$(arg ipAddress)"/>
-        <param name="useWithMxId"           value="$(arg useWithMxId)"/>        
         <param name="mxId"                  value="$(arg mxId)"/>
         <param name="usb2Mode"              value="$(arg usb2Mode)"/>
         <param name="poeMode"               value="$(arg poeMode)"/>
