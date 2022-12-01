@@ -72,7 +72,7 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC IS_ROS2)
 message(STATUS "--------------------------$ENV{ROS_DISTRO} ---")
 message(STATUS $ENV{ROS_DISTRO})
 
-if($ENV{ROS_DISTRO} STREQUAL "galactic" OR 
+if($ENV{ROS_DISTRO} STREQUAL "galactic" OR
 ($ENV{ROS_DISTRO} STREQUAL "rolling" AND "${ubuntu_version}" STREQUAL "20.04\n"))
   target_compile_definitions(${PROJECT_NAME} PRIVATE IS_GALACTIC)
 endif()
