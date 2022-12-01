@@ -1,8 +1,8 @@
 {
     "model":
     {
-        "model_name": "yolov4_coco_608x608",
-        "zoo": "depthai"
+        "model_name": "yolov4_tiny_coco_416x416_openvino_2021.4_6shave_bgr",
+        "zoo": "depthai_ros_driver"
     },
     "nn_config":
     {

@@ -9,8 +9,8 @@
 #include "sensor_msgs/msg/camera_info.hpp"
 
 namespace depthai_ros_driver {
-namespace daiNodes {
-namespace linkTypes {
+namespace dai_nodes {
+namespace link_types {
 enum class StereoLinkType { left, right };
 };
 class Stereo : public BaseNode {
@@ -29,7 +29,7 @@ class Stereo : public BaseNode {
     image_transport::CameraPublisher stereoPub;
     sensor_msgs::msg::CameraInfo stereoInfo;
     std::shared_ptr<dai::node::StereoDepth> stereoCamNode;
-    std::unique_ptr<paramHandlers::StereoParamHandler> paramHandler;
+    std::unique_ptr<param_handlers::StereoParamHandler> paramHandler;
     std::shared_ptr<dai::DataOutputQueue> stereoQ;
     std::shared_ptr<dai::DataInputQueue> controlQ;
     std::shared_ptr<dai::node::XLinkOut> xoutStereo;
@@ -42,5 +42,5 @@ class StereoFactory : public BaseNodeFactory {
         return std::make_unique<Stereo>(daiNodeName, node, pipeline);
     };
 };
-}  // namespace daiNodes
+}  // namespace dai_nodes
 }  // namespace depthai_ros_driver

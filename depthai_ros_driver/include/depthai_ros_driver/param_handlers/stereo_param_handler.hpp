@@ -8,7 +8,7 @@
 
 
 namespace depthai_ros_driver {
-namespace paramHandlers {
+namespace param_handlers {
 class StereoParamHandler : public BaseParamHandler {
    public:
     explicit StereoParamHandler(const std::string& name);
@@ -23,5 +23,5 @@ class StereoParamHandler : public BaseParamHandler {
 
     };
 };
-}  // namespace paramHandlers
+}  // namespace param_handlers
 }  // namespace depthai_ros_driver

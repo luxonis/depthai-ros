@@ -4,7 +4,7 @@
 #include "depthai/pipeline/nodes.hpp"
 
 namespace depthai_ros_driver {
-namespace paramHandlers {
+namespace param_handlers {
 RGBParamHandler::RGBParamHandler(const std::string& name) : BaseParamHandler(name){};
 void RGBParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::ColorCamera> color_cam) {
     declareAndLogParam<int>(node, "i_max_q_size", 4);
@@ -77,5 +77,5 @@ dai::CameraControl RGBParamHandler::setRuntimeParams(rclcpp::Node* node, const s
     return ctrl;
     }
 }
-}  // namespace paramHandlers
+}  // namespace param_handlers
 }  // namespace depthai_ros_driver

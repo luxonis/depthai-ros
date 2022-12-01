@@ -3,7 +3,7 @@
 #include "rcl_interfaces/msg/parameter_descriptor.hpp"
 #include "rclcpp/rclcpp.hpp"
 namespace depthai_ros_driver {
-namespace paramHandlers {
+namespace param_handlers {
 inline rcl_interfaces::msg::ParameterDescriptor getRangedIntDescriptor(uint16_t min, uint16_t max) {
     {
         rcl_interfaces::msg::ParameterDescriptor desc;
@@ -32,6 +32,15 @@ class BaseParamHandler {
 
    protected:
     template <typename T>
+    T declareAndLogParam(rclcpp::Node* node, const std::string& paramName, const std::vector<T>& value) {
+        std::string full_name = baseName + "." + paramName;
+
+        logParam(node->get_logger(), full_name, value);
+
+        return node->declare_parameter<T>(full_name, value);
+    }
+
+    template <typename T>
     T declareAndLogParam(rclcpp::Node* node, const std::string& paramName, T value) {
         std::string full_name = baseName + "." + paramName;
 
@@ -52,7 +61,15 @@ class BaseParamHandler {
         ss << value;
         RCLCPP_INFO(logger, "Setting param %s with value %s", name.c_str(), ss.str().c_str());
     }
+    template <typename T>
+    inline void logParam(const rclcpp::Logger& logger, const std::string& name, const std::vector<T>& value) {
+        std::stringstream ss;
+        for(const auto &v : value) {
+            ss << v << " ";
+        }
+        RCLCPP_INFO(logger, "Setting param %s with value %s", name.c_str(), ss.str().c_str());
+    }
     std::string baseName;
 };
-}  // namespace paramHandlers
+}  // namespace param_handlers
 }  // namespace depthai_ros_driver

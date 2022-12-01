@@ -35,26 +35,26 @@ void Camera::getDeviceType() {
 }
 
 void Camera::createPipeline() {
-    daiNodes::RGBFactory rgbFac;
-    daiNodes::MonoFactory monoFac;
-    daiNodes::StereoFactory stereoFac;
-    daiNodes::ImuFactory imuFac;
-    daiNodes::NNFactory nnFac;
-    daiNodes::SpatialDetectionFactory spat_fac;
+    dai_nodes::RGBFactory rgbFac;
+    dai_nodes::MonoFactory monoFac;
+    dai_nodes::StereoFactory stereoFac;
+    dai_nodes::ImuFactory imuFac;
+    dai_nodes::NNFactory nnFac;
+    dai_nodes::SpatialDetectionFactory spat_fac;
     if(this->get_parameter("i_pipelinetype").as_string() == "RGB") {
         auto rgb = rgbFac.create("color", this, pipeline);
     
         auto nn_type = nnTypeMap.at(this->get_parameter("i_nn_type").as_string());
         switch (nn_type){
-            case types::NNType::None:
+            case types::nn_types::NNType::None:
                 break;
-            case types::NNType::Default:{
+            case types::nn_types::NNType::Default:{
                 auto nn = nnFac.create("nn", this, pipeline);
-                rgb->link(nn->getInput(), static_cast<int>(daiNodes::linkTypes::RGBLinkType::preview));
+                rgb->link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
                 daiNodes.push_back(std::move(nn));
                 break;
             }
-            case types::NNType::Spatial:{
+            case types::nn_types::NNType::Spatial:{
                 break;
             }
             default:
@@ -66,22 +66,22 @@ void Camera::createPipeline() {
         auto mono_left = monoFac.create("mono_left", this, pipeline);
         auto mono_right = monoFac.create("mono_right", this, pipeline);
         auto stereo = stereoFac.create("stereo", this, pipeline);
-        mono_left->link(stereo->getInput(static_cast<int>(daiNodes::linkTypes::StereoLinkType::left)),
-                        static_cast<int>(daiNodes::linkTypes::StereoLinkType::left));
-        mono_right->link(stereo->getInput(static_cast<int>(daiNodes::linkTypes::StereoLinkType::right)),
-                         static_cast<int>(daiNodes::linkTypes::StereoLinkType::right));
+        mono_left->link(stereo->getInput(static_cast<int>(dai_nodes::link_types::StereoLinkType::left)),
+                        static_cast<int>(dai_nodes::link_types::StereoLinkType::left));
+        mono_right->link(stereo->getInput(static_cast<int>(dai_nodes::link_types::StereoLinkType::right)),
+                         static_cast<int>(dai_nodes::link_types::StereoLinkType::right));
 
         auto nn_type = nnTypeMap.at(this->get_parameter("i_nn_type").as_string());
         switch (nn_type){
-            case types::NNType::None:
+            case types::nn_types::NNType::None:
                 break;
-            case types::NNType::Default:{
+            case types::nn_types::NNType::Default:{
                 auto nn = nnFac.create("nn", this, pipeline);
-                rgb->link(nn->getInput(), static_cast<int>(daiNodes::linkTypes::RGBLinkType::preview));
+                rgb->link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
                 daiNodes.push_back(std::move(nn));
                 break;
             }
-            case types::NNType::Spatial:{
+            case types::nn_types::NNType::Spatial:{
                 break;
             }
             default:
@@ -178,8 +178,8 @@ void Camera::declareParams() {
     this->declare_parameter<std::string>("i_usb_speed", "SUPER_PLUS");
     this->declare_parameter<std::string>("i_mx_id", "");
     this->declare_parameter<std::string>("i_ip", "");
-    this->declare_parameter<int>("i_laser_dot_brightness", 0, paramHandlers::getRangedIntDescriptor(0, 1200));
-    this->declare_parameter<int>("i_floodlight_brightness", 0, paramHandlers::getRangedIntDescriptor(0, 1500));
+    this->declare_parameter<int>("i_laser_dot_brightness", 0, param_handlers::getRangedIntDescriptor(0, 1200));
+    this->declare_parameter<int>("i_floodlight_brightness", 0, param_handlers::getRangedIntDescriptor(0, 1500));
 }
 
 }  // namespace depthai_ros_driver

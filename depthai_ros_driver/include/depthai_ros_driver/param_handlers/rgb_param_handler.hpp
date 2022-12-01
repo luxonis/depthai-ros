@@ -7,7 +7,7 @@
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
 
 namespace depthai_ros_driver {
-namespace paramHandlers {
+namespace param_handlers {
 class RGBParamHandler : public BaseParamHandler {
    public:
     explicit RGBParamHandler(const std::string& name);
@@ -22,5 +22,5 @@ class RGBParamHandler : public BaseParamHandler {
         {"12MP", dai::ColorCameraProperties::SensorResolution::THE_12_MP},
     };
 };
-}  // namespace paramHandlers
+}  // namespace param_handlers
 }  // namespace depthai_ros_driver

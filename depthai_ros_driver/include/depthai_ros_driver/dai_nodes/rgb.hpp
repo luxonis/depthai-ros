@@ -9,8 +9,8 @@
 #include "sensor_msgs/msg/camera_info.hpp"
 
 namespace depthai_ros_driver {
-namespace daiNodes {
-namespace linkTypes {
+namespace dai_nodes {
+namespace link_types {
 enum class RGBLinkType { color, preview };
 };
 class RGB : public BaseNode {
@@ -29,7 +29,7 @@ class RGB : public BaseNode {
     image_transport::CameraPublisher rgbPub, previewPub;
     sensor_msgs::msg::CameraInfo rgbInfo, previewInfo;
     std::shared_ptr<dai::node::ColorCamera> colorCamNode;
-    std::unique_ptr<paramHandlers::RGBParamHandler> paramHandler;
+    std::unique_ptr<param_handlers::RGBParamHandler> paramHandler;
     std::shared_ptr<dai::DataOutputQueue> colorQ, previewQ;
     std::shared_ptr<dai::DataInputQueue> controlQ;
     std::shared_ptr<dai::node::XLinkOut> xoutColor, xoutPreview;
@@ -42,5 +42,5 @@ class RGBFactory : public BaseNodeFactory {
         return std::make_unique<RGB>(daiNodeName, node, pipeline);
     };
 };
-}  // namespace daiNodes
+}  // namespace dai_nodes
 }  // namespace depthai_ros_driver

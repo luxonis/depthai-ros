@@ -4,12 +4,12 @@
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 namespace depthai_ros_driver {
-namespace daiNodes {
+namespace dai_nodes {
 NN::NN(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_INFO(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     nnNode = pipeline->create<dai::node::NeuralNetwork>();
-    paramHandler = std::make_unique<paramHandlers::NNParamHandler>(daiNodeName);
+    paramHandler = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
     paramHandler->declareParams(node, nnNode);
     setXinXout(pipeline);
     RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
@@ -75,5 +75,5 @@ cv::Mat NN::decodeDeeplab(cv::Mat mat) {
     return colors;
 }
 
-}  // namespace daiNodes
+}  // namespace dai_nodes
 }  // namespace depthai_ros_driver

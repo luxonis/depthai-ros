@@ -4,12 +4,12 @@
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 namespace depthai_ros_driver {
-namespace daiNodes {
+namespace dai_nodes {
 Mono::Mono(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_INFO(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     monoCamNode = pipeline->create<dai::node::MonoCamera>();
-    paramHandler = std::make_unique<paramHandlers::MonoParamHandler>(daiNodeName);
+    paramHandler = std::make_unique<param_handlers::MonoParamHandler>(daiNodeName);
     paramHandler->declareParams(node, monoCamNode);
     setXinXout(pipeline);
     RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
@@ -67,5 +67,5 @@ void Mono::updateParams(const std::vector<rclcpp::Parameter>& params) {
     controlQ->send(ctrl);
 }
 
-}  // namespace daiNodes
+}  // namespace dai_nodes
 }  // namespace depthai_ros_driver

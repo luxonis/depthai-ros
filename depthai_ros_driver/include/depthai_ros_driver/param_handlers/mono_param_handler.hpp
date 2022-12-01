@@ -8,7 +8,7 @@
 
 
 namespace depthai_ros_driver {
-namespace paramHandlers {
+namespace param_handlers {
 class MonoParamHandler : public BaseParamHandler {
    public:
     explicit MonoParamHandler(const std::string& name);
@@ -24,5 +24,5 @@ class MonoParamHandler : public BaseParamHandler {
         {"800", dai::MonoCameraProperties::SensorResolution::THE_800_P},
     };
 };
-}  // namespace paramHandlers
+}  // namespace param_handlers
 }  // namespace depthai_ros_driver

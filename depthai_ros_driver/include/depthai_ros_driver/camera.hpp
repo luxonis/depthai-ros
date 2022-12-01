@@ -31,14 +31,14 @@ class Camera : public rclcpp::Node {
         {"SUPER", dai::UsbSpeed::SUPER},
         {"SUPER_PLUS", dai::UsbSpeed::SUPER_PLUS},
     };
-    std::unordered_map<std::string, types::NNType> nnTypeMap = {
-        {"", types::NNType::None},
-        {"none", types::NNType::None},
-        {"default", types::NNType::Default},
-        {"spatial", types::NNType::Spatial},
+    std::unordered_map<std::string, types::nn_types::NNType> nnTypeMap = {
+        {"", types::nn_types::NNType::None},
+        {"none", types::nn_types::NNType::None},
+        {"default", types::nn_types::NNType::Default},
+        {"spatial", types::nn_types::NNType::Spatial},
     };
     std::shared_ptr<dai::Pipeline> pipeline;
     std::shared_ptr<dai::Device> device;
-    std::vector<std::unique_ptr<daiNodes::BaseNode>> daiNodes;
+    std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
 };
 }  // namespace depthai_ros_driver

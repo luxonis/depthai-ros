@@ -4,7 +4,7 @@
 #include "depthai/pipeline/nodes.hpp"
 
 namespace depthai_ros_driver {
-namespace paramHandlers {
+namespace param_handlers {
 MonoParamHandler::MonoParamHandler(const std::string& name) : BaseParamHandler(name){};
 void MonoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::MonoCamera> mono_cam) {
     declareAndLogParam<int>(node, "i_max_q_size", 4);
@@ -43,5 +43,5 @@ dai::CameraControl MonoParamHandler::setRuntimeParams(rclcpp::Node* node,const s
     return ctrl;
     }
 }
-}  // namespace paramHandlers
+}  // namespace param_handlers
 }  // namespace depthai_ros_driver

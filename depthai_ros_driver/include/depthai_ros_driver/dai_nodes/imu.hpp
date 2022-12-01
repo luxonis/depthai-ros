@@ -7,7 +7,7 @@
 #include "sensor_msgs/msg/imu.hpp"
 
 namespace depthai_ros_driver {
-namespace daiNodes {
+namespace dai_nodes {
 
 class Imu : public BaseNode {
    public:
@@ -24,7 +24,7 @@ class Imu : public BaseNode {
     void imuQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
     rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imuPub;
     std::shared_ptr<dai::node::IMU> imuNode;
-    std::unique_ptr<paramHandlers::ImuParamHandler> paramHandler;
+    std::unique_ptr<param_handlers::ImuParamHandler> paramHandler;
     std::shared_ptr<dai::DataOutputQueue> imuQ;
     std::shared_ptr<dai::node::XLinkOut> xoutImu;
     std::string imuQName;
@@ -35,5 +35,5 @@ class ImuFactory : public BaseNodeFactory {
         return std::make_unique<Imu>(daiNodeName, node, pipeline);
     };
 };
-}  // namespace daiNodes
+}  // namespace dai_nodes
 }  // namespace depthai_ros_driver

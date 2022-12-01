@@ -9,7 +9,7 @@
 #include "sensor_msgs/msg/camera_info.hpp"
 
 namespace depthai_ros_driver {
-namespace daiNodes {
+namespace dai_nodes {
 
 class Mono : public BaseNode {
    public:
@@ -27,7 +27,7 @@ class Mono : public BaseNode {
     image_transport::CameraPublisher monoPub;
     sensor_msgs::msg::CameraInfo monoInfo;
     std::shared_ptr<dai::node::MonoCamera> monoCamNode;
-    std::unique_ptr<paramHandlers::MonoParamHandler> paramHandler;
+    std::unique_ptr<param_handlers::MonoParamHandler> paramHandler;
     std::shared_ptr<dai::DataOutputQueue> monoQ;
     std::shared_ptr<dai::DataInputQueue> controlQ;
     std::shared_ptr<dai::node::XLinkOut> xoutMono;
@@ -40,5 +40,5 @@ class MonoFactory : public BaseNodeFactory {
         return std::make_unique<Mono>(daiNodeName, node, pipeline);
     };
 };
-}  // namespace daiNodes
+}  // namespace dai_nodes
 }  // namespace depthai_ros_driver

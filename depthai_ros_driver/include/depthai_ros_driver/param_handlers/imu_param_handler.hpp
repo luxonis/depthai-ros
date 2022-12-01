@@ -8,7 +8,7 @@
 
 
 namespace depthai_ros_driver {
-namespace paramHandlers {
+namespace param_handlers {
 class ImuParamHandler : public BaseParamHandler {
    public:
     explicit ImuParamHandler(const std::string& name);
@@ -17,5 +17,5 @@ class ImuParamHandler : public BaseParamHandler {
     dai::CameraControl setRuntimeParams(rclcpp::Node* node,const std::vector<rclcpp::Parameter>& params) override;
 
 };
-}  // namespace paramHandlers
+}  // namespace param_handlers
 }  // namespace depthai_ros_driver

@@ -4,12 +4,12 @@
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 namespace depthai_ros_driver {
-namespace daiNodes {
+namespace dai_nodes {
 Imu::Imu(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_INFO(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     imuNode = pipeline->create<dai::node::IMU>();
-    paramHandler = std::make_unique<paramHandlers::ImuParamHandler>(daiNodeName);
+    paramHandler = std::make_unique<param_handlers::ImuParamHandler>(daiNodeName);
     paramHandler->declareParams(node, imuNode);
     setXinXout(pipeline);
     RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
@@ -77,5 +77,5 @@ void Imu::updateParams(const std::vector<rclcpp::Parameter>& params) {
     paramHandler->setRuntimeParams(getROSNode(),params);
 }
 
-}  // namespace daiNodes
+}  // namespace dai_nodes
 }  // namespace depthai_ros_driver

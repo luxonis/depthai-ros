@@ -4,7 +4,7 @@
 #include "depthai/pipeline/nodes.hpp"
 
 namespace depthai_ros_driver {
-namespace paramHandlers {
+namespace param_handlers {
 StereoParamHandler::StereoParamHandler(const std::string& name) : BaseParamHandler(name){};
 void StereoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::StereoDepth> stereo) {
     declareAndLogParam<int>(node, "i_max_q_size", 4);
@@ -35,5 +35,5 @@ dai::CameraControl StereoParamHandler::setRuntimeParams(rclcpp::Node* node,const
     dai::CameraControl ctrl;
     return ctrl;
 }
-}  // namespace paramHandlers
+}  // namespace param_handlers
 }  // namespace depthai_ros_driver

@@ -4,12 +4,12 @@
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 namespace depthai_ros_driver {
-namespace daiNodes {
+namespace dai_nodes {
 Stereo::Stereo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_INFO(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     stereoCamNode = pipeline->create<dai::node::StereoDepth>();
-    paramHandler = std::make_unique<paramHandlers::StereoParamHandler>(daiNodeName);
+    paramHandler = std::make_unique<param_handlers::StereoParamHandler>(daiNodeName);
     paramHandler->declareParams(node, stereoCamNode);
     setXinXout(pipeline);
     RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
@@ -47,9 +47,9 @@ void Stereo::link(const dai::Node::Input& in, int linkType) {
 }
 
 dai::Node::Input Stereo::getInput(int linkType) {
-    if(linkType == static_cast<int>(linkTypes::StereoLinkType::left)) {
+    if(linkType == static_cast<int>(link_types::StereoLinkType::left)) {
         return stereoCamNode->left;
-    } else if(linkType == static_cast<int>(linkTypes::StereoLinkType::right)) {
+    } else if(linkType == static_cast<int>(link_types::StereoLinkType::right)) {
         return stereoCamNode->right;
     }
 }
@@ -58,5 +58,5 @@ void Stereo::updateParams(const std::vector<rclcpp::Parameter>& params) {
     paramHandler->setRuntimeParams(getROSNode(), params);
 }
 
-}  // namespace daiNodes
+}  // namespace dai_nodes
 }  // namespace depthai_ros_driver

@@ -6,7 +6,7 @@
 #include "rclcpp/rclcpp.hpp"
 
 namespace depthai_ros_driver {
-namespace daiNodes {
+namespace dai_nodes {
 class BaseNode {
    public:
     BaseNode(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> /*pipeline*/) {
@@ -43,5 +43,5 @@ class BaseNodeFactory {
     virtual std::unique_ptr<BaseNode> create(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) = 0;
     virtual ~BaseNodeFactory(){};
 };
-}  // namespace daiNodes
+}  // namespace dai_nodes
 }  // namespace depthai_ros_driver

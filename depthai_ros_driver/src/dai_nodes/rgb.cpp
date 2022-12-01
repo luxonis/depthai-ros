@@ -4,12 +4,12 @@
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 namespace depthai_ros_driver {
-namespace daiNodes {
+namespace dai_nodes {
 RGB::RGB(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_INFO(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     colorCamNode = pipeline->create<dai::node::ColorCamera>();
-    paramHandler = std::make_unique<paramHandlers::RGBParamHandler>(daiNodeName);
+    paramHandler = std::make_unique<param_handlers::RGBParamHandler>(daiNodeName);
     paramHandler->declareParams(node, colorCamNode);
     setXinXout(pipeline);
     RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
@@ -68,9 +68,9 @@ void RGB::colorQCB(const std::string& name, const std::shared_ptr<dai::ADatatype
 }
 
 void RGB::link(const dai::Node::Input& in, int linkType) {
-    if(linkType == static_cast<int>(linkTypes::RGBLinkType::color)) {
+    if(linkType == static_cast<int>(link_types::RGBLinkType::color)) {
         colorCamNode->video.link(in);
-    } else if(linkType == static_cast<int>(linkTypes::RGBLinkType::preview)) {
+    } else if(linkType == static_cast<int>(link_types::RGBLinkType::preview)) {
         colorCamNode->preview.link(in);
     }
 }
@@ -84,5 +84,5 @@ void RGB::updateParams(const std::vector<rclcpp::Parameter>& params) {
     controlQ->send(ctrl);
 }
 
-}  // namespace daiNodes
+}  // namespace dai_nodes
 }  // namespace depthai_ros_driver

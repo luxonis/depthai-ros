@@ -7,11 +7,12 @@
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
+#include "vision_msgs/msg/detection2_d_array.hpp"
 
 namespace depthai_ros_driver {
-namespace daiNodes {
+namespace dai_nodes {
 
-namespace linkTypes {
+namespace link_types {
 enum class NNLinkType { input, inputDepth };
 };
 
@@ -23,20 +24,14 @@ class NN : public BaseNode {
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(const dai::Node::Input& in, int linkType = 0) override;
     dai::Node::Input getInput(int linkType = 0) override;
-    void setNames() override;
-    void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
+    virtual void setNames();
+    virtual void setXinXout(std::shared_ptr<dai::Pipeline> pipeline);
 
    private:
-    cv::Mat decodeDeeplab(cv::Mat mat);
-    void nnQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
-    image_transport::CameraPublisher nnPub;
-    sensor_msgs::msg::CameraInfo nnInfo;
-    std::shared_ptr<dai::node::NeuralNetwork> nnNode;
-    std::shared_ptr<dai::node::ImageManip> imageManip;
-    std::unique_ptr<paramHandlers::NNParamHandler> paramHandler;
-    std::shared_ptr<dai::DataOutputQueue> nnQ;
-    std::shared_ptr<dai::node::XLinkOut> xoutNN;
-    std::string nnQName;
+    std::unique_ptr<param_handlers::NNParamHandler> paramHandler;
+    std::unique_ptr<BaseNode> nnNode;
+
+    
 };
 class NNFactory : public BaseNodeFactory {
    public:
@@ -44,5 +39,5 @@ class NNFactory : public BaseNodeFactory {
         return std::make_unique<NN>(daiNodeName, node, pipeline);
     };
 };
-}  // namespace daiNodes
+}  // namespace dai_nodes
 }  // namespace depthai_ros_driver

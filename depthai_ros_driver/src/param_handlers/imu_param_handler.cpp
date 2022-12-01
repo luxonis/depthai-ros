@@ -4,7 +4,7 @@
 #include "depthai/pipeline/nodes.hpp"
 
 namespace depthai_ros_driver {
-namespace paramHandlers {
+namespace param_handlers {
 ImuParamHandler::ImuParamHandler(const std::string& name) : BaseParamHandler(name){};
 void ImuParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::IMU> imu) {
   imu->enableIMUSensor(dai::IMUSensor::ACCELEROMETER_RAW, 400);
@@ -17,5 +17,5 @@ dai::CameraControl ImuParamHandler::setRuntimeParams(rclcpp::Node* node,const st
     dai::CameraControl ctrl;
     return ctrl;
 }
-}  // namespace paramHandlers
+}  // namespace param_handlers
 }  // namespace depthai_ros_driver
