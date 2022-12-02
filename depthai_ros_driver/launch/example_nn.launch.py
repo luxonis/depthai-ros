@@ -2,21 +2,21 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.conditions import IfCondition
-from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node, ComposableNodeContainer
 from launch_ros.descriptions import ComposableNode
 
 
-def generate_launch_description():
+def launch_setup(context, *args, **kwargs):
 
     depthai_prefix = get_package_share_directory("depthai_ros_driver")
+
     rviz_config = os.path.join(depthai_prefix, "config", "rgbd.rviz")
-    return LaunchDescription(
-        [
-            DeclareLaunchArgument("use_rviz", default_value="False"),
+    nn_config_path = os.path.join(depthai_prefix, "config", "nn", LaunchConfiguration("nn_type").perform(context)+".json")
+    return [
+
             Node(
                 condition=IfCondition(LaunchConfiguration("use_rviz")),
                 package="rviz2",
@@ -64,9 +64,20 @@ def generate_launch_description():
                         package="depthai_ros_driver",
                         plugin="depthai_ros_driver::Camera",
                         name="camera",
+                        parameters=[{"nn.i_nn_config_path": nn_config_path}],
                     ),
                 ],
                 output="screen",
             ),
         ]
+    
+
+def generate_launch_description():
+    declared_arguments = [
+        DeclareLaunchArgument("use_rviz", default_value="False"),
+        DeclareLaunchArgument("nn_type", default_value="segmentation"),
+    ]
+
+    return LaunchDescription(
+        declared_arguments + [OpaqueFunction(function=launch_setup)]
     )

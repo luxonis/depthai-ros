@@ -45,7 +45,7 @@ void NN::setupQueues(std::shared_ptr<dai::Device> device) {
 }
 
 void NN::link(const dai::Node::Input& in, int linkType) {
-    nnNode->link(in);
+    nnNode->link(in, linkType);
 }
 
 dai::Node::Input NN::getInput(int linkType) {

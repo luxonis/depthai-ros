@@ -63,8 +63,8 @@ void Camera::createPipeline() {
         daiNodes.push_back(std::move(rgb));
     } else if(this->get_parameter("i_pipelinetype").as_string() == "RGBD" && cam_type->stereo()) {
         auto rgb = rgbFac.create("color", this, pipeline);
-        auto mono_left = monoFac.create("mono_left", this, pipeline);
-        auto mono_right = monoFac.create("mono_right", this, pipeline);
+        auto mono_left = monoFac.create("left", this, pipeline);
+        auto mono_right = monoFac.create("right", this, pipeline);
         auto stereo = stereoFac.create("stereo", this, pipeline);
         mono_left->link(stereo->getInput(static_cast<int>(dai_nodes::link_types::StereoLinkType::left)),
                         static_cast<int>(dai_nodes::link_types::StereoLinkType::left));

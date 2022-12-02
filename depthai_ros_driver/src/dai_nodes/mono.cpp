@@ -13,9 +13,9 @@ Mono::Mono(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<d
     paramHandler->declareParams(node, monoCamNode);
     setXinXout(pipeline);
     RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
-    if(getName() == "mono_left") {
+    if(getName() == "left") {
         monoCamNode->setBoardSocket(dai::CameraBoardSocket::LEFT);
-    } else if(getName() == "mono_right") {
+    } else if(getName() == "right") {
         monoCamNode->setBoardSocket(dai::CameraBoardSocket::RIGHT);
     } else {
         monoCamNode->setBoardSocket(static_cast<dai::CameraBoardSocket>(paramHandler->get_param<int>(getROSNode(), "i_board_socket")));
