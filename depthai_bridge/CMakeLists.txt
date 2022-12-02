@@ -1,5 +1,5 @@
-cmake_minimum_required (VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
-set (CMAKE_POSITION_INDEPENDENT_CODE ON)
+cmake_minimum_required(VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 project(depthai_bridge VERSION 2.5.3 LANGUAGES CXX C)
 
@@ -39,16 +39,16 @@ find_package(std_msgs REQUIRED)
 find_package(vision_msgs REQUIRED)
 
 set(dependencies
-    camera_info_manager
-    cv_bridge
-    depthai_ros_msgs
-    image_transport
-    rclcpp
-    sensor_msgs
-    stereo_msgs
-    std_msgs
-    vision_msgs
-  )
+  camera_info_manager
+  cv_bridge
+  depthai_ros_msgs
+  image_transport
+  rclcpp
+  sensor_msgs
+  stereo_msgs
+  std_msgs
+  vision_msgs
+)
 
 include_directories(
     include
@@ -56,7 +56,7 @@ include_directories(
 
 )
 
-FILE(GLOB LIB_SRC
+file(GLOB LIB_SRC
 "src/DisparityConverter.cpp"
 "src/ImageConverter.cpp"
 "src/ImgDetectionConverter.cpp"
@@ -72,18 +72,19 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC IS_ROS2)
 message(STATUS "--------------------------$ENV{ROS_DISTRO} ---")
 message(STATUS $ENV{ROS_DISTRO})
 
-if($ENV{ROS_DISTRO} STREQUAL "galactic" OR ($ENV{ROS_DISTRO} STREQUAL "rolling" AND "${ubuntu_version}" STREQUAL "20.04\n"))
+if($ENV{ROS_DISTRO} STREQUAL "galactic" OR
+($ENV{ROS_DISTRO} STREQUAL "rolling" AND "${ubuntu_version}" STREQUAL "20.04\n"))
   target_compile_definitions(${PROJECT_NAME} PRIVATE IS_GALACTIC)
 endif()
 
-if($ENV{ROS_DISTRO} STREQUAL "humble" )
+if($ENV{ROS_DISTRO} STREQUAL "humble")
   target_compile_definitions(${PROJECT_NAME} PRIVATE IS_HUMBLE)
 endif()
 
-target_link_libraries(${PROJECT_NAME} 
-                      depthai::core 
+target_link_libraries(${PROJECT_NAME}
+                      depthai::core
                       opencv_imgproc
-                      opencv_highgui) 
+                      opencv_highgui)
 
 ament_export_targets(depthai_bridgeTargets HAS_LIBRARY_TARGET)
 
@@ -92,25 +93,25 @@ install(DIRECTORY include/
 )
 
 install(TARGETS depthai_bridge
-      EXPORT depthai_bridgeTargets      
+      EXPORT depthai_bridgeTargets
               ARCHIVE DESTINATION lib
               LIBRARY DESTINATION lib
               RUNTIME DESTINATION bin
               INCLUDES DESTINATION include
 
-            )
+)
 install(EXPORT depthai_bridgeTargets
       DESTINATION share/${PROJECT_NAME}/cmake)
 
 
-  install(DIRECTORY launch/ DESTINATION share/${PROJECT_NAME}/launch
-          FILES_MATCHING PATTERN "*.py")
-  install(DIRECTORY urdf DESTINATION share/${PROJECT_NAME})
-  install(DIRECTORY rviz DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY launch/ DESTINATION share/${PROJECT_NAME}/launch
+        FILES_MATCHING PATTERN "*.py")
+install(DIRECTORY urdf DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY rviz DESTINATION share/${PROJECT_NAME})
 
-  ament_export_include_directories(include)
-  ament_export_libraries(depthai_bridge)
-  ament_export_dependencies(${dependencies})
+ament_export_include_directories(include)
+ament_export_libraries(depthai_bridge)
+ament_export_dependencies(${dependencies})
 
-  ament_package()
+ament_package()
 

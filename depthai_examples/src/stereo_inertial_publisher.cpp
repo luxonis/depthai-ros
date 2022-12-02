@@ -1,12 +1,12 @@
 
 #include <camera_info_manager/camera_info_manager.hpp>
 #include <cstdio>
+#include <depthai_ros_msgs/msg/spatial_detection_array.hpp>
 #include <functional>
 #include <iostream>
 #include <sensor_msgs/msg/image.hpp>
-#include <stereo_msgs/msg/disparity_image.hpp>
-#include <depthai_ros_msgs/msg/spatial_detection_array.hpp>
 #include <sensor_msgs/msg/imu.hpp>
+#include <stereo_msgs/msg/disparity_image.hpp>
 #include <tuple>
 
 #include "rclcpp/rclcpp.hpp"
@@ -15,10 +15,9 @@
 #include <depthai_bridge/BridgePublisher.hpp>
 #include <depthai_bridge/DisparityConverter.hpp>
 #include <depthai_bridge/ImageConverter.hpp>
-#include <depthai_bridge/SpatialDetectionConverter.hpp>
 #include <depthai_bridge/ImuConverter.hpp>
+#include <depthai_bridge/SpatialDetectionConverter.hpp>
 #include <depthai_bridge/depthaiUtility.hpp>
-
 
 #include "depthai/depthai.hpp"
 
@@ -39,7 +38,7 @@ std::tuple<dai::Pipeline, int, int> createPipeline(bool enableDepth,
                                                    std::string rgbResolutionStr,
                                                    int rgbScaleNumerator,
                                                    int rgbScaleDinominator,
-                                                   int previewWidth, 
+                                                   int previewWidth,
                                                    int previewHeight,
                                                    bool syncNN,
                                                    std::string nnPath) {
@@ -149,56 +148,62 @@ std::tuple<dai::Pipeline, int, int> createPipeline(bool enableDepth,
         camRgb->isp.link(xoutRgb->input);
 
         // std::cout << (rgbWidth % 2 == 0 && rgbHeight % 3 == 0) << std::endl;
-        // assert(("Needs Width to be multiple of 2 and height to be multiple of 3 since the Image is NV12 format here.", (rgbWidth % 2 == 0 && rgbHeight % 3 == 0)));
-        if(rgbWidth  % 16 != 0) {
+        // assert(("Needs Width to be multiple of 2 and height to be multiple of 3 since the Image is NV12 format here.", (rgbWidth % 2 == 0 && rgbHeight % 3 ==
+        // 0)));
+        if(rgbWidth % 16 != 0) {
             if(rgbResolution == dai::node::ColorCamera::Properties::SensorResolution::THE_12_MP) {
-                DEPTHAI_ROS_ERROR_STREAM("DEPTHAI","RGB Camera width should be multiple of 16. Please choose a different scaling factor."
-                                 << std::endl
-                                 << "Here are the scalng options that works for 12MP with depth aligned" << std::endl
-                                 << "4056 x 3040 *  2/13 -->  624 x  468" << std::endl
-                                 << "4056 x 3040 *  2/39 -->  208 x  156" << std::endl
-                                 << "4056 x 3040 *  2/51 -->  160 x  120" << std::endl
-                                 << "4056 x 3040 *  4/13 --> 1248 x  936" << std::endl
-                                 << "4056 x 3040 *  4/26 -->  624 x  468" << std::endl
-                                 << "4056 x 3040 *  4/29 -->  560 x  420" << std::endl
-                                 << "4056 x 3040 *  4/35 -->  464 x  348" << std::endl
-                                 << "4056 x 3040 *  4/39 -->  416 x  312" << std::endl
-                                 << "4056 x 3040 *  6/13 --> 1872 x 1404" << std::endl
-                                 << "4056 x 3040 *  6/39 -->  624 x  468" << std::endl
-                                 << "4056 x 3040 *  7/25 --> 1136 x  852" << std::endl
-                                 << "4056 x 3040 *  8/26 --> 1248 x  936" << std::endl
-                                 << "4056 x 3040 *  8/39 -->  832 x  624" << std::endl
-                                 << "4056 x 3040 *  8/52 -->  624 x  468" << std::endl
-                                 << "4056 x 3040 *  8/58 -->  560 x  420" << std::endl
-                                 << "4056 x 3040 * 10/39 --> 1040 x  780" << std::endl
-                                 << "4056 x 3040 * 10/59 -->  688 x  516" << std::endl
-                                 << "4056 x 3040 * 12/17 --> 2864 x 2146" << std::endl
-                                 << "4056 x 3040 * 12/26 --> 1872 x 1404" << std::endl
-                                 << "4056 x 3040 * 12/39 --> 1248 x  936" << std::endl
-                                 << "4056 x 3040 * 13/16 --> 3296 x 2470" << std::endl
-                                 << "4056 x 3040 * 14/39 --> 1456 x 1092" << std::endl
-                                 << "4056 x 3040 * 14/50 --> 1136 x  852" << std::endl
-                                 << "4056 x 3040 * 14/53 --> 1072 x  804" << std::endl
-                                 << "4056 x 3040 * 16/39 --> 1664 x 1248" << std::endl
-                                 << "4056 x 3040 * 16/52 --> 1248 x  936" << std::endl);
+                DEPTHAI_ROS_ERROR_STREAM("DEPTHAI",
+                                         "RGB Camera width should be multiple of 16. Please choose a different scaling factor."
+                                             << std::endl
+                                             << "Here are the scalng options that works for 12MP with depth aligned" << std::endl
+                                             << "4056 x 3040 *  2/13 -->  624 x  468" << std::endl
+                                             << "4056 x 3040 *  2/39 -->  208 x  156" << std::endl
+                                             << "4056 x 3040 *  2/51 -->  160 x  120" << std::endl
+                                             << "4056 x 3040 *  4/13 --> 1248 x  936" << std::endl
+                                             << "4056 x 3040 *  4/26 -->  624 x  468" << std::endl
+                                             << "4056 x 3040 *  4/29 -->  560 x  420" << std::endl
+                                             << "4056 x 3040 *  4/35 -->  464 x  348" << std::endl
+                                             << "4056 x 3040 *  4/39 -->  416 x  312" << std::endl
+                                             << "4056 x 3040 *  6/13 --> 1872 x 1404" << std::endl
+                                             << "4056 x 3040 *  6/39 -->  624 x  468" << std::endl
+                                             << "4056 x 3040 *  7/25 --> 1136 x  852" << std::endl
+                                             << "4056 x 3040 *  8/26 --> 1248 x  936" << std::endl
+                                             << "4056 x 3040 *  8/39 -->  832 x  624" << std::endl
+                                             << "4056 x 3040 *  8/52 -->  624 x  468" << std::endl
+                                             << "4056 x 3040 *  8/58 -->  560 x  420" << std::endl
+                                             << "4056 x 3040 * 10/39 --> 1040 x  780" << std::endl
+                                             << "4056 x 3040 * 10/59 -->  688 x  516" << std::endl
+                                             << "4056 x 3040 * 12/17 --> 2864 x 2146" << std::endl
+                                             << "4056 x 3040 * 12/26 --> 1872 x 1404" << std::endl
+                                             << "4056 x 3040 * 12/39 --> 1248 x  936" << std::endl
+                                             << "4056 x 3040 * 13/16 --> 3296 x 2470" << std::endl
+                                             << "4056 x 3040 * 14/39 --> 1456 x 1092" << std::endl
+                                             << "4056 x 3040 * 14/50 --> 1136 x  852" << std::endl
+                                             << "4056 x 3040 * 14/53 --> 1072 x  804" << std::endl
+                                             << "4056 x 3040 * 16/39 --> 1664 x 1248" << std::endl
+                                             << "4056 x 3040 * 16/52 --> 1248 x  936" << std::endl);
 
             } else {
-                DEPTHAI_ROS_ERROR_STREAM("DEPTHAI","RGB Camera width should be multiple of 16. Please choose a different scaling factor.");
+                DEPTHAI_ROS_ERROR_STREAM("DEPTHAI", "RGB Camera width should be multiple of 16. Please choose a different scaling factor.");
             }
             throw std::runtime_error("Adjust RGB Camaera scaling.");
         }
 
         if(rgbWidth > stereoWidth || rgbHeight > stereoHeight) {
-            DEPTHAI_ROS_WARN_STREAM("DEPTHAI", 
+            DEPTHAI_ROS_WARN_STREAM(
+                "DEPTHAI",
                 "RGB Camera resolution is heigher than the configured stereo resolution. Upscaling the stereo depth/disparity to match RGB camera resolution.");
         } else if(rgbWidth > stereoWidth || rgbHeight > stereoHeight) {
-            DEPTHAI_ROS_WARN_STREAM("DEPTHAI", 
-                "RGB Camera resolution is heigher than the configured stereo resolution. Downscaling the stereo depth/disparity to match RGB camera resolution.");
+            DEPTHAI_ROS_WARN_STREAM("DEPTHAI",
+                                    "RGB Camera resolution is heigher than the configured stereo resolution. Downscaling the stereo depth/disparity to match "
+                                    "RGB camera resolution.");
         }
 
         if(enableSpatialDetection) {
-            if (previewWidth > rgbWidth or  previewHeight > rgbHeight) {
-                DEPTHAI_ROS_ERROR_STREAM("DEPTHAI", "Preview Image size should be smaller than the scaled resolution. Please adjust the scale parameters or the preview size accordingly.");
+            if(previewWidth > rgbWidth or previewHeight > rgbHeight) {
+                DEPTHAI_ROS_ERROR_STREAM(
+                    "DEPTHAI",
+                    "Preview Image size should be smaller than the scaled resolution. Please adjust the scale parameters or the preview size accordingly.");
                 throw std::runtime_error("Invalid Image Size");
             }
 
@@ -308,11 +313,11 @@ int main(int argc, char** argv) {
     node->declare_parameter("manualExposure", false);
     node->declare_parameter("expTime", 20000);
     node->declare_parameter("sensIso", 800);
-    
-    node->declare_parameter("rgbScaleNumerator",   2);
+
+    node->declare_parameter("rgbScaleNumerator", 2);
     node->declare_parameter("rgbScaleDinominator", 3);
-    node->declare_parameter("previewWidth",        416);
-    node->declare_parameter("previewHeight",       416);
+    node->declare_parameter("previewWidth", 416);
+    node->declare_parameter("previewHeight", 416);
 
     node->declare_parameter("angularVelCovariance", 0.02);
     node->declare_parameter("linearAccelCovariance", 0.0);
@@ -320,12 +325,10 @@ int main(int argc, char** argv) {
     node->declare_parameter("detectionClassesCount", 80);
     node->declare_parameter("syncNN", true);
 
-
     node->declare_parameter("enableDotProjector", false);
     node->declare_parameter("enableFloodLight", false);
     node->declare_parameter("dotProjectormA", 200.0);
     node->declare_parameter("floodLightmA", 200.0);
-
 
     // updating parameters if defined in launch file.
 
@@ -358,7 +361,6 @@ int main(int argc, char** argv) {
     node->get_parameter("previewWidth", previewWidth);
     node->get_parameter("previewHeight", previewHeight);
 
-
     node->get_parameter("angularVelCovariance", angularVelCovariance);
     node->get_parameter("linearAccelCovariance", linearAccelCovariance);
     node->get_parameter("enableSpatialDetection", enableSpatialDetection);
@@ -380,7 +382,7 @@ int main(int argc, char** argv) {
         node->get_parameter("nnName", nnName);
     }
     nnPath = resourceBaseFolder + "/" + nnName;
-    
+
     if(mode == "depth") {
         enableDepth = true;
     } else {
@@ -392,25 +394,25 @@ int main(int argc, char** argv) {
     dai::Pipeline pipeline;
     int width, height;
     bool isDeviceFound = false;
-   std::tie(pipeline, width, height) = createPipeline(enableDepth,
-                                                        enableSpatialDetection,
-                                                        lrcheck,
-                                                        extended,
-                                                        subpixel,
-                                                        rectify,
-                                                        depth_aligned,
-                                                        stereo_fps,
-                                                        confidence,
-                                                        LRchecktresh,
-                                                        detectionClassesCount,
-                                                        monoResolution,
-                                                        rgbResolution,
-                                                        rgbScaleNumerator,
-                                                        rgbScaleDinominator,
-                                                        previewWidth,
-                                                        previewHeight,
-                                                        syncNN,
-                                                        nnPath);
+    std::tie(pipeline, width, height) = createPipeline(enableDepth,
+                                                       enableSpatialDetection,
+                                                       lrcheck,
+                                                       extended,
+                                                       subpixel,
+                                                       rectify,
+                                                       depth_aligned,
+                                                       stereo_fps,
+                                                       confidence,
+                                                       LRchecktresh,
+                                                       detectionClassesCount,
+                                                       monoResolution,
+                                                       rgbResolution,
+                                                       rgbScaleNumerator,
+                                                       rgbScaleDinominator,
+                                                       previewWidth,
+                                                       previewHeight,
+                                                       syncNN,
+                                                       nnPath);
 
     std::shared_ptr<dai::Device> device;
     std::vector<dai::DeviceInfo> availableDevices = dai::Device::getAllAvailableDevices();
@@ -443,12 +445,11 @@ int main(int argc, char** argv) {
         std::cout << "Device USB status: " << usbStrings[static_cast<int32_t>(device->getUsbSpeed())] << std::endl;
     }
 
-
     // Apply camera controls
     auto controlQueue = device->getInputQueue("control");
 
-    //Set manual exposure
-    if(manualExposure){
+    // Set manual exposure
+    if(manualExposure) {
         dai::CameraControl ctrl;
         ctrl.setManualExposure(expTime, sensIso);
         controlQueue->send(ctrl);
@@ -469,7 +470,6 @@ int main(int argc, char** argv) {
         width = 640;
         height = 480;
     }
-
 
     if(boardName.find("PRO") != std::string::npos) {
         if(enableDotProjector) {
@@ -497,12 +497,11 @@ int main(int argc, char** argv) {
         "imu");
 
     imuPublish.addPublisherCallback();
-    
+
     // auto leftCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::LEFT, monoWidth, monoHeight);
     // auto rightCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RIGHT, monoWidth, monoHeight);
     // const std::string leftPubName = rectify ? std::string("left/image_rect") : std::string("left/image_raw");
     // const std::string rightPubName = rectify ? std::string("right/image_rect") : std::string("right/image_raw");
-
 
     dai::rosBridge::ImageConverter rgbConverter(tfPrefix + "_rgb_camera_optical_frame", false);
     if(enableDepth) {
@@ -567,7 +566,7 @@ int main(int argc, char** argv) {
         } else {
             auto leftCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::LEFT, width, height);
             auto rightCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RIGHT, width, height);
- 
+
             auto leftQueue = device->getOutputQueue("left", 30, false);
             auto rightQueue = device->getOutputQueue("right", 30, false);
             dai::rosBridge::BridgePublisher<sensor_msgs::msg::Image, dai::ImgFrame> leftPublish(
