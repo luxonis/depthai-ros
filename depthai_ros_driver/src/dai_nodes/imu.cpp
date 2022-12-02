@@ -44,7 +44,7 @@ void Imu::imuQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>&
         imu_msg.angular_velocity.x = gyro.x;
         imu_msg.angular_velocity.y = gyro.y;
         imu_msg.angular_velocity.z = gyro.z;
-        imu_msg.header.frame_id = "camera_link";
+        imu_msg.header.frame_id = std::string(getROSNode()->get_name()) + "_" + getName()+"_frame";
         imu_msg.header.stamp = getROSNode()->get_clock()->now();
         imu_msg.orientation.x = rot.i;
         imu_msg.orientation.y = rot.j;

@@ -1,6 +1,7 @@
 #include "depthai_ros_driver/dai_nodes/mono.hpp"
 
 #include "cv_bridge/cv_bridge.h"
+#include "depthai_bridge/ImageConverter.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 namespace depthai_ros_driver {
@@ -13,13 +14,6 @@ Mono::Mono(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<d
     paramHandler->declareParams(node, monoCamNode);
     setXinXout(pipeline);
     RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
-    if(getName() == "left") {
-        monoCamNode->setBoardSocket(dai::CameraBoardSocket::LEFT);
-    } else if(getName() == "right") {
-        monoCamNode->setBoardSocket(dai::CameraBoardSocket::RIGHT);
-    } else {
-        monoCamNode->setBoardSocket(static_cast<dai::CameraBoardSocket>(paramHandler->get_param<int>(getROSNode(), "i_board_socket")));
-    };
 };
 void Mono::setNames() {
     monoQName = getName() + "_mono";
@@ -27,19 +21,28 @@ void Mono::setNames() {
 }
 
 void Mono::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
-    xoutMono = pipeline->create<dai::node::XLinkOut>();
-    xoutMono->setStreamName(monoQName);
+    if(paramHandler->get_param<bool>(getROSNode(), "i_publish_topic")) {
+        xoutMono = pipeline->create<dai::node::XLinkOut>();
+        xoutMono->setStreamName(monoQName);
+        monoCamNode->out.link(xoutMono->input);
+    }
     xinControl = pipeline->create<dai::node::XLinkIn>();
     xinControl->setStreamName(controlQName);
-    monoCamNode->out.link(xoutMono->input);
     xinControl->out.link(monoCamNode->inputControl);
 }
 
 void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
-    monoQ = device->getOutputQueue(monoQName, paramHandler->get_param<int>(getROSNode(), "i_max_q_size"), false);
-    monoQ->addCallback(std::bind(&Mono::monoQCB, this, std::placeholders::_1, std::placeholders::_2));
+    if(paramHandler->get_param<bool>(getROSNode(), "i_publish_topic")) {
+        monoQ = device->getOutputQueue(monoQName, paramHandler->get_param<int>(getROSNode(), "i_max_q_size"), false);
+        monoQ->addCallback(std::bind(&Mono::monoQCB, this, std::placeholders::_1, std::placeholders::_2));
+        monoPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
+        auto calibHandler = device->readCalibration();
+        monoInfo = dai::ros::calibrationToCameraInfo(calibHandler,
+                                                     static_cast<dai::CameraBoardSocket>(paramHandler->get_param<int>(getROSNode(), "i_board_socket_id")),
+                                                     paramHandler->get_param<int>(getROSNode(), "i_width"),
+                                                     paramHandler->get_param<int>(getROSNode(), "i_height"));
+    }
     controlQ = device->getInputQueue(controlQName);
-    monoPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
 }
 
 void Mono::monoQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
@@ -49,6 +52,9 @@ void Mono::monoQCB(const std::string& name, const std::shared_ptr<dai::ADatatype
     cv_bridge::CvImage img_bridge;
     sensor_msgs::msg::Image img_msg;
     std_msgs::msg::Header header;
+    header.stamp = curr_time;
+    header.frame_id = std::string(getROSNode()->get_name()) + "_" + getName() + "_camera_optical_frame";
+    monoInfo.header = header;
     img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::MONO8, cv_frame);
     img_bridge.toImageMsg(img_msg);
     monoPub.publish(img_msg, monoInfo);
@@ -63,7 +69,7 @@ dai::Node::Input Mono::getInput(int linkType) {
 }
 
 void Mono::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    auto ctrl = paramHandler->setRuntimeParams(getROSNode(),params);
+    auto ctrl = paramHandler->setRuntimeParams(getROSNode(), params);
     controlQ->send(ctrl);
 }
 

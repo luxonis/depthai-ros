@@ -3,6 +3,7 @@
 #include "cv_bridge/cv_bridge.h"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
 namespace depthai_ros_driver {
 namespace dai_nodes {
 Stereo::Stereo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
@@ -28,6 +29,11 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
     stereoQ = device->getOutputQueue(stereoQName, paramHandler->get_param<int>(getROSNode(), "i_max_q_size"), false);
     stereoQ->addCallback(std::bind(&Stereo::stereoQCB, this, std::placeholders::_1, std::placeholders::_2));
     stereoPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
+    auto calibHandler = device->readCalibration();
+    stereoInfo = dai::ros::calibrationToCameraInfo(calibHandler,
+                                            static_cast<dai::CameraBoardSocket>(paramHandler->get_param<int>(getROSNode(), "i_board_socket_id")),
+                                            paramHandler->get_param<int>(getROSNode(), "i_width"),
+                                            paramHandler->get_param<int>(getROSNode(), "i_height"));
 }
 
 void Stereo::stereoQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
@@ -37,6 +43,16 @@ void Stereo::stereoQCB(const std::string& name, const std::shared_ptr<dai::AData
     cv_bridge::CvImage img_bridge;
     sensor_msgs::msg::Image img_msg;
     std_msgs::msg::Header header;
+    header.stamp = curr_time;
+    std::string frameName;
+    if (static_cast<dai::CameraBoardSocket>(paramHandler->get_param<int>(getROSNode(), "i_board_socket_id"))== dai::CameraBoardSocket::RGB){
+        frameName = "rgb";
+    }
+    else{
+        frameName = "right";
+    }
+    header.frame_id = std::string(getROSNode()->get_name()) + "_" + frameName + "_camera_optical_frame";
+    stereoInfo.header = header;
     img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::TYPE_16UC1, cv_frame);
     img_bridge.toImageMsg(img_msg);
     stereoPub.publish(img_msg, stereoInfo);

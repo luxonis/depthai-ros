@@ -8,8 +8,17 @@ namespace param_handlers {
 MonoParamHandler::MonoParamHandler(const std::string& name) : BaseParamHandler(name){};
 void MonoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::MonoCamera> mono_cam) {
     declareAndLogParam<int>(node, "i_max_q_size", 4);
-
-    declareAndLogParam<int>(node, "i_board_socket_id", 1);
+    declareAndLogParam<bool>(node, "i_publish_topic", true);
+    int socket;
+    if(getName() == "left") {
+        socket = static_cast<int>(dai::CameraBoardSocket::LEFT);
+    } else if(getName() == "right") {
+        socket = static_cast<int>(dai::CameraBoardSocket::RIGHT);
+    } else {
+        socket = static_cast<int>(dai::CameraBoardSocket::AUTO);
+    };
+    socket = declareAndLogParam<int>(node, "i_board_socket_id", socket);
+    mono_cam->setBoardSocket(static_cast<dai::CameraBoardSocket>(socket));
     mono_cam->setFps(declareAndLogParam<double>(node, "i_fps", 30.0));
 
     mono_cam->setResolution(monoResolutionMap.at(declareAndLogParam<std::string>(node, "i_resolution", "720")));
@@ -20,9 +29,8 @@ void MonoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::no
     if(declareAndLogParam(node, "r_set_man_exposure", false)) {
         mono_cam->initialControl.setManualExposure(exposure, iso);
     }
-
 }
-dai::CameraControl MonoParamHandler::setRuntimeParams(rclcpp::Node* node,const std::vector<rclcpp::Parameter>& params) {
+dai::CameraControl MonoParamHandler::setRuntimeParams(rclcpp::Node* node, const std::vector<rclcpp::Parameter>& params) {
     dai::CameraControl ctrl;
     for(const auto& p : params) {
         if(p.get_name() == get_full_paramName("r_set_man_exposure")) {
@@ -39,8 +47,8 @@ dai::CameraControl MonoParamHandler::setRuntimeParams(rclcpp::Node* node,const s
             if(get_param<bool>(node, "r_set_man_exposure")) {
                 ctrl.setManualExposure(get_param<int>(node, "r_exposure"), p.get_value<int>());
             }
-    }
-    return ctrl;
+        }
+        return ctrl;
     }
 }
 }  // namespace param_handlers
