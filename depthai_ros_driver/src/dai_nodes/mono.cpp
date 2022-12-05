@@ -44,6 +44,12 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
     }
     controlQ = device->getInputQueue(controlQName);
 }
+void Mono::closeQueues() {
+    if(paramHandler->get_param<bool>(getROSNode(), "i_publish_topic")) {
+        monoQ->close();
+    }
+    controlQ->close();
+}
 
 void Mono::monoQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
     auto frame = std::dynamic_pointer_cast<dai::ImgFrame>(data);

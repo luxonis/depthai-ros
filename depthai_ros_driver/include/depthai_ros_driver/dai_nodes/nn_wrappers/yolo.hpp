@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+
 #include "depthai/depthai.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
@@ -11,12 +12,11 @@
 #include "vision_msgs/msg/detection2_d_array.hpp"
 #include "vision_msgs/msg/detection3_d_array.hpp"
 
-
 namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace nn_wrappers {
 class Yolo : public BaseNode {
-    public:
+   public:
     Yolo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
@@ -24,19 +24,19 @@ class Yolo : public BaseNode {
     dai::Node::Input getInput(int linkType = 0) override;
     void setNames() override;
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
+    void closeQueues() override;
 
-    private:
-        void yoloCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
-        std::vector<std::string> labelNames;
-        image_transport::CameraPublisher nnPub;
-        std::shared_ptr<dai::node::YoloDetectionNetwork> yoloNode;
-        std::shared_ptr<dai::node::ImageManip> imageManip;
-        rclcpp::Publisher<vision_msgs::msg::Detection2DArray>::SharedPtr detPub;
-        std::unique_ptr<param_handlers::NNParamHandler> paramHandler;
-        std::shared_ptr<dai::DataOutputQueue> nnQ;
-        std::shared_ptr<dai::node::XLinkOut> xoutNN;
-        std::string nnQName;
-
+   private:
+    void yoloCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
+    std::vector<std::string> labelNames;
+    image_transport::CameraPublisher nnPub;
+    std::shared_ptr<dai::node::YoloDetectionNetwork> yoloNode;
+    std::shared_ptr<dai::node::ImageManip> imageManip;
+    rclcpp::Publisher<vision_msgs::msg::Detection2DArray>::SharedPtr detPub;
+    std::unique_ptr<param_handlers::NNParamHandler> paramHandler;
+    std::shared_ptr<dai::DataOutputQueue> nnQ;
+    std::shared_ptr<dai::node::XLinkOut> xoutNN;
+    std::string nnQName;
 };
 class YoloFactory : public BaseNodeFactory {
    public:

@@ -5,7 +5,15 @@
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-MonoParamHandler::MonoParamHandler(const std::string& name) : BaseParamHandler(name){};
+MonoParamHandler::MonoParamHandler(const std::string& name) : BaseParamHandler(name) {
+    monoResolutionMap = {
+        {"400", dai::MonoCameraProperties::SensorResolution::THE_400_P},
+        {"480", dai::MonoCameraProperties::SensorResolution::THE_480_P},
+        {"720", dai::MonoCameraProperties::SensorResolution::THE_720_P},
+        {"800", dai::MonoCameraProperties::SensorResolution::THE_800_P},
+    };
+};
+MonoParamHandler::~MonoParamHandler() = default;
 void MonoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::MonoCamera> mono_cam) {
     declareAndLogParam<int>(node, "i_max_q_size", 4);
     declareAndLogParam<bool>(node, "i_publish_topic", true);

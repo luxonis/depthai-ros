@@ -30,7 +30,6 @@ void Mobilenet::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     xoutNN = pipeline->create<dai::node::XLinkOut>();
     xoutNN->setStreamName(nnQName);
     mobileNode->out.link(xoutNN->input);
-
 }
 
 void Mobilenet::setupQueues(std::shared_ptr<dai::Device> device) {
@@ -38,6 +37,9 @@ void Mobilenet::setupQueues(std::shared_ptr<dai::Device> device) {
     // nnPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
     nnQ->addCallback(std::bind(&Mobilenet::MobilenetCB, this, std::placeholders::_1, std::placeholders::_2));
     detPub = getROSNode()->create_publisher<vision_msgs::msg::Detection2DArray>("~/" + getName() + "/detections", 10);
+}
+void Mobilenet::closeQueues() {
+    nnQ->close();
 }
 
 void Mobilenet::MobilenetCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {

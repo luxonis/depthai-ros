@@ -1,16 +1,17 @@
 #include "depthai_ros_driver/dai_nodes/nn_wrappers/segmentation.hpp"
 
 #include "cv_bridge/cv_bridge.h"
-#include "sensor_msgs/msg/image.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
+#include "sensor_msgs/msg/image.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace nn_wrappers {
 
-Segmentation::Segmentation(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline){
+Segmentation::Segmentation(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline)
+    : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_INFO(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     segNode = pipeline->create<dai::node::NeuralNetwork>();
@@ -36,6 +37,10 @@ void Segmentation::setupQueues(std::shared_ptr<dai::Device> device) {
     nnQ = device->getOutputQueue(nnQName, paramHandler->get_param<int>(getROSNode(), "i_max_q_size"), false);
     nnPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
     nnQ->addCallback(std::bind(&Segmentation::segmentationCB, this, std::placeholders::_1, std::placeholders::_2));
+}
+
+void Segmentation::closeQueues() {
+    nnQ->close();
 }
 
 void Segmentation::segmentationCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
@@ -80,6 +85,6 @@ dai::Node::Input Segmentation::getInput(int linkType) {
 void Segmentation::updateParams(const std::vector<rclcpp::Parameter>& params) {
     paramHandler->setRuntimeParams(getROSNode(), params);
 }
-}
+}  // namespace nn_wrappers
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

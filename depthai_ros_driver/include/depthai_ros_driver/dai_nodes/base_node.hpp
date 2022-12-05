@@ -20,6 +20,7 @@ class BaseNode {
     virtual void setupQueues(std::shared_ptr<dai::Device> device) = 0;
     virtual void setNames() = 0;
     virtual void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) = 0;
+    virtual void closeQueues() = 0;
 
     void setNodeName(const std::string& daiNodeName) {
         baseDAINodeName = daiNodeName;

@@ -1,9 +1,9 @@
 #include "depthai_ros_driver/dai_nodes/stereo.hpp"
 
 #include "cv_bridge/cv_bridge.h"
+#include "depthai_bridge/ImageConverter.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
-#include "depthai_bridge/ImageConverter.hpp"
 namespace depthai_ros_driver {
 namespace dai_nodes {
 Stereo::Stereo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
@@ -31,11 +31,13 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
     stereoPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
     auto calibHandler = device->readCalibration();
     stereoInfo = dai::ros::calibrationToCameraInfo(calibHandler,
-                                            static_cast<dai::CameraBoardSocket>(paramHandler->get_param<int>(getROSNode(), "i_board_socket_id")),
-                                            paramHandler->get_param<int>(getROSNode(), "i_width"),
-                                            paramHandler->get_param<int>(getROSNode(), "i_height"));
+                                                   static_cast<dai::CameraBoardSocket>(paramHandler->get_param<int>(getROSNode(), "i_board_socket_id")),
+                                                   paramHandler->get_param<int>(getROSNode(), "i_width"),
+                                                   paramHandler->get_param<int>(getROSNode(), "i_height"));
 }
-
+void Stereo::closeQueues() {
+    stereoQ->close();
+}
 void Stereo::stereoQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
     auto frame = std::dynamic_pointer_cast<dai::ImgFrame>(data);
     cv::Mat cv_frame = frame->getCvFrame();
@@ -45,10 +47,9 @@ void Stereo::stereoQCB(const std::string& name, const std::shared_ptr<dai::AData
     std_msgs::msg::Header header;
     header.stamp = curr_time;
     std::string frameName;
-    if (static_cast<dai::CameraBoardSocket>(paramHandler->get_param<int>(getROSNode(), "i_board_socket_id"))== dai::CameraBoardSocket::RGB){
+    if(static_cast<dai::CameraBoardSocket>(paramHandler->get_param<int>(getROSNode(), "i_board_socket_id")) == dai::CameraBoardSocket::RGB) {
         frameName = "rgb";
-    }
-    else{
+    } else {
         frameName = "right";
     }
     header.frame_id = std::string(getROSNode()->get_name()) + "_" + frameName + "_camera_optical_frame";

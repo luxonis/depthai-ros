@@ -27,7 +27,11 @@ void Imu::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 void Imu::setupQueues(std::shared_ptr<dai::Device> device) {
     imuQ = device->getOutputQueue(imuQName, paramHandler->get_param<int>(getROSNode(), "i_max_q_size"), false);
     imuQ->addCallback(std::bind(&Imu::imuQCB, this, std::placeholders::_1, std::placeholders::_2));
-    imuPub = getROSNode()->create_publisher<sensor_msgs::msg::Imu>("~/" + getName() + "/data",10);
+    imuPub = getROSNode()->create_publisher<sensor_msgs::msg::Imu>("~/" + getName() + "/data", 10);
+}
+
+void Imu::closeQueues() {
+    imuQ->close();
 }
 
 void Imu::imuQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
@@ -44,7 +48,7 @@ void Imu::imuQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>&
         imu_msg.angular_velocity.x = gyro.x;
         imu_msg.angular_velocity.y = gyro.y;
         imu_msg.angular_velocity.z = gyro.z;
-        imu_msg.header.frame_id = std::string(getROSNode()->get_name()) + "_" + getName()+"_frame";
+        imu_msg.header.frame_id = std::string(getROSNode()->get_name()) + "_" + getName() + "_frame";
         imu_msg.header.stamp = getROSNode()->get_clock()->now();
         imu_msg.orientation.x = rot.i;
         imu_msg.orientation.y = rot.j;
@@ -74,7 +78,7 @@ dai::Node::Input Imu::getInput(int linkType) {
 }
 
 void Imu::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    paramHandler->setRuntimeParams(getROSNode(),params);
+    paramHandler->setRuntimeParams(getROSNode(), params);
 }
 
 }  // namespace dai_nodes

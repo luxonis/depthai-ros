@@ -23,6 +23,7 @@ class Segmentation : public BaseNode {
     dai::Node::Input getInput(int linkType = 0) override;
     void setNames() override;
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
+    void closeQueues() override;
 
    private:
     cv::Mat decodeDeeplab(cv::Mat mat);

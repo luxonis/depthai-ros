@@ -5,7 +5,14 @@
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-RGBParamHandler::RGBParamHandler(const std::string& name) : BaseParamHandler(name){};
+RGBParamHandler::RGBParamHandler(const std::string& name) : BaseParamHandler(name) {
+    rgbResolutionMap = {
+        {"1080", dai::ColorCameraProperties::SensorResolution::THE_1080_P},
+        {"4k", dai::ColorCameraProperties::SensorResolution::THE_4_K},
+        {"12MP", dai::ColorCameraProperties::SensorResolution::THE_12_MP},
+    };
+};
+RGBParamHandler::~RGBParamHandler() = default;
 void RGBParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::ColorCamera> color_cam) {
     declareAndLogParam<int>(node, "i_max_q_size", 4);
     declareAndLogParam<bool>(node, "i_publish_topic", true);
@@ -54,7 +61,7 @@ dai::CameraControl RGBParamHandler::setRuntimeParams(rclcpp::Node* node, const s
             }
         } else if(p.get_name() == get_full_paramName("r_set_man_focus")) {
             if(p.get_value<bool>()) {
-                ctrl.setManualFocus(get_param<int>(node,"r_focus"));
+                ctrl.setManualFocus(get_param<int>(node, "r_focus"));
             } else {
                 ctrl.setAutoFocusMode(dai::CameraControl::AutoFocusMode::CONTINUOUS_PICTURE);
             }
@@ -63,10 +70,9 @@ dai::CameraControl RGBParamHandler::setRuntimeParams(rclcpp::Node* node, const s
                 ctrl.setManualFocus(p.get_value<int>());
             }
         } else if(p.get_name() == get_full_paramName("r_set_man_whitebalance")) {
-            if(p.get_value<bool>()){
+            if(p.get_value<bool>()) {
                 ctrl.setManualWhiteBalance(get_param<int>(node, "r_whitebalance"));
-            }
-            else{
+            } else {
                 ctrl.setAutoWhiteBalanceMode(dai::CameraControl::AutoWhiteBalanceMode::AUTO);
             }
         } else if(p.get_name() == get_full_paramName("r_whitebalance")) {
@@ -75,7 +81,7 @@ dai::CameraControl RGBParamHandler::setRuntimeParams(rclcpp::Node* node, const s
             }
         }
 
-    return ctrl;
+        return ctrl;
     }
 }
 }  // namespace param_handlers

@@ -1,12 +1,13 @@
 #pragma once
 
 #include "depthai/depthai.hpp"
-#include "depthai_ros_driver/types.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
+#include "depthai_ros_driver/param_handlers/camera_param_handler.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "std_srvs/srv/trigger.hpp"
 
 namespace depthai_ros_driver {
-
+using Trigger = std_srvs::srv::Trigger;
 class Camera : public rclcpp::Node {
    public:
     explicit Camera(const rclcpp::NodeOptions& options);
@@ -16,27 +17,17 @@ class Camera : public rclcpp::Node {
     void getDeviceType();
     void createPipeline();
     void loadNodes();
-    void declareParams();
     void startDevice();
     void rgbPipeline();
     void setupQueues();
     rcl_interfaces::msg::SetParametersResult parameterCB(const std::vector<rclcpp::Parameter>& params);
     OnSetParametersCallbackHandle::SharedPtr paramCBHandle;
-    std::unique_ptr<types::cam_types::CamType> cam_type;
+    std::unique_ptr<param_handlers::CameraParamHandler> paramHandler;
+    rclcpp::Service<Trigger>::SharedPtr startSrv, stopSrv;
+    void startCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res);
+    void stopCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res);
+
     std::vector<std::string> usbStrings = {"UNKNOWN", "LOW", "FULL", "HIGH", "SUPER", "SUPER_PLUS"};
-    std::unordered_map<std::string, dai::UsbSpeed> usbSpeedMap = {
-        {"LOW", dai::UsbSpeed::LOW},
-        {"FULL", dai::UsbSpeed::FULL},
-        {"HIGH", dai::UsbSpeed::HIGH},
-        {"SUPER", dai::UsbSpeed::SUPER},
-        {"SUPER_PLUS", dai::UsbSpeed::SUPER_PLUS},
-    };
-    std::unordered_map<std::string, types::nn_types::NNType> nnTypeMap = {
-        {"", types::nn_types::NNType::None},
-        {"none", types::nn_types::NNType::None},
-        {"default", types::nn_types::NNType::Default},
-        {"spatial", types::nn_types::NNType::Spatial},
-    };
     std::shared_ptr<dai::Pipeline> pipeline;
     std::shared_ptr<dai::Device> device;
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;

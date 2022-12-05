@@ -10,8 +10,14 @@
 namespace depthai_ros_driver {
 namespace param_handlers {
 
-NNParamHandler::NNParamHandler(const std::string& name) : BaseParamHandler(name){};
-
+NNParamHandler::NNParamHandler(const std::string& name) : BaseParamHandler(name) {
+    nnFamilyMap = {
+        {"segmentation", nn::NNFamily::Segmentation},
+        {"mobilenet", nn::NNFamily::Mobilenet},
+        {"YOLO", nn::NNFamily::Yolo},
+    };
+};
+NNParamHandler::~NNParamHandler() = default;
 nn::NNFamily NNParamHandler::getNNFamily(rclcpp::Node* node) {
     std::string default_nn_path = ament_index_cpp::get_package_share_directory("depthai_ros_driver") + "/config/nn/yolo.json";
     auto nn_path = declareAndLogParam<std::string>(node, "i_nn_config_path", default_nn_path);
@@ -21,7 +27,6 @@ nn::NNFamily NNParamHandler::getNNFamily(rclcpp::Node* node) {
     std::string nnFamily;
     if(data.contains("model") && data.contains("nn_config")) {
         nnFamily = data["nn_config"]["NN_family"].get<std::string>();
-        declareAndLogParam<std::string>(node, "i_nn_family", nnFamily);
     } else {
         throw std::runtime_error("No required fields");
     }
@@ -38,7 +43,7 @@ void NNParamHandler::setNNParams(rclcpp::Node* node, nlohmann::json data, std::s
 void NNParamHandler::setNNParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<dai::node::MobileNetDetectionNetwork> nn) {
     if(data["nn_config"].contains("confidence_threshold")) {
         auto conf_threshold = data["nn_config"]["confidence_threshold"].get<float>();
-        nn->setConfidenceThreshold(declareAndLogParam<float>(node, "i_confidence_threshold", conf_threshold));
+        nn->setConfidenceThreshold(conf_threshold);
     }
     auto labels = data["mappings"]["labels"].get<std::vector<std::string>>();
     if(!labels.empty()) {
@@ -50,7 +55,7 @@ void NNParamHandler::setNNParams(rclcpp::Node* node, nlohmann::json data, std::s
     float conf_threshold = 0.5;
     if(data["nn_config"].contains("confidence_threshold")) {
         conf_threshold = data["nn_config"]["confidence_threshold"].get<float>();
-        nn->setConfidenceThreshold(declareAndLogParam<float>(node, "i_confidence_threshold", conf_threshold));
+        nn->setConfidenceThreshold(conf_threshold);
     }
     auto labels = data["mappings"]["labels"].get<std::vector<std::string>>();
     if(!labels.empty()) {
@@ -61,12 +66,12 @@ void NNParamHandler::setNNParams(rclcpp::Node* node, nlohmann::json data, std::s
         int num_classes = 80;
         if(metadata.contains("classes")) {
             num_classes = metadata["classes"].get<int>();
-            nn->setNumClasses(declareAndLogParam<int>(node, "i_num_classes", num_classes));
+            nn->setNumClasses(num_classes);
         }
         int coordinates = 4;
         if(metadata.contains("coordinates")) {
             coordinates = metadata["coordinates"].get<int>();
-            nn->setCoordinateSize(declareAndLogParam<int>(node, "i_coordinate_size", coordinates));
+            nn->setCoordinateSize(coordinates);
         }
         std::vector<float> anchors = {10, 14, 23, 27, 37, 58, 81, 82, 135, 169, 344, 319};
         if(metadata.contains("anchors")) {
@@ -76,11 +81,11 @@ void NNParamHandler::setNNParams(rclcpp::Node* node, nlohmann::json data, std::s
         std::map<std::string, std::vector<int>> anchor_masks = {{"side13", {3, 4, 5}}, {"side26", {1, 2, 3}}};
         if(metadata.contains("anchor_masks")) {
             anchor_masks.clear();
-            for (auto &el: metadata["anchor_masks"].items()){
+            for(auto& el : metadata["anchor_masks"].items()) {
                 anchor_masks.insert({el.key(), el.value()});
             }
         }
-            nn->setAnchorMasks(anchor_masks);
+        nn->setAnchorMasks(anchor_masks);
         float iou_threshold = 0.5f;
         if(metadata.contains("iou_threshold")) {
             iou_threshold = metadata["iou_threshold"].get<float>();
@@ -92,7 +97,7 @@ void NNParamHandler::setNNParams(rclcpp::Node* node, nlohmann::json data, std::s
 void NNParamHandler::setImageManip(rclcpp::Node* node, const std::string& model_path, std::shared_ptr<dai::node::ImageManip> imageManip) {
     auto blob = dai::OpenVINO::Blob(model_path);
     auto first_info = blob.networkInputs.begin();
-    auto input_size = declareAndLogParam<int>(node, "i_input_size", first_info->second.dims[0]);
+    auto input_size = first_info->second.dims[0];
 
     imageManip->initialConfig.setFrameType(dai::ImgFrame::Type::BGR888p);
     imageManip->inputImage.setBlocking(false);

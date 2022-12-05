@@ -26,12 +26,11 @@ class NN : public BaseNode {
     dai::Node::Input getInput(int linkType = 0) override;
     virtual void setNames();
     virtual void setXinXout(std::shared_ptr<dai::Pipeline> pipeline);
+    void closeQueues() override;
 
    private:
     std::unique_ptr<param_handlers::NNParamHandler> paramHandler;
     std::unique_ptr<BaseNode> nnNode;
-
-    
 };
 class NNFactory : public BaseNodeFactory {
    public:

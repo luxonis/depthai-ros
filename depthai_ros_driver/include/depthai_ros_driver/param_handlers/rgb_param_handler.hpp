@@ -11,16 +11,12 @@ namespace param_handlers {
 class RGBParamHandler : public BaseParamHandler {
    public:
     explicit RGBParamHandler(const std::string& name);
-    ~RGBParamHandler(){};
+    ~RGBParamHandler();
     void declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::ColorCamera> color_cam);
-    dai::CameraControl setRuntimeParams(rclcpp::Node* node,const std::vector<rclcpp::Parameter>& params) override;
+    dai::CameraControl setRuntimeParams(rclcpp::Node* node, const std::vector<rclcpp::Parameter>& params) override;
 
    private:
-    std::unordered_map<std::string, dai::ColorCameraProperties::SensorResolution> rgbResolutionMap = {
-        {"1080", dai::ColorCameraProperties::SensorResolution::THE_1080_P},
-        {"4k", dai::ColorCameraProperties::SensorResolution::THE_4_K},
-        {"12MP", dai::ColorCameraProperties::SensorResolution::THE_12_MP},
-    };
+    std::unordered_map<std::string, dai::ColorCameraProperties::SensorResolution> rgbResolutionMap;
 };
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver

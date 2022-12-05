@@ -4,33 +4,56 @@
 #include "depthai_ros_driver/dai_nodes/imu.hpp"
 #include "depthai_ros_driver/dai_nodes/mono.hpp"
 #include "depthai_ros_driver/dai_nodes/nn.hpp"
-#include "depthai_ros_driver/dai_nodes/spatial_detection.hpp"
 #include "depthai_ros_driver/dai_nodes/rgb.hpp"
+#include "depthai_ros_driver/dai_nodes/spatial_detection.hpp"
 #include "depthai_ros_driver/dai_nodes/stereo.hpp"
-#include "depthai_ros_driver/types.hpp"
 
 namespace depthai_ros_driver {
 
 Camera::Camera(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : rclcpp::Node("camera", options) {
+    paramHandler = std::make_unique<param_handlers::CameraParamHandler>("camera");
+    paramHandler->declareParams(this);
     onConfigure();
 }
 void Camera::onConfigure() {
-    declareParams();
     getDeviceType();
     createPipeline();
     startDevice();
     setupQueues();
     paramCBHandle = this->add_on_set_parameters_callback(std::bind(&Camera::parameterCB, this, std::placeholders::_1));
+    startSrv = this->create_service<Trigger>("~/start_camera", std::bind(&Camera::startCB, this, std::placeholders::_1, std::placeholders::_2));
+    stopSrv = this->create_service<Trigger>("~/stop_camera", std::bind(&Camera::stopCB, this, std::placeholders::_1, std::placeholders::_2));
     RCLCPP_INFO(this->get_logger(), "Camera ready!");
 }
 
+void Camera::startCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res) {
+    RCLCPP_INFO(this->get_logger(), "Starting camera!");
+    onConfigure();
+}
+void Camera::stopCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res) {
+    RCLCPP_INFO(this->get_logger(), "Stopping camera!");
+    for(const auto& node : daiNodes) {
+        node->closeQueues();
+    }
+    daiNodes.clear();
+    device.reset();
+    pipeline.reset();
+}
 void Camera::getDeviceType() {
     pipeline = std::make_shared<dai::Pipeline>();
     startDevice();
     auto name = device->getDeviceName();
     RCLCPP_INFO(this->get_logger(), "Device type: %s", name.c_str());
-
-    cam_type = std::make_unique<types::cam_types::CamType>(name);
+    for(auto& sensor : device->getCameraSensorNames()) {
+        RCLCPP_INFO(this->get_logger(), "Socket %d - %s", sensor.first, sensor.second.c_str());
+    }
+    auto ir_drivers = device->getIrDrivers();
+    if (ir_drivers.empty()){
+        RCLCPP_INFO(this->get_logger(), "Device has no IR drivers");
+    }
+    else {
+        RCLCPP_INFO(this->get_logger(), "IR Drivers present");
+    }
     device.reset();
 }
 
@@ -41,27 +64,26 @@ void Camera::createPipeline() {
     dai_nodes::ImuFactory imuFac;
     dai_nodes::NNFactory nnFac;
     dai_nodes::SpatialDetectionFactory spat_fac;
-    if(this->get_parameter("i_pipelinetype").as_string() == "RGB") {
+    if(paramHandler->get_param<std::string>(this, "i_pipeline_type") == "RGB") {
         auto rgb = rgbFac.create("color", this, pipeline);
-    
-        auto nn_type = nnTypeMap.at(this->get_parameter("i_nn_type").as_string());
-        switch (nn_type){
-            case types::nn_types::NNType::None:
+        auto nn_type = paramHandler->getNNType(this);
+        switch(nn_type) {
+            case param_handlers::camera::NNType::None:
                 break;
-            case types::nn_types::NNType::Default:{
+            case param_handlers::camera::NNType::Default: {
                 auto nn = nnFac.create("nn", this, pipeline);
                 rgb->link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
                 daiNodes.push_back(std::move(nn));
                 break;
             }
-            case types::nn_types::NNType::Spatial:{
+            case param_handlers::camera::NNType::Spatial: {
                 break;
             }
             default:
                 break;
         }
         daiNodes.push_back(std::move(rgb));
-    } else if(this->get_parameter("i_pipelinetype").as_string() == "RGBD" && cam_type->stereo()) {
+    } else if(paramHandler->get_param<std::string>(this, "i_pipeline_type") == "RGBD") {
         auto rgb = rgbFac.create("color", this, pipeline);
         auto mono_left = monoFac.create("left", this, pipeline);
         auto mono_right = monoFac.create("right", this, pipeline);
@@ -71,17 +93,17 @@ void Camera::createPipeline() {
         mono_right->link(stereo->getInput(static_cast<int>(dai_nodes::link_types::StereoLinkType::right)),
                          static_cast<int>(dai_nodes::link_types::StereoLinkType::right));
 
-        auto nn_type = nnTypeMap.at(this->get_parameter("i_nn_type").as_string());
-        switch (nn_type){
-            case types::nn_types::NNType::None:
+        auto nn_type = paramHandler->getNNType(this);
+        switch(nn_type) {
+            case param_handlers::camera::NNType::None:
                 break;
-            case types::nn_types::NNType::Default:{
+            case param_handlers::camera::NNType::Default: {
                 auto nn = nnFac.create("nn", this, pipeline);
                 rgb->link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
                 daiNodes.push_back(std::move(nn));
                 break;
             }
-            case types::nn_types::NNType::Spatial:{
+            case param_handlers::camera::NNType::Spatial: {
                 break;
             }
             default:
@@ -93,18 +115,14 @@ void Camera::createPipeline() {
         daiNodes.push_back(std::move(mono_left));
         daiNodes.push_back(std::move(stereo));
     } else {
-        std::string configuration = this->get_parameter("i_pipelinetype").as_string() + " " + this->get_parameter("i_cam_type").as_string();
+        std::string configuration =
+            paramHandler->get_param<std::string>(this, "i_pipeline_type") + " " + paramHandler->get_param<std::string>(this, "i_cam_type");
         throw std::runtime_error("UNKNOWN PIPELINE TYPE SPECIFIED/CAMERA DOESN'T SUPPORT GIVEN PIPELINE. Configuration: " + configuration);
     }
-    if(this->get_parameter("i_enable_imu").as_bool() && cam_type->imu_available()) {
+    if(paramHandler->get_param<bool>(this, "i_enable_imu")) {
         auto imu = imuFac.create("imu", this, pipeline);
         daiNodes.push_back(std::move(imu));
     }
-    auto json = pipeline->serializeToJson();
-    std::ofstream file;
-    file.open("/home/adaser/pipeline.json");
-    file << json.dump().c_str() << std::endl;
-    file.close();
     RCLCPP_INFO(this->get_logger(), "Finished setting up pipeline.");
 }
 
@@ -116,8 +134,8 @@ void Camera::setupQueues() {
 
 void Camera::startDevice() {
     dai::DeviceInfo info;
-    auto mxid = this->get_parameter("i_mx_id").as_string();
-    auto ip = this->get_parameter("i_ip").as_string();
+    auto mxid = paramHandler->get_param<std::string>(this, "i_mx_id");
+    auto ip = paramHandler->get_param<std::string>(this, "i_ip");
     if(!mxid.empty()) {
         RCLCPP_INFO(this->get_logger(), "Connecting to the camera using mxid: %s", mxid.c_str());
         info = dai::DeviceInfo(mxid);
@@ -131,7 +149,7 @@ void Camera::startDevice() {
     bool cam_running;
     while(!cam_running) {
         try {
-            dai::UsbSpeed speed = usbSpeedMap.at(this->get_parameter("i_usb_speed").as_string());
+            dai::UsbSpeed speed = paramHandler->getUSBSpeed(this);
             if(mxid.empty() && ip.empty()) {
                 device = std::make_shared<dai::Device>(*pipeline, speed);
 
@@ -155,7 +173,7 @@ void Camera::startDevice() {
 
 rcl_interfaces::msg::SetParametersResult Camera::parameterCB(const std::vector<rclcpp::Parameter>& params) {
     for(const auto& p : params) {
-        if(this->get_parameter("i_enable_ir").as_bool() && cam_type->ir_available()) {
+        if(paramHandler->get_param<bool>(this, "i_enable_ir") && !device->getIrDrivers().empty()) {
             if(p.get_name() == "i_laser_dot_brightness") {
                 device->setIrLaserDotProjectorBrightness(p.get_value<int>());
             } else if(p.get_name() == "i_floodlight_brightness") {
@@ -169,17 +187,6 @@ rcl_interfaces::msg::SetParametersResult Camera::parameterCB(const std::vector<r
     rcl_interfaces::msg::SetParametersResult res;
     res.successful = true;
     return res;
-}
-void Camera::declareParams() {
-    this->declare_parameter<std::string>("i_pipelinetype", "RGBD");
-    this->declare_parameter<std::string>("i_nn_type", "default");
-    this->declare_parameter<bool>("i_enable_imu", true);
-    this->declare_parameter<bool>("i_enable_ir", true);
-    this->declare_parameter<std::string>("i_usb_speed", "SUPER_PLUS");
-    this->declare_parameter<std::string>("i_mx_id", "");
-    this->declare_parameter<std::string>("i_ip", "");
-    this->declare_parameter<int>("i_laser_dot_brightness", 0, param_handlers::getRangedIntDescriptor(0, 1200));
-    this->declare_parameter<int>("i_floodlight_brightness", 0, param_handlers::getRangedIntDescriptor(0, 1500));
 }
 
 }  // namespace depthai_ros_driver

@@ -14,7 +14,7 @@ enum class NNFamily { Segmentation, Mobilenet, Yolo };
 class NNParamHandler : public BaseParamHandler {
    public:
     explicit NNParamHandler(const std::string& name);
-    ~NNParamHandler(){};
+    ~NNParamHandler();
     nn::NNFamily getNNFamily(rclcpp::Node* node);
     template <typename T>
     void declareParams(rclcpp::Node* node, std::shared_ptr<T> nn, std::shared_ptr<dai::node::ImageManip> imageManip) {
@@ -25,9 +25,9 @@ class NNParamHandler : public BaseParamHandler {
         parseConfigFile(node, nn_path, nn, imageManip);
     }
 
-    void setNNParams(rclcpp::Node *node, nlohmann::json data, std::shared_ptr<dai::node::NeuralNetwork> nn);
-    void setNNParams(rclcpp::Node *node, nlohmann::json data, std::shared_ptr<dai::node::MobileNetDetectionNetwork> nn);
-    void setNNParams(rclcpp::Node *node, nlohmann::json data, std::shared_ptr<dai::node::YoloDetectionNetwork> nn);
+    void setNNParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<dai::node::NeuralNetwork> nn);
+    void setNNParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<dai::node::MobileNetDetectionNetwork> nn);
+    void setNNParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<dai::node::YoloDetectionNetwork> nn);
 
     template <typename T>
     void parseConfigFile(rclcpp::Node* node, const std::string& path, std::shared_ptr<T> nn, std::shared_ptr<dai::node::ImageManip> imageManip) {
@@ -50,11 +50,7 @@ class NNParamHandler : public BaseParamHandler {
    private:
     void setImageManip(rclcpp::Node* node, const std::string& model_path, std::shared_ptr<dai::node::ImageManip> imageManip);
     std::string getModelPath(const nlohmann::json& data);
-    std::unordered_map<std::string, nn::NNFamily> nnFamilyMap = {
-        {"segmentation", nn::NNFamily::Segmentation},
-        {"mobilenet", nn::NNFamily::Mobilenet},
-        {"YOLO", nn::NNFamily::Yolo},
-    };
+    std::unordered_map<std::string, nn::NNFamily> nnFamilyMap;
 };
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver

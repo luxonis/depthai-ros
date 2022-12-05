@@ -20,7 +20,7 @@ class BaseParamHandler {
     };
     virtual ~BaseParamHandler(){};
     virtual dai::CameraControl setRuntimeParams(rclcpp::Node* node, const std::vector<rclcpp::Parameter>& params) = 0;
-    std::string getName(){
+    std::string getName() {
         return baseName;
     }
     template <typename T>
@@ -37,26 +37,33 @@ class BaseParamHandler {
     template <typename T>
     T declareAndLogParam(rclcpp::Node* node, const std::string& paramName, const std::vector<T>& value) {
         std::string full_name = baseName + "." + paramName;
-
-        logParam(node->get_logger(), full_name, value);
-
-        return node->declare_parameter<T>(full_name, value);
+        if(node->has_parameter(full_name)) {
+            return get_param<T>(node, paramName);
+        } else {
+            logParam(node->get_logger(), full_name, value);
+            return node->declare_parameter<T>(full_name, value);
+        }
     }
 
     template <typename T>
     T declareAndLogParam(rclcpp::Node* node, const std::string& paramName, T value) {
         std::string full_name = baseName + "." + paramName;
-
-        logParam(node->get_logger(), full_name, value);
-
-        return node->declare_parameter<T>(full_name, value);
+        if(node->has_parameter(full_name)) {
+            return get_param<T>(node, paramName);
+        } else {
+            logParam(node->get_logger(), full_name, value);
+            return node->declare_parameter<T>(full_name, value);
+        }
     }
     template <typename T>
     T declareAndLogParam(rclcpp::Node* node, const std::string& paramName, T value, rcl_interfaces::msg::ParameterDescriptor int_range) {
         std::string full_name = baseName + "." + paramName;
-
-        logParam(node->get_logger(), full_name, value);
-        return node->declare_parameter(full_name, value, int_range);
+        if(node->has_parameter(full_name)) {
+            return get_param<T>(node, full_name);
+        } else {
+            logParam(node->get_logger(), full_name, value);
+            return node->declare_parameter<T>(full_name, value);
+        }
     }
     template <typename T>
     inline void logParam(const rclcpp::Logger& logger, const std::string& name, T value) {
@@ -67,7 +74,7 @@ class BaseParamHandler {
     template <typename T>
     inline void logParam(const rclcpp::Logger& logger, const std::string& name, const std::vector<T>& value) {
         std::stringstream ss;
-        for(const auto &v : value) {
+        for(const auto& v : value) {
             ss << v << " ";
         }
         RCLCPP_INFO(logger, "Setting param %s with value %s", name.c_str(), ss.str().c_str());

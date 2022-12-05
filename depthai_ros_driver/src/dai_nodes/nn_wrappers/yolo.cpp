@@ -30,7 +30,6 @@ void Yolo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     xoutNN = pipeline->create<dai::node::XLinkOut>();
     xoutNN->setStreamName(nnQName);
     yoloNode->out.link(xoutNN->input);
-
 }
 
 void Yolo::setupQueues(std::shared_ptr<dai::Device> device) {
@@ -38,6 +37,9 @@ void Yolo::setupQueues(std::shared_ptr<dai::Device> device) {
     // nnPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
     nnQ->addCallback(std::bind(&Yolo::yoloCB, this, std::placeholders::_1, std::placeholders::_2));
     detPub = getROSNode()->create_publisher<vision_msgs::msg::Detection2DArray>("~/" + getName() + "/detections", 10);
+}
+void Yolo::closeQueues() {
+    nnQ->close();
 }
 
 void Yolo::yoloCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {

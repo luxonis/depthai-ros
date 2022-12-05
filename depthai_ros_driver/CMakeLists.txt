@@ -22,6 +22,7 @@ ament_auto_add_library(
   src/dai_nodes/nn_wrappers/segmentation.cpp
   src/dai_nodes/nn_wrappers/mobilenet.cpp
   src/dai_nodes/nn_wrappers/yolo.cpp
+  src/param_handlers/camera_param_handler.cpp
   src/param_handlers/imu_param_handler.cpp
   src/param_handlers/nn_param_handler.cpp
   src/param_handlers/rgb_param_handler.cpp

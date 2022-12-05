@@ -59,6 +59,16 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
     controlQ = device->getInputQueue(controlQName);
 }
 
+void RGB::closeQueues() {
+    if(paramHandler->get_param<bool>(getROSNode(), "i_publish_topic")) {
+        colorQ->close();
+        if(paramHandler->get_param<bool>(getROSNode(), "i_enable_preview")) {
+            previewQ->close();
+        }
+    }
+    controlQ->close();
+}
+
 void RGB::colorQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
     auto frame = std::dynamic_pointer_cast<dai::ImgFrame>(data);
     cv::Mat cv_frame = frame->getCvFrame();

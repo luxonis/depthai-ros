@@ -5,7 +5,14 @@
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-StereoParamHandler::StereoParamHandler(const std::string& name) : BaseParamHandler(name){};
+StereoParamHandler::StereoParamHandler(const std::string& name) : BaseParamHandler(name) {
+    depthPresetMap = {
+        {"HIGH_DENSITY", dai::node::StereoDepth::PresetMode::HIGH_DENSITY},
+        {"HIGH_ACCURACY", dai::node::StereoDepth::PresetMode::HIGH_ACCURACY},
+
+    };
+};
+StereoParamHandler::~StereoParamHandler() = default;
 void StereoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::StereoDepth> stereo) {
     declareAndLogParam<int>(node, "i_max_q_size", 4);
     stereo->setLeftRightCheck(declareAndLogParam<bool>(node, "i_lr_check", true));
@@ -14,8 +21,7 @@ void StereoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::
         stereo->setDepthAlign(dai::CameraBoardSocket::RGB);
         declareAndLogParam<int>(node, "i_width", 1920);
         declareAndLogParam<int>(node, "i_height", 1080);
-    }
-    else{
+    } else {
         declareAndLogParam<int>(node, "i_board_socket_id", 2);
         stereo->setDepthAlign(dai::CameraBoardSocket::RIGHT);
     }
@@ -38,7 +44,7 @@ void StereoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::
     config.postProcessing.decimationFilter.decimationFactor = declareAndLogParam<int>(node, "i_decimation_factor", 1);
     stereo->initialConfig.set(config);
 }
-dai::CameraControl StereoParamHandler::setRuntimeParams(rclcpp::Node* node,const std::vector<rclcpp::Parameter>& params) {
+dai::CameraControl StereoParamHandler::setRuntimeParams(rclcpp::Node* node, const std::vector<rclcpp::Parameter>& params) {
     dai::CameraControl ctrl;
     return ctrl;
 }

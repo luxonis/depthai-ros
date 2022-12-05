@@ -1,6 +1,5 @@
-#include "depthai_ros_driver/dai_nodes/spatial_detections.hpp"
-
 #include "cv_bridge/cv_bridge.h"
+#include "depthai_ros_driver/dai_nodes/spatial_detections.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 namespace depthai_ros_driver {
