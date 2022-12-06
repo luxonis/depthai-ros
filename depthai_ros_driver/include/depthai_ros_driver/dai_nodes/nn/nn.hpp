@@ -12,10 +12,6 @@
 namespace depthai_ros_driver {
 namespace dai_nodes {
 
-namespace link_types {
-enum class NNLinkType { input, inputDepth };
-};
-
 class NN : public BaseNode {
    public:
     explicit NN(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);

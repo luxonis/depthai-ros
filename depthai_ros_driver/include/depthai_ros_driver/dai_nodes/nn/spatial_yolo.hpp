@@ -9,14 +9,14 @@
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
+#include "vision_msgs/msg/detection3_d_array.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-namespace nn_wrappers {
-class Segmentation : public BaseNode {
+namespace nn {
+class SpatialYolo : public BaseNode {
    public:
-    Segmentation(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
-    virtual ~Segmentation() = default;
+    SpatialYolo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(const dai::Node::Input& in, int linkType = 0) override;
@@ -26,19 +26,17 @@ class Segmentation : public BaseNode {
     void closeQueues() override;
 
    private:
-    cv::Mat decodeDeeplab(cv::Mat mat);
-    void segmentationCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
+    void yoloCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
     std::vector<std::string> labelNames;
     image_transport::CameraPublisher nnPub;
-    sensor_msgs::msg::CameraInfo nnInfo;
-    std::shared_ptr<dai::node::NeuralNetwork> segNode;
+    std::shared_ptr<dai::node::YoloSpatialDetectionNetwork> yoloNode;
     std::shared_ptr<dai::node::ImageManip> imageManip;
+    rclcpp::Publisher<vision_msgs::msg::Detection3DArray>::SharedPtr detPub;
     std::unique_ptr<param_handlers::NNParamHandler> ph;
     std::shared_ptr<dai::DataOutputQueue> nnQ;
     std::shared_ptr<dai::node::XLinkOut> xoutNN;
     std::string nnQName;
 };
-
 }  // namespace nn_wrappers
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

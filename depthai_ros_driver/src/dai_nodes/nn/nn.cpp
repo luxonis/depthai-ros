@@ -1,9 +1,9 @@
-#include "depthai_ros_driver/dai_nodes/nn.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/nn.hpp"
 
 #include "cv_bridge/cv_bridge.h"
-#include "depthai_ros_driver/dai_nodes/nn_wrappers/mobilenet.hpp"
-#include "depthai_ros_driver/dai_nodes/nn_wrappers/segmentation.hpp"
-#include "depthai_ros_driver/dai_nodes/nn_wrappers/yolo.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/mobilenet.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/segmentation.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/yolo.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 
@@ -15,15 +15,15 @@ NN::NN(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::
     auto family = ph->getNNFamily(getROSNode());
     switch(family) {
         case param_handlers::nn::NNFamily::Yolo: {
-            nnNode = std::make_unique<dai_nodes::nn_wrappers::Yolo>(getName(), getROSNode(), pipeline);
+            nnNode = std::make_unique<dai_nodes::nn::Yolo>(getName(), getROSNode(), pipeline);
             break;
         }
         case param_handlers::nn::NNFamily::Mobilenet: {
-            nnNode = std::make_unique<dai_nodes::nn_wrappers::Mobilenet>(getName(), getROSNode(), pipeline);
+            nnNode = std::make_unique<dai_nodes::nn::Mobilenet>(getName(), getROSNode(), pipeline);
             break;
         }
         case param_handlers::nn::NNFamily::Segmentation: {
-            nnNode = std::make_unique<dai_nodes::nn_wrappers::Segmentation>(getName(), getROSNode(), pipeline);
+            nnNode = std::make_unique<dai_nodes::nn::Segmentation>(getName(), getROSNode(), pipeline);
             break;
         }
     }

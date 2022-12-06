@@ -1,4 +1,4 @@
-#include "depthai_ros_driver/dai_nodes/nn_wrappers/yolo.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/yolo.hpp"
 
 #include "cv_bridge/cv_bridge.h"
 #include "image_transport/camera_publisher.hpp"
@@ -8,7 +8,7 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-namespace nn_wrappers {
+namespace nn {
 
 Yolo::Yolo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_INFO(node->get_logger(), "Creating node %s", daiNodeName.c_str());
@@ -46,7 +46,8 @@ void Yolo::yoloCB(const std::string& name, const std::shared_ptr<dai::ADatatype>
     auto inDet = std::dynamic_pointer_cast<dai::ImgDetections>(data);
     auto detections = inDet->detections;
     vision_msgs::msg::Detection2DArray rosDet;
-
+    rosDet.header.stamp = getROSNode()->get_clock()->now();
+    rosDet.header.frame_id = std::string(getROSNode()->get_name()) + "_rgb_camera_optical_frame";
     rosDet.detections.resize(detections.size());
     auto labelMap = ph->getParam<std::vector<std::string>>(getROSNode(), "i_label_map");
     for(size_t i = 0; i < detections.size(); i++) {

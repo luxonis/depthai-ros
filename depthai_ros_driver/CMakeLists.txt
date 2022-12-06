@@ -18,11 +18,14 @@ ament_auto_add_library(
   src/dai_nodes/sensors/rgb.cpp
   src/dai_nodes/sensors/mono.cpp
   src/dai_nodes/sensors/sensor.cpp
-  src/dai_nodes/nn.cpp
   src/dai_nodes/stereo.cpp
-  src/dai_nodes/nn_wrappers/segmentation.cpp
-  src/dai_nodes/nn_wrappers/mobilenet.cpp
-  src/dai_nodes/nn_wrappers/yolo.cpp
+  src/dai_nodes/nn/nn.cpp
+  src/dai_nodes/nn/spatial_nn.cpp
+  src/dai_nodes/nn/segmentation.cpp
+  src/dai_nodes/nn/mobilenet.cpp
+  src/dai_nodes/nn/yolo.cpp
+  src/dai_nodes/nn/spatial_mobilenet.cpp
+  src/dai_nodes/nn/spatial_yolo.cpp
   src/param_handlers/camera_param_handler.cpp
   src/param_handlers/imu_param_handler.cpp
   src/param_handlers/nn_param_handler.cpp
@@ -61,6 +64,14 @@ install(
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
+)
+
+ament_python_install_package(${PROJECT_NAME})
+# Install Python executables
+install(
+  PROGRAMS
+  scripts/obj_pub.py
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 ament_export_include_directories(

@@ -2,11 +2,12 @@
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "depthai_ros_driver/dai_nodes/imu.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/nn.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/spatial_nn.hpp"
+#include "depthai_ros_driver/dai_nodes/stereo.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
-#include "depthai_ros_driver/dai_nodes/nn.hpp"
-#include "depthai_ros_driver/dai_nodes/spatial_detection.hpp"
-#include "depthai_ros_driver/dai_nodes/stereo.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/nn_helpers.hpp"
 
 namespace depthai_ros_driver {
 
@@ -64,14 +65,14 @@ void Camera::createPipeline() {
         switch(nn_type) {
             case param_handlers::camera::NNType::None:
                 break;
-            case param_handlers::camera::NNType::Default: {
+            case param_handlers::camera::NNType::RGB: {
                 auto nn = std::make_unique<dai_nodes::NN>("nn", this, pipeline);
                 rgb->link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
                 daiNodes.push_back(std::move(nn));
                 break;
             }
             case param_handlers::camera::NNType::Spatial: {
-                break;
+                RCLCPP_WARN(this->get_logger(), "Spatial NN selected, but configuration is RGB.");
             }
             default:
                 break;
@@ -84,13 +85,17 @@ void Camera::createPipeline() {
         switch(nn_type) {
             case param_handlers::camera::NNType::None:
                 break;
-            case param_handlers::camera::NNType::Default: {
+            case param_handlers::camera::NNType::RGB: {
                 auto nn = std::make_unique<dai_nodes::NN>("nn", this, pipeline);
                 rgb->link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
                 daiNodes.push_back(std::move(nn));
                 break;
             }
             case param_handlers::camera::NNType::Spatial: {
+                auto nn = std::make_unique<dai_nodes::SpatialNN>("nn", this, pipeline);
+                rgb->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::input)), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
+                stereo->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::inputDepth)));
+                daiNodes.push_back(std::move(nn));
                 break;
             }
             default:

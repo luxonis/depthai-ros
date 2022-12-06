@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "depthai/depthai.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
@@ -7,18 +9,15 @@
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
+#include "vision_msgs/msg/detection2_d_array.hpp"
+#include "vision_msgs/msg/detection3_d_array.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-
-namespace link_types {
-enum class SpatialDetectionLinkType { input, inputDepth };
-};
-
-class SpatialDetection : public BaseNode {
+namespace nn {
+class Yolo : public BaseNode {
    public:
-    explicit SpatialDetection(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
-    virtual ~SpatialDetection() = default;
+    Yolo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(const dai::Node::Input& in, int linkType = 0) override;
@@ -28,16 +27,19 @@ class SpatialDetection : public BaseNode {
     void closeQueues() override;
 
    private:
-    cv::Mat decodeDeeplab(cv::Mat mat);
-    void SpatialDetection_q_cb(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
-    image_transport::CameraPublisher spatial_detection_pub_;
-    sensor_msgs::msg::CameraInfo spatial_detection_info_;
-    std::shared_ptr<dai::node::SpatialDetectionNetwork> spatial_detection_node_;
-    std::unique_ptr<param_handlers::NNParamHandler> ph_;
-    std::shared_ptr<dai::DataOutputQueue> spatial_detection_q_;
-    std::shared_ptr<dai::node::XLinkOut> xout_spatial_detection_;
-    std::string spatial_detection_q_name_;
+    void yoloCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
+    std::vector<std::string> labelNames;
+    image_transport::CameraPublisher nnPub;
+    std::shared_ptr<dai::node::YoloDetectionNetwork> yoloNode;
+    std::shared_ptr<dai::node::ImageManip> imageManip;
+    rclcpp::Publisher<vision_msgs::msg::Detection2DArray>::SharedPtr detPub;
+    std::unique_ptr<param_handlers::NNParamHandler> ph;
+    std::shared_ptr<dai::DataOutputQueue> nnQ;
+    std::shared_ptr<dai::node::XLinkOut> xoutNN;
+    std::string nnQName;
 };
 
+
+}  // namespace nn_wrappers
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

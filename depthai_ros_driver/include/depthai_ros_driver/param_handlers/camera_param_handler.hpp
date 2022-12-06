@@ -9,7 +9,7 @@
 namespace depthai_ros_driver {
 namespace param_handlers {
 namespace camera {
-enum class NNType { None, Default, Spatial };
+enum class NNType { None, RGB, Spatial };
 }
 class CameraParamHandler : public BaseParamHandler {
    public:

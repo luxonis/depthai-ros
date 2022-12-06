@@ -51,6 +51,33 @@ void NNParamHandler::setNNParams(rclcpp::Node* node, nlohmann::json data, std::s
     }
 }
 
+void NNParamHandler::setNNParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<dai::node::MobileNetSpatialDetectionNetwork> nn) {
+    if(data["nn_config"].contains("confidence_threshold")) {
+        auto conf_threshold = data["nn_config"]["confidence_threshold"].get<float>();
+        nn->setConfidenceThreshold(conf_threshold);
+    }
+    auto labels = data["mappings"]["labels"].get<std::vector<std::string>>();
+    if(!labels.empty()) {
+        declareAndLogParam<std::vector<std::string>>(node, "i_label_map", labels);
+    }
+    setSpatialParams(node, data, nn);
+}
+void NNParamHandler::setNNParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<dai::node::YoloSpatialDetectionNetwork> nn) {
+    float conf_threshold = 0.5;
+    if(data["nn_config"].contains("confidence_threshold")) {
+        conf_threshold = data["nn_config"]["confidence_threshold"].get<float>();
+        nn->setConfidenceThreshold(conf_threshold);
+    }
+    auto labels = data["mappings"]["labels"].get<std::vector<std::string>>();
+    if(!labels.empty()) {
+        declareAndLogParam<std::vector<std::string>>(node, "i_label_map", labels);
+    }
+    setSpatialParams(node, data, nn);
+    if(data["nn_config"].contains("NN_specific_metadata")) {
+        setYoloParams(node, data, nn);
+    }
+}
+
 void NNParamHandler::setNNParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<dai::node::YoloDetectionNetwork> nn) {
     float conf_threshold = 0.5;
     if(data["nn_config"].contains("confidence_threshold")) {
@@ -62,35 +89,7 @@ void NNParamHandler::setNNParams(rclcpp::Node* node, nlohmann::json data, std::s
         declareAndLogParam<std::vector<std::string>>(node, "i_label_map", labels);
     }
     if(data["nn_config"].contains("NN_specific_metadata")) {
-        auto metadata = data["nn_config"]["NN_specific_metadata"];
-        int num_classes = 80;
-        if(metadata.contains("classes")) {
-            num_classes = metadata["classes"].get<int>();
-            nn->setNumClasses(num_classes);
-        }
-        int coordinates = 4;
-        if(metadata.contains("coordinates")) {
-            coordinates = metadata["coordinates"].get<int>();
-            nn->setCoordinateSize(coordinates);
-        }
-        std::vector<float> anchors = {10, 14, 23, 27, 37, 58, 81, 82, 135, 169, 344, 319};
-        if(metadata.contains("anchors")) {
-            anchors = metadata["anchors"].get<std::vector<float>>();
-            nn->setAnchors(anchors);
-        }
-        std::map<std::string, std::vector<int>> anchor_masks = {{"side13", {3, 4, 5}}, {"side26", {1, 2, 3}}};
-        if(metadata.contains("anchor_masks")) {
-            anchor_masks.clear();
-            for(auto& el : metadata["anchor_masks"].items()) {
-                anchor_masks.insert({el.key(), el.value()});
-            }
-        }
-        nn->setAnchorMasks(anchor_masks);
-        float iou_threshold = 0.5f;
-        if(metadata.contains("iou_threshold")) {
-            iou_threshold = metadata["iou_threshold"].get<float>();
-            nn->setIouThreshold(iou_threshold);
-        }
+        setYoloParams(node, data, nn);
     }
 }
 

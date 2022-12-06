@@ -31,7 +31,8 @@ def launch_setup(context, *args, **kwargs):
                 os.path.join(depthai_prefix, 'launch', 'example_nn.launch.py')),
                 launch_arguments={'tf_prefix': cam_name,
                             'mxid': mxid,
-                            'nn_type': nn}.items())
+                            'nn_family': nn
+                            'nn_type': 'rgb'}.items())
                             
         nodes.append(node)
     

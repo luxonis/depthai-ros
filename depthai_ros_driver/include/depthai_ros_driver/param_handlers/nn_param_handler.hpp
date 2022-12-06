@@ -28,6 +28,50 @@ class NNParamHandler : public BaseParamHandler {
     void setNNParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<dai::node::NeuralNetwork> nn);
     void setNNParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<dai::node::MobileNetDetectionNetwork> nn);
     void setNNParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<dai::node::YoloDetectionNetwork> nn);
+    void setNNParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<dai::node::MobileNetSpatialDetectionNetwork> nn);
+    void setNNParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<dai::node::YoloSpatialDetectionNetwork> nn);
+
+    template <typename T>
+    void setSpatialParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<T> nn) {
+        nn->setBoundingBoxScaleFactor(0.5);
+        nn->setDepthLowerThreshold(100);
+        nn->setDepthUpperThreshold(5000);
+    }
+
+    template <typename T>
+    void setYoloParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<T> nn) {
+        auto metadata = data["nn_config"]["NN_specific_metadata"];
+        int num_classes = 80;
+        if(metadata.contains("classes")) {
+            num_classes = metadata["classes"].get<int>();
+            nn->setNumClasses(num_classes);
+        }
+        int coordinates = 4;
+        if(metadata.contains("coordinates")) {
+            coordinates = metadata["coordinates"].get<int>();
+            nn->setCoordinateSize(coordinates);
+        }
+        std::vector<float> anchors = {10, 14, 23, 27, 37, 58, 81, 82, 135, 169, 344, 319};
+        if(metadata.contains("anchors")) {
+            anchors = metadata["anchors"].get<std::vector<float>>();
+            nn->setAnchors(anchors);
+        }
+        std::map<std::string, std::vector<int>> anchor_masks = {{"side13", {3, 4, 5}}, {"side26", {1, 2, 3}}};
+        if(metadata.contains("anchor_masks")) {
+            anchor_masks.clear();
+            for(auto& el : metadata["anchor_masks"].items()) {
+                anchor_masks.insert({el.key(), el.value()});
+            }
+        }
+        nn->setAnchorMasks(anchor_masks);
+        float iou_threshold = 0.5f;
+        if(metadata.contains("iou_threshold")) {
+            iou_threshold = metadata["iou_threshold"].get<float>();
+            nn->setIouThreshold(iou_threshold);
+        }
+    }
+
+    void setMobilenetParams() {}
 
     template <typename T>
     void parseConfigFile(rclcpp::Node* node, const std::string& path, std::shared_ptr<T> nn, std::shared_ptr<dai::node::ImageManip> imageManip) {

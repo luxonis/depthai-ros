@@ -18,9 +18,9 @@ def launch_setup(context, *args, **kwargs):
 
     nn_config_path = os.path.join(depthai_prefix, "config", "nn", LaunchConfiguration(
         "nn_family").perform(context)+".json")
+        
     mxid = LaunchConfiguration('mxid').perform(context)
-    nn_type = LaunchConfiguration('nn_type').perform(context)
-    
+
     camera_model = LaunchConfiguration('camera_model',  default = 'OAK-D')
     tf_prefix    = LaunchConfiguration('tf_prefix',     default = 'oak')
     tf_prefix_str = LaunchConfiguration('tf_prefix').perform(context)
@@ -60,20 +60,23 @@ def launch_setup(context, *args, **kwargs):
                         name=tf_prefix_str,
                         parameters=[{
                             "camera.i_mx_id": mxid,
-                            "camera.i_nn_type": nn_type,
                             "nn.i_nn_config_path": nn_config_path
                             }],
                     ),
             ],
             output="screen",
         ),
+        Node(
+                package="depthai_ros_driver",
+                executable="obj_pub.py",
+                output="screen",
+            ),
     ]
 
 
 def generate_launch_description():
     declared_arguments = [
         DeclareLaunchArgument("nn_family", default_value="yolo"),
-        DeclareLaunchArgument("nn_type", default_value="rgb"),
         DeclareLaunchArgument("tf_prefix", default_value="oak"),
         DeclareLaunchArgument("use_rviz", default_value="False"),
         DeclareLaunchArgument("parent_frame", default_value="oak-d-base-frame"),
@@ -83,3 +86,6 @@ def generate_launch_description():
     return LaunchDescription(
         declared_arguments + [OpaqueFunction(function=launch_setup)]
     )
+
+
+

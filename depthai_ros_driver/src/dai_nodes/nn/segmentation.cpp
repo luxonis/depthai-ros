@@ -1,4 +1,4 @@
-#include "depthai_ros_driver/dai_nodes/nn_wrappers/segmentation.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/segmentation.hpp"
 
 #include "cv_bridge/cv_bridge.h"
 #include "image_transport/camera_publisher.hpp"
@@ -8,7 +8,7 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-namespace nn_wrappers {
+namespace nn {
 
 Segmentation::Segmentation(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline)
     : BaseNode(daiNodeName, node, pipeline) {
@@ -53,6 +53,9 @@ void Segmentation::segmentationCB(const std::string& name, const std::shared_ptr
     cv_bridge::CvImage imgBridge;
     sensor_msgs::msg::Image img_msg;
     std_msgs::msg::Header header;
+    header.stamp = getROSNode()->get_clock()->now();
+    header.frame_id = std::string(getROSNode()->get_name()) + "_rgb_camera_optical_frame";
+    nnInfo.header = header;
     imgBridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, cv_frame);
     imgBridge.toImageMsg(img_msg);
     nnPub.publish(img_msg, nnInfo);

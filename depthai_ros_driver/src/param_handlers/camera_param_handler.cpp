@@ -16,7 +16,7 @@ CameraParamHandler::CameraParamHandler(const std::string& name) : BaseParamHandl
     nnTypeMap = {
         {"", camera::NNType::None},
         {"none", camera::NNType::None},
-        {"default", camera::NNType::Default},
+        {"rgn", camera::NNType::RGB},
         {"spatial", camera::NNType::Spatial},
     };
 };
@@ -31,7 +31,7 @@ dai::UsbSpeed CameraParamHandler::getUSBSpeed(rclcpp::Node* node) {
 void CameraParamHandler::declareParams(rclcpp::Node* node) {
     declareAndLogParam<int>(node, "i_max_q_size", 4);
     declareAndLogParam<std::string>(node, "i_pipeline_type", "RGBD");
-    declareAndLogParam<std::string>(node, "i_nn_type", "default");
+    declareAndLogParam<std::string>(node, "i_nn_type", "spatial");
     declareAndLogParam<bool>(node, "i_enable_imu", true);
     declareAndLogParam<bool>(node, "i_enable_ir", true);
     declareAndLogParam<std::string>(node, "i_usb_speed", "SUPER_PLUS");
