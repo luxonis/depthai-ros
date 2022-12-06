@@ -13,11 +13,14 @@ RGBParamHandler::RGBParamHandler(const std::string& name) : BaseParamHandler(nam
     };
 };
 RGBParamHandler::~RGBParamHandler() = default;
-void RGBParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::ColorCamera> color_cam) {
+void RGBParamHandler::declareParams(rclcpp::Node* node,
+                                    std::shared_ptr<dai::node::ColorCamera> color_cam,
+                                    dai::CameraBoardSocket socket,
+                                    dai_nodes::sensor_helpers::ImageSensor sensor) {
     declareAndLogParam<int>(node, "i_max_q_size", 4);
     declareAndLogParam<bool>(node, "i_publish_topic", true);
     declareAndLogParam<bool>(node, "i_enable_preview", true);
-    declareAndLogParam<int>(node, "i_board_socket_id", 0);
+    declareAndLogParam<int>(node, "i_board_socket_id", static_cast<int>(socket));
     color_cam->setFps(declareAndLogParam<double>(node, "i_fps", 30.0));
     size_t preview_size = declareAndLogParam<int>(node, "i_preview_size", 256);
     color_cam->setPreviewSize(preview_size, preview_size);

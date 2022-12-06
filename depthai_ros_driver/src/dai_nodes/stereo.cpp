@@ -4,15 +4,21 @@
 #include "depthai_bridge/ImageConverter.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor.hpp"
 namespace depthai_ros_driver {
 namespace dai_nodes {
-Stereo::Stereo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
+Stereo::Stereo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device) : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_INFO(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     stereoCamNode = pipeline->create<dai::node::StereoDepth>();
+    left = std::make_unique<Sensor>("left", node, pipeline, device, dai::CameraBoardSocket::LEFT);
+    right = std::make_unique<Sensor>("right", node, pipeline, device, dai::CameraBoardSocket::RIGHT);
+
     paramHandler = std::make_unique<param_handlers::StereoParamHandler>(daiNodeName);
     paramHandler->declareParams(node, stereoCamNode);
     setXinXout(pipeline);
+    left->link(stereoCamNode->left);
+    right->link(stereoCamNode->right);
     RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
 };
 void Stereo::setNames() {
@@ -26,6 +32,8 @@ void Stereo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 }
 
 void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
+    left->setupQueues(device);
+    right->setupQueues(device);
     stereoQ = device->getOutputQueue(stereoQName, paramHandler->get_param<int>(getROSNode(), "i_max_q_size"), false);
     stereoQ->addCallback(std::bind(&Stereo::stereoQCB, this, std::placeholders::_1, std::placeholders::_2));
     stereoPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
@@ -36,6 +44,8 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
                                                    paramHandler->get_param<int>(getROSNode(), "i_height"));
 }
 void Stereo::closeQueues() {
+    left->closeQueues();
+    right->closeQueues();
     stereoQ->close();
 }
 void Stereo::stereoQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {

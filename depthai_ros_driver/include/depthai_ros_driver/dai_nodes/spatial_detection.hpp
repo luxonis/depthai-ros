@@ -38,11 +38,6 @@ class SpatialDetection : public BaseNode {
     std::shared_ptr<dai::node::XLinkOut> xout_spatial_detection_;
     std::string spatial_detection_q_name_;
 };
-class SpatialDetectionFactory : public BaseNodeFactory {
-   public:
-    std::unique_ptr<BaseNode> create(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) {
-        return std::make_unique<SpatialDetection>(daiNodeName, node, pipeline);
-    };
-};
+
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

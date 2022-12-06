@@ -13,7 +13,7 @@ namespace dai_nodes {
 
 class Mono : public BaseNode {
    public:
-    explicit Mono(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
+    explicit Mono(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, dai::CameraBoardSocket socket,sensor_helpers::ImageSensor sensor);
     virtual ~Mono() = default;
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
@@ -35,11 +35,6 @@ class Mono : public BaseNode {
     std::shared_ptr<dai::node::XLinkIn> xinControl;
     std::string monoQName, controlQName;
 };
-class MonoFactory : public BaseNodeFactory {
-   public:
-    std::unique_ptr<BaseNode> create(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) {
-        return std::make_unique<Mono>(daiNodeName, node, pipeline);
-    };
-};
+
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

@@ -15,8 +15,9 @@ ament_auto_add_library(
   ${PROJECT_NAME} SHARED
   src/camera.cpp
   src/dai_nodes/imu.cpp
-  src/dai_nodes/rgb.cpp
-  src/dai_nodes/mono.cpp
+  src/dai_nodes/sensors/rgb.cpp
+  src/dai_nodes/sensors/mono.cpp
+  src/dai_nodes/sensors/sensor.cpp
   src/dai_nodes/nn.cpp
   src/dai_nodes/stereo.cpp
   src/dai_nodes/nn_wrappers/segmentation.cpp

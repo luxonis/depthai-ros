@@ -57,7 +57,7 @@ def launch_setup(context, *args, **kwargs):
                         plugin="depthai_ros_driver::Camera",
                         name=tf_prefix_str,
                         parameters=[{
-                            "i_mx_id": mxid,
+                            "camera.i_mx_id": mxid,
                             "nn.i_nn_config_path": nn_config_path
                             }],
                     ),

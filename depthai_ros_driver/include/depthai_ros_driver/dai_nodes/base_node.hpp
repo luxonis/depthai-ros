@@ -39,10 +39,5 @@ class BaseNode {
     rclcpp::Node* baseNode;
     std::string baseDAINodeName;
 };
-class BaseNodeFactory {
-   public:
-    virtual std::unique_ptr<BaseNode> create(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) = 0;
-    virtual ~BaseNodeFactory(){};
-};
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

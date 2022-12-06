@@ -2,6 +2,7 @@
 
 #include "depthai/depthai.hpp"
 #include "depthai/pipeline/nodes.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 
 namespace depthai_ros_driver {
 namespace param_handlers {
@@ -14,19 +15,12 @@ MonoParamHandler::MonoParamHandler(const std::string& name) : BaseParamHandler(n
     };
 };
 MonoParamHandler::~MonoParamHandler() = default;
-void MonoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::MonoCamera> mono_cam) {
+void MonoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::MonoCamera> mono_cam, dai::CameraBoardSocket socket, dai_nodes::sensor_helpers::ImageSensor) {
     declareAndLogParam<int>(node, "i_max_q_size", 4);
     declareAndLogParam<bool>(node, "i_publish_topic", true);
-    int socket;
-    if(getName() == "left") {
-        socket = static_cast<int>(dai::CameraBoardSocket::LEFT);
-    } else if(getName() == "right") {
-        socket = static_cast<int>(dai::CameraBoardSocket::RIGHT);
-    } else {
-        socket = static_cast<int>(dai::CameraBoardSocket::AUTO);
-    };
-    socket = declareAndLogParam<int>(node, "i_board_socket_id", socket);
-    mono_cam->setBoardSocket(static_cast<dai::CameraBoardSocket>(socket));
+
+    declareAndLogParam<int>(node, "i_board_socket_id", static_cast<int>(socket));
+    mono_cam->setBoardSocket(socket);
     mono_cam->setFps(declareAndLogParam<double>(node, "i_fps", 30.0));
 
     mono_cam->setResolution(monoResolutionMap.at(declareAndLogParam<std::string>(node, "i_resolution", "720")));

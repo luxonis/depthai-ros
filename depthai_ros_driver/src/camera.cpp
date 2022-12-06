@@ -2,9 +2,9 @@
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "depthai_ros_driver/dai_nodes/imu.hpp"
-#include "depthai_ros_driver/dai_nodes/mono.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/nn.hpp"
-#include "depthai_ros_driver/dai_nodes/rgb.hpp"
 #include "depthai_ros_driver/dai_nodes/spatial_detection.hpp"
 #include "depthai_ros_driver/dai_nodes/stereo.hpp"
 
@@ -45,7 +45,7 @@ void Camera::getDeviceType() {
     auto name = device->getDeviceName();
     RCLCPP_INFO(this->get_logger(), "Device type: %s", name.c_str());
     for(auto& sensor : device->getCameraSensorNames()) {
-        RCLCPP_INFO(this->get_logger(), "Socket %d - %s", sensor.first, sensor.second.c_str());
+        RCLCPP_INFO(this->get_logger(), "Socket %d - %s", static_cast<int>(sensor.first), sensor.second.c_str());
     }
     auto ir_drivers = device->getIrDrivers();
     if (ir_drivers.empty()){
@@ -54,24 +54,18 @@ void Camera::getDeviceType() {
     else {
         RCLCPP_INFO(this->get_logger(), "IR Drivers present");
     }
-    device.reset();
+
 }
 
 void Camera::createPipeline() {
-    dai_nodes::RGBFactory rgbFac;
-    dai_nodes::MonoFactory monoFac;
-    dai_nodes::StereoFactory stereoFac;
-    dai_nodes::ImuFactory imuFac;
-    dai_nodes::NNFactory nnFac;
-    dai_nodes::SpatialDetectionFactory spat_fac;
     if(paramHandler->get_param<std::string>(this, "i_pipeline_type") == "RGB") {
-        auto rgb = rgbFac.create("color", this, pipeline);
+        auto rgb = std::make_unique<dai_nodes::Sensor>("color", this, pipeline, device, dai::CameraBoardSocket::RGB);
         auto nn_type = paramHandler->getNNType(this);
         switch(nn_type) {
             case param_handlers::camera::NNType::None:
                 break;
             case param_handlers::camera::NNType::Default: {
-                auto nn = nnFac.create("nn", this, pipeline);
+                auto nn = std::make_unique<dai_nodes::NN>("nn", this, pipeline);
                 rgb->link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
                 daiNodes.push_back(std::move(nn));
                 break;
@@ -84,21 +78,14 @@ void Camera::createPipeline() {
         }
         daiNodes.push_back(std::move(rgb));
     } else if(paramHandler->get_param<std::string>(this, "i_pipeline_type") == "RGBD") {
-        auto rgb = rgbFac.create("color", this, pipeline);
-        auto mono_left = monoFac.create("left", this, pipeline);
-        auto mono_right = monoFac.create("right", this, pipeline);
-        auto stereo = stereoFac.create("stereo", this, pipeline);
-        mono_left->link(stereo->getInput(static_cast<int>(dai_nodes::link_types::StereoLinkType::left)),
-                        static_cast<int>(dai_nodes::link_types::StereoLinkType::left));
-        mono_right->link(stereo->getInput(static_cast<int>(dai_nodes::link_types::StereoLinkType::right)),
-                         static_cast<int>(dai_nodes::link_types::StereoLinkType::right));
-
+        auto rgb = std::make_unique<dai_nodes::Sensor>("color", this, pipeline,device, dai::CameraBoardSocket::RGB);
+        auto stereo = std::make_unique<dai_nodes::Stereo>("stereo", this, pipeline, device);
         auto nn_type = paramHandler->getNNType(this);
         switch(nn_type) {
             case param_handlers::camera::NNType::None:
                 break;
             case param_handlers::camera::NNType::Default: {
-                auto nn = nnFac.create("nn", this, pipeline);
+                auto nn = std::make_unique<dai_nodes::NN>("nn", this, pipeline);
                 rgb->link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
                 daiNodes.push_back(std::move(nn));
                 break;
@@ -109,10 +96,7 @@ void Camera::createPipeline() {
             default:
                 break;
         }
-
         daiNodes.push_back(std::move(rgb));
-        daiNodes.push_back(std::move(mono_right));
-        daiNodes.push_back(std::move(mono_left));
         daiNodes.push_back(std::move(stereo));
     } else {
         std::string configuration =
@@ -120,9 +104,10 @@ void Camera::createPipeline() {
         throw std::runtime_error("UNKNOWN PIPELINE TYPE SPECIFIED/CAMERA DOESN'T SUPPORT GIVEN PIPELINE. Configuration: " + configuration);
     }
     if(paramHandler->get_param<bool>(this, "i_enable_imu")) {
-        auto imu = imuFac.create("imu", this, pipeline);
+        auto imu = std::make_unique<dai_nodes::Imu>("imu", this, pipeline);
         daiNodes.push_back(std::move(imu));
     }
+    device.reset();
     RCLCPP_INFO(this->get_logger(), "Finished setting up pipeline.");
 }
 

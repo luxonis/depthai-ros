@@ -32,11 +32,6 @@ class NN : public BaseNode {
     std::unique_ptr<param_handlers::NNParamHandler> paramHandler;
     std::unique_ptr<BaseNode> nnNode;
 };
-class NNFactory : public BaseNodeFactory {
-   public:
-    std::unique_ptr<BaseNode> create(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) {
-        return std::make_unique<NN>(daiNodeName, node, pipeline);
-    };
-};
+
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

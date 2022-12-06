@@ -79,7 +79,7 @@ def launch_setup(context, *args, **kwargs):
                         package="depthai_ros_driver",
                         plugin="depthai_ros_driver::Camera",
                         name=tf_prefix_str,
-                        parameters=[{"i_nn_type": "none"}],
+                        parameters=[{"camera.i_nn_type": "none"}],
                     ),
             ],
             output="screen",

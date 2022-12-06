@@ -3,6 +3,7 @@
 #include "depthai/depthai.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/param_handlers/rgb_param_handler.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -10,12 +11,10 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-namespace link_types {
-enum class RGBLinkType { color, preview };
-};
+
 class RGB : public BaseNode {
    public:
-    explicit RGB(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
+    explicit RGB(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, dai::CameraBoardSocket socket,sensor_helpers::ImageSensor sensor);
     virtual ~RGB() = default;
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
@@ -37,11 +36,6 @@ class RGB : public BaseNode {
     std::shared_ptr<dai::node::XLinkIn> xinControl;
     std::string colorQName, previewQName, controlQName;
 };
-class RGBFactory : public BaseNodeFactory {
-   public:
-    std::unique_ptr<BaseNode> create(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) {
-        return std::make_unique<RGB>(daiNodeName, node, pipeline);
-    };
-};
+
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

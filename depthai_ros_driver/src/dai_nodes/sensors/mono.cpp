@@ -1,17 +1,23 @@
-#include "depthai_ros_driver/dai_nodes/mono.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/mono.hpp"
 
 #include "cv_bridge/cv_bridge.h"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
+
 namespace depthai_ros_driver {
 namespace dai_nodes {
-Mono::Mono(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
+Mono::Mono(const std::string& daiNodeName,
+           rclcpp::Node* node,
+           std::shared_ptr<dai::Pipeline> pipeline,
+           dai::CameraBoardSocket socket,
+           dai_nodes::sensor_helpers::ImageSensor sensor)
+    : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_INFO(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     monoCamNode = pipeline->create<dai::node::MonoCamera>();
     paramHandler = std::make_unique<param_handlers::MonoParamHandler>(daiNodeName);
-    paramHandler->declareParams(node, monoCamNode);
+    paramHandler->declareParams(node, monoCamNode, socket, sensor);
     setXinXout(pipeline);
     RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
 };

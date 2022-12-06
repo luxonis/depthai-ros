@@ -13,20 +13,17 @@ NN::NN(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::
     RCLCPP_INFO(node->get_logger(), "Creating node %s base", daiNodeName.c_str());
     paramHandler = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
     auto family = paramHandler->getNNFamily(getROSNode());
-    nn_wrappers::YoloFactory yoloFac;
-    nn_wrappers::MobilenetFactory mobFac;
-    nn_wrappers::SegmentationFactory segFac;
     switch(family) {
         case param_handlers::nn::NNFamily::Yolo: {
-            nnNode = yoloFac.create(getName(), getROSNode(), pipeline);
+            nnNode = std::make_unique<dai_nodes::nn_wrappers::Yolo>(getName(), getROSNode(), pipeline);
             break;
         }
         case param_handlers::nn::NNFamily::Mobilenet: {
-            nnNode = mobFac.create(getName(), getROSNode(), pipeline);
+            nnNode = std::make_unique<dai_nodes::nn_wrappers::Mobilenet>(getName(), getROSNode(), pipeline);
             break;
         }
         case param_handlers::nn::NNFamily::Segmentation: {
-            nnNode = segFac.create(getName(), getROSNode(), pipeline);
+            nnNode = std::make_unique<dai_nodes::nn_wrappers::Segmentation>(getName(), getROSNode(), pipeline);
             break;
         }
     }

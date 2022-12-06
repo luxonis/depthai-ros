@@ -38,12 +38,7 @@ class Segmentation : public BaseNode {
     std::shared_ptr<dai::node::XLinkOut> xoutNN;
     std::string nnQName;
 };
-class SegmentationFactory : public BaseNodeFactory {
-   public:
-    std::unique_ptr<BaseNode> create(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) {
-        return std::make_unique<Segmentation>(daiNodeName, node, pipeline);
-    };
-};
+
 }  // namespace nn_wrappers
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

@@ -15,7 +15,7 @@ enum class StereoLinkType { left, right };
 };
 class Stereo : public BaseNode {
    public:
-    explicit Stereo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
+    explicit Stereo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device);
     virtual ~Stereo() = default;
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
@@ -30,6 +30,8 @@ class Stereo : public BaseNode {
     image_transport::CameraPublisher stereoPub;
     sensor_msgs::msg::CameraInfo stereoInfo;
     std::shared_ptr<dai::node::StereoDepth> stereoCamNode;
+    std::unique_ptr<BaseNode> left;
+    std::unique_ptr<BaseNode> right;
     std::unique_ptr<param_handlers::StereoParamHandler> paramHandler;
     std::shared_ptr<dai::DataOutputQueue> stereoQ;
     std::shared_ptr<dai::DataInputQueue> controlQ;
@@ -37,11 +39,6 @@ class Stereo : public BaseNode {
     std::shared_ptr<dai::node::XLinkIn> xinControl;
     std::string stereoQName;
 };
-class StereoFactory : public BaseNodeFactory {
-   public:
-    std::unique_ptr<BaseNode> create(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) {
-        return std::make_unique<Stereo>(daiNodeName, node, pipeline);
-    };
-};
+
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

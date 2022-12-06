@@ -1,4 +1,4 @@
-#include "depthai_ros_driver/dai_nodes/rgb.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/rgb.hpp"
 
 #include "cv_bridge/cv_bridge.h"
 #include "depthai_bridge/ImageConverter.hpp"
@@ -7,12 +7,17 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-RGB::RGB(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
+RGB::RGB(const std::string& daiNodeName,
+         rclcpp::Node* node,
+         std::shared_ptr<dai::Pipeline> pipeline,
+         dai::CameraBoardSocket socket = dai::CameraBoardSocket::RGB,
+         sensor_helpers::ImageSensor sensor = {"IMX378", {"12mp", "4k"}, true})
+    : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_INFO(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     colorCamNode = pipeline->create<dai::node::ColorCamera>();
     paramHandler = std::make_unique<param_handlers::RGBParamHandler>(daiNodeName);
-    paramHandler->declareParams(node, colorCamNode);
+    paramHandler->declareParams(node, colorCamNode, socket, sensor);
     setXinXout(pipeline);
     RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
 };

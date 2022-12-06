@@ -17,12 +17,12 @@ void StereoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::
     declareAndLogParam<int>(node, "i_max_q_size", 4);
     stereo->setLeftRightCheck(declareAndLogParam<bool>(node, "i_lr_check", true));
     if(declareAndLogParam<bool>(node, "i_align_depth", true)) {
-        declareAndLogParam<int>(node, "i_board_socket_id", 0);
+        declareAndLogParam<int>(node, "i_board_socket_id", static_cast<int>(dai::CameraBoardSocket::RGB));
         stereo->setDepthAlign(dai::CameraBoardSocket::RGB);
         declareAndLogParam<int>(node, "i_width", 1920);
         declareAndLogParam<int>(node, "i_height", 1080);
     } else {
-        declareAndLogParam<int>(node, "i_board_socket_id", 2);
+        declareAndLogParam<int>(node, "i_board_socket_id", static_cast<int>(dai::CameraBoardSocket::RIGHT));
         stereo->setDepthAlign(dai::CameraBoardSocket::RIGHT);
     }
     stereo->setDefaultProfilePreset(depthPresetMap.at(declareAndLogParam<std::string>(node, "i_depth_preset", "HIGH_DENSITY")));
