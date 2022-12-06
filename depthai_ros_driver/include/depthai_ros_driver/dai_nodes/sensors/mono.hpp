@@ -28,7 +28,7 @@ class Mono : public BaseNode {
     image_transport::CameraPublisher monoPub;
     sensor_msgs::msg::CameraInfo monoInfo;
     std::shared_ptr<dai::node::MonoCamera> monoCamNode;
-    std::unique_ptr<param_handlers::MonoParamHandler> paramHandler;
+    std::unique_ptr<param_handlers::MonoParamHandler> ph;
     std::shared_ptr<dai::DataOutputQueue> monoQ;
     std::shared_ptr<dai::DataInputQueue> controlQ;
     std::shared_ptr<dai::node::XLinkOut> xoutMono;

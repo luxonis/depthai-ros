@@ -33,7 +33,7 @@ class Yolo : public BaseNode {
     std::shared_ptr<dai::node::YoloDetectionNetwork> yoloNode;
     std::shared_ptr<dai::node::ImageManip> imageManip;
     rclcpp::Publisher<vision_msgs::msg::Detection2DArray>::SharedPtr detPub;
-    std::unique_ptr<param_handlers::NNParamHandler> paramHandler;
+    std::unique_ptr<param_handlers::NNParamHandler> ph;
     std::shared_ptr<dai::DataOutputQueue> nnQ;
     std::shared_ptr<dai::node::XLinkOut> xoutNN;
     std::string nnQName;

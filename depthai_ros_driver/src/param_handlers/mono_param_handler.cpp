@@ -35,19 +35,19 @@ void MonoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::no
 dai::CameraControl MonoParamHandler::setRuntimeParams(rclcpp::Node* node, const std::vector<rclcpp::Parameter>& params) {
     dai::CameraControl ctrl;
     for(const auto& p : params) {
-        if(p.get_name() == get_full_paramName("r_set_man_exposure")) {
+        if(p.get_name() == getFullParamName("r_set_man_exposure")) {
             if(p.get_value<bool>()) {
-                ctrl.setManualExposure(get_param<int>(node, "r_exposure"), get_param<int>(node, "r_iso"));
+                ctrl.setManualExposure(getParam<int>(node, "r_exposure"), getParam<int>(node, "r_iso"));
             } else {
                 ctrl.setAutoExposureEnable();
             }
-        } else if(p.get_name() == get_full_paramName("r_exposure")) {
-            if(get_param<bool>(node, "r_set_man_exposure")) {
-                ctrl.setManualExposure(p.get_value<int>(), get_param<int>(node, "r_iso"));
+        } else if(p.get_name() == getFullParamName("r_exposure")) {
+            if(getParam<bool>(node, "r_set_man_exposure")) {
+                ctrl.setManualExposure(p.get_value<int>(), getParam<int>(node, "r_iso"));
             }
-        } else if(p.get_name() == get_full_paramName("r_iso")) {
-            if(get_param<bool>(node, "r_set_man_exposure")) {
-                ctrl.setManualExposure(get_param<int>(node, "r_exposure"), p.get_value<int>());
+        } else if(p.get_name() == getFullParamName("r_iso")) {
+            if(getParam<bool>(node, "r_set_man_exposure")) {
+                ctrl.setManualExposure(getParam<int>(node, "r_exposure"), p.get_value<int>());
             }
         }
         return ctrl;

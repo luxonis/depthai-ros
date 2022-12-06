@@ -25,7 +25,7 @@ class Imu : public BaseNode {
     void imuQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
     rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imuPub;
     std::shared_ptr<dai::node::IMU> imuNode;
-    std::unique_ptr<param_handlers::ImuParamHandler> paramHandler;
+    std::unique_ptr<param_handlers::ImuParamHandler> ph;
     std::shared_ptr<dai::DataOutputQueue> imuQ;
     std::shared_ptr<dai::node::XLinkOut> xoutImu;
     std::string imuQName;

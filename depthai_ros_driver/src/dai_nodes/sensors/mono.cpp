@@ -16,8 +16,8 @@ Mono::Mono(const std::string& daiNodeName,
     RCLCPP_INFO(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     monoCamNode = pipeline->create<dai::node::MonoCamera>();
-    paramHandler = std::make_unique<param_handlers::MonoParamHandler>(daiNodeName);
-    paramHandler->declareParams(node, monoCamNode, socket, sensor);
+    ph = std::make_unique<param_handlers::MonoParamHandler>(daiNodeName);
+    ph->declareParams(node, monoCamNode, socket, sensor);
     setXinXout(pipeline);
     RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
 };
@@ -27,7 +27,7 @@ void Mono::setNames() {
 }
 
 void Mono::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
-    if(paramHandler->get_param<bool>(getROSNode(), "i_publish_topic")) {
+    if(ph->getParam<bool>(getROSNode(), "i_publish_topic")) {
         xoutMono = pipeline->create<dai::node::XLinkOut>();
         xoutMono->setStreamName(monoQName);
         monoCamNode->out.link(xoutMono->input);
@@ -38,20 +38,20 @@ void Mono::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 }
 
 void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
-    if(paramHandler->get_param<bool>(getROSNode(), "i_publish_topic")) {
-        monoQ = device->getOutputQueue(monoQName, paramHandler->get_param<int>(getROSNode(), "i_max_q_size"), false);
+    if(ph->getParam<bool>(getROSNode(), "i_publish_topic")) {
+        monoQ = device->getOutputQueue(monoQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
         monoQ->addCallback(std::bind(&Mono::monoQCB, this, std::placeholders::_1, std::placeholders::_2));
         monoPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
         auto calibHandler = device->readCalibration();
         monoInfo = dai::ros::calibrationToCameraInfo(calibHandler,
-                                                     static_cast<dai::CameraBoardSocket>(paramHandler->get_param<int>(getROSNode(), "i_board_socket_id")),
-                                                     paramHandler->get_param<int>(getROSNode(), "i_width"),
-                                                     paramHandler->get_param<int>(getROSNode(), "i_height"));
+                                                     static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
+                                                     ph->getParam<int>(getROSNode(), "i_width"),
+                                                     ph->getParam<int>(getROSNode(), "i_height"));
     }
     controlQ = device->getInputQueue(controlQName);
 }
 void Mono::closeQueues() {
-    if(paramHandler->get_param<bool>(getROSNode(), "i_publish_topic")) {
+    if(ph->getParam<bool>(getROSNode(), "i_publish_topic")) {
         monoQ->close();
     }
     controlQ->close();
@@ -81,7 +81,7 @@ dai::Node::Input Mono::getInput(int linkType) {
 }
 
 void Mono::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    auto ctrl = paramHandler->setRuntimeParams(getROSNode(), params);
+    auto ctrl = ph->setRuntimeParams(getROSNode(), params);
     controlQ->send(ctrl);
 }
 

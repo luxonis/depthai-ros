@@ -15,8 +15,8 @@ Yolo::Yolo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<d
     setNames();
     yoloNode = pipeline->create<dai::node::YoloDetectionNetwork>();
     imageManip = pipeline->create<dai::node::ImageManip>();
-    paramHandler = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
-    paramHandler->declareParams(node, yoloNode, imageManip);
+    ph = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
+    ph->declareParams(node, yoloNode, imageManip);
     RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
     imageManip->out.link(yoloNode->input);
     setXinXout(pipeline);
@@ -33,7 +33,7 @@ void Yolo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 }
 
 void Yolo::setupQueues(std::shared_ptr<dai::Device> device) {
-    nnQ = device->getOutputQueue(nnQName, paramHandler->get_param<int>(getROSNode(), "i_max_q_size"), false);
+    nnQ = device->getOutputQueue(nnQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
     // nnPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
     nnQ->addCallback(std::bind(&Yolo::yoloCB, this, std::placeholders::_1, std::placeholders::_2));
     detPub = getROSNode()->create_publisher<vision_msgs::msg::Detection2DArray>("~/" + getName() + "/detections", 10);
@@ -48,7 +48,7 @@ void Yolo::yoloCB(const std::string& name, const std::shared_ptr<dai::ADatatype>
     vision_msgs::msg::Detection2DArray rosDet;
 
     rosDet.detections.resize(detections.size());
-    auto labelMap = paramHandler->get_param<std::vector<std::string>>(getROSNode(), "i_label_map");
+    auto labelMap = ph->getParam<std::vector<std::string>>(getROSNode(), "i_label_map");
     for(size_t i = 0; i < detections.size(); i++) {
         uint16_t label = detections[i].label;
         std::string labelName = std::to_string(label);
@@ -86,7 +86,7 @@ dai::Node::Input Yolo::getInput(int linkType) {
 }
 
 void Yolo::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    paramHandler->setRuntimeParams(getROSNode(), params);
+    ph->setRuntimeParams(getROSNode(), params);
 }
 }  // namespace nn_wrappers
 }  // namespace dai_nodes

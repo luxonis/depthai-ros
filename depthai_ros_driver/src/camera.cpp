@@ -11,8 +11,8 @@
 namespace depthai_ros_driver {
 
 Camera::Camera(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : rclcpp::Node("camera", options) {
-    paramHandler = std::make_unique<param_handlers::CameraParamHandler>("camera");
-    paramHandler->declareParams(this);
+    ph = std::make_unique<param_handlers::CameraParamHandler>("camera");
+    ph->declareParams(this);
     onConfigure();
 }
 void Camera::onConfigure() {
@@ -58,9 +58,9 @@ void Camera::getDeviceType() {
 }
 
 void Camera::createPipeline() {
-    if(paramHandler->get_param<std::string>(this, "i_pipeline_type") == "RGB") {
+    if(ph->getParam<std::string>(this, "i_pipeline_type") == "RGB") {
         auto rgb = std::make_unique<dai_nodes::Sensor>("color", this, pipeline, device, dai::CameraBoardSocket::RGB);
-        auto nn_type = paramHandler->getNNType(this);
+        auto nn_type = ph->getNNType(this);
         switch(nn_type) {
             case param_handlers::camera::NNType::None:
                 break;
@@ -77,10 +77,10 @@ void Camera::createPipeline() {
                 break;
         }
         daiNodes.push_back(std::move(rgb));
-    } else if(paramHandler->get_param<std::string>(this, "i_pipeline_type") == "RGBD") {
+    } else if(ph->getParam<std::string>(this, "i_pipeline_type") == "RGBD") {
         auto rgb = std::make_unique<dai_nodes::Sensor>("color", this, pipeline,device, dai::CameraBoardSocket::RGB);
         auto stereo = std::make_unique<dai_nodes::Stereo>("stereo", this, pipeline, device);
-        auto nn_type = paramHandler->getNNType(this);
+        auto nn_type = ph->getNNType(this);
         switch(nn_type) {
             case param_handlers::camera::NNType::None:
                 break;
@@ -100,10 +100,10 @@ void Camera::createPipeline() {
         daiNodes.push_back(std::move(stereo));
     } else {
         std::string configuration =
-            paramHandler->get_param<std::string>(this, "i_pipeline_type") + " " + paramHandler->get_param<std::string>(this, "i_cam_type");
+            ph->getParam<std::string>(this, "i_pipeline_type") + " " + ph->getParam<std::string>(this, "i_cam_type");
         throw std::runtime_error("UNKNOWN PIPELINE TYPE SPECIFIED/CAMERA DOESN'T SUPPORT GIVEN PIPELINE. Configuration: " + configuration);
     }
-    if(paramHandler->get_param<bool>(this, "i_enable_imu")) {
+    if(ph->getParam<bool>(this, "i_enable_imu")) {
         auto imu = std::make_unique<dai_nodes::Imu>("imu", this, pipeline);
         daiNodes.push_back(std::move(imu));
     }
@@ -119,8 +119,8 @@ void Camera::setupQueues() {
 
 void Camera::startDevice() {
     dai::DeviceInfo info;
-    auto mxid = paramHandler->get_param<std::string>(this, "i_mx_id");
-    auto ip = paramHandler->get_param<std::string>(this, "i_ip");
+    auto mxid = ph->getParam<std::string>(this, "i_mx_id");
+    auto ip = ph->getParam<std::string>(this, "i_ip");
     if(!mxid.empty()) {
         RCLCPP_INFO(this->get_logger(), "Connecting to the camera using mxid: %s", mxid.c_str());
         info = dai::DeviceInfo(mxid);
@@ -134,7 +134,7 @@ void Camera::startDevice() {
     bool cam_running;
     while(!cam_running) {
         try {
-            dai::UsbSpeed speed = paramHandler->getUSBSpeed(this);
+            dai::UsbSpeed speed = ph->getUSBSpeed(this);
             if(mxid.empty() && ip.empty()) {
                 device = std::make_shared<dai::Device>(*pipeline, speed);
 
@@ -158,7 +158,7 @@ void Camera::startDevice() {
 
 rcl_interfaces::msg::SetParametersResult Camera::parameterCB(const std::vector<rclcpp::Parameter>& params) {
     for(const auto& p : params) {
-        if(paramHandler->get_param<bool>(this, "i_enable_ir") && !device->getIrDrivers().empty()) {
+        if(ph->getParam<bool>(this, "i_enable_ir") && !device->getIrDrivers().empty()) {
             if(p.get_name() == "i_laser_dot_brightness") {
                 device->setIrLaserDotProjectorBrightness(p.get_value<int>());
             } else if(p.get_name() == "i_floodlight_brightness") {

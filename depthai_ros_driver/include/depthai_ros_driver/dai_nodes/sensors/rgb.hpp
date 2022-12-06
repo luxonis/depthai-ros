@@ -29,7 +29,7 @@ class RGB : public BaseNode {
     image_transport::CameraPublisher rgbPub, previewPub;
     sensor_msgs::msg::CameraInfo rgbInfo, previewInfo;
     std::shared_ptr<dai::node::ColorCamera> colorCamNode;
-    std::unique_ptr<param_handlers::RGBParamHandler> paramHandler;
+    std::unique_ptr<param_handlers::RGBParamHandler> ph;
     std::shared_ptr<dai::DataOutputQueue> colorQ, previewQ;
     std::shared_ptr<dai::DataInputQueue> controlQ;
     std::shared_ptr<dai::node::XLinkOut> xoutColor, xoutPreview;

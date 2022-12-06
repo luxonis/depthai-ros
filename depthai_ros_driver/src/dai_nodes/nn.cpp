@@ -11,8 +11,8 @@ namespace depthai_ros_driver {
 namespace dai_nodes {
 NN::NN(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_INFO(node->get_logger(), "Creating node %s base", daiNodeName.c_str());
-    paramHandler = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
-    auto family = paramHandler->getNNFamily(getROSNode());
+    ph = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
+    auto family = ph->getNNFamily(getROSNode());
     switch(family) {
         case param_handlers::nn::NNFamily::Yolo: {
             nnNode = std::make_unique<dai_nodes::nn_wrappers::Yolo>(getName(), getROSNode(), pipeline);
@@ -50,7 +50,7 @@ dai::Node::Input NN::getInput(int linkType) {
 }
 
 void NN::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    paramHandler->setRuntimeParams(getROSNode(), params);
+    ph->setRuntimeParams(getROSNode(), params);
     nnNode->updateParams(params);
 }
 

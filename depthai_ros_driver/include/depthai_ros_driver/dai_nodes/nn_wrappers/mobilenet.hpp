@@ -27,7 +27,6 @@ class Mobilenet : public BaseNode {
     void closeQueues() override;
 
    private:
-    bool isSpatial;
     void MobilenetCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
     std::vector<std::string> labelNames;
     image_transport::CameraPublisher nnPub;
@@ -35,7 +34,7 @@ class Mobilenet : public BaseNode {
     rclcpp::Publisher<vision_msgs::msg::Detection2DArray>::SharedPtr detPub;
     std::shared_ptr<dai::node::MobileNetDetectionNetwork> mobileNode;
     std::shared_ptr<dai::node::ImageManip> imageManip;
-    std::unique_ptr<param_handlers::NNParamHandler> paramHandler;
+    std::unique_ptr<param_handlers::NNParamHandler> ph;
     std::shared_ptr<dai::DataOutputQueue> nnQ;
     std::shared_ptr<dai::node::XLinkOut> xoutNN;
     std::string nnQName;

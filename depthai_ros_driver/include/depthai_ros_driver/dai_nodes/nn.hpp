@@ -29,7 +29,7 @@ class NN : public BaseNode {
     void closeQueues() override;
 
    private:
-    std::unique_ptr<param_handlers::NNParamHandler> paramHandler;
+    std::unique_ptr<param_handlers::NNParamHandler> ph;
     std::unique_ptr<BaseNode> nnNode;
 };
 

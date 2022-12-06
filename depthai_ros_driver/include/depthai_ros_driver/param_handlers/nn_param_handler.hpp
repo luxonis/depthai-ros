@@ -18,7 +18,7 @@ class NNParamHandler : public BaseParamHandler {
     nn::NNFamily getNNFamily(rclcpp::Node* node);
     template <typename T>
     void declareParams(rclcpp::Node* node, std::shared_ptr<T> nn, std::shared_ptr<dai::node::ImageManip> imageManip) {
-        auto nn_path = get_param<std::string>(node, "i_nn_config_path");
+        auto nn_path = getParam<std::string>(node, "i_nn_config_path");
         using json = nlohmann::json;
         std::ifstream f(nn_path);
         json data = json::parse(f);

@@ -23,10 +23,10 @@ CameraParamHandler::CameraParamHandler(const std::string& name) : BaseParamHandl
 CameraParamHandler::~CameraParamHandler() = default;
 
 camera::NNType CameraParamHandler::getNNType(rclcpp::Node* node) {
-    return nnTypeMap.at(get_param<std::string>(node, "i_nn_type"));
+    return nnTypeMap.at(getParam<std::string>(node, "i_nn_type"));
 }
 dai::UsbSpeed CameraParamHandler::getUSBSpeed(rclcpp::Node* node) {
-    return usbSpeedMap.at(get_param<std::string>(node, "i_usb_speed"));
+    return usbSpeedMap.at(getParam<std::string>(node, "i_usb_speed"));
 }
 void CameraParamHandler::declareParams(rclcpp::Node* node) {
     declareAndLogParam<int>(node, "i_max_q_size", 4);

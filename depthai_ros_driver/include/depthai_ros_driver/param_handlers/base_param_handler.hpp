@@ -24,12 +24,12 @@ class BaseParamHandler {
         return baseName;
     }
     template <typename T>
-    T get_param(rclcpp::Node* node, const std::string paramName) {
+    T getParam(rclcpp::Node* node, const std::string paramName) {
         T value;
         node->get_parameter<T>(baseName + "." + paramName, value);
         return value;
     }
-    std::string get_full_paramName(const std::string& paramName) {
+    std::string getFullParamName(const std::string& paramName) {
         return baseName + "." + paramName;
     }
 
@@ -38,7 +38,7 @@ class BaseParamHandler {
     T declareAndLogParam(rclcpp::Node* node, const std::string& paramName, const std::vector<T>& value) {
         std::string full_name = baseName + "." + paramName;
         if(node->has_parameter(full_name)) {
-            return get_param<T>(node, paramName);
+            return getParam<T>(node, paramName);
         } else {
             logParam(node->get_logger(), full_name, value);
             return node->declare_parameter<T>(full_name, value);
@@ -49,7 +49,7 @@ class BaseParamHandler {
     T declareAndLogParam(rclcpp::Node* node, const std::string& paramName, T value) {
         std::string full_name = baseName + "." + paramName;
         if(node->has_parameter(full_name)) {
-            return get_param<T>(node, paramName);
+            return getParam<T>(node, paramName);
         } else {
             logParam(node->get_logger(), full_name, value);
             return node->declare_parameter<T>(full_name, value);
@@ -59,7 +59,7 @@ class BaseParamHandler {
     T declareAndLogParam(rclcpp::Node* node, const std::string& paramName, T value, rcl_interfaces::msg::ParameterDescriptor int_range) {
         std::string full_name = baseName + "." + paramName;
         if(node->has_parameter(full_name)) {
-            return get_param<T>(node, full_name);
+            return getParam<T>(node, full_name);
         } else {
             logParam(node->get_logger(), full_name, value);
             return node->declare_parameter<T>(full_name, value);

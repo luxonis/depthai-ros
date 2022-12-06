@@ -48,38 +48,38 @@ void RGBParamHandler::declareParams(rclcpp::Node* node,
 dai::CameraControl RGBParamHandler::setRuntimeParams(rclcpp::Node* node, const std::vector<rclcpp::Parameter>& params) {
     dai::CameraControl ctrl;
     for(const auto& p : params) {
-        if(p.get_name() == get_full_paramName("r_set_man_exposure")) {
+        if(p.get_name() == getFullParamName("r_set_man_exposure")) {
             if(p.get_value<bool>()) {
-                ctrl.setManualExposure(get_param<int>(node, "r_exposure"), get_param<int>(node, "r_iso"));
+                ctrl.setManualExposure(getParam<int>(node, "r_exposure"), getParam<int>(node, "r_iso"));
             } else {
                 ctrl.setAutoExposureEnable();
             }
-        } else if(p.get_name() == get_full_paramName("r_exposure")) {
-            if(get_param<bool>(node, "r_set_man_exposure")) {
-                ctrl.setManualExposure(p.get_value<int>(), get_param<int>(node, "r_iso"));
+        } else if(p.get_name() == getFullParamName("r_exposure")) {
+            if(getParam<bool>(node, "r_set_man_exposure")) {
+                ctrl.setManualExposure(p.get_value<int>(), getParam<int>(node, "r_iso"));
             }
-        } else if(p.get_name() == get_full_paramName("r_iso")) {
-            if(get_param<bool>(node, "r_set_man_exposure")) {
-                ctrl.setManualExposure(get_param<int>(node, "r_exposure"), p.get_value<int>());
+        } else if(p.get_name() == getFullParamName("r_iso")) {
+            if(getParam<bool>(node, "r_set_man_exposure")) {
+                ctrl.setManualExposure(getParam<int>(node, "r_exposure"), p.get_value<int>());
             }
-        } else if(p.get_name() == get_full_paramName("r_set_man_focus")) {
+        } else if(p.get_name() == getFullParamName("r_set_man_focus")) {
             if(p.get_value<bool>()) {
-                ctrl.setManualFocus(get_param<int>(node, "r_focus"));
+                ctrl.setManualFocus(getParam<int>(node, "r_focus"));
             } else {
                 ctrl.setAutoFocusMode(dai::CameraControl::AutoFocusMode::CONTINUOUS_PICTURE);
             }
-        } else if(p.get_name() == get_full_paramName("r_focus")) {
-            if(get_param<bool>(node, "r_set_man_focus")) {
+        } else if(p.get_name() == getFullParamName("r_focus")) {
+            if(getParam<bool>(node, "r_set_man_focus")) {
                 ctrl.setManualFocus(p.get_value<int>());
             }
-        } else if(p.get_name() == get_full_paramName("r_set_man_whitebalance")) {
+        } else if(p.get_name() == getFullParamName("r_set_man_whitebalance")) {
             if(p.get_value<bool>()) {
-                ctrl.setManualWhiteBalance(get_param<int>(node, "r_whitebalance"));
+                ctrl.setManualWhiteBalance(getParam<int>(node, "r_whitebalance"));
             } else {
                 ctrl.setAutoWhiteBalanceMode(dai::CameraControl::AutoWhiteBalanceMode::AUTO);
             }
-        } else if(p.get_name() == get_full_paramName("r_whitebalance")) {
-            if(get_param<bool>(node, "r_set_man_whitebalance")) {
+        } else if(p.get_name() == getFullParamName("r_whitebalance")) {
+            if(getParam<bool>(node, "r_set_man_whitebalance")) {
                 ctrl.setManualWhiteBalance(p.get_value<int>());
             }
         }

@@ -9,8 +9,8 @@ Imu::Imu(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai
     RCLCPP_INFO(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     imuNode = pipeline->create<dai::node::IMU>();
-    paramHandler = std::make_unique<param_handlers::ImuParamHandler>(daiNodeName);
-    paramHandler->declareParams(node, imuNode);
+    ph = std::make_unique<param_handlers::ImuParamHandler>(daiNodeName);
+    ph->declareParams(node, imuNode);
     setXinXout(pipeline);
     RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
 };
@@ -25,7 +25,7 @@ void Imu::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 }
 
 void Imu::setupQueues(std::shared_ptr<dai::Device> device) {
-    imuQ = device->getOutputQueue(imuQName, paramHandler->get_param<int>(getROSNode(), "i_max_q_size"), false);
+    imuQ = device->getOutputQueue(imuQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
     imuQ->addCallback(std::bind(&Imu::imuQCB, this, std::placeholders::_1, std::placeholders::_2));
     imuPub = getROSNode()->create_publisher<sensor_msgs::msg::Imu>("~/" + getName() + "/data", 10);
 }
@@ -78,7 +78,7 @@ dai::Node::Input Imu::getInput(int linkType) {
 }
 
 void Imu::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    paramHandler->setRuntimeParams(getROSNode(), params);
+    ph->setRuntimeParams(getROSNode(), params);
 }
 
 }  // namespace dai_nodes

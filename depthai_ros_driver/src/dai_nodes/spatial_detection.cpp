@@ -8,8 +8,8 @@ NN::NN(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::
     RCLCPP_INFO(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     nnNode = pipeline->create<dai::node::NeuralNetwork>();
-    paramHandler = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
-    paramHandler->declareParams(node, nnNode);
+    ph = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
+    ph->declareParams(node, nnNode);
     setXinXout(pipeline);
     RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
 };
@@ -24,7 +24,7 @@ void NN::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 }
 
 void NN::setupQueues(std::shared_ptr<dai::Device> device) {
-    nnQ = device->getOutputQueue(nnQName_, paramHandler->get_param<int>(getROSNode(), "i_max_q_size"), false);
+    nnQ = device->getOutputQueue(nnQName_, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
     nnQ->addCallback(std::bind(&NN::nnQCB, this, std::placeholders::_1, std::placeholders::_2));
     nnPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
 }
@@ -53,7 +53,7 @@ dai::Node::Input NN::getInput(int linkType) {
 }
 
 void NN::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    paramHandler->setRuntimeParams(getROSNode(), params);
+    ph->setRuntimeParams(getROSNode(), params);
 }
 
 cv::Mat NN::decodeDeeplab(cv::Mat mat) {

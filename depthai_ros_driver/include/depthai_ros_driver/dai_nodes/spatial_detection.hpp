@@ -33,7 +33,7 @@ class SpatialDetection : public BaseNode {
     image_transport::CameraPublisher spatial_detection_pub_;
     sensor_msgs::msg::CameraInfo spatial_detection_info_;
     std::shared_ptr<dai::node::SpatialDetectionNetwork> spatial_detection_node_;
-    std::unique_ptr<param_handlers::NNParamHandler> paramHandler_;
+    std::unique_ptr<param_handlers::NNParamHandler> ph_;
     std::shared_ptr<dai::DataOutputQueue> spatial_detection_q_;
     std::shared_ptr<dai::node::XLinkOut> xout_spatial_detection_;
     std::string spatial_detection_q_name_;

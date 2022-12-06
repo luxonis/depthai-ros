@@ -32,7 +32,7 @@ class Stereo : public BaseNode {
     std::shared_ptr<dai::node::StereoDepth> stereoCamNode;
     std::unique_ptr<BaseNode> left;
     std::unique_ptr<BaseNode> right;
-    std::unique_ptr<param_handlers::StereoParamHandler> paramHandler;
+    std::unique_ptr<param_handlers::StereoParamHandler> ph;
     std::shared_ptr<dai::DataOutputQueue> stereoQ;
     std::shared_ptr<dai::DataInputQueue> controlQ;
     std::shared_ptr<dai::node::XLinkOut> xoutStereo;

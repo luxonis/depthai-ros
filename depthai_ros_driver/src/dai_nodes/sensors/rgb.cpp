@@ -16,8 +16,8 @@ RGB::RGB(const std::string& daiNodeName,
     RCLCPP_INFO(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     colorCamNode = pipeline->create<dai::node::ColorCamera>();
-    paramHandler = std::make_unique<param_handlers::RGBParamHandler>(daiNodeName);
-    paramHandler->declareParams(node, colorCamNode, socket, sensor);
+    ph = std::make_unique<param_handlers::RGBParamHandler>(daiNodeName);
+    ph->declareParams(node, colorCamNode, socket, sensor);
     setXinXout(pipeline);
     RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
 };
@@ -28,11 +28,11 @@ void RGB::setNames() {
 }
 
 void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
-    if(paramHandler->get_param<bool>(getROSNode(), "i_publish_topic")) {
+    if(ph->getParam<bool>(getROSNode(), "i_publish_topic")) {
         xoutColor = pipeline->create<dai::node::XLinkOut>();
         xoutColor->setStreamName(colorQName);
         colorCamNode->video.link(xoutColor->input);
-        if(paramHandler->get_param<bool>(getROSNode(), "i_enable_preview")) {
+        if(ph->getParam<bool>(getROSNode(), "i_enable_preview")) {
             xoutPreview = pipeline->create<dai::node::XLinkOut>();
             xoutPreview->setStreamName(previewQName);
             xoutPreview->input.setQueueSize(2);
@@ -46,28 +46,28 @@ void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 }
 
 void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
-    if(paramHandler->get_param<bool>(getROSNode(), "i_publish_topic")) {
-        colorQ = device->getOutputQueue(colorQName, paramHandler->get_param<int>(getROSNode(), "i_max_q_size"), false);
+    if(ph->getParam<bool>(getROSNode(), "i_publish_topic")) {
+        colorQ = device->getOutputQueue(colorQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
         colorQ->addCallback(std::bind(&RGB::colorQCB, this, std::placeholders::_1, std::placeholders::_2));
         rgbPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
-        if(paramHandler->get_param<bool>(getROSNode(), "i_enable_preview")) {
-            previewQ = device->getOutputQueue(previewQName, paramHandler->get_param<int>(getROSNode(), "i_max_q_size"), false);
+        if(ph->getParam<bool>(getROSNode(), "i_enable_preview")) {
+            previewQ = device->getOutputQueue(previewQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
             previewQ->addCallback(std::bind(&RGB::colorQCB, this, std::placeholders::_1, std::placeholders::_2));
             previewPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/preview/image_raw");
         };
         auto calibHandler = device->readCalibration();
         rgbInfo = dai::ros::calibrationToCameraInfo(calibHandler,
-                                                    static_cast<dai::CameraBoardSocket>(paramHandler->get_param<int>(getROSNode(), "i_board_socket_id")),
-                                                    paramHandler->get_param<int>(getROSNode(), "i_width"),
-                                                    paramHandler->get_param<int>(getROSNode(), "i_height"));
+                                                    static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
+                                                    ph->getParam<int>(getROSNode(), "i_width"),
+                                                    ph->getParam<int>(getROSNode(), "i_height"));
     }
     controlQ = device->getInputQueue(controlQName);
 }
 
 void RGB::closeQueues() {
-    if(paramHandler->get_param<bool>(getROSNode(), "i_publish_topic")) {
+    if(ph->getParam<bool>(getROSNode(), "i_publish_topic")) {
         colorQ->close();
-        if(paramHandler->get_param<bool>(getROSNode(), "i_enable_preview")) {
+        if(ph->getParam<bool>(getROSNode(), "i_enable_preview")) {
             previewQ->close();
         }
     }
@@ -106,7 +106,7 @@ dai::Node::Input RGB::getInput(int /*linkType*/) {
 }
 
 void RGB::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    auto ctrl = paramHandler->setRuntimeParams(getROSNode(), params);
+    auto ctrl = ph->setRuntimeParams(getROSNode(), params);
     controlQ->send(ctrl);
 }
 

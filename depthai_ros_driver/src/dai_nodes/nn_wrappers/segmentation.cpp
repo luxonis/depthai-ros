@@ -16,8 +16,8 @@ Segmentation::Segmentation(const std::string& daiNodeName, rclcpp::Node* node, s
     setNames();
     segNode = pipeline->create<dai::node::NeuralNetwork>();
     imageManip = pipeline->create<dai::node::ImageManip>();
-    paramHandler = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
-    paramHandler->declareParams(node, segNode, imageManip);
+    ph = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
+    ph->declareParams(node, segNode, imageManip);
     RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
     imageManip->out.link(segNode->input);
     setXinXout(pipeline);
@@ -34,7 +34,7 @@ void Segmentation::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 }
 
 void Segmentation::setupQueues(std::shared_ptr<dai::Device> device) {
-    nnQ = device->getOutputQueue(nnQName, paramHandler->get_param<int>(getROSNode(), "i_max_q_size"), false);
+    nnQ = device->getOutputQueue(nnQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
     nnPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
     nnQ->addCallback(std::bind(&Segmentation::segmentationCB, this, std::placeholders::_1, std::placeholders::_2));
 }
@@ -83,7 +83,7 @@ dai::Node::Input Segmentation::getInput(int linkType) {
 }
 
 void Segmentation::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    paramHandler->setRuntimeParams(getROSNode(), params);
+    ph->setRuntimeParams(getROSNode(), params);
 }
 }  // namespace nn_wrappers
 }  // namespace dai_nodes
