@@ -6,7 +6,7 @@ Supported ROS versions:
 - Galactic
 - Humble
 
-For development check out respective git branches.
+For usage check out respective git branches.
 
 ### Install from ros binaries
 
@@ -72,6 +72,30 @@ The following setup procedure assumes you have cmake version >= 3.10.2 and OpenC
 6. `source /opt/ros/<ros-distro>/setup.bash`
 7. `catkin_make` (For ROS1) `colcon build` (for ROS2)
 8. `source devel/setup.bash` (For ROS1) & `source install/setup.bash` (for ROS2) 
+
+
+### Depthai ROS Driver
+
+Currently, recommended way to launch cameras is to use executables from depthai_ros_driver package. 
+
+This runs your camera as a ROS2 Component and gives you the ability to customize your camera using ROS parameters. 
+Paramerers that begin with `r_` can be freely modified during runtime, for example with rqt. 
+Parameters that begin with `i_` are set when camera is initializing, to change them you have to call `stop` and `start` services. This can be used to hot swap NNs during runtime, changing resolutions, etc.
+
+Stopping camera also can be used for power saving, as pipeline is removed from the device. Topics are also removed when camera is stopped.
+
+As for the parameters themselves, there are a few crucial ones that decide on how camera behaves.
+* `camera.i_pipeline_type` can be either `RGB` or `RGBD`. This tells the camera whether it should load stereo components. Default set to `RGBD`
+* `camera.i_nn_type` can be either `none`, `rgb` or `spatial`. This is responsible for whether the NN that we load should also take depth information (and for example provide detections in 3D format). Default set to `spatial`
+* `camera.i_mx_id`/`camera.i_ip` are for connecting to a specific camera. If not set, it automatically connects to the next available device.
+* `nn.i_nn_config_path` represents path to JSON that contains information on what type of NN to load, and what parameters to use. Currently we provide options to load MobileNet, Yolo and Segmentation (not in spatial) models. To see their example configs, navigate to `depthai_ros_driver/config/nn`. Defaults to `yolo.json` from `depthai_ros_driver`
+
+Currently, we provide few examples:
+
+* `example_nn.launch.py` launches camera in RGBD, and NN in RGB mode. You can specify `nn_family` arg to choose one of example NNs from the package.
+* `example_spatial_nn.launch.py` same as above, only launches spatial NN
+* `rgbd.launch.py` launches camera in basic RGBD configuration, doesn't load any NNs
+* `multicam.launch.py` launches several cameras at once, each one in different container. You must edit the launch file to provide mxids/ips for each camera.
 
 ## Executing an example
 

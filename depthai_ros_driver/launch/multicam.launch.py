@@ -19,9 +19,9 @@ def launch_setup(context, *args, **kwargs):
     depthai_prefix = get_package_share_directory("depthai_ros_driver")
     rviz_config = os.path.join(depthai_prefix, "config", "multicam.rviz")
     # put mx_ids here
-    cams = {"oak_d_w": {"mxid": "19443010D1BFF51200", "nn": "segmentation"},
-            "oak_d_lite": {"mxid": "18443010C1038C1200", "nn": "yolo"}, 
-            "oak_d_pro": {"mxid": "1944301051FB4D1300", "nn": "mobilenet"}}
+    cams = {"oak_d_w": {"mxid": "", "nn": "segmentation"},
+            "oak_d_lite": {"mxid": "", "nn": "yolo"}, 
+            "oak_d_pro": {"mxid": "", "nn": "mobilenet"}}
     nodes = []
     for cam_name, info in cams.items():
         mxid = info["mxid"]
