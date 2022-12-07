@@ -8,7 +8,7 @@
       i_laser_dot_brightness: 0
       i_max_q_size: 4
       i_mx_id: ''
-      i_nn_type: none
+      i_nn_type: rgb
       i_pipeline_type: RGBD
       i_usb_speed: SUPER_PLUS
     color:
@@ -40,6 +40,33 @@
       r_exposure: 1000
       r_iso: 800
       r_set_man_exposure: false
+    nn:
+      i_label_map:
+      - background
+      - aeroplane
+      - bicycle
+      - bird
+      - boat
+      - bottle
+      - bus
+      - car
+      - cat
+      - chair
+      - cow
+      - diningtable
+      - dog
+      - horse
+      - motorbike
+      - person
+      - pottedplant
+      - sheep
+      - sofa
+      - train
+      - tvmonitor
+      i_model_path: /workspace/install/depthai_ros_driver/share/depthai_ros_driver/models/deeplab_v3_plus_mnv2_decoder_256_openvino_2021.4.blob
+      i_nn_config_path: /workspace/install/depthai_ros_driver/share/depthai_ros_driver/config/nn/segmentation.json
+      i_num_inference_threads: 2
+      i_num_pool_frames: 4
     right:
       i_board_socket_id: 2
       i_fps: 30.0
