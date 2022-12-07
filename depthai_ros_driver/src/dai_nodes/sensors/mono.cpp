@@ -41,6 +41,8 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>(getROSNode(), "i_publish_topic")) {
         monoQ = device->getOutputQueue(monoQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
         monoQ->addCallback(std::bind(&Mono::monoQCB, this, std::placeholders::_1, std::placeholders::_2));
+        auto tfPrefix = std::string(getROSNode()->get_name()) + "_" + getName();
+        imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
         monoPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
         auto calibHandler = device->readCalibration();
         monoInfo = dai::ros::calibrationToCameraInfo(calibHandler,
@@ -58,18 +60,15 @@ void Mono::closeQueues() {
 }
 
 void Mono::monoQCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
-    auto frame = std::dynamic_pointer_cast<dai::ImgFrame>(data);
-    cv::Mat cv_frame = frame->getCvFrame();
-    auto curr_time = getROSNode()->get_clock()->now();
-    cv_bridge::CvImage img_bridge;
-    sensor_msgs::msg::Image img_msg;
-    std_msgs::msg::Header header;
-    header.stamp = curr_time;
-    header.frame_id = std::string(getROSNode()->get_name()) + "_" + getName() + "_camera_optical_frame";
-    monoInfo.header = header;
-    img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::MONO8, cv_frame);
-    img_bridge.toImageMsg(img_msg);
-    monoPub.publish(img_msg, monoInfo);
+    auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
+    std::deque<sensor_msgs::msg::Image> deq;
+    imageConverter->toRosMsg(img, deq);
+    while(deq.size() > 0) {
+        auto currMsg = deq.front();
+        monoInfo.header =currMsg.header;
+        monoPub.publish(currMsg, monoInfo);
+        deq.pop_front();
+    }
 }
 
 void Mono::link(const dai::Node::Input& in, int /*linkType*/) {

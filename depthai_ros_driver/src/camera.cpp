@@ -1,11 +1,11 @@
 #include "depthai_ros_driver/camera.hpp"
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
-#include "depthai_ros_driver/dai_nodes/imu.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/nn.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/spatial_nn.hpp"
 #include "depthai_ros_driver/dai_nodes/stereo.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/sensor.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/imu.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/camera_sensor.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/nn_helpers.hpp"
 
@@ -60,7 +60,7 @@ void Camera::getDeviceType() {
 
 void Camera::createPipeline() {
     if(ph->getParam<std::string>(this, "i_pipeline_type") == "RGB") {
-        auto rgb = std::make_unique<dai_nodes::Sensor>("color", this, pipeline, device, dai::CameraBoardSocket::RGB);
+        auto rgb = std::make_unique<dai_nodes::CameraSensor>("rgb", this, pipeline, device, dai::CameraBoardSocket::RGB);
         auto nn_type = ph->getNNType(this);
         switch(nn_type) {
             case param_handlers::camera::NNType::None:
@@ -79,7 +79,7 @@ void Camera::createPipeline() {
         }
         daiNodes.push_back(std::move(rgb));
     } else if(ph->getParam<std::string>(this, "i_pipeline_type") == "RGBD") {
-        auto rgb = std::make_unique<dai_nodes::Sensor>("color", this, pipeline,device, dai::CameraBoardSocket::RGB);
+        auto rgb = std::make_unique<dai_nodes::CameraSensor>("rgb", this, pipeline,device, dai::CameraBoardSocket::RGB);
         auto stereo = std::make_unique<dai_nodes::Stereo>("stereo", this, pipeline, device);
         auto nn_type = ph->getNNType(this);
         switch(nn_type) {
@@ -164,9 +164,9 @@ void Camera::startDevice() {
 rcl_interfaces::msg::SetParametersResult Camera::parameterCB(const std::vector<rclcpp::Parameter>& params) {
     for(const auto& p : params) {
         if(ph->getParam<bool>(this, "i_enable_ir") && !device->getIrDrivers().empty()) {
-            if(p.get_name() == "i_laser_dot_brightness") {
+            if(p.get_name() == ph->getFullParamName("i_laser_dot_brightness")) {
                 device->setIrLaserDotProjectorBrightness(p.get_value<int>());
-            } else if(p.get_name() == "i_floodlight_brightness") {
+            } else if(p.get_name() == ph->getFullParamName("i_floodlight_brightness")) {
                 device->setIrFloodLightBrightness(p.get_value<int>());
             }
         }

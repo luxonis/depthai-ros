@@ -8,6 +8,7 @@
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -26,6 +27,7 @@ class RGB : public BaseNode {
 
    private:
     void colorQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
+    std::unique_ptr<dai::ros::ImageConverter> imageConverter;
     image_transport::CameraPublisher rgbPub, previewPub;
     sensor_msgs::msg::CameraInfo rgbInfo, previewInfo;
     std::shared_ptr<dai::node::ColorCamera> colorCamNode;
@@ -34,7 +36,7 @@ class RGB : public BaseNode {
     std::shared_ptr<dai::DataInputQueue> controlQ;
     std::shared_ptr<dai::node::XLinkOut> xoutColor, xoutPreview;
     std::shared_ptr<dai::node::XLinkIn> xinControl;
-    std::string colorQName, previewQName, controlQName;
+    std::string ispQName, previewQName, controlQName;
 };
 
 }  // namespace dai_nodes

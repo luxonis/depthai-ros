@@ -72,8 +72,8 @@ def launch_setup(context, *args, **kwargs):
                     plugin='depth_image_proc::PointCloudXyzrgbNode',
                     name='point_cloud_xyzrgb_node',
                     remappings=[('depth_registered/image_rect', tf_prefix_str+'/stereo/converted_depth'),
-                                ('rgb/image_rect_color', tf_prefix_str+'/color/image_raw'),
-                                ('rgb/camera_info', tf_prefix_str+'/color/camera_info')]
+                                ('rgb/image_rect_color', tf_prefix_str+'/rgb/image_raw'),
+                                ('rgb/camera_info', tf_prefix_str+'/rgb/camera_info')]
                     ),
                     ComposableNode(
                         package="depthai_ros_driver",

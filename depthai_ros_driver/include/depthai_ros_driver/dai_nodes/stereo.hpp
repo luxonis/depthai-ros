@@ -7,6 +7,7 @@
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -27,6 +28,7 @@ class Stereo : public BaseNode {
 
    private:
     void stereoQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
+    std::unique_ptr<dai::ros::ImageConverter> imageConverter;
     image_transport::CameraPublisher stereoPub;
     sensor_msgs::msg::CameraInfo stereoInfo;
     std::shared_ptr<dai::node::StereoDepth> stereoCamNode;

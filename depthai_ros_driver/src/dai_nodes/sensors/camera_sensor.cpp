@@ -1,4 +1,4 @@
-#include "depthai_ros_driver/dai_nodes/sensors/sensor.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/camera_sensor.hpp"
 
 #include "cv_bridge/cv_bridge.h"
 #include "depthai_ros_driver/dai_nodes/sensors/mono.hpp"
@@ -9,7 +9,7 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-Sensor::Sensor(const std::string& daiNodeName,
+CameraSensor::CameraSensor(const std::string& daiNodeName,
                rclcpp::Node* node,
                std::shared_ptr<dai::Pipeline> pipeline,
                std::shared_ptr<dai::Device> device,
@@ -33,26 +33,26 @@ Sensor::Sensor(const std::string& daiNodeName,
 
     RCLCPP_INFO(node->get_logger(), "Base node %s created", daiNodeName.c_str());
 };
-void Sensor::setNames() {}
+void CameraSensor::setNames() {}
 
-void Sensor::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {}
+void CameraSensor::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {}
 
-void Sensor::setupQueues(std::shared_ptr<dai::Device> device) {
+void CameraSensor::setupQueues(std::shared_ptr<dai::Device> device) {
     sensorNode->setupQueues(device);
 }
-void Sensor::closeQueues() {
+void CameraSensor::closeQueues() {
     sensorNode->closeQueues();
 }
 
-void Sensor::link(const dai::Node::Input& in, int linkType) {
+void CameraSensor::link(const dai::Node::Input& in, int linkType) {
     sensorNode->link(in, linkType);
 }
 
-dai::Node::Input Sensor::getInput(int linkType) {
+dai::Node::Input CameraSensor::getInput(int linkType) {
     return sensorNode->getInput(linkType);
 }
 
-void Sensor::updateParams(const std::vector<rclcpp::Parameter>& params) {
+void CameraSensor::updateParams(const std::vector<rclcpp::Parameter>& params) {
     sensorNode->updateParams(params);
 }
 

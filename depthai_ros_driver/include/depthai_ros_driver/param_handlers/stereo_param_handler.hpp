@@ -17,6 +17,8 @@ class StereoParamHandler : public BaseParamHandler {
 
    private:
     std::unordered_map<std::string, dai::node::StereoDepth::PresetMode> depthPresetMap;
+    std::unordered_map<std::string, dai::RawStereoDepthConfig::PostProcessing::DecimationFilter::DecimationMode> decimationModeMap;
+    std::unordered_map<std::string, dai::RawStereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode> temporalPersistencyMap;
 };
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver

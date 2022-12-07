@@ -54,11 +54,11 @@
       i_board_socket_id: 0
       i_decimation_factor: 1
       i_depth_filter_size: 7
-      i_depth_preset: HIGH_DENSITY
+      i_depth_preset: HIGH_ACCURACY
       i_enable_spatial_filter: true
       i_enable_speckle_filter: false
       i_enable_temporal_filter: true
-      i_extender_disp: false
+      i_extended_disp: false
       i_height: 1080
       i_hole_filling_radius: 2
       i_lr_check: true
