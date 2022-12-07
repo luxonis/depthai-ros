@@ -62,7 +62,7 @@ class BaseParamHandler {
             return getParam<T>(node, full_name);
         } else {
             logParam(node->get_logger(), full_name, value);
-            return node->declare_parameter<T>(full_name, value);
+            return node->declare_parameter<T>(full_name, value, int_range);
         }
     }
     template <typename T>

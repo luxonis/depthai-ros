@@ -34,7 +34,7 @@ void Imu::closeQueues() {
     imuQ->close();
 }
 
-void Imu::imuQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
+void Imu::imuQCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
     auto imu_data = std::dynamic_pointer_cast<dai::IMUData>(data);
     auto packets = imu_data->packets;
     for(const auto& packet : packets) {

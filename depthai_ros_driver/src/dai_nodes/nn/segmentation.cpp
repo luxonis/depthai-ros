@@ -43,7 +43,7 @@ void Segmentation::closeQueues() {
     nnQ->close();
 }
 
-void Segmentation::segmentationCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
+void Segmentation::segmentationCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
     auto in_det = std::dynamic_pointer_cast<dai::NNData>(data);
     std::vector<std::int32_t> nn_frame = in_det->getFirstLayerInt32();
     cv::Mat nn_mat = cv::Mat(nn_frame);

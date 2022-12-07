@@ -94,7 +94,7 @@ void RGB::colorQCB(const std::string& name, const std::shared_ptr<dai::ADatatype
 }
 
 void RGB::link(const dai::Node::Input& in, int linkType) {
-    if(linkType == static_cast<int>(link_types::RGBLinkType::color)) {
+    if(linkType == static_cast<int>(link_types::RGBLinkType::video)) {
         colorCamNode->video.link(in);
     } else if(linkType == static_cast<int>(link_types::RGBLinkType::preview)) {
         colorCamNode->preview.link(in);

@@ -43,7 +43,7 @@ void SpatialYolo::closeQueues() {
     nnQ->close();
 }
 
-void SpatialYolo::yoloCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
+void SpatialYolo::yoloCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
     auto inDet = std::dynamic_pointer_cast<dai::SpatialImgDetections>(data);
     auto detections = inDet->detections;
     vision_msgs::msg::Detection3DArray rosDet;

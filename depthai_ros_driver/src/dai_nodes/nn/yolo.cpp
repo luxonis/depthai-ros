@@ -42,7 +42,7 @@ void Yolo::closeQueues() {
     nnQ->close();
 }
 
-void Yolo::yoloCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
+void Yolo::yoloCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
     auto inDet = std::dynamic_pointer_cast<dai::ImgDetections>(data);
     auto detections = inDet->detections;
     vision_msgs::msg::Detection2DArray rosDet;
@@ -78,11 +78,11 @@ void Yolo::yoloCB(const std::string& name, const std::shared_ptr<dai::ADatatype>
     detPub->publish(rosDet);
 }
 
-void Yolo::link(const dai::Node::Input& in, int linkType) {
+void Yolo::link(const dai::Node::Input& in, int /*linkType*/) {
     yoloNode->out.link(in);
 }
 
-dai::Node::Input Yolo::getInput(int linkType) {
+dai::Node::Input Yolo::getInput(int /*linkType*/) {
     return imageManip->inputImage;
 }
 

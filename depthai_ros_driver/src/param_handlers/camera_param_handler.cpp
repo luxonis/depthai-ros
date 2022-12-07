@@ -16,7 +16,7 @@ CameraParamHandler::CameraParamHandler(const std::string& name) : BaseParamHandl
     nnTypeMap = {
         {"", camera::NNType::None},
         {"none", camera::NNType::None},
-        {"rgn", camera::NNType::RGB},
+        {"rgb", camera::NNType::RGB},
         {"spatial", camera::NNType::Spatial},
     };
 };
@@ -37,8 +37,8 @@ void CameraParamHandler::declareParams(rclcpp::Node* node) {
     declareAndLogParam<std::string>(node, "i_usb_speed", "SUPER_PLUS");
     declareAndLogParam<std::string>(node, "i_mx_id", "");
     declareAndLogParam<std::string>(node, "i_ip", "");
-    declareAndLogParam<int>(node, "i_laser_dot_brightness", 0, param_handlers::getRangedIntDescriptor(0, 1200));
-    declareAndLogParam<int>(node, "i_floodlight_brightness", 0, param_handlers::getRangedIntDescriptor(0, 1500));
+    declareAndLogParam<int>(node, "i_laser_dot_brightness", 0, getRangedIntDescriptor(0, 1200));
+    declareAndLogParam<int>(node, "i_floodlight_brightness", 0, getRangedIntDescriptor(0, 1500));
 }
 dai::CameraControl CameraParamHandler::setRuntimeParams(rclcpp::Node* node, const std::vector<rclcpp::Parameter>& params) {
     dai::CameraControl ctrl;

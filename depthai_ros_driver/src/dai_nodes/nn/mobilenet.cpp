@@ -42,7 +42,7 @@ void Mobilenet::closeQueues() {
     nnQ->close();
 }
 
-void Mobilenet::mobilenetCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
+void Mobilenet::mobilenetCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
     auto inDet = std::dynamic_pointer_cast<dai::ImgDetections>(data);
     auto detections = inDet->detections;
     vision_msgs::msg::Detection2DArray rosDet;

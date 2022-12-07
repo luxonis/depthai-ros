@@ -57,7 +57,7 @@ void Mono::closeQueues() {
     controlQ->close();
 }
 
-void Mono::monoQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
+void Mono::monoQCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
     auto frame = std::dynamic_pointer_cast<dai::ImgFrame>(data);
     cv::Mat cv_frame = frame->getCvFrame();
     auto curr_time = getROSNode()->get_clock()->now();
