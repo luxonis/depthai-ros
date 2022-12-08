@@ -1,7 +1,7 @@
 {
     "model": {
         "model_name": "mobilenet-ssd_openvino_2021.2_6shave",
-        "zoo": "depthai_ros_driver"
+        "zoo": "depthai_examples"
     },
     "nn_config": {
         "NN_family": "mobilenet",

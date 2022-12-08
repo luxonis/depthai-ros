@@ -1,7 +1,7 @@
 {
     "model": {
         "model_name": "deeplab_v3_plus_mnv2_decoder_256_openvino_2021.4",
-        "zoo": "depthai_ros_driver"
+        "zoo": "depthai_examples"
     },
     "nn_config": {
         "NN_family": "segmentation",
