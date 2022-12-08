@@ -27,6 +27,7 @@ nn::NNFamily NNParamHandler::getNNFamily(rclcpp::Node* node) {
     std::string nnFamily;
     if(data.contains("model") && data.contains("nn_config")) {
         nnFamily = data["nn_config"]["NN_family"].get<std::string>();
+        RCLCPP_INFO(node->get_logger(), "NN Family: %s", nnFamily.c_str());
     } else {
         throw std::runtime_error("No required fields");
     }

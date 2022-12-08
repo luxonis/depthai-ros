@@ -53,7 +53,22 @@ def launch_setup(context, *args, **kwargs):
             package="rclcpp_components",
             executable="component_container",
             composable_node_descriptions=[
-
+                    ComposableNode(
+                        package="depth_image_proc",
+                        plugin="depth_image_proc::ConvertMetricNode",
+                        name="convert_metric_node",
+                        remappings=[('image_raw', tf_prefix_str+'/stereo/image_raw'),
+                                            ('camera_info', tf_prefix_str+'/stereo/camera_info'),
+                                            ('image', tf_prefix_str+'/stereo/converted_depth')]
+                    ),
+                    ComposableNode(
+                    package='depth_image_proc',
+                    plugin='depth_image_proc::PointCloudXyzrgbNode',
+                    name='point_cloud_xyzrgb_node',
+                    remappings=[('depth_registered/image_rect', tf_prefix_str+'/stereo/converted_depth'),
+                                ('rgb/image_rect_color', tf_prefix_str+'/rgb/image_raw'),
+                                ('rgb/camera_info', tf_prefix_str+'/rgb/camera_info')]
+                    ),
                     ComposableNode(
                         package="depthai_ros_driver",
                         plugin="depthai_ros_driver::Camera",

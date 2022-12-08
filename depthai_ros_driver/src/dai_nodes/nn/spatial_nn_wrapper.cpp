@@ -1,4 +1,4 @@
-#include "depthai_ros_driver/dai_nodes/nn/spatial_nn.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/spatial_nn_wrapper.hpp"
 
 #include "cv_bridge/cv_bridge.h"
 #include "depthai_ros_driver/dai_nodes/nn/spatial_mobilenet.hpp"
@@ -8,7 +8,7 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-SpatialNN::SpatialNN(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
+SpatialNNWrapper::SpatialNNWrapper(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_INFO(node->get_logger(), "Creating node %s base", daiNodeName.c_str());
     ph = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
     auto family = ph->getNNFamily(getROSNode());
@@ -28,26 +28,26 @@ SpatialNN::SpatialNN(const std::string& daiNodeName, rclcpp::Node* node, std::sh
 
     RCLCPP_INFO(node->get_logger(), "Base node %s created", daiNodeName.c_str());
 };
-void SpatialNN::setNames() {}
+void SpatialNNWrapper::setNames() {}
 
-void SpatialNN::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {}
+void SpatialNNWrapper::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {}
 
-void SpatialNN::setupQueues(std::shared_ptr<dai::Device> device) {
+void SpatialNNWrapper::setupQueues(std::shared_ptr<dai::Device> device) {
     nnNode->setupQueues(device);
 }
-void SpatialNN::closeQueues() {
+void SpatialNNWrapper::closeQueues() {
     nnNode->closeQueues();
 }
 
-void SpatialNN::link(const dai::Node::Input& in, int linkType) {
+void SpatialNNWrapper::link(const dai::Node::Input& in, int linkType) {
     nnNode->link(in, linkType);
 }
 
-dai::Node::Input SpatialNN::getInput(int linkType) {
+dai::Node::Input SpatialNNWrapper::getInput(int linkType) {
     return nnNode->getInput(linkType);
 }
 
-void SpatialNN::updateParams(const std::vector<rclcpp::Parameter>& params) {
+void SpatialNNWrapper::updateParams(const std::vector<rclcpp::Parameter>& params) {
     ph->setRuntimeParams(getROSNode(), params);
     nnNode->updateParams(params);
 }

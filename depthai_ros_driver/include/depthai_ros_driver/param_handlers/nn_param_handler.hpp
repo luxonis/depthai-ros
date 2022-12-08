@@ -34,8 +34,9 @@ class NNParamHandler : public BaseParamHandler {
     template <typename T>
     void setSpatialParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<T> nn) {
         nn->setBoundingBoxScaleFactor(0.5);
+        nn->input.setBlocking(false);
         nn->setDepthLowerThreshold(100);
-        nn->setDepthUpperThreshold(5000);
+        nn->setDepthUpperThreshold(10000);
     }
 
     template <typename T>

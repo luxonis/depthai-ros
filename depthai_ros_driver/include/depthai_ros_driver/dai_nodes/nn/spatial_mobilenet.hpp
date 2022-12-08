@@ -10,6 +10,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
 #include "vision_msgs/msg/detection3_d_array.hpp"
+#include "depthai_bridge/SpatialDetectionConverter.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -28,6 +29,7 @@ class SpatialMobilenet : public BaseNode {
 
    private:
     void mobilenetCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
+    std::unique_ptr<dai::ros::SpatialDetectionConverter> detConverter;
     std::vector<std::string> labelNames;
     image_transport::CameraPublisher nnPub;
     sensor_msgs::msg::CameraInfo nnInfo;

@@ -34,7 +34,9 @@ void Mobilenet::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 
 void Mobilenet::setupQueues(std::shared_ptr<dai::Device> device) {
     nnQ = device->getOutputQueue(nnQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
-    // nnPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
+    auto tfPrefix = std::string(getROSNode()->get_name());
+    detConverter = std::make_unique<dai::ros::ImgDetectionConverter>(
+        tfPrefix + "_rgb_camera_optical_frame", imageManip->initialConfig.getResizeConfig().width, imageManip->initialConfig.getResizeConfig().height, false);
     nnQ->addCallback(std::bind(&Mobilenet::mobilenetCB, this, std::placeholders::_1, std::placeholders::_2));
     detPub = getROSNode()->create_publisher<vision_msgs::msg::Detection2DArray>("~/" + getName() + "/detections", 10);
 }
@@ -44,38 +46,17 @@ void Mobilenet::closeQueues() {
 
 void Mobilenet::mobilenetCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
     auto inDet = std::dynamic_pointer_cast<dai::ImgDetections>(data);
-    auto detections = inDet->detections;
-    vision_msgs::msg::Detection2DArray rosDet;
-    rosDet.header.stamp = getROSNode()->get_clock()->now();
-    rosDet.header.frame_id = std::string(getROSNode()->get_name()) + "_rgb_camera_optical_frame";
-    rosDet.detections.resize(detections.size());
-    auto labelMap = ph->getParam<std::vector<std::string>>(getROSNode(), "i_label_map");
-    for(size_t i = 0; i < detections.size(); i++) {
-        uint16_t label = detections[i].label;
-        std::string labelName = std::to_string(label);
-        if(label < labelMap.size()) {
-            labelName = labelMap[label];
+    std::deque<vision_msgs::msg::Detection2DArray> deq;
+    detConverter->toRosMsg(inDet, deq);
+    while(deq.size() > 0) {
+        auto currMsg = deq.front();
+        if(currMsg.detections.size() > 0) {
+            int class_id = stoi(currMsg.detections[0].results[0].hypothesis.class_id);
+            currMsg.detections[0].results[0].hypothesis.class_id = ph->getParam<std::vector<std::string>>(getROSNode(), "i_label_map")[class_id];
         }
-        rosDet.detections[i].results.resize(1);
-        rosDet.detections[i].results[0].hypothesis.class_id = labelName;
-        rosDet.detections[i].results[0].hypothesis.score = detections[i].confidence;
-        rosDet.detections[i].results[0].hypothesis.score = detections[i].confidence;
-        int xMin, yMin, xMax, yMax;
-        xMin = detections[i].xmin;
-        yMin = detections[i].ymin;
-        xMax = detections[i].xmax;
-        yMax = detections[i].ymax;
-        float xSize = xMax - xMin;
-        float ySize = yMax - yMin;
-        float xCenter = xMin + xSize / 2;
-        float yCenter = yMin + ySize / 2;
-        rosDet.detections[i].bbox.center.position.x = xCenter;
-        rosDet.detections[i].bbox.center.position.y = yCenter;
-        rosDet.detections[i].bbox.size_x = xSize;
-        rosDet.detections[i].bbox.size_y = ySize;
+        detPub->publish(currMsg);
+        deq.pop_front();
     }
-
-    detPub->publish(rosDet);
 }
 
 void Mobilenet::link(const dai::Node::Input& in, int linkType) {
@@ -90,6 +71,6 @@ void Mobilenet::updateParams(const std::vector<rclcpp::Parameter>& params) {
     ph->setRuntimeParams(getROSNode(), params);
 }
 
-}  // namespace nn_wrappers
+}  // namespace nn
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

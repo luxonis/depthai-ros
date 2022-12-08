@@ -10,7 +10,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
 #include "vision_msgs/msg/detection2_d_array.hpp"
-#include "vision_msgs/msg/detection3_d_array.hpp"
+#include "depthai_bridge/ImgDetectionConverter.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -28,6 +28,7 @@ class Yolo : public BaseNode {
 
    private:
     void yoloCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
+    std::unique_ptr<dai::ros::ImgDetectionConverter> detConverter;
     std::vector<std::string> labelNames;
     image_transport::CameraPublisher nnPub;
     std::shared_ptr<dai::node::YoloDetectionNetwork> yoloNode;

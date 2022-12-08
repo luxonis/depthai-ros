@@ -1,4 +1,4 @@
-#include "depthai_ros_driver/dai_nodes/nn/nn.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/nn_wrapper.hpp"
 
 #include "cv_bridge/cv_bridge.h"
 #include "depthai_ros_driver/dai_nodes/nn/mobilenet.hpp"
@@ -9,7 +9,7 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-NN::NN(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
+NNWrapper::NNWrapper(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_INFO(node->get_logger(), "Creating node %s base", daiNodeName.c_str());
     ph = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
     auto family = ph->getNNFamily(getROSNode());
@@ -30,26 +30,26 @@ NN::NN(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::
 
     RCLCPP_INFO(node->get_logger(), "Base node %s created", daiNodeName.c_str());
 };
-void NN::setNames() {}
+void NNWrapper::setNames() {}
 
-void NN::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {}
+void NNWrapper::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {}
 
-void NN::setupQueues(std::shared_ptr<dai::Device> device) {
+void NNWrapper::setupQueues(std::shared_ptr<dai::Device> device) {
     nnNode->setupQueues(device);
 }
-void NN::closeQueues() {
+void NNWrapper::closeQueues() {
     nnNode->closeQueues();
 }
 
-void NN::link(const dai::Node::Input& in, int linkType) {
+void NNWrapper::link(const dai::Node::Input& in, int linkType) {
     nnNode->link(in, linkType);
 }
 
-dai::Node::Input NN::getInput(int linkType) {
+dai::Node::Input NNWrapper::getInput(int linkType) {
     return nnNode->getInput(linkType);
 }
 
-void NN::updateParams(const std::vector<rclcpp::Parameter>& params) {
+void NNWrapper::updateParams(const std::vector<rclcpp::Parameter>& params) {
     ph->setRuntimeParams(getROSNode(), params);
     nnNode->updateParams(params);
 }

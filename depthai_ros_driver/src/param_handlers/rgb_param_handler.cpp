@@ -21,15 +21,39 @@ void RGBParamHandler::declareParams(rclcpp::Node* node,
     declareAndLogParam<bool>(node, "i_publish_topic", true);
     declareAndLogParam<bool>(node, "i_enable_preview", true);
     declareAndLogParam<int>(node, "i_board_socket_id", static_cast<int>(socket));
+    color_cam->setBoardSocket(socket);
     color_cam->setFps(declareAndLogParam<double>(node, "i_fps", 30.0));
     size_t preview_size = declareAndLogParam<int>(node, "i_preview_size", 256);
     color_cam->setPreviewSize(preview_size, preview_size);
-    color_cam->setVideoSize(declareAndLogParam<int>(node, "i_width", 1920), declareAndLogParam<int>(node, "i_height", 1080));
-    color_cam->setResolution(rgbResolutionMap.at(declareAndLogParam<std::string>(node, "i_resolution", "1080")));
-    color_cam->setInterleaved(declareAndLogParam<bool>(node, "i_interleaved", false));
-    if(declareAndLogParam<bool>(node, "i_set_isp", false)) {
-        color_cam->setIspScale(2, 3);
+    auto resolution = rgbResolutionMap.at(declareAndLogParam<std::string>(node, "i_resolution", "1080"));
+    int width, height;
+    
+    switch (resolution){
+        case dai::ColorCameraProperties::SensorResolution::THE_1080_P:{
+            width = 1920;
+            height = 1080;
+            break;
+        }
+        case dai::ColorCameraProperties::SensorResolution::THE_4_K:{
+            width = 3840;
+            height = 2160;
+            break;
+        }
+        case dai::ColorCameraProperties::SensorResolution::THE_12_MP:{
+            height = 4056;
+            width = 3040;
+            break;
+        }
     }
+    color_cam->setResolution(resolution);
+    
+    color_cam->setInterleaved(declareAndLogParam<bool>(node, "i_interleaved", false));
+    if(declareAndLogParam<bool>(node, "i_set_isp_scale", true)) {
+        color_cam->setIspScale(2, 3);
+        width = width * 2/3;
+        height = height * 2/3;
+    }
+    color_cam->setVideoSize(declareAndLogParam<int>(node, "i_width", width), declareAndLogParam<int>(node, "i_height", height));
     color_cam->setPreviewKeepAspectRatio(declareAndLogParam(node, "i_keep_preview_aspect_ratio", true));
     size_t iso = declareAndLogParam(node, "r_iso", 800, getRangedIntDescriptor(100, 1600));
     size_t exposure = declareAndLogParam(node, "r_exposure", 20000, getRangedIntDescriptor(1, 33000));

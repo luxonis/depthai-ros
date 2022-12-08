@@ -1,8 +1,8 @@
 #include "depthai_ros_driver/camera.hpp"
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
-#include "depthai_ros_driver/dai_nodes/nn/nn.hpp"
-#include "depthai_ros_driver/dai_nodes/nn/spatial_nn.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/nn_wrapper.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/spatial_nn_wrapper.hpp"
 #include "depthai_ros_driver/dai_nodes/stereo.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/imu.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/camera_sensor.hpp"
@@ -66,7 +66,7 @@ void Camera::createPipeline() {
             case param_handlers::camera::NNType::None:
                 break;
             case param_handlers::camera::NNType::RGB: {
-                auto nn = std::make_unique<dai_nodes::NN>("nn", this, pipeline);
+                auto nn = std::make_unique<dai_nodes::NNWrapper>("nn", this, pipeline);
                 rgb->link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
                 daiNodes.push_back(std::move(nn));
                 break;
@@ -86,13 +86,13 @@ void Camera::createPipeline() {
             case param_handlers::camera::NNType::None:
                 break;
             case param_handlers::camera::NNType::RGB: {
-                auto nn = std::make_unique<dai_nodes::NN>("nn", this, pipeline);
+                auto nn = std::make_unique<dai_nodes::NNWrapper>("nn", this, pipeline);
                 rgb->link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
                 daiNodes.push_back(std::move(nn));
                 break;
             }
             case param_handlers::camera::NNType::Spatial: {
-                auto nn = std::make_unique<dai_nodes::SpatialNN>("nn", this, pipeline);
+                auto nn = std::make_unique<dai_nodes::SpatialNNWrapper>("nn", this, pipeline);
                 rgb->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::input)), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
                 stereo->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::inputDepth)));
                 daiNodes.push_back(std::move(nn));

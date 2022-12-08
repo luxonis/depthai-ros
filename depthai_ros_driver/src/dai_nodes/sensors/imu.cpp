@@ -38,9 +38,9 @@ void Imu::closeQueues() {
 }
 
 void Imu::imuQCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
-    auto imu_data = std::dynamic_pointer_cast<dai::IMUData>(data);
+    auto imuData = std::dynamic_pointer_cast<dai::IMUData>(data);
     std::deque<sensor_msgs::msg::Imu> deq;
-    imuConverter->toRosMsg(imu_data, deq);
+    imuConverter->toRosMsg(imuData, deq);
     while(deq.size()>0) {
             auto currMsg = deq.front();
             imuPub->publish(currMsg);

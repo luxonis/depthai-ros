@@ -6,6 +6,7 @@
 
 #include "depthai/depthai.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "vision_msgs/msg/detection3_d_array.hpp"
 
 namespace dai {
 
@@ -20,8 +21,10 @@ class SpatialDetectionConverter {
     SpatialDetectionConverter(std::string frameName, int width, int height, bool normalized = false);
 
     void toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData, std::deque<SpatialMessages::SpatialDetectionArray>& opDetectionMsg);
+    void toRosVisionMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData, std::deque<vision_msgs::msg::Detection3DArray>& opDetectionMsg);
 
     SpatialDetectionArrayPtr toRosMsgPtr(std::shared_ptr<dai::SpatialImgDetections> inNetData);
+
 
    private:
     int _width, _height;

@@ -19,8 +19,8 @@ ament_auto_add_library(
   src/dai_nodes/sensors/mono.cpp
   src/dai_nodes/sensors/camera_sensor.cpp
   src/dai_nodes/stereo.cpp
-  src/dai_nodes/nn/nn.cpp
-  src/dai_nodes/nn/spatial_nn.cpp
+  src/dai_nodes/nn/nn_wrapper.cpp
+  src/dai_nodes/nn/spatial_nn_wrapper.cpp
   src/dai_nodes/nn/segmentation.cpp
   src/dai_nodes/nn/mobilenet.cpp
   src/dai_nodes/nn/yolo.cpp

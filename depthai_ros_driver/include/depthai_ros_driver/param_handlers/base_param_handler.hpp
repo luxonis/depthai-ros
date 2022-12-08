@@ -40,8 +40,9 @@ class BaseParamHandler {
         if(node->has_parameter(full_name)) {
             return getParam<T>(node, paramName);
         } else {
-            logParam(node->get_logger(), full_name, value);
-            return node->declare_parameter<T>(full_name, value);
+            auto val = node->declare_parameter<T>(full_name, value);
+            logParam(node->get_logger(), full_name, val);
+            return val;
         }
     }
 
@@ -51,8 +52,9 @@ class BaseParamHandler {
         if(node->has_parameter(full_name)) {
             return getParam<T>(node, paramName);
         } else {
-            logParam(node->get_logger(), full_name, value);
-            return node->declare_parameter<T>(full_name, value);
+            auto val = node->declare_parameter<T>(full_name, value);
+            logParam(node->get_logger(), full_name, val);
+            return val;
         }
     }
     template <typename T>
@@ -61,8 +63,9 @@ class BaseParamHandler {
         if(node->has_parameter(full_name)) {
             return getParam<T>(node, full_name);
         } else {
-            logParam(node->get_logger(), full_name, value);
-            return node->declare_parameter<T>(full_name, value, int_range);
+            auto val = node->declare_parameter<T>(full_name, value,int_range);
+            logParam(node->get_logger(), full_name, val);
+            return val;
         }
     }
     template <typename T>
