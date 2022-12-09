@@ -88,14 +88,21 @@ As for the parameters themselves, there are a few crucial ones that decide on ho
 * `camera.i_pipeline_type` can be either `RGB` or `RGBD`. This tells the camera whether it should load stereo components. Default set to `RGBD`
 * `camera.i_nn_type` can be either `none`, `rgb` or `spatial`. This is responsible for whether the NN that we load should also take depth information (and for example provide detections in 3D format). Default set to `spatial`
 * `camera.i_mx_id`/`camera.i_ip` are for connecting to a specific camera. If not set, it automatically connects to the next available device.
-* `nn.i_nn_config_path` represents path to JSON that contains information on what type of NN to load, and what parameters to use. Currently we provide options to load MobileNet, Yolo and Segmentation (not in spatial) models. To see their example configs, navigate to `depthai_ros_driver/config/nn`. Defaults to `yolo.json` from `depthai_ros_driver`
+* `nn.i_nn_config_path` represents path to JSON that contains information on what type of NN to load, and what parameters to use. Currently we provide options to load MobileNet, Yolo and Segmentation (not in spatial) models. To see their example configs, navigate to `depthai_ros_driver/config/nn`. Defaults to `mobilenet.json` from `depthai_ros_driver`
+To use provided example NN's, you can set the path to:
+* `depthai_ros_driver/segmentation`
+* `depthai_ros_driver/mobilenet`
+* `depthai_ros_driver/yolo`
+
+All available camera-specific parameters and their default values can be seen in `depthai_ros_driver/config/camera.yaml`.
 
 Currently, we provide few examples:
 
-* `example_nn.launch.py` launches camera in RGBD, and NN in RGB mode. You can specify `nn_family` arg to choose one of example NNs from the package.
-* `example_spatial_nn.launch.py` same as above, only launches spatial NN
-* `rgbd.launch.py` launches camera in basic RGBD configuration, doesn't load any NNs
-* `multicam.launch.py` launches several cameras at once, each one in different container. You must edit the launch file to provide mxids/ips for each camera.
+* `camera.launch.py` launches camera in RGBD, and NN in spatial (Mobilenet) mode.
+* `rgbd_pcl.launch.py` launches camera in basic RGBD configuration, doesn't load any NNs. Also loads ROS depth processing nodes for RGBD pointcloud.
+* `example_multicam.launch.py` launches several cameras at once, each one in different container. Edit the `multicam_example.yaml` config file in `config` directory to change parameters
+* `example_segmentation.launch.py` launches camera in RGB + semantic segmentation mode
+* `pointcloud.launch.py` - similar to `rgbd_pcl.launch.py`, but doesn't use RGB component for pointcloud
 
 ## Executing an example
 
