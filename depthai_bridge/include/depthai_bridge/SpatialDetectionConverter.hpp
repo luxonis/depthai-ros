@@ -25,7 +25,6 @@ class SpatialDetectionConverter {
 
     SpatialDetectionArrayPtr toRosMsgPtr(std::shared_ptr<dai::SpatialImgDetections> inNetData);
 
-
    private:
     int _width, _height;
     const std::string _frameName;

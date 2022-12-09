@@ -3,6 +3,7 @@
 #include <string>
 
 #include "depthai/depthai.hpp"
+#include "depthai_bridge/ImgDetectionConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
 #include "image_transport/camera_publisher.hpp"
@@ -11,7 +12,6 @@
 #include "sensor_msgs/msg/camera_info.hpp"
 #include "vision_msgs/msg/detection2_d_array.hpp"
 #include "vision_msgs/msg/detection3_d_array.hpp"
-#include "depthai_bridge/ImgDetectionConverter.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -42,7 +42,6 @@ class Mobilenet : public BaseNode {
     std::string nnQName;
 };
 
-
-}  // namespace nn_wrappers
+}  // namespace nn
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

@@ -34,7 +34,6 @@ class NNParamHandler : public BaseParamHandler {
     template <typename T>
     void setSpatialParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<T> nn) {
         nn->setBoundingBoxScaleFactor(0.5);
-        nn->input.setBlocking(false);
         nn->setDepthLowerThreshold(100);
         nn->setDepthUpperThreshold(10000);
     }
@@ -86,6 +85,8 @@ class NNParamHandler : public BaseParamHandler {
             nn->setBlobPath(modelPath);
             nn->setNumPoolFrames(declareAndLogParam<int>(node, "i_num_pool_frames", 4));
             nn->setNumInferenceThreads(declareAndLogParam<int>(node, "i_num_inference_threads", 2));
+            nn->input.setBlocking(false);
+            declareAndLogParam<int>(node, "i_max_q_size", 30);
             setNNParams(node, data, nn);
         }
     }

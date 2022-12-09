@@ -35,36 +35,48 @@ class BaseParamHandler {
 
    protected:
     template <typename T>
-    T declareAndLogParam(rclcpp::Node* node, const std::string& paramName, const std::vector<T>& value) {
-        std::string full_name = baseName + "." + paramName;
-        if(node->has_parameter(full_name)) {
+    T declareAndLogParam(rclcpp::Node* node, const std::string& paramName, const std::vector<T>& value, bool override = false) {
+        std::string fullName = baseName + "." + paramName;
+        if(node->has_parameter(fullName)) {
+            if(override) {
+                auto param = rclcpp::Parameter(fullName, value);
+                node->set_parameter(param);
+            }
             return getParam<T>(node, paramName);
         } else {
-            auto val = node->declare_parameter<T>(full_name, value);
-            logParam(node->get_logger(), full_name, val);
+            auto val = node->declare_parameter<T>(fullName, value);
+            logParam(node->get_logger(), fullName, val);
             return val;
         }
     }
 
     template <typename T>
-    T declareAndLogParam(rclcpp::Node* node, const std::string& paramName, T value) {
-        std::string full_name = baseName + "." + paramName;
-        if(node->has_parameter(full_name)) {
+    T declareAndLogParam(rclcpp::Node* node, const std::string& paramName, T value, bool override = false) {
+        std::string fullName = baseName + "." + paramName;
+        if(node->has_parameter(fullName)) {
+            if(override) {
+                auto param = rclcpp::Parameter(fullName, value);
+                node->set_parameter(param);
+            }
             return getParam<T>(node, paramName);
         } else {
-            auto val = node->declare_parameter<T>(full_name, value);
-            logParam(node->get_logger(), full_name, val);
+            auto val = node->declare_parameter<T>(fullName, value);
+            logParam(node->get_logger(), fullName, val);
             return val;
         }
     }
     template <typename T>
-    T declareAndLogParam(rclcpp::Node* node, const std::string& paramName, T value, rcl_interfaces::msg::ParameterDescriptor int_range) {
-        std::string full_name = baseName + "." + paramName;
-        if(node->has_parameter(full_name)) {
-            return getParam<T>(node, full_name);
+    T declareAndLogParam(rclcpp::Node* node, const std::string& paramName, T value, rcl_interfaces::msg::ParameterDescriptor int_range, bool override = false) {
+        std::string fullName = baseName + "." + paramName;
+        if(node->has_parameter(fullName)) {
+            if(override) {
+                auto param = rclcpp::Parameter(fullName, value);
+                node->set_parameter(param);
+            }
+            return getParam<T>(node, fullName);
         } else {
-            auto val = node->declare_parameter<T>(full_name, value,int_range);
-            logParam(node->get_logger(), full_name, val);
+            auto val = node->declare_parameter<T>(fullName, value, int_range);
+            logParam(node->get_logger(), fullName, val);
             return val;
         }
     }

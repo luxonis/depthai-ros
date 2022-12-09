@@ -1,0 +1,54 @@
+/oak_d_lite:
+  ros__parameters:
+    camera:
+      i_mx_id: 18443010C1038C1200
+      i_nn_type: rgb
+    left:
+      i_resolution: '480'
+    right:
+      i_resolution: '480'
+    nn:
+      i_nn_config_path: depthai_ros_driver/yolo
+/oak_d_w:
+  ros__parameters:
+    camera:
+      i_mx_id: 19443010D1BFF51200
+      i_nn_type: rgb
+    nn:
+      i_nn_config_path: depthai_ros_driver/segmentation
+/oak_d_pro:
+  ros__parameters:
+    camera:
+      i_mx_id: 1944301051FB4D1300
+    nn:
+      i_nn_config_path: depthai_ros_driver/mobilenet
+    stereo:
+      i_align_depth: true
+      i_bilateral_sigma: 500
+      i_board_socket_id: 0
+      i_decimation_filter_decimation_factor: 1
+      i_decimation_filter_decimation_mode: PIXEL_SKIPPING
+      i_depth_filter_size: 7
+      i_depth_preset: HIGH_ACCURACY
+      i_enable_deciamation_filter: false
+      i_enable_distortion_correction: false
+      i_enable_spatial_filter: false
+      i_enable_temporal_filter: false
+      i_enable_threshold_filter: false
+      i_extended_disp: false
+      i_height: 720
+      i_lr_check: true
+      i_lrc_threshold: 5
+      i_max_q_size: 30
+      i_rectify_edge_fill_color: 0
+      i_spatial_filter_alpha: 0.5
+      i_spatial_filter_delta: 20
+      i_spatial_filter_hole_filling_radius: 2
+      i_spatial_filter_iterations: 1
+      i_stereo_conf_threshold: 255
+      i_temporal_filter_alpha: 0.4000000059604645
+      i_temporal_filter_delta: 20
+      i_temporal_filter_persistency: VALID_2_IN_LAST_4
+      i_threshold_filter_max_range: 15000
+      i_threshold_filter_min_range: 400
+      i_width: 1280

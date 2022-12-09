@@ -30,7 +30,7 @@ StereoParamHandler::StereoParamHandler(const std::string& name) : BaseParamHandl
 
 StereoParamHandler::~StereoParamHandler() = default;
 void StereoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::StereoDepth> stereo) {
-    declareAndLogParam<int>(node, "i_max_q_size", 4);
+    declareAndLogParam<int>(node, "i_max_q_size", 30);
     stereo->setLeftRightCheck(declareAndLogParam<bool>(node, "i_lr_check", true));
     if(declareAndLogParam<bool>(node, "i_align_depth", true)) {
         declareAndLogParam<int>(node, "i_board_socket_id", static_cast<int>(dai::CameraBoardSocket::RGB));
@@ -39,7 +39,9 @@ void StereoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::
         declareAndLogParam<int>(node, "i_height", node->get_parameter("rgb.i_height").as_int());
     } else {
         declareAndLogParam<int>(node, "i_board_socket_id", static_cast<int>(dai::CameraBoardSocket::RIGHT));
-        stereo->setDepthAlign(dai::CameraBoardSocket::RIGHT);
+        declareAndLogParam<int>(node, "i_width", node->get_parameter("right.i_width").as_int());
+        declareAndLogParam<int>(node, "i_height", node->get_parameter("right.i_height").as_int());
+        // stereo->setDepthAlign(dai::CameraBoardSocket::RIGHT);
     }
     stereo->setDefaultProfilePreset(depthPresetMap.at(declareAndLogParam<std::string>(node, "i_depth_preset", "HIGH_ACCURACY")));
     stereo->enableDistortionCorrection(declareAndLogParam<bool>(node, "i_enable_distortion_correction", false));
@@ -52,26 +54,33 @@ void StereoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::
     stereo->setExtendedDisparity(declareAndLogParam<bool>(node, "i_extended_disp", false));
     stereo->setRectifyEdgeFillColor(declareAndLogParam<int>(node, "i_rectify_edge_fill_color", 0));
     auto config = stereo->initialConfig.get();
-    config.postProcessing.temporalFilter.enable = declareAndLogParam<bool>(node, "i_enable_temporal_filter", false);
-    config.postProcessing.temporalFilter.alpha = declareAndLogParam<float>(node, "i_temporal_filter_alpha", 0.4);
-    config.postProcessing.temporalFilter.delta = declareAndLogParam<int>(node, "i_temporal_filter_delta", 20);
-    config.postProcessing.temporalFilter.persistencyMode =
-        temporalPersistencyMap.at(declareAndLogParam<std::string>(node, "i_temporal_filter_persistency", "VALID_2_IN_LAST_4"));
-
-    config.postProcessing.speckleFilter.enable = declareAndLogParam<bool>(node, "i_enable_speckle_filter", false);
-    config.postProcessing.speckleFilter.speckleRange = declareAndLogParam<int>(node, "i_speckle_filter_speckle_range", 50);
-
-    config.postProcessing.spatialFilter.enable = declareAndLogParam<bool>(node, "i_enable_spatial_filter", false);
-    config.postProcessing.spatialFilter.holeFillingRadius = declareAndLogParam<int>(node, "i_spatial_filter_hole_filling_radius", 2);
-    config.postProcessing.spatialFilter.alpha = declareAndLogParam<float>(node, "i_spatial_filter_alpha", 0.5);
-    config.postProcessing.spatialFilter.delta = declareAndLogParam<int>(node, "i_spatial_filter_delta", 20);
-    config.postProcessing.spatialFilter.numIterations = declareAndLogParam<int>(node, "i_spatial_filter_iterations", 1);
-
-    config.postProcessing.thresholdFilter.minRange = declareAndLogParam<int>(node, "i_threshold_filter_min_range", 400);
-    config.postProcessing.thresholdFilter.maxRange = declareAndLogParam<int>(node, "i_threshold_filter_max_range", 15000);
-    config.postProcessing.decimationFilter.decimationMode =
-        decimationModeMap.at(declareAndLogParam<std::string>(node, "i_decimation_filter_decimation_mode", "PIXEL_SKIPPING"));
-    config.postProcessing.decimationFilter.decimationFactor = declareAndLogParam<int>(node, "i_decimation_filter_decimation_factor", 1);
+    config.postProcessing.temporalFilter.enable = declareAndLogParam<bool>(node, "i_enable_temporal_filter", true);
+    if(config.postProcessing.temporalFilter.enable) {
+        config.postProcessing.temporalFilter.alpha = declareAndLogParam<float>(node, "i_temporal_filter_alpha", 0.4);
+        config.postProcessing.temporalFilter.delta = declareAndLogParam<int>(node, "i_temporal_filter_delta", 20);
+        config.postProcessing.temporalFilter.persistencyMode =
+            temporalPersistencyMap.at(declareAndLogParam<std::string>(node, "i_temporal_filter_persistency", "VALID_2_IN_LAST_4"));
+    }
+    if(config.postProcessing.speckleFilter.enable) {
+        config.postProcessing.speckleFilter.enable = declareAndLogParam<bool>(node, "i_enable_speckle_filter", true);
+        config.postProcessing.speckleFilter.speckleRange = declareAndLogParam<int>(node, "i_speckle_filter_speckle_range", 50);
+    }
+    config.postProcessing.spatialFilter.enable = declareAndLogParam<bool>(node, "i_enable_spatial_filter", true);
+    if(config.postProcessing.spatialFilter.enable) {
+        config.postProcessing.spatialFilter.holeFillingRadius = declareAndLogParam<int>(node, "i_spatial_filter_hole_filling_radius", 2);
+        config.postProcessing.spatialFilter.alpha = declareAndLogParam<float>(node, "i_spatial_filter_alpha", 0.5);
+        config.postProcessing.spatialFilter.delta = declareAndLogParam<int>(node, "i_spatial_filter_delta", 20);
+        config.postProcessing.spatialFilter.numIterations = declareAndLogParam<int>(node, "i_spatial_filter_iterations", 1);
+    }
+    if(declareAndLogParam<bool>(node, "i_enable_threshold_filter", true)) {
+        config.postProcessing.thresholdFilter.minRange = declareAndLogParam<int>(node, "i_threshold_filter_min_range", 400);
+        config.postProcessing.thresholdFilter.maxRange = declareAndLogParam<int>(node, "i_threshold_filter_max_range", 15000);
+    }
+    if(declareAndLogParam<bool>(node, "i_enable_deciamation_filter", true)) {
+        config.postProcessing.decimationFilter.decimationMode =
+            decimationModeMap.at(declareAndLogParam<std::string>(node, "i_decimation_filter_decimation_mode", "PIXEL_SKIPPING"));
+        config.postProcessing.decimationFilter.decimationFactor = declareAndLogParam<int>(node, "i_decimation_filter_decimation_factor", 1);
+    }
     stereo->initialConfig.set(config);
 }
 dai::CameraControl StereoParamHandler::setRuntimeParams(rclcpp::Node* node, const std::vector<rclcpp::Parameter>& params) {

@@ -10,18 +10,17 @@
 namespace depthai_ros_driver {
 namespace dai_nodes {
 CameraSensor::CameraSensor(const std::string& daiNodeName,
-               rclcpp::Node* node,
-               std::shared_ptr<dai::Pipeline> pipeline,
-               std::shared_ptr<dai::Device> device,
-               dai::CameraBoardSocket socket)
+                           rclcpp::Node* node,
+                           std::shared_ptr<dai::Pipeline> pipeline,
+                           std::shared_ptr<dai::Device> device,
+                           dai::CameraBoardSocket socket)
     : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_INFO(node->get_logger(), "Creating node %s base", daiNodeName.c_str());
 
     auto sensorName = device->getCameraSensorNames().at(socket);
 
     std::vector<sensor_helpers::ImageSensor>::iterator sensorIt =
-        std::find_if(sensor_helpers::availableSensors.begin(), sensor_helpers::availableSensors.end(), 
-        [&sensorName](const sensor_helpers::ImageSensor& s) {
+        std::find_if(sensor_helpers::availableSensors.begin(), sensor_helpers::availableSensors.end(), [&sensorName](const sensor_helpers::ImageSensor& s) {
             return s.name == sensorName;
         });
     RCLCPP_INFO(node->get_logger(), "Node %s has sensor %s", daiNodeName.c_str(), sensorName.c_str());

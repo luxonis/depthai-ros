@@ -37,7 +37,8 @@ file(DOWNLOAD "https://artifacts.luxonis.com/artifactory/luxonis-depthai-data-lo
   TLS_VERIFY ON)
 
 set(deeplab_blob "${PROJECT_SOURCE_DIR}/resources/${deeplab_blob_name}")
-file(DOWNLOAD "https://github.com/luxonis/depthai-experiments/blob/master/gen2-deeplabv3_multiclass/models/deeplab_v3_plus_mnv2_decoder_256_openvino_2021.4.blob?raw=true"
+file(DOWNLOAD
+"https://github.com/luxonis/depthai-experiments/blob/master/gen2-deeplabv3_multiclass/models/deeplab_v3_plus_mnv2_decoder_256_openvino_2021.4.blob?raw=true"
   ${deeplab_blob}
   TIMEOUT 60  # seconds
   EXPECTED_HASH SHA1=bdc2529f765f34c4799b478690fb4e32f1ad5d89

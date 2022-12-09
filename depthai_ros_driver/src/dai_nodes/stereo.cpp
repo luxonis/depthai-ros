@@ -2,12 +2,13 @@
 
 #include "cv_bridge/cv_bridge.h"
 #include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/camera_sensor.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/camera_sensor.hpp"
 namespace depthai_ros_driver {
 namespace dai_nodes {
-Stereo::Stereo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device) : BaseNode(daiNodeName, node, pipeline) {
+Stereo::Stereo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device)
+    : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_INFO(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     stereoCamNode = pipeline->create<dai::node::StereoDepth>();
@@ -78,8 +79,7 @@ dai::Node::Input Stereo::getInput(int linkType) {
         return stereoCamNode->left;
     } else if(linkType == static_cast<int>(link_types::StereoLinkType::right)) {
         return stereoCamNode->right;
-    }
-    else{
+    } else {
         throw std::runtime_error("Wrong link type specified!");
     }
 }

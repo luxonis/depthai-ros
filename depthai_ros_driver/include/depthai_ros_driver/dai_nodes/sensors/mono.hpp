@@ -1,20 +1,24 @@
 #pragma once
 
 #include "depthai/depthai.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/param_handlers/mono_param_handler.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
-#include "depthai_bridge/ImageConverter.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
 
 class Mono : public BaseNode {
    public:
-    explicit Mono(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, dai::CameraBoardSocket socket,sensor_helpers::ImageSensor sensor);
+    explicit Mono(const std::string& daiNodeName,
+                  rclcpp::Node* node,
+                  std::shared_ptr<dai::Pipeline> pipeline,
+                  dai::CameraBoardSocket socket,
+                  sensor_helpers::ImageSensor sensor);
     virtual ~Mono() = default;
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;

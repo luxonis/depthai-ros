@@ -37,7 +37,6 @@ void SpatialMobilenet::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 void SpatialMobilenet::setupQueues(std::shared_ptr<dai::Device> device) {
     nnQ = device->getOutputQueue(nnQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
     auto tfPrefix = std::string(getROSNode()->get_name());
-    RCLCPP_INFO(getROSNode()->get_logger(), "width %d height %d", imageManip->initialConfig.getResizeConfig().width, imageManip->initialConfig.getResizeConfig().height);
     detConverter = std::make_unique<dai::ros::SpatialDetectionConverter>(
         tfPrefix + "_rgb_camera_optical_frame", imageManip->initialConfig.getResizeConfig().width, imageManip->initialConfig.getResizeConfig().height, false);
     nnQ->addCallback(std::bind(&SpatialMobilenet::mobilenetCB, this, std::placeholders::_1, std::placeholders::_2));
@@ -53,9 +52,9 @@ void SpatialMobilenet::mobilenetCB(const std::string& /*name*/, const std::share
     detConverter->toRosVisionMsg(inDet, deq);
     while(deq.size() > 0) {
         auto currMsg = deq.front();
-        if (currMsg.detections.size()>0){
-        int class_id = stoi(currMsg.detections[0].results[0].hypothesis.class_id);
-        currMsg.detections[0].results[0].hypothesis.class_id = ph->getParam<std::vector<std::string>>(getROSNode(), "i_label_map")[class_id];
+        if(currMsg.detections.size() > 0) {
+            int class_id = stoi(currMsg.detections[0].results[0].hypothesis.class_id);
+            currMsg.detections[0].results[0].hypothesis.class_id = ph->getParam<std::vector<std::string>>(getROSNode(), "i_label_map")[class_id];
         }
         detPub->publish(currMsg);
         deq.pop_front();

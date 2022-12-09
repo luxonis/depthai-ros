@@ -1,13 +1,13 @@
 #include "depthai_ros_driver/camera.hpp"
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/nn_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/nn_wrapper.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/spatial_nn_wrapper.hpp"
-#include "depthai_ros_driver/dai_nodes/stereo.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/imu.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/camera_sensor.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/imu.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
-#include "depthai_ros_driver/dai_nodes/nn/nn_helpers.hpp"
+#include "depthai_ros_driver/dai_nodes/stereo.hpp"
 
 namespace depthai_ros_driver {
 
@@ -30,6 +30,7 @@ void Camera::onConfigure() {
 void Camera::startCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res) {
     RCLCPP_INFO(this->get_logger(), "Starting camera!");
     onConfigure();
+    res->success = true;
 }
 void Camera::stopCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res) {
     RCLCPP_INFO(this->get_logger(), "Stopping camera!");
@@ -39,6 +40,7 @@ void Camera::stopCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response
     daiNodes.clear();
     device.reset();
     pipeline.reset();
+    res->success = true;
 }
 void Camera::getDeviceType() {
     pipeline = std::make_shared<dai::Pipeline>();
@@ -49,13 +51,11 @@ void Camera::getDeviceType() {
         RCLCPP_INFO(this->get_logger(), "Socket %d - %s", static_cast<int>(sensor.first), sensor.second.c_str());
     }
     auto ir_drivers = device->getIrDrivers();
-    if (ir_drivers.empty()){
+    if(ir_drivers.empty()) {
         RCLCPP_INFO(this->get_logger(), "Device has no IR drivers");
-    }
-    else {
+    } else {
         RCLCPP_INFO(this->get_logger(), "IR Drivers present");
     }
-
 }
 
 void Camera::createPipeline() {
@@ -79,7 +79,7 @@ void Camera::createPipeline() {
         }
         daiNodes.push_back(std::move(rgb));
     } else if(ph->getParam<std::string>(this, "i_pipeline_type") == "RGBD") {
-        auto rgb = std::make_unique<dai_nodes::CameraSensor>("rgb", this, pipeline,device, dai::CameraBoardSocket::RGB);
+        auto rgb = std::make_unique<dai_nodes::CameraSensor>("rgb", this, pipeline, device, dai::CameraBoardSocket::RGB);
         auto stereo = std::make_unique<dai_nodes::Stereo>("stereo", this, pipeline, device);
         auto nn_type = ph->getNNType(this);
         switch(nn_type) {
@@ -93,7 +93,8 @@ void Camera::createPipeline() {
             }
             case param_handlers::camera::NNType::Spatial: {
                 auto nn = std::make_unique<dai_nodes::SpatialNNWrapper>("nn", this, pipeline);
-                rgb->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::input)), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
+                rgb->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::input)),
+                          static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
                 stereo->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::inputDepth)));
                 daiNodes.push_back(std::move(nn));
                 break;
@@ -104,8 +105,7 @@ void Camera::createPipeline() {
         daiNodes.push_back(std::move(rgb));
         daiNodes.push_back(std::move(stereo));
     } else {
-        std::string configuration =
-            ph->getParam<std::string>(this, "i_pipeline_type") + " " + ph->getParam<std::string>(this, "i_cam_type");
+        std::string configuration = ph->getParam<std::string>(this, "i_pipeline_type") + " " + ph->getParam<std::string>(this, "i_cam_type");
         throw std::runtime_error("UNKNOWN PIPELINE TYPE SPECIFIED/CAMERA DOESN'T SUPPORT GIVEN PIPELINE. Configuration: " + configuration);
     }
     if(ph->getParam<bool>(this, "i_enable_imu")) {
@@ -127,24 +127,35 @@ void Camera::startDevice() {
     auto mxid = ph->getParam<std::string>(this, "i_mx_id");
     auto ip = ph->getParam<std::string>(this, "i_ip");
     if(!mxid.empty()) {
-        RCLCPP_INFO(this->get_logger(), "Connecting to the camera using mxid: %s", mxid.c_str());
-        info = dai::DeviceInfo(mxid);
     } else if(!ip.empty()) {
-        RCLCPP_INFO(this->get_logger(), "Connecting to the camera using ip: %s", ip.c_str());
-        info = dai::DeviceInfo(ip);
-    } else {
-        RCLCPP_INFO(this->get_logger(), "No ip/mxid specified, connecting to the next available device.");
     }
     rclcpp::Rate r(1.0);
     bool cam_running;
+    std::vector<dai::DeviceInfo> availableDevices = dai::Device::getAllAvailableDevices();
     while(!cam_running) {
         try {
             dai::UsbSpeed speed = ph->getUSBSpeed(this);
             if(mxid.empty() && ip.empty()) {
-                device = std::make_shared<dai::Device>(*pipeline, speed);
-
+                RCLCPP_INFO(this->get_logger(), "No ip/mxid specified, connecting to the next available device.");
+                device = std::make_shared<dai::Device>(*pipeline);
             } else {
-                device = std::make_shared<dai::Device>(*pipeline, info, speed);
+                for(const auto& info : availableDevices) {
+                    if(!mxid.empty() && info.getMxId() == mxid) {
+                        RCLCPP_INFO(this->get_logger(), "Connecting to the camera using mxid: %s", mxid.c_str());
+                        if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
+                            device = std::make_shared<dai::Device>(*pipeline, info, speed);
+                        } else if(info.state == X_LINK_BOOTED) {
+                            throw std::runtime_error("Device with mxid %s is already booted in different process.");
+                        }
+                    } else if(!ip.empty() && info.name == ip) {
+                        RCLCPP_INFO(this->get_logger(), "Connecting to the camera using ip: %s", ip.c_str());
+                        if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
+                            device = std::make_shared<dai::Device>(*pipeline, info);
+                        } else if(info.state == X_LINK_BOOTED) {
+                            throw std::runtime_error("Device with ip %s is already booted in different process.");
+                        }
+                    }
+                }
             }
             cam_running = true;
         } catch(const std::runtime_error& e) {

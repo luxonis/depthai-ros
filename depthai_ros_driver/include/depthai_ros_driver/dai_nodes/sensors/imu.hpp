@@ -1,11 +1,11 @@
 #pragma once
 
 #include "depthai/depthai.hpp"
+#include "depthai_bridge/ImuConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/param_handlers/imu_param_handler.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/imu.hpp"
-#include "depthai_bridge/ImuConverter.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {

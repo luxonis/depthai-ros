@@ -59,9 +59,9 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
             previewQ->addCallback(std::bind(&RGB::colorQCB, this, std::placeholders::_1, std::placeholders::_2));
             previewPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/preview/image_raw");
             previewInfo = dai::ros::calibrationToCameraInfo(calibHandler,
-                                                    static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
-                                                    ph->getParam<int>(getROSNode(), "i_preview_size"),
-                                                    ph->getParam<int>(getROSNode(), "i_preview_size"));
+                                                            static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
+                                                            ph->getParam<int>(getROSNode(), "i_preview_size"),
+                                                            ph->getParam<int>(getROSNode(), "i_preview_size"));
         };
         rgbInfo = dai::ros::calibrationToCameraInfo(calibHandler,
                                                     static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
@@ -87,7 +87,7 @@ void RGB::colorQCB(const std::string& name, const std::shared_ptr<dai::ADatatype
     imageConverter->toRosMsg(img, deq);
     while(deq.size() > 0) {
         auto currMsg = deq.front();
-        currMsg.header.stamp = getROSNode()->get_clock()->now();
+        // currMsg.header.stamp = getROSNode()->get_clock()->now();
         if(name == ispQName) {
             rgbInfo.header = currMsg.header;
             rgbPub.publish(currMsg, rgbInfo);

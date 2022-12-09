@@ -70,7 +70,7 @@ SpatialDetectionArrayPtr SpatialDetectionConverter::toRosMsgPtr(std::shared_ptr<
 }
 
 void SpatialDetectionConverter::toRosVisionMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData,
-                                         std::deque<vision_msgs::msg::Detection3DArray>& opDetectionMsgs) {
+                                               std::deque<vision_msgs::msg::Detection3DArray>& opDetectionMsgs) {
     auto tstamp = inNetData->getTimestamp();
     vision_msgs::msg::Detection3DArray opDetectionMsg;
 
@@ -116,7 +116,6 @@ void SpatialDetectionConverter::toRosVisionMsg(std::shared_ptr<dai::SpatialImgDe
 
     opDetectionMsgs.push_back(opDetectionMsg);
 }
-
 
 }  // namespace ros
 }  // namespace dai

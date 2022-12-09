@@ -65,7 +65,7 @@ void Mono::monoQCB(const std::string& /*name*/, const std::shared_ptr<dai::AData
     imageConverter->toRosMsg(img, deq);
     while(deq.size() > 0) {
         auto currMsg = deq.front();
-        monoInfo.header =currMsg.header;
+        monoInfo.header = currMsg.header;
         monoPub.publish(currMsg, monoInfo);
         deq.pop_front();
     }

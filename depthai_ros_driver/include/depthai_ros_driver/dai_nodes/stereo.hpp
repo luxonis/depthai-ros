@@ -1,13 +1,13 @@
 #pragma once
 
 #include "depthai/depthai.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/param_handlers/stereo_param_handler.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
-#include "depthai_bridge/ImageConverter.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {

@@ -11,32 +11,14 @@
       i_nn_type: spatial
       i_pipeline_type: RGBD
       i_usb_speed: SUPER_PLUS
-    color:
-      i_board_socket_id: 0
-      i_enable_preview: true
-      i_fps: 30.0
-      i_height: 1080
-      i_interleaved: false
-      i_keep_preview_aspect_ratio: true
-      i_max_q_size: 4
-      i_preview_size: 256
-      i_publish_topic: true
-      i_resolution: '1080'
-      i_set_isp: false
-      i_width: 1920
-      r_exposure: 20000
-      r_focus: 1
-      r_iso: 800
-      r_set_man_exposure: false
-      r_set_man_focus: false
-      r_set_man_whitebalance: false
-      r_whitebalance: 3300
     left:
       i_board_socket_id: 1
-      i_fps: 30.0
-      i_max_q_size: 4
+      i_fps: 60.0
+      i_height: 720
+      i_max_q_size: 30
       i_publish_topic: true
       i_resolution: '720'
+      i_width: 1280
       r_exposure: 1000
       r_iso: 800
       r_set_man_exposure: false
@@ -63,39 +45,69 @@
       - sofa
       - train
       - tvmonitor
-      i_model_path: /workspace/install/depthai_ros_driver/share/depthai_ros_driver/models/mobilenet-ssd_openvino_2021.2_6shave.blob
-      i_nn_config_path: /home/adaser/workspaces/luxonis_ws/ros_2/install/depthai_ros_driver/share/depthai_ros_driver/config/nn/mobilenet.json
+      i_max_q_size: 30
+      i_nn_config_path: depthai_ros_driver/mobilenet
       i_num_inference_threads: 2
       i_num_pool_frames: 4
+    rgb:
+      i_board_socket_id: 0
+      i_enable_preview: true
+      i_fps: 30.0
+      i_height: 720
+      i_interleaved: false
+      i_keep_preview_aspect_ratio: true
+      i_max_q_size: 30
+      i_preview_size: 256
+      i_publish_topic: true
+      i_resolution: '1080'
+      i_set_isp_scale: true
+      i_width: 1280
+      r_exposure: 20000
+      r_focus: 1
+      r_iso: 800
+      r_set_man_exposure: false
+      r_set_man_focus: false
+      r_set_man_whitebalance: false
+      r_whitebalance: 3300
     right:
       i_board_socket_id: 2
-      i_fps: 30.0
-      i_max_q_size: 4
+      i_fps: 60.0
+      i_height: 720
+      i_max_q_size: 30
       i_publish_topic: true
       i_resolution: '720'
+      i_width: 1280
       r_exposure: 1000
       r_iso: 800
       r_set_man_exposure: false
     stereo:
       i_align_depth: true
+      i_bilateral_sigma: 500
       i_board_socket_id: 0
-      i_decimation_factor: 1
+      i_decimation_filter_decimation_factor: 1
+      i_decimation_filter_decimation_mode: PIXEL_SKIPPING
       i_depth_filter_size: 7
       i_depth_preset: HIGH_ACCURACY
+      i_enable_deciamation_filter: true
+      i_enable_distortion_correction: false
       i_enable_spatial_filter: true
-      i_enable_speckle_filter: false
       i_enable_temporal_filter: true
+      i_enable_threshold_filter: true
       i_extended_disp: false
-      i_height: 1080
-      i_hole_filling_radius: 2
+      i_height: 720
       i_lr_check: true
       i_lrc_threshold: 5
-      i_max_q_size: 4
-      i_rectify_edge_fill_color: -1
-      i_spatal_filter_iterations: 1
-      i_speckle_range: 50
+      i_max_q_size: 30
+      i_rectify_edge_fill_color: 0
+      i_spatial_filter_alpha: 0.5
+      i_spatial_filter_delta: 20
+      i_spatial_filter_hole_filling_radius: 2
+      i_spatial_filter_iterations: 1
       i_stereo_conf_threshold: 255
+      i_temporal_filter_alpha: 0.4000000059604645
+      i_temporal_filter_delta: 20
+      i_temporal_filter_persistency: VALID_2_IN_LAST_4
       i_threshold_filter_max_range: 15000
       i_threshold_filter_min_range: 400
-      i_width: 1920
+      i_width: 1280
     use_sim_time: false

@@ -1,31 +1,46 @@
 {
-    "model":
-    {
+    "model": {
         "model_name": "yolov4_tiny_coco_416x416_openvino_2021.4_6shave_bgr",
         "zoo": "depthai_examples"
     },
-    "nn_config":
-    {
-        "output_format" : "detection",
-        "NN_family" : "YOLO",
-        "NN_specific_metadata" :
-        {
-            "classes" : 80,
-            "coordinates" : 4,
-            "anchors" : [10, 14, 23, 27, 37, 58, 81, 82, 135, 169, 344, 319],
-            "anchor_masks" :
-            {
-                "side13" : [3, 4, 5],
-                "side26" : [1, 2, 3]
+    "nn_config": {
+        "output_format": "detection",
+        "NN_family": "YOLO",
+        "NN_specific_metadata": {
+            "classes": 80,
+            "coordinates": 4,
+            "anchors": [
+                10,
+                14,
+                23,
+                27,
+                37,
+                58,
+                81,
+                82,
+                135,
+                169,
+                344,
+                319
+            ],
+            "anchor_masks": {
+                "side13": [
+                    3,
+                    4,
+                    5
+                ],
+                "side26": [
+                    1,
+                    2,
+                    3
+                ]
             },
-            "iou_threshold" : 0.5,
-            "confidence_threshold" : 0.5
+            "iou_threshold": 0.5,
+            "confidence_threshold": 0.5
         }
     },
-    "mappings":
-    {
-        "labels":
-        [
+    "mappings": {
+        "labels": [
             "person",
             "bicycle",
             "car",
@@ -105,7 +120,7 @@
             "scissors",
             "teddy bear",
             "hair drier",
-            "toothbrush"        
+            "toothbrush"
         ]
     },
     "version": 1

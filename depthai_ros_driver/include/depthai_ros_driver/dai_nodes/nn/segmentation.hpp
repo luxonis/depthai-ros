@@ -39,6 +39,6 @@ class Segmentation : public BaseNode {
     std::string nnQName;
 };
 
-}  // namespace nn_wrappers
+}  // namespace nn
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

@@ -11,19 +11,13 @@ from launch_ros.descriptions import ComposableNode
 
 
 def launch_setup(context, *args, **kwargs):
-
-    depthai_prefix = get_package_share_directory("depthai_ros_driver")
-
+    params_file = LaunchConfiguration("params_file")
     urdf_launch_dir = os.path.join(get_package_share_directory('depthai_bridge'), 'launch')
-
-    nn_config_path = os.path.join(depthai_prefix, "config", "nn", LaunchConfiguration(
-        "nn_family").perform(context)+".json")
-    mxid = LaunchConfiguration('mxid').perform(context)
-    nn_type = LaunchConfiguration('nn_type').perform(context)
     
     camera_model = LaunchConfiguration('camera_model',  default = 'OAK-D')
-    tf_prefix    = LaunchConfiguration('tf_prefix',     default = 'oak')
-    tf_prefix_str = LaunchConfiguration('tf_prefix').perform(context)
+
+    name = LaunchConfiguration('name').perform(context)
+
     parent_frame = LaunchConfiguration('parent_frame',  default = 'oak-d-base-frame')
     cam_pos_x    = LaunchConfiguration('cam_pos_x',     default = '0.0')
     cam_pos_y    = LaunchConfiguration('cam_pos_y',     default = '0.0')
@@ -32,13 +26,14 @@ def launch_setup(context, *args, **kwargs):
     cam_pitch    = LaunchConfiguration('cam_pitch',     default = '0.0')
     cam_yaw      = LaunchConfiguration('cam_yaw',       default = '0.0')
     
+    
     return [
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 os.path.join(urdf_launch_dir, 'urdf_launch.py')),
-            launch_arguments={'tf_prefix': tf_prefix,
+            launch_arguments={'tf_prefix': name,
                               'camera_model': camera_model,
-                              'base_frame': tf_prefix,
+                              'base_frame': name,
                               'parent_frame': parent_frame,
                               'cam_pos_x': cam_pos_x,
                               'cam_pos_y': cam_pos_y,
@@ -46,23 +41,34 @@ def launch_setup(context, *args, **kwargs):
                               'cam_roll': cam_roll,
                               'cam_pitch': cam_pitch,
                               'cam_yaw': cam_yaw}.items()),
-
         ComposableNodeContainer(
-            name=tf_prefix_str+"_container",
+            name="container",
             namespace="",
             package="rclcpp_components",
             executable="component_container",
             composable_node_descriptions=[
-
+                    ComposableNode(
+                        package="depth_image_proc",
+                        plugin="depth_image_proc::ConvertMetricNode",
+                        name="convert_metric_node",
+                        remappings=[('image_raw', name+'/stereo/image_raw'),
+                                            ('camera_info', name+'/stereo/camera_info'),
+                                            ('image', name+'/stereo/converted_depth')]
+                    ),
+                    ComposableNode(
+                    package='depth_image_proc',
+                    plugin='depth_image_proc::PointCloudXyzrgbNode',
+                    name='point_cloud_xyzrgb_node',
+                    remappings=[('depth_registered/image_rect', name+'/stereo/converted_depth'),
+                                ('rgb/image_rect_color', name+'/rgb/image_raw'),
+                                ('rgb/camera_info', name+'/rgb/camera_info'),
+                                ('points', name+'/points')]
+                    ),
                     ComposableNode(
                         package="depthai_ros_driver",
                         plugin="depthai_ros_driver::Camera",
-                        name=tf_prefix_str,
-                        parameters=[{
-                            "camera.i_mx_id": mxid,
-                            "camera.i_nn_type": nn_type,
-                            "nn.i_nn_config_path": nn_config_path
-                            }],
+                        name=name,
+                        parameters=[params_file],
                     ),
             ],
             output="screen",
@@ -71,13 +77,18 @@ def launch_setup(context, *args, **kwargs):
 
 
 def generate_launch_description():
+    depthai_prefix = get_package_share_directory("depthai_ros_driver")
     declared_arguments = [
-        DeclareLaunchArgument("nn_family", default_value="yolo"),
-        DeclareLaunchArgument("nn_type", default_value="rgb"),
-        DeclareLaunchArgument("tf_prefix", default_value="oak"),
-        DeclareLaunchArgument("use_rviz", default_value="False"),
+        DeclareLaunchArgument("name", default_value="oak"),
         DeclareLaunchArgument("parent_frame", default_value="oak-d-base-frame"),
-        DeclareLaunchArgument("mxid", default_value=""),
+        DeclareLaunchArgument("cam_pos_x", default_value="0.0"),
+        DeclareLaunchArgument("cam_pos_y", default_value="0.0"),
+        DeclareLaunchArgument("cam_pos_z", default_value="0.0"),
+        DeclareLaunchArgument("cam_roll", default_value="0.0"),
+        DeclareLaunchArgument("cam_pitch", default_value="0.0"),
+        DeclareLaunchArgument("cam_yaw", default_value="0.0"),
+        DeclareLaunchArgument("params_file", default_value=os.path.join(depthai_prefix, 'config', 'rgbd.yaml')),
+        DeclareLaunchArgument("use_rviz", default_value="False"),
     ]
 
     return LaunchDescription(

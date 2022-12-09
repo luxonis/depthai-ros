@@ -50,9 +50,9 @@ void Yolo::yoloCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatat
     detConverter->toRosMsg(inDet, deq);
     while(deq.size() > 0) {
         auto currMsg = deq.front();
-        if (currMsg.detections.size()>0){
-        int class_id = stoi(currMsg.detections[0].results[0].hypothesis.class_id);
-        currMsg.detections[0].results[0].hypothesis.class_id = ph->getParam<std::vector<std::string>>(getROSNode(), "i_label_map")[class_id];
+        if(currMsg.detections.size() > 0) {
+            int class_id = stoi(currMsg.detections[0].results[0].hypothesis.class_id);
+            currMsg.detections[0].results[0].hypothesis.class_id = ph->getParam<std::vector<std::string>>(getROSNode(), "i_label_map")[class_id];
         }
         detPub->publish(currMsg);
         deq.pop_front();
@@ -70,6 +70,6 @@ dai::Node::Input Yolo::getInput(int /*linkType*/) {
 void Yolo::updateParams(const std::vector<rclcpp::Parameter>& params) {
     ph->setRuntimeParams(getROSNode(), params);
 }
-}  // namespace nn_wrappers
+}  // namespace nn
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

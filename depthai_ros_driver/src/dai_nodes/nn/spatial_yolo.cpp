@@ -1,11 +1,11 @@
 #include "depthai_ros_driver/dai_nodes/nn/spatial_yolo.hpp"
 
 #include "cv_bridge/cv_bridge.h"
+#include "depthai_ros_driver/dai_nodes/nn/nn_helpers.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
 #include "sensor_msgs/msg/image.hpp"
-#include "depthai_ros_driver/dai_nodes/nn/nn_helpers.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -36,8 +36,6 @@ void SpatialYolo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 void SpatialYolo::setupQueues(std::shared_ptr<dai::Device> device) {
     nnQ = device->getOutputQueue(nnQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
     auto tfPrefix = std::string(getROSNode()->get_name());
-    RCLCPP_INFO(getROSNode()->get_logger(), "width %d height %d", imageManip->initialConfig.getResizeConfig().width, imageManip->initialConfig.getResizeConfig().height);
-
     detConverter = std::make_unique<dai::ros::SpatialDetectionConverter>(
         tfPrefix + "_rgb_camera_optical_frame", imageManip->initialConfig.getResizeConfig().width, imageManip->initialConfig.getResizeConfig().height, false);
     nnQ->addCallback(std::bind(&SpatialYolo::yoloCB, this, std::placeholders::_1, std::placeholders::_2));
@@ -53,9 +51,9 @@ void SpatialYolo::yoloCB(const std::string& /*name*/, const std::shared_ptr<dai:
     detConverter->toRosVisionMsg(inDet, deq);
     while(deq.size() > 0) {
         auto currMsg = deq.front();
-        if (currMsg.detections.size()>0){
-        int class_id = stoi(currMsg.detections[0].results[0].hypothesis.class_id);
-        currMsg.detections[0].results[0].hypothesis.class_id = ph->getParam<std::vector<std::string>>(getROSNode(), "i_label_map")[class_id];
+        if(currMsg.detections.size() > 0) {
+            int class_id = stoi(currMsg.detections[0].results[0].hypothesis.class_id);
+            currMsg.detections[0].results[0].hypothesis.class_id = ph->getParam<std::vector<std::string>>(getROSNode(), "i_label_map")[class_id];
         }
         detPub->publish(currMsg);
         deq.pop_front();
@@ -77,6 +75,6 @@ dai::Node::Input SpatialYolo::getInput(int linkType) {
 void SpatialYolo::updateParams(const std::vector<rclcpp::Parameter>& params) {
     ph->setRuntimeParams(getROSNode(), params);
 }
-}  // namespace nn_wrappers
+}  // namespace nn
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

@@ -12,7 +12,11 @@ namespace dai_nodes {
 
 class CameraSensor : public BaseNode {
    public:
-    explicit CameraSensor(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device, dai::CameraBoardSocket socket);
+    explicit CameraSensor(const std::string& daiNodeName,
+                          rclcpp::Node* node,
+                          std::shared_ptr<dai::Pipeline> pipeline,
+                          std::shared_ptr<dai::Device> device,
+                          dai::CameraBoardSocket socket);
     virtual ~CameraSensor() = default;
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
@@ -24,7 +28,6 @@ class CameraSensor : public BaseNode {
 
    private:
     std::unique_ptr<BaseNode> sensorNode;
-
 };
 
 }  // namespace dai_nodes

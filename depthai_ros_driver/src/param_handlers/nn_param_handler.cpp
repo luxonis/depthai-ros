@@ -19,10 +19,19 @@ NNParamHandler::NNParamHandler(const std::string& name) : BaseParamHandler(name)
 };
 NNParamHandler::~NNParamHandler() = default;
 nn::NNFamily NNParamHandler::getNNFamily(rclcpp::Node* node) {
-    std::string default_nn_path = ament_index_cpp::get_package_share_directory("depthai_ros_driver") + "/config/nn/yolo.json";
-    auto nn_path = declareAndLogParam<std::string>(node, "i_nn_config_path", default_nn_path);
+    std::string config_path = ament_index_cpp::get_package_share_directory("depthai_ros_driver") + "/config/nn/";
+    std::string default_nn_conf_name = "mobilenet.json";
+    auto nn_path = declareAndLogParam<std::string>(node, "i_nn_config_path", default_nn_conf_name);
+    if(nn_path == "depthai_ros_driver/yolo") {
+        nn_path = config_path + "yolo.json";
+    } else if(nn_path == "depthai_ros_driver/segmentation") {
+        nn_path = config_path + "segmentation.json";
+    } else if(nn_path == "depthai_ros_driver/mobilenet") {
+        nn_path = config_path + "mobilenet.json";
+    }
+    auto final_path = declareAndLogParam<std::string>(node, "i_nn_config_path", nn_path, true);
     using json = nlohmann::json;
-    std::ifstream f(nn_path);
+    std::ifstream f(final_path);
     json data = json::parse(f);
     std::string nnFamily;
     if(data.contains("model") && data.contains("nn_config")) {

@@ -15,16 +15,20 @@ MonoParamHandler::MonoParamHandler(const std::string& name) : BaseParamHandler(n
     };
 };
 MonoParamHandler::~MonoParamHandler() = default;
-void MonoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::MonoCamera> mono_cam, dai::CameraBoardSocket socket, dai_nodes::sensor_helpers::ImageSensor) {
-    declareAndLogParam<int>(node, "i_max_q_size", 4);
+void MonoParamHandler::declareParams(rclcpp::Node* node,
+                                     std::shared_ptr<dai::node::MonoCamera> mono_cam,
+                                     dai::CameraBoardSocket socket,
+                                     dai_nodes::sensor_helpers::ImageSensor) {
+    declareAndLogParam<int>(node, "i_max_q_size", 30);
     declareAndLogParam<bool>(node, "i_publish_topic", true);
 
     declareAndLogParam<int>(node, "i_board_socket_id", static_cast<int>(socket));
     mono_cam->setBoardSocket(socket);
-    mono_cam->setFps(declareAndLogParam<double>(node, "i_fps", 30.0));
+    mono_cam->setFps(declareAndLogParam<double>(node, "i_fps", 60.0));
 
     mono_cam->setResolution(monoResolutionMap.at(declareAndLogParam<std::string>(node, "i_resolution", "720")));
-
+    declareAndLogParam<int>(node, "i_width", mono_cam->getResolutionWidth());
+    declareAndLogParam<int>(node, "i_height", mono_cam->getResolutionHeight());
     size_t iso = declareAndLogParam(node, "r_iso", 800, getRangedIntDescriptor(100, 1600));
     size_t exposure = declareAndLogParam(node, "r_exposure", 1000, getRangedIntDescriptor(1, 33000));
 
