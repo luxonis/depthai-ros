@@ -20,6 +20,7 @@
   <depend>std_srvs</depend>
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
+  <depend>image_transport_plugins</depend>
   <depend>image_pipeline</depend>
   <depend>depthai</depend>
   <depend>depthai_bridge</depend>

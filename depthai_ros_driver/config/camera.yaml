@@ -16,7 +16,7 @@
       i_fps: 60.0
       i_height: 720
       i_max_q_size: 30
-      i_publish_topic: true
+      i_publish_topic: false
       i_resolution: '720'
       i_width: 1280
       r_exposure: 1000
@@ -51,13 +51,13 @@
       i_num_pool_frames: 4
     rgb:
       i_board_socket_id: 0
-      i_enable_preview: true
+      i_enable_preview: false
       i_fps: 30.0
       i_height: 720
       i_interleaved: false
       i_keep_preview_aspect_ratio: true
       i_max_q_size: 30
-      i_preview_size: 256
+      i_preview_size: 416
       i_publish_topic: true
       i_resolution: '1080'
       i_set_isp_scale: true
@@ -74,7 +74,7 @@
       i_fps: 60.0
       i_height: 720
       i_max_q_size: 30
-      i_publish_topic: true
+      i_publish_topic: false
       i_resolution: '720'
       i_width: 1280
       r_exposure: 1000
@@ -88,11 +88,11 @@
       i_decimation_filter_decimation_mode: PIXEL_SKIPPING
       i_depth_filter_size: 7
       i_depth_preset: HIGH_ACCURACY
-      i_enable_deciamation_filter: true
+      i_enable_deciamation_filter: false
       i_enable_distortion_correction: false
-      i_enable_spatial_filter: true
-      i_enable_temporal_filter: true
-      i_enable_threshold_filter: true
+      i_enable_spatial_filter: false
+      i_enable_temporal_filter: false
+      i_enable_threshold_filter: false
       i_extended_disp: false
       i_height: 720
       i_lr_check: true

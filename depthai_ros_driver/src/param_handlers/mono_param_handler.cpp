@@ -20,7 +20,7 @@ void MonoParamHandler::declareParams(rclcpp::Node* node,
                                      dai::CameraBoardSocket socket,
                                      dai_nodes::sensor_helpers::ImageSensor) {
     declareAndLogParam<int>(node, "i_max_q_size", 30);
-    declareAndLogParam<bool>(node, "i_publish_topic", true);
+    declareAndLogParam<bool>(node, "i_publish_topic", false);
 
     declareAndLogParam<int>(node, "i_board_socket_id", static_cast<int>(socket));
     mono_cam->setBoardSocket(socket);

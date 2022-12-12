@@ -19,11 +19,11 @@ void RGBParamHandler::declareParams(rclcpp::Node* node,
                                     dai_nodes::sensor_helpers::ImageSensor sensor) {
     declareAndLogParam<int>(node, "i_max_q_size", 30);
     declareAndLogParam<bool>(node, "i_publish_topic", true);
-    declareAndLogParam<bool>(node, "i_enable_preview", true);
+    declareAndLogParam<bool>(node, "i_enable_preview", false);
     declareAndLogParam<int>(node, "i_board_socket_id", static_cast<int>(socket));
     color_cam->setBoardSocket(socket);
     color_cam->setFps(declareAndLogParam<double>(node, "i_fps", 30.0));
-    size_t preview_size = declareAndLogParam<int>(node, "i_preview_size", 256);
+    size_t preview_size = declareAndLogParam<int>(node, "i_preview_size", 416);
     color_cam->setPreviewSize(preview_size, preview_size);
     auto resolution = rgbResolutionMap.at(declareAndLogParam<std::string>(node, "i_resolution", "1080"));
     int width, height;
