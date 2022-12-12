@@ -297,7 +297,7 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(const BridgePublisher& other) {
     if(other._isImageMessage) {
         _isImageMessage = true;
         _camInfoManager = std::make_unique<camera_info_manager::CameraInfoManager>(std::move(other._camInfoManager));
-        _cameraInfoPublisher = rosOrigin::Publisher(other._cameraInfoPublisher);
+        _cameraInfoPublisher = std::make_shared<rosOrigin::Publisher>(other._cameraInfoPublisher);
     }
 }
 #endif
