@@ -3,10 +3,9 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
-from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import Node, ComposableNodeContainer
+from launch_ros.actions import ComposableNodeContainer
 from launch_ros.descriptions import ComposableNode
 
 
@@ -40,7 +39,7 @@ def launch_setup(context, *args, **kwargs):
                               'cam_pitch': cam_pitch,
                               'cam_yaw': cam_yaw}.items()),
         ComposableNodeContainer(
-            name="container",
+            name=name+"_container",
             namespace="",
             package="rclcpp_components",
             executable="component_container",
@@ -61,6 +60,7 @@ def launch_setup(context, *args, **kwargs):
                     remappings=[('depth/image_rect', name+'/stereo/converted_depth'),
                                 ('intensity/image_rect', name+'/right/image_raw'),
                                 ('intensity/camera_info', name+'/right/camera_info'),
+                                ('points', name+'/points')
                                 ]),
                     ComposableNode(
                         package="depthai_ros_driver",
@@ -85,7 +85,7 @@ def generate_launch_description():
         DeclareLaunchArgument("cam_roll", default_value="0.0"),
         DeclareLaunchArgument("cam_pitch", default_value="0.0"),
         DeclareLaunchArgument("cam_yaw", default_value="0.0"),
-        DeclareLaunchArgument("params_file", default_value=os.path.join(depthai_prefix, 'config', 'rgbd.yaml')),
+        DeclareLaunchArgument("params_file", default_value=os.path.join(depthai_prefix, 'config', 'pcl.yaml')),
         DeclareLaunchArgument("use_rviz", default_value="False"),
     ]
 

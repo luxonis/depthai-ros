@@ -1,0 +1,8 @@
+/oak:
+  ros__parameters:
+    camera:
+      i_nn_type: none
+    right:
+      i_publish_topic: true
+    stereo:
+      i_align_depth: false

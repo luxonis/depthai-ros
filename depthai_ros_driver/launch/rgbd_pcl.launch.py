@@ -3,10 +3,9 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
-from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import Node, ComposableNodeContainer
+from launch_ros.actions import ComposableNodeContainer
 from launch_ros.descriptions import ComposableNode
 
 
@@ -42,7 +41,7 @@ def launch_setup(context, *args, **kwargs):
                               'cam_pitch': cam_pitch,
                               'cam_yaw': cam_yaw}.items()),
         ComposableNodeContainer(
-            name="container",
+            name=name+"_container",
             namespace="",
             package="rclcpp_components",
             executable="component_container",
@@ -55,15 +54,15 @@ def launch_setup(context, *args, **kwargs):
                                             ('camera_info', name+'/stereo/camera_info'),
                                             ('image', name+'/stereo/converted_depth')]
                     ),
-                    ComposableNode(
-                    package='depth_image_proc',
-                    plugin='depth_image_proc::PointCloudXyzrgbNode',
-                    name='point_cloud_xyzrgb_node',
-                    remappings=[('depth_registered/image_rect', name+'/stereo/converted_depth'),
-                                ('rgb/image_rect_color', name+'/rgb/image_raw'),
-                                ('rgb/camera_info', name+'/rgb/camera_info'),
-                                ('points', name+'/points')]
-                    ),
+                    # ComposableNode(
+                    # package='depth_image_proc',
+                    # plugin='depth_image_proc::PointCloudXyzrgbNode',
+                    # name='point_cloud_xyzrgb_node',
+                    # remappings=[('depth_registered/image_rect', name+'/stereo/converted_depth'),
+                    #             ('rgb/image_rect_color', name+'/rgb/image_raw'),
+                    #             ('rgb/camera_info', name+'/rgb/camera_info'),
+                    #             ('points', name+'/points')]
+                    # ),
                     ComposableNode(
                         package="depthai_ros_driver",
                         plugin="depthai_ros_driver::Camera",
