@@ -10,20 +10,20 @@ StereoParamHandler::StereoParamHandler(const std::string& name) : BaseParamHandl
         {"HIGH_ACCURACY", dai::node::StereoDepth::PresetMode::HIGH_ACCURACY},
         {"HIGH_DENSITY", dai::node::StereoDepth::PresetMode::HIGH_DENSITY},
     };
-    decimationModeMap = {{"PIXEL_SKIPPING", dai::RawStereoDepthConfig::PostProcessing::DecimationFilter::DecimationMode::PIXEL_SKIPPING},
-                         {"NON_ZERO_MEDIAN", dai::RawStereoDepthConfig::PostProcessing::DecimationFilter::DecimationMode::NON_ZERO_MEDIAN},
-                         {"NON_ZERO_MEAN", dai::RawStereoDepthConfig::PostProcessing::DecimationFilter::DecimationMode::NON_ZERO_MEAN}};
+    decimationModeMap = {{"PIXEL_SKIPPING", dai::StereoDepthConfig::PostProcessing::DecimationFilter::DecimationMode::PIXEL_SKIPPING},
+                         {"NON_ZERO_MEDIAN", dai::StereoDepthConfig::PostProcessing::DecimationFilter::DecimationMode::NON_ZERO_MEDIAN},
+                         {"NON_ZERO_MEAN", dai::StereoDepthConfig::PostProcessing::DecimationFilter::DecimationMode::NON_ZERO_MEAN}};
 
     temporalPersistencyMap = {
-        {"PERSISTENCY_OFF", dai::RawStereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::PERSISTENCY_OFF},
-        {"VALID_8_OUT_OF_8", dai::RawStereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::VALID_8_OUT_OF_8},
-        {"VALID_2_IN_LAST_3", dai::RawStereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::VALID_2_IN_LAST_3},
-        {"VALID_2_IN_LAST_4", dai::RawStereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::VALID_2_IN_LAST_4},
-        {"VALID_2_OUT_OF_8", dai::RawStereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::VALID_2_OUT_OF_8},
-        {"VALID_1_IN_LAST_2", dai::RawStereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::VALID_1_IN_LAST_2},
-        {"VALID_1_IN_LAST_5", dai::RawStereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::VALID_1_IN_LAST_5},
-        {"VALID_1_IN_LAST_8", dai::RawStereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::VALID_1_IN_LAST_8},
-        {"PERSISTENCY_INDEFINITELY", dai::RawStereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::PERSISTENCY_INDEFINITELY},
+        {"PERSISTENCY_OFF", dai::StereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::PERSISTENCY_OFF},
+        {"VALID_8_OUT_OF_8", dai::StereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::VALID_8_OUT_OF_8},
+        {"VALID_2_IN_LAST_3", dai::StereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::VALID_2_IN_LAST_3},
+        {"VALID_2_IN_LAST_4", dai::StereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::VALID_2_IN_LAST_4},
+        {"VALID_2_OUT_OF_8", dai::StereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::VALID_2_OUT_OF_8},
+        {"VALID_1_IN_LAST_2", dai::StereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::VALID_1_IN_LAST_2},
+        {"VALID_1_IN_LAST_5", dai::StereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::VALID_1_IN_LAST_5},
+        {"VALID_1_IN_LAST_8", dai::StereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::VALID_1_IN_LAST_8},
+        {"PERSISTENCY_INDEFINITELY", dai::StereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::PERSISTENCY_INDEFINITELY},
 
     };
 }
@@ -41,7 +41,7 @@ void StereoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::
         declareAndLogParam<int>(node, "i_board_socket_id", static_cast<int>(dai::CameraBoardSocket::RIGHT));
         declareAndLogParam<int>(node, "i_width", node->get_parameter("right.i_width").as_int());
         declareAndLogParam<int>(node, "i_height", node->get_parameter("right.i_height").as_int());
-        // stereo->setDepthAlign(dai::CameraBoardSocket::RIGHT);
+        stereo->setDepthAlign(dai::CameraBoardSocket::RIGHT);
     }
     stereo->setDefaultProfilePreset(depthPresetMap.at(declareAndLogParam<std::string>(node, "i_depth_preset", "HIGH_ACCURACY")));
     stereo->enableDistortionCorrection(declareAndLogParam<bool>(node, "i_enable_distortion_correction", false));

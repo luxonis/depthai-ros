@@ -13,13 +13,13 @@ RGB::RGB(const std::string& daiNodeName,
          dai::CameraBoardSocket socket = dai::CameraBoardSocket::RGB,
          sensor_helpers::ImageSensor sensor = {"IMX378", {"12mp", "4k"}, true})
     : BaseNode(daiNodeName, node, pipeline) {
-    RCLCPP_INFO(node->get_logger(), "Creating node %s", daiNodeName.c_str());
+    RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     colorCamNode = pipeline->create<dai::node::ColorCamera>();
     ph = std::make_unique<param_handlers::RGBParamHandler>(daiNodeName);
     ph->declareParams(node, colorCamNode, socket, sensor);
     setXinXout(pipeline);
-    RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
+    RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
 };
 void RGB::setNames() {
     ispQName = getName() + "_isp";

@@ -54,15 +54,15 @@ def launch_setup(context, *args, **kwargs):
                                             ('camera_info', name+'/stereo/camera_info'),
                                             ('image', name+'/stereo/converted_depth')]
                     ),
-                    # ComposableNode(
-                    # package='depth_image_proc',
-                    # plugin='depth_image_proc::PointCloudXyzrgbNode',
-                    # name='point_cloud_xyzrgb_node',
-                    # remappings=[('depth_registered/image_rect', name+'/stereo/converted_depth'),
-                    #             ('rgb/image_rect_color', name+'/rgb/image_raw'),
-                    #             ('rgb/camera_info', name+'/rgb/camera_info'),
-                    #             ('points', name+'/points')]
-                    # ),
+                    ComposableNode(
+                    package='depth_image_proc',
+                    plugin='depth_image_proc::PointCloudXyzrgbNode',
+                    name='point_cloud_xyzrgb_node',
+                    remappings=[('depth_registered/image_rect', name+'/stereo/converted_depth'),
+                                ('rgb/image_rect_color', name+'/rgb/image_raw'),
+                                ('rgb/camera_info', name+'/rgb/camera_info'),
+                                ('points', name+'/points')]
+                    ),
                     ComposableNode(
                         package="depthai_ros_driver",
                         plugin="depthai_ros_driver::Camera",

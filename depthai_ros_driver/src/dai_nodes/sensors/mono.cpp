@@ -13,13 +13,13 @@ Mono::Mono(const std::string& daiNodeName,
            dai::CameraBoardSocket socket,
            dai_nodes::sensor_helpers::ImageSensor sensor)
     : BaseNode(daiNodeName, node, pipeline) {
-    RCLCPP_INFO(node->get_logger(), "Creating node %s", daiNodeName.c_str());
+    RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     monoCamNode = pipeline->create<dai::node::MonoCamera>();
     ph = std::make_unique<param_handlers::MonoParamHandler>(daiNodeName);
     ph->declareParams(node, monoCamNode, socket, sensor);
     setXinXout(pipeline);
-    RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
+    RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
 };
 void Mono::setNames() {
     monoQName = getName() + "_mono";

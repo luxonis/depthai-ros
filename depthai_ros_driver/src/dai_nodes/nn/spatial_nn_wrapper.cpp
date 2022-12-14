@@ -10,7 +10,7 @@ namespace depthai_ros_driver {
 namespace dai_nodes {
 SpatialNNWrapper::SpatialNNWrapper(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline)
     : BaseNode(daiNodeName, node, pipeline) {
-    RCLCPP_INFO(node->get_logger(), "Creating node %s base", daiNodeName.c_str());
+    RCLCPP_DEBUG(node->get_logger(), "Creating node %s base", daiNodeName.c_str());
     ph = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
     auto family = ph->getNNFamily(getROSNode());
     switch(family) {
@@ -27,7 +27,7 @@ SpatialNNWrapper::SpatialNNWrapper(const std::string& daiNodeName, rclcpp::Node*
         }
     }
 
-    RCLCPP_INFO(node->get_logger(), "Base node %s created", daiNodeName.c_str());
+    RCLCPP_DEBUG(node->get_logger(), "Base node %s created", daiNodeName.c_str());
 };
 void SpatialNNWrapper::setNames() {}
 

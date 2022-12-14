@@ -11,13 +11,13 @@ namespace dai_nodes {
 namespace nn {
 
 Mobilenet::Mobilenet(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
-    RCLCPP_INFO(node->get_logger(), "Creating node %s", daiNodeName.c_str());
+    RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     mobileNode = pipeline->create<dai::node::MobileNetDetectionNetwork>();
     imageManip = pipeline->create<dai::node::ImageManip>();
     ph = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
     ph->declareParams(node, mobileNode, imageManip);
-    RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
+    RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
     imageManip->out.link(mobileNode->input);
     setXinXout(pipeline);
 }

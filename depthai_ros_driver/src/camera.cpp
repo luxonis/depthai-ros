@@ -18,6 +18,7 @@ Camera::Camera(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : rcl
 }
 void Camera::onConfigure() {
     getDeviceType();
+    RCLCPP_INFO(this->get_logger(), "Successfully received information. Generating pipeline.");
     createPipeline();
     startDevice();
     setupQueues();
@@ -43,6 +44,7 @@ void Camera::stopCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response
     res->success = true;
 }
 void Camera::getDeviceType() {
+    RCLCPP_INFO(this->get_logger(), "Getting device info...");
     pipeline = std::make_shared<dai::Pipeline>();
     startDevice();
     auto name = device->getDeviceName();
@@ -130,7 +132,7 @@ void Camera::startDevice() {
     } else if(!ip.empty()) {
     }
     rclcpp::Rate r(1.0);
-    bool cam_running;
+    bool cam_running=false;
     std::vector<dai::DeviceInfo> availableDevices = dai::Device::getAllAvailableDevices();
     while(!cam_running) {
         try {

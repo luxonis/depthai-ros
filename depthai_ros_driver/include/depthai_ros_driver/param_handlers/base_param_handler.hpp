@@ -84,7 +84,7 @@ class BaseParamHandler {
     inline void logParam(const rclcpp::Logger& logger, const std::string& name, T value) {
         std::stringstream ss;
         ss << value;
-        RCLCPP_INFO(logger, "Setting param %s with value %s", name.c_str(), ss.str().c_str());
+        RCLCPP_DEBUG(logger, "Setting param %s with value %s", name.c_str(), ss.str().c_str());
     }
     template <typename T>
     inline void logParam(const rclcpp::Logger& logger, const std::string& name, const std::vector<T>& value) {
@@ -92,7 +92,7 @@ class BaseParamHandler {
         for(const auto& v : value) {
             ss << v << " ";
         }
-        RCLCPP_INFO(logger, "Setting param %s with value %s", name.c_str(), ss.str().c_str());
+        RCLCPP_DEBUG(logger, "Setting param %s with value %s", name.c_str(), ss.str().c_str());
     }
     std::string baseName;
 };

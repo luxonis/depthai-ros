@@ -15,7 +15,7 @@ CameraSensor::CameraSensor(const std::string& daiNodeName,
                            std::shared_ptr<dai::Device> device,
                            dai::CameraBoardSocket socket)
     : BaseNode(daiNodeName, node, pipeline) {
-    RCLCPP_INFO(node->get_logger(), "Creating node %s base", daiNodeName.c_str());
+    RCLCPP_DEBUG(node->get_logger(), "Creating node %s base", daiNodeName.c_str());
 
     auto sensorName = device->getCameraSensorNames().at(socket);
 
@@ -23,14 +23,14 @@ CameraSensor::CameraSensor(const std::string& daiNodeName,
         std::find_if(sensor_helpers::availableSensors.begin(), sensor_helpers::availableSensors.end(), [&sensorName](const sensor_helpers::ImageSensor& s) {
             return s.name == sensorName;
         });
-    RCLCPP_INFO(node->get_logger(), "Node %s has sensor %s", daiNodeName.c_str(), sensorName.c_str());
+    RCLCPP_DEBUG(node->get_logger(), "Node %s has sensor %s", daiNodeName.c_str(), sensorName.c_str());
     if((*sensorIt).color) {
         sensorNode = std::make_unique<RGB>(daiNodeName, node, pipeline, socket, (*sensorIt));
     } else {
         sensorNode = std::make_unique<Mono>(daiNodeName, node, pipeline, socket, (*sensorIt));
     }
 
-    RCLCPP_INFO(node->get_logger(), "Base node %s created", daiNodeName.c_str());
+    RCLCPP_DEBUG(node->get_logger(), "Base node %s created", daiNodeName.c_str());
 };
 void CameraSensor::setNames() {}
 
