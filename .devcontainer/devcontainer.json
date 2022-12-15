@@ -1,0 +1,46 @@
+// See https://aka.ms/vscode-remote/devcontainer.json for format details.
+{
+	"dockerFile": "../src/depthai-ros/Dockerfile",
+	"build": {
+		"args": {"BUILD_SEQUENTIAL": "1",
+				 "USE_RVIZ": "1"}
+	},
+	"remoteUser": "root",
+	"runArgs": [
+		"--device=/dev/ttyUSB0",
+		"--privileged",
+		"--network=host",
+		"--cap-add=SYS_PTRACE",
+		"--security-opt=seccomp:unconfined",
+		"--security-opt=apparmor:unconfined",
+		"--volume=/dev:/dev",
+		"--volume=/tmp/.X11-unix:/tmp/.X11-unix"
+	],
+	"containerEnv": { "DISPLAY": "${localEnv:DISPLAY}" },
+	// Set *default* container specific settings.json values on container create.
+	"settings": {
+		"terminal.integrated.profiles.linux": {
+			"zsh": {
+				"path": "zsh"
+			},
+			"bash": {
+				"path": "bash"
+			}
+			
+		},
+		"terminal.integrated.defaultProfile.linux": "zsh"
+	},
+	"extensions": [
+		"dotjoshjohnson.xml",
+		"ms-azuretools.vscode-docker",
+		"ms-iot.vscode-ros",
+		"ms-python.python",
+		"ms-vscode.cpptools",
+		"redhat.vscode-yaml",
+		"smilerobotics.urdf",
+		"streetsidesoftware.code-spell-checker",
+		"twxs.cmake",
+		"yzhang.markdown-all-in-one",
+		"augustocdias.tasks-shell-input"
+	]
+}

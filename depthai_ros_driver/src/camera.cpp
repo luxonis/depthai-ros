@@ -20,6 +20,7 @@ void Camera::onConfigure() {
     getDeviceType();
     RCLCPP_INFO(this->get_logger(), "Successfully received information. Generating pipeline.");
     createPipeline();
+    RCLCPP_INFO(this->get_logger(), "Connecting to the device.");
     startDevice();
     setupQueues();
     paramCBHandle = this->add_on_set_parameters_callback(std::bind(&Camera::parameterCB, this, std::placeholders::_1));
@@ -29,12 +30,12 @@ void Camera::onConfigure() {
 }
 
 void Camera::startCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res) {
-    RCLCPP_INFO(this->get_logger(), "Starting camera!");
+    RCLCPP_INFO(this->get_logger(), "Starting camera.");
     onConfigure();
     res->success = true;
 }
 void Camera::stopCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res) {
-    RCLCPP_INFO(this->get_logger(), "Stopping camera!");
+    RCLCPP_INFO(this->get_logger(), "Stopping camera.");
     for(const auto& node : daiNodes) {
         node->closeQueues();
     }
@@ -50,65 +51,72 @@ void Camera::getDeviceType() {
     auto name = device->getDeviceName();
     RCLCPP_INFO(this->get_logger(), "Device type: %s", name.c_str());
     for(auto& sensor : device->getCameraSensorNames()) {
-        RCLCPP_INFO(this->get_logger(), "Socket %d - %s", static_cast<int>(sensor.first), sensor.second.c_str());
+        RCLCPP_DEBUG(this->get_logger(), "Socket %d - %s", static_cast<int>(sensor.first), sensor.second.c_str());
     }
     auto ir_drivers = device->getIrDrivers();
     if(ir_drivers.empty()) {
-        RCLCPP_INFO(this->get_logger(), "Device has no IR drivers");
+        RCLCPP_DEBUG(this->get_logger(), "Device has no IR drivers");
     } else {
-        RCLCPP_INFO(this->get_logger(), "IR Drivers present");
+        RCLCPP_DEBUG(this->get_logger(), "IR Drivers present");
     }
 }
 
 void Camera::createPipeline() {
-    if(ph->getParam<std::string>(this, "i_pipeline_type") == "RGB") {
-        auto rgb = std::make_unique<dai_nodes::CameraSensor>("rgb", this, pipeline, device, dai::CameraBoardSocket::RGB);
-        auto nn_type = ph->getNNType(this);
-        switch(nn_type) {
-            case param_handlers::camera::NNType::None:
-                break;
-            case param_handlers::camera::NNType::RGB: {
-                auto nn = std::make_unique<dai_nodes::NNWrapper>("nn", this, pipeline);
-                rgb->link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
-                daiNodes.push_back(std::move(nn));
-                break;
+    auto pipelineType = ph->getPipelineType(this);
+    switch(pipelineType) {
+        case param_handlers::camera::PipelineType::RGB: {
+            auto rgb = std::make_unique<dai_nodes::CameraSensor>("rgb", this, pipeline, device, dai::CameraBoardSocket::RGB);
+            auto nnType = ph->getNNType(this);
+            switch(nnType) {
+                case param_handlers::camera::NNType::None:
+                    break;
+                case param_handlers::camera::NNType::RGB: {
+                    auto nn = std::make_unique<dai_nodes::NNWrapper>("nn", this, pipeline);
+                    rgb->link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
+                    daiNodes.push_back(std::move(nn));
+                    break;
+                }
+                case param_handlers::camera::NNType::Spatial: {
+                    RCLCPP_WARN(this->get_logger(), "Spatial NN selected, but configuration is RGB.");
+                }
+                default:
+                    break;
             }
-            case param_handlers::camera::NNType::Spatial: {
-                RCLCPP_WARN(this->get_logger(), "Spatial NN selected, but configuration is RGB.");
-            }
-            default:
-                break;
+            daiNodes.push_back(std::move(rgb));
+            break;
         }
-        daiNodes.push_back(std::move(rgb));
-    } else if(ph->getParam<std::string>(this, "i_pipeline_type") == "RGBD") {
-        auto rgb = std::make_unique<dai_nodes::CameraSensor>("rgb", this, pipeline, device, dai::CameraBoardSocket::RGB);
-        auto stereo = std::make_unique<dai_nodes::Stereo>("stereo", this, pipeline, device);
-        auto nn_type = ph->getNNType(this);
-        switch(nn_type) {
-            case param_handlers::camera::NNType::None:
-                break;
-            case param_handlers::camera::NNType::RGB: {
-                auto nn = std::make_unique<dai_nodes::NNWrapper>("nn", this, pipeline);
-                rgb->link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
-                daiNodes.push_back(std::move(nn));
-                break;
+        case param_handlers::camera::PipelineType::RGBD: {
+            auto rgb = std::make_unique<dai_nodes::CameraSensor>("rgb", this, pipeline, device, dai::CameraBoardSocket::RGB);
+            auto stereo = std::make_unique<dai_nodes::Stereo>("stereo", this, pipeline, device);
+            auto nnType = ph->getNNType(this);
+            switch(nnType) {
+                case param_handlers::camera::NNType::None:
+                    break;
+                case param_handlers::camera::NNType::RGB: {
+                    auto nn = std::make_unique<dai_nodes::NNWrapper>("nn", this, pipeline);
+                    rgb->link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
+                    daiNodes.push_back(std::move(nn));
+                    break;
+                }
+                case param_handlers::camera::NNType::Spatial: {
+                    auto nn = std::make_unique<dai_nodes::SpatialNNWrapper>("nn", this, pipeline);
+                    rgb->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::input)),
+                              static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
+                    stereo->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::inputDepth)));
+                    daiNodes.push_back(std::move(nn));
+                    break;
+                }
+                default:
+                    break;
             }
-            case param_handlers::camera::NNType::Spatial: {
-                auto nn = std::make_unique<dai_nodes::SpatialNNWrapper>("nn", this, pipeline);
-                rgb->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::input)),
-                          static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
-                stereo->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::inputDepth)));
-                daiNodes.push_back(std::move(nn));
-                break;
-            }
-            default:
-                break;
+            daiNodes.push_back(std::move(rgb));
+            daiNodes.push_back(std::move(stereo));
+            break;
         }
-        daiNodes.push_back(std::move(rgb));
-        daiNodes.push_back(std::move(stereo));
-    } else {
-        std::string configuration = ph->getParam<std::string>(this, "i_pipeline_type") + " " + ph->getParam<std::string>(this, "i_cam_type");
-        throw std::runtime_error("UNKNOWN PIPELINE TYPE SPECIFIED/CAMERA DOESN'T SUPPORT GIVEN PIPELINE. Configuration: " + configuration);
+        default: {
+            std::string configuration = ph->getParam<std::string>(this, "i_pipeline_type") + " " + ph->getParam<std::string>(this, "i_cam_type");
+            throw std::runtime_error("UNKNOWN PIPELINE TYPE SPECIFIED/CAMERA DOESN'T SUPPORT GIVEN PIPELINE. Configuration: " + configuration);
+        }
     }
     if(ph->getParam<bool>(this, "i_enable_imu")) {
         auto imu = std::make_unique<dai_nodes::Imu>("imu", this, pipeline);
@@ -132,7 +140,7 @@ void Camera::startDevice() {
     } else if(!ip.empty()) {
     }
     rclcpp::Rate r(1.0);
-    bool cam_running=false;
+    bool cam_running = false;
     std::vector<dai::DeviceInfo> availableDevices = dai::Device::getAllAvailableDevices();
     while(!cam_running) {
         try {

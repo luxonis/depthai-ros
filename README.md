@@ -192,3 +192,11 @@ ros2 launch depthai_examples mobile_publisher.launch.py camera_model:=OAK-D-LITE
 ### Users can write Custom converters and plug them in for bridge Publisher. 
 If there a standard Message or usecase for which we have not provided a ros msg or
  converter feel free to create a issue or reach out to us on our discord community. We would be happy to add more. 
+
+### Developers guide
+
+For easier development inside isolated workspace, one can use Visual Studio Code with DevContainers plugin, to do that:
+- Create separate workspace
+- Clone repository into src
+- Copy `.devcontainer` directory into main workspace directory
+- Open workspace directory in VSCode
