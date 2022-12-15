@@ -6,7 +6,6 @@
       i_floodlight_brightness: 0
       i_ip: ''
       i_laser_dot_brightness: 0
-      i_max_q_size: 4
       i_mx_id: ''
       i_nn_type: spatial
       i_pipeline_type: RGBD

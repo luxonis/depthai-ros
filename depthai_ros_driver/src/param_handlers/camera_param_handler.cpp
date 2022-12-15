@@ -39,7 +39,6 @@ dai::UsbSpeed CameraParamHandler::getUSBSpeed(rclcpp::Node* node) {
     return usbSpeedMap.at(getParam<std::string>(node, "i_usb_speed"));
 }
 void CameraParamHandler::declareParams(rclcpp::Node* node) {
-    declareAndLogParam<int>(node, "i_max_q_size", 4);
     declareAndLogParam<std::string>(node, "i_pipeline_type", "RGBD");
     declareAndLogParam<std::string>(node, "i_nn_type", "spatial");
     declareAndLogParam<bool>(node, "i_enable_imu", true);
