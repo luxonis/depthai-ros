@@ -35,6 +35,7 @@
   <depend>stereo_msgs</depend>
   <depend>vision_msgs</depend>
   <depend>foxglove_msgs</depend>
+  <depend>rviz_imu_plugin</depend>
 
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>depth_image_proc</exec_depend>
