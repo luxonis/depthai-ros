@@ -17,7 +17,7 @@ def launch_setup(context, *args, **kwargs):
             "frame_id": name,
             "subscribe_depth": True,
             "approx_sync": True,
-            "Rtabmap/DetectionRate": "10.5",
+            "Rtabmap/DetectionRate": "3.5",
         }
     ]
 
