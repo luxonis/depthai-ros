@@ -24,7 +24,7 @@ void MonoParamHandler::declareParams(rclcpp::Node* node,
 
     declareAndLogParam<int>(node, "i_board_socket_id", static_cast<int>(socket));
     mono_cam->setBoardSocket(socket);
-    mono_cam->setFps(declareAndLogParam<double>(node, "i_fps", 60.0));
+    mono_cam->setFps(declareAndLogParam<double>(node, "i_fps", 30.0));
 
     mono_cam->setResolution(monoResolutionMap.at(declareAndLogParam<std::string>(node, "i_resolution", "720")));
     declareAndLogParam<int>(node, "i_width", mono_cam->getResolutionWidth());

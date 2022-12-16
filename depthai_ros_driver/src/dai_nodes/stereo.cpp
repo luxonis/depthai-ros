@@ -63,7 +63,6 @@ void Stereo::stereoQCB(const std::string& /*name*/, const std::shared_ptr<dai::A
     imageConverter->toRosMsg(img, deq);
     while(deq.size() > 0) {
         auto currMsg = deq.front();
-        currMsg.header.stamp = getROSNode()->get_clock()->now();
         stereoInfo.header = currMsg.header;
         stereoPub.publish(currMsg, stereoInfo);
         deq.pop_front();
