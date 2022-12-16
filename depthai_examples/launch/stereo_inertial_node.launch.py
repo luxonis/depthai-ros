@@ -418,7 +418,10 @@ def generate_launch_description():
                     point_cloud_creator
                 ],
                 output='screen',)
-
+    marker_node = launch_ros.actions.Node(
+            package='depthai_examples', executable='rviz2', output='screen',
+            arguments=['--display-config', rectify_rviz],
+            condition=IfCondition(enableRviz))
 
     ld = LaunchDescription()
 

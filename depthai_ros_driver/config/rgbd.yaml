@@ -1,0 +1,5 @@
+/oak:
+  ros__parameters:
+    camera:
+      i_nn_type: none
+      i_laser_dot_brightness: 800

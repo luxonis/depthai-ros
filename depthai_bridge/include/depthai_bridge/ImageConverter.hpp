@@ -26,7 +26,12 @@ namespace ImageMsgs = sensor_msgs::msg;
 using ImagePtr = ImageMsgs::Image::SharedPtr;
 
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration>;
-
+ImageMsgs::CameraInfo calibrationToCameraInfo(dai::CalibrationHandler calibHandler,
+                                              dai::CameraBoardSocket cameraId,
+                                              int width = -1,
+                                              int height = -1,
+                                              Point2f topLeftPixelId = Point2f(),
+                                              Point2f bottomRightPixelId = Point2f());
 class ImageConverter {
    public:
     // ImageConverter() = default;
