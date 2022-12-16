@@ -104,6 +104,11 @@
       </visual>
     </link>
 
+    <joint name="base_joint" type="fixed">
+        <parent link="base_frame"/>
+        <child link="chassis"/>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+    </joint>
 
     <joint name='left_wheel_hinge' type='revolute'>
       <origin rpy="0.0 0.0 0.0 " xyz="-0.0497 0.00518 -0.03048"/>

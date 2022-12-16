@@ -20,7 +20,7 @@ def generate_launch_description():
     rsp_node =  Node(
             package='robot_state_publisher',
             executable='robot_state_publisher',
-            name='oak_state_publisher',
+            name='robot_state_publisher',
             parameters=[{'robot_description': Command(
                 [
                     'xacro', ' ', xacro_path, ' ',
