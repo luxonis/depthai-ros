@@ -5,14 +5,14 @@
       i_enable_ir: true
       i_floodlight_brightness: 0
       i_ip: ''
-      i_laser_dot_brightness: 0
+      i_laser_dot_brightness: 800
       i_mx_id: ''
       i_nn_type: spatial
       i_pipeline_type: RGBD
       i_usb_speed: SUPER_PLUS
     left:
       i_board_socket_id: 1
-      i_fps: 60.0
+      i_fps: 30.0
       i_height: 720
       i_max_q_size: 30
       i_publish_topic: false
@@ -70,7 +70,7 @@
       r_whitebalance: 3300
     right:
       i_board_socket_id: 2
-      i_fps: 60.0
+      i_fps: 30.0
       i_height: 720
       i_max_q_size: 30
       i_publish_topic: false
@@ -81,13 +81,13 @@
       r_set_man_exposure: false
     stereo:
       i_align_depth: true
-      i_bilateral_sigma: 500
+      i_bilateral_sigma: 0
       i_board_socket_id: 0
       i_decimation_filter_decimation_factor: 1
       i_decimation_filter_decimation_mode: PIXEL_SKIPPING
-      i_depth_filter_size: 7
+      i_depth_filter_size: 5
       i_depth_preset: HIGH_ACCURACY
-      i_enable_deciamation_filter: false
+      i_enable_decimation_filter: false
       i_enable_distortion_correction: false
       i_enable_spatial_filter: false
       i_enable_temporal_filter: false
@@ -95,7 +95,7 @@
       i_extended_disp: false
       i_height: 720
       i_lr_check: true
-      i_lrc_threshold: 5
+      i_lrc_threshold: 10
       i_max_q_size: 30
       i_rectify_edge_fill_color: 0
       i_spatial_filter_alpha: 0.5

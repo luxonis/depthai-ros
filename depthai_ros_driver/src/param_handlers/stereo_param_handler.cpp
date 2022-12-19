@@ -46,15 +46,15 @@ void StereoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::
     stereo->setDefaultProfilePreset(depthPresetMap.at(declareAndLogParam<std::string>(node, "i_depth_preset", "HIGH_ACCURACY")));
     stereo->enableDistortionCorrection(declareAndLogParam<bool>(node, "i_enable_distortion_correction", false));
 
-    stereo->initialConfig.setBilateralFilterSigma(declareAndLogParam<int>(node, "i_bilateral_sigma", 500));
-    stereo->initialConfig.setLeftRightCheckThreshold(declareAndLogParam<int>(node, "i_lrc_threshold", 5));
-    stereo->initialConfig.setMedianFilter(static_cast<dai::MedianFilter>(declareAndLogParam<int>(node, "i_depth_filter_size", 7)));
+    stereo->initialConfig.setBilateralFilterSigma(declareAndLogParam<int>(node, "i_bilateral_sigma", 0));
+    stereo->initialConfig.setLeftRightCheckThreshold(declareAndLogParam<int>(node, "i_lrc_threshold", 10));
+    stereo->initialConfig.setMedianFilter(static_cast<dai::MedianFilter>(declareAndLogParam<int>(node, "i_depth_filter_size", 5)));
     stereo->initialConfig.setConfidenceThreshold(declareAndLogParam<int>(node, "i_stereo_conf_threshold", 255));
     // stereo->initialConfig.setSubpixel(declareAndLogParam<bool>(node, "i_subpixel", true));
     stereo->setExtendedDisparity(declareAndLogParam<bool>(node, "i_extended_disp", false));
     stereo->setRectifyEdgeFillColor(declareAndLogParam<int>(node, "i_rectify_edge_fill_color", 0));
     auto config = stereo->initialConfig.get();
-    config.postProcessing.temporalFilter.enable = declareAndLogParam<bool>(node, "i_enable_temporal_filter", true);
+    config.postProcessing.temporalFilter.enable = declareAndLogParam<bool>(node, "i_enable_temporal_filter", false);
     if(config.postProcessing.temporalFilter.enable) {
         config.postProcessing.temporalFilter.alpha = declareAndLogParam<float>(node, "i_temporal_filter_alpha", 0.4);
         config.postProcessing.temporalFilter.delta = declareAndLogParam<int>(node, "i_temporal_filter_delta", 20);
@@ -62,21 +62,21 @@ void StereoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::
             temporalPersistencyMap.at(declareAndLogParam<std::string>(node, "i_temporal_filter_persistency", "VALID_2_IN_LAST_4"));
     }
     if(config.postProcessing.speckleFilter.enable) {
-        config.postProcessing.speckleFilter.enable = declareAndLogParam<bool>(node, "i_enable_speckle_filter", true);
+        config.postProcessing.speckleFilter.enable = declareAndLogParam<bool>(node, "i_enable_speckle_filter", false);
         config.postProcessing.speckleFilter.speckleRange = declareAndLogParam<int>(node, "i_speckle_filter_speckle_range", 50);
     }
-    config.postProcessing.spatialFilter.enable = declareAndLogParam<bool>(node, "i_enable_spatial_filter", true);
+    config.postProcessing.spatialFilter.enable = declareAndLogParam<bool>(node, "i_enable_spatial_filter", false);
     if(config.postProcessing.spatialFilter.enable) {
         config.postProcessing.spatialFilter.holeFillingRadius = declareAndLogParam<int>(node, "i_spatial_filter_hole_filling_radius", 2);
         config.postProcessing.spatialFilter.alpha = declareAndLogParam<float>(node, "i_spatial_filter_alpha", 0.5);
         config.postProcessing.spatialFilter.delta = declareAndLogParam<int>(node, "i_spatial_filter_delta", 20);
         config.postProcessing.spatialFilter.numIterations = declareAndLogParam<int>(node, "i_spatial_filter_iterations", 1);
     }
-    if(declareAndLogParam<bool>(node, "i_enable_threshold_filter", true)) {
+    if(declareAndLogParam<bool>(node, "i_enable_threshold_filter", false)) {
         config.postProcessing.thresholdFilter.minRange = declareAndLogParam<int>(node, "i_threshold_filter_min_range", 400);
         config.postProcessing.thresholdFilter.maxRange = declareAndLogParam<int>(node, "i_threshold_filter_max_range", 15000);
     }
-    if(declareAndLogParam<bool>(node, "i_enable_deciamation_filter", true)) {
+    if(declareAndLogParam<bool>(node, "i_enable_decimation_filter", false)) {
         config.postProcessing.decimationFilter.decimationMode =
             decimationModeMap.at(declareAndLogParam<std::string>(node, "i_decimation_filter_decimation_mode", "PIXEL_SKIPPING"));
         config.postProcessing.decimationFilter.decimationFactor = declareAndLogParam<int>(node, "i_decimation_filter_decimation_factor", 1);

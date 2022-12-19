@@ -87,7 +87,6 @@ void RGB::colorQCB(const std::string& name, const std::shared_ptr<dai::ADatatype
     imageConverter->toRosMsg(img, deq);
     while(deq.size() > 0) {
         auto currMsg = deq.front();
-        // currMsg.header.stamp = getROSNode()->get_clock()->now();
         if(name == ispQName) {
             rgbInfo.header = currMsg.header;
             rgbPub.publish(currMsg, rgbInfo);

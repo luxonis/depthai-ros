@@ -46,7 +46,7 @@ void CameraParamHandler::declareParams(rclcpp::Node* node) {
     declareAndLogParam<std::string>(node, "i_usb_speed", "SUPER_PLUS");
     declareAndLogParam<std::string>(node, "i_mx_id", "");
     declareAndLogParam<std::string>(node, "i_ip", "");
-    declareAndLogParam<int>(node, "i_laser_dot_brightness", 0, getRangedIntDescriptor(0, 1200));
+    declareAndLogParam<int>(node, "i_laser_dot_brightness", 800, getRangedIntDescriptor(0, 1200));
     declareAndLogParam<int>(node, "i_floodlight_brightness", 0, getRangedIntDescriptor(0, 1500));
 }
 dai::CameraControl CameraParamHandler::setRuntimeParams(rclcpp::Node* node, const std::vector<rclcpp::Parameter>& params) {
