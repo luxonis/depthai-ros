@@ -17,7 +17,7 @@ from launch.substitutions import LaunchConfiguration
 def launch_setup(context, *args, **kwargs):
 
     depthai_prefix = get_package_share_directory("depthai_ros_driver")
-    rviz_config = os.path.join(depthai_prefix, "config", "multicam.rviz")
+    rviz_config = os.path.join(depthai_prefix, "config", "rviz", "multicam.rviz")
     params_file = os.path.join(depthai_prefix, "config", "multicam_example.yaml")
     # put mx_ids here
     cams = ["oak_d_w", "oak_d_lite"]
