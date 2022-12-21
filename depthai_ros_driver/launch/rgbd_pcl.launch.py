@@ -5,13 +5,15 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import ComposableNodeContainer
+from launch_ros.actions import ComposableNodeContainer, Node
 from launch_ros.descriptions import ComposableNode
+from launch.conditions import IfCondition
 
 
 def launch_setup(context, *args, **kwargs):
     params_file = LaunchConfiguration("params_file")
     urdf_launch_dir = os.path.join(get_package_share_directory('depthai_bridge'), 'launch')
+    rviz_config = os.path.join(get_package_share_directory("depthai_ros_driver"), "config", "rviz", "rgbd.rviz")
     
     camera_model = LaunchConfiguration('camera_model',  default = 'OAK-D')
 
@@ -27,6 +29,14 @@ def launch_setup(context, *args, **kwargs):
     
     
     return [
+        Node(
+                condition=IfCondition(LaunchConfiguration("use_rviz")),
+                package="rviz2",
+                executable="rviz2",
+                name="rviz2",
+                output="log",
+                arguments=["-d", rviz_config],
+            ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 os.path.join(urdf_launch_dir, 'urdf_launch.py')),
