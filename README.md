@@ -22,7 +22,7 @@ Supported ROS versions:
 For usage check out respective git branches.
 
 ## Docker
-You can additionally build and run docker images on your local machine. To do that, add USB rules as in above step, clone the repository and inside it run (it matters on which branch you are on):
+You can additionally build and run docker images on your local machine. To do that, **add USB rules as in above step**, clone the repository and inside it run (it matters on which branch you are on):
 ```
 docker build --build-arg USE_RVIZ=1 -t depthai_ros .
 ```
@@ -44,8 +44,16 @@ docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X1
 ```
 to run a launch file of your choice.
 
-**NOTE** ROS2 Humble docker image uses Cyclone as RMW implementation. 
-
+**NOTE** ROS2 Humble docker image uses Cyclone as RMW implementation.
+### Running docker iamge on ROS1
+```
+docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai_ros roslaunch depthai_examples stereo_inertial_node.launch
+```
+Will only start `stereo_inertial_node` launch file (you can try different commands).
+### Running docker iamge on ROS2
+```
+docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai_ros roslaunch depthai_examples stereo_inertial_node.launch.py
+```
 
 ### Install from ros binaries
 
@@ -57,15 +65,7 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 Install depthai-ros. (Available for Noetic, foxy, galactic and humble)
 `sudo apt install ros-<distro>-depthai-ros`
 
-### Running on ROS1
-```
-docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai_ros roslaunch depthai_examples stereo_inertial_node.launch
-```
-Will only start `stereo_inertial_node` launch file (you can try different commands).
-### Running on ROS2
-```
-docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai_ros roslaunch depthai_examples stereo_inertial_node.launch.py
-```
+
 ## Install from source
 
 ### Install dependencies
@@ -95,6 +95,8 @@ The following setup procedure assumes you have cmake version >= 3.10.2 and OpenC
 7. `catkin_make` (For ROS1) `colcon build` (for ROS2)
 8. `source devel/setup.bash` (For ROS1) & `source install/setup.bash` (for ROS2) 
 
+**Note** If you are using a lower end PC or RPi, standard building may take a lot of RAM and clog your PC. To avoid that, you can use `build.sh` command from your workspace (it just wraps colcon commands):
+`./src/depthai-ros/build.sh`
 
 ### Depthai ROS Driver
 

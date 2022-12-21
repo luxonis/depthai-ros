@@ -20,9 +20,10 @@ void Camera::onConfigure() {
     getDeviceType();
     RCLCPP_INFO(this->get_logger(), "Successfully received information. Generating pipeline.");
     createPipeline();
-    RCLCPP_INFO(this->get_logger(), "Connecting to the device.");
-    startDevice();
+    RCLCPP_INFO(this->get_logger(), "Starting pipeline...");
+    device->startPipeline(*pipeline);
     setupQueues();
+    setIR();
     paramCBHandle = this->add_on_set_parameters_callback(std::bind(&Camera::parameterCB, this, std::placeholders::_1));
     startSrv = this->create_service<Trigger>("~/start_camera", std::bind(&Camera::startCB, this, std::placeholders::_1, std::placeholders::_2));
     stopSrv = this->create_service<Trigger>("~/stop_camera", std::bind(&Camera::stopCB, this, std::placeholders::_1, std::placeholders::_2));
@@ -122,7 +123,7 @@ void Camera::createPipeline() {
         auto imu = std::make_unique<dai_nodes::Imu>("imu", this, pipeline);
         daiNodes.push_back(std::move(imu));
     }
-    device.reset();
+
     RCLCPP_INFO(this->get_logger(), "Finished setting up pipeline.");
 }
 
@@ -147,20 +148,20 @@ void Camera::startDevice() {
             dai::UsbSpeed speed = ph->getUSBSpeed(this);
             if(mxid.empty() && ip.empty()) {
                 RCLCPP_INFO(this->get_logger(), "No ip/mxid specified, connecting to the next available device.");
-                device = std::make_shared<dai::Device>(*pipeline);
+                device = std::make_shared<dai::Device>();
             } else {
                 for(const auto& info : availableDevices) {
                     if(!mxid.empty() && info.getMxId() == mxid) {
                         RCLCPP_INFO(this->get_logger(), "Connecting to the camera using mxid: %s", mxid.c_str());
                         if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
-                            device = std::make_shared<dai::Device>(*pipeline, info, speed);
+                            device = std::make_shared<dai::Device>(info, speed);
                         } else if(info.state == X_LINK_BOOTED) {
                             throw std::runtime_error("Device with mxid %s is already booted in different process.");
                         }
                     } else if(!ip.empty() && info.name == ip) {
                         RCLCPP_INFO(this->get_logger(), "Connecting to the camera using ip: %s", ip.c_str());
                         if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
-                            device = std::make_shared<dai::Device>(*pipeline, info);
+                            device = std::make_shared<dai::Device>(info);
                         } else if(info.state == X_LINK_BOOTED) {
                             throw std::runtime_error("Device with ip %s is already booted in different process.");
                         }
@@ -179,6 +180,13 @@ void Camera::startDevice() {
     if(ip.empty()) {
         auto speed = usbStrings[static_cast<int32_t>(device->getUsbSpeed())];
         RCLCPP_INFO(this->get_logger(), "USB SPEED: %s", speed.c_str());
+    }
+}
+
+void Camera::setIR() {
+    if(ph->getParam<bool>(this, "i_enable_ir") && !device->getIrDrivers().empty()) {
+        device->setIrLaserDotProjectorBrightness(ph->getParam<int>(this, "i_laser_dot_brightness"));
+        device->setIrFloodLightBrightness(ph->getParam<int>(this, "i_floodlight_brightness"));
     }
 }
 
