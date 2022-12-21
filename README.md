@@ -95,6 +95,8 @@ The following setup procedure assumes you have cmake version >= 3.10.2 and OpenC
 7. `catkin_make` (For ROS1) `colcon build` (for ROS2)
 8. `source devel/setup.bash` (For ROS1) & `source install/setup.bash` (for ROS2) 
 
+**Note** If you are using a lower end PC or RPi, standard building may take a lot of RAM and clog your PC. To avoid that, you can use `build.sh` command from your workspace:
+`./src/depthai-ros/build.sh`
 
 ### Depthai ROS Driver
 
