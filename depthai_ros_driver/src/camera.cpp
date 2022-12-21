@@ -174,8 +174,8 @@ void Camera::startDevice() {
         r.sleep();
     }
 
-    auto devicename = device->getMxId();
-    RCLCPP_INFO(this->get_logger(), "Camera %s connected!", devicename.c_str());
+    auto deviceName = device->getMxId();
+    RCLCPP_INFO(this->get_logger(), "Camera %s connected!", deviceName.c_str());
     if(ip.empty()) {
         auto speed = usbStrings[static_cast<int32_t>(device->getUsbSpeed())];
         RCLCPP_INFO(this->get_logger(), "USB SPEED: %s", speed.c_str());
