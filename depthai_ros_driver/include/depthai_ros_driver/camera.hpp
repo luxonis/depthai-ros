@@ -20,6 +20,7 @@ class Camera : public rclcpp::Node {
     void startDevice();
     void rgbPipeline();
     void setupQueues();
+    void setIR();
     rcl_interfaces::msg::SetParametersResult parameterCB(const std::vector<rclcpp::Parameter>& params);
     OnSetParametersCallbackHandle::SharedPtr paramCBHandle;
     std::unique_ptr<param_handlers::CameraParamHandler> ph;

@@ -23,6 +23,7 @@ void Camera::onConfigure() {
     RCLCPP_INFO(this->get_logger(), "Starting pipeline...");
     device->startPipeline(*pipeline);
     setupQueues();
+    setIR();
     paramCBHandle = this->add_on_set_parameters_callback(std::bind(&Camera::parameterCB, this, std::placeholders::_1));
     startSrv = this->create_service<Trigger>("~/start_camera", std::bind(&Camera::startCB, this, std::placeholders::_1, std::placeholders::_2));
     stopSrv = this->create_service<Trigger>("~/stop_camera", std::bind(&Camera::stopCB, this, std::placeholders::_1, std::placeholders::_2));
@@ -179,6 +180,13 @@ void Camera::startDevice() {
     if(ip.empty()) {
         auto speed = usbStrings[static_cast<int32_t>(device->getUsbSpeed())];
         RCLCPP_INFO(this->get_logger(), "USB SPEED: %s", speed.c_str());
+    }
+}
+
+void Camera::setIR() {
+    if(ph->getParam<bool>(this, "i_enable_ir") && !device->getIrDrivers().empty()) {
+        device->setIrLaserDotProjectorBrightness(ph->getParam<int>(this, "i_laser_dot_brightness"));
+        device->setIrFloodLightBrightness(ph->getParam<int>(this, "i_floodlight_brightness"));
     }
 }
 
