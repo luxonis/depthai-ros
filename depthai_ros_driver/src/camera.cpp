@@ -147,7 +147,7 @@ void Camera::startDevice() {
             dai::UsbSpeed speed = ph->getUSBSpeed(this);
             if(mxid.empty() && ip.empty()) {
                 RCLCPP_INFO(this->get_logger(), "No ip/mxid specified, connecting to the next available device.");
-                device = std::make_shared<dai::Device>(*pipeline);
+                device = std::make_shared<dai::Device>();
             } else {
                 for(const auto& info : availableDevices) {
                     if(!mxid.empty() && info.getMxId() == mxid) {
