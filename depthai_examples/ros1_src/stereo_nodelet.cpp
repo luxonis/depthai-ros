@@ -1,6 +1,6 @@
 #include "ros/ros.h"
 #include <nodelet/nodelet.h>
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 
 #include "sensor_msgs/Image.h"
 #include <camera_info_manager/camera_info_manager.h>
