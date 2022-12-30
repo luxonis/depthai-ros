@@ -11,9 +11,8 @@ namespace dai_nodes {
 namespace nn {
 
 Segmentation::Segmentation(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline)
-    : BaseNode(daiNodeName, node, pipeline),
-    it(node) {
-    ROS_DEBUG( "Creating node %s", daiNodeName.c_str());
+    : BaseNode(daiNodeName, node, pipeline), it(node) {
+    ROS_DEBUG("Creating node %s", daiNodeName.c_str());
     setNames();
     segNode = pipeline->create<dai::node::NeuralNetwork>();
     imageManip = pipeline->create<dai::node::ImageManip>();
@@ -21,7 +20,7 @@ Segmentation::Segmentation(const std::string& daiNodeName, ros::NodeHandle node,
     ph->declareParams(node, segNode, imageManip);
     imageManip->out.link(segNode->input);
     setXinXout(pipeline);
-    ROS_DEBUG( "Node %s created", daiNodeName.c_str());
+    ROS_DEBUG("Node %s created", daiNodeName.c_str());
 }
 
 void Segmentation::setNames() {
@@ -86,7 +85,7 @@ dai::Node::Input Segmentation::getInput(int linkType) {
     return imageManip->inputImage;
 }
 
-void Segmentation::updateParams(parametersConfig &config) {
+void Segmentation::updateParams(parametersConfig& config) {
     ph->setRuntimeParams(getROSNode(), config);
 }
 

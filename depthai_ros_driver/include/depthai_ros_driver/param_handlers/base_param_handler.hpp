@@ -1,7 +1,7 @@
 #pragma once
 #include "depthai/pipeline/datatype/CameraControl.hpp"
-#include "ros/ros.h"
 #include "depthai_ros_driver/parametersConfig.h"
+#include "ros/ros.h"
 
 namespace depthai_ros_driver {
 namespace param_handlers {
@@ -12,7 +12,7 @@ class BaseParamHandler {
         baseName = name;
     };
     virtual ~BaseParamHandler(){};
-    virtual dai::CameraControl setRuntimeParams(ros::NodeHandle node, parametersConfig &config) = 0;
+    virtual dai::CameraControl setRuntimeParams(ros::NodeHandle node, parametersConfig& config) = 0;
     std::string getName() {
         return baseName;
     }
@@ -20,14 +20,15 @@ class BaseParamHandler {
     T getParam(ros::NodeHandle node, const std::string paramName) {
         T value;
         node.getParam(getFullParamName(node, paramName), value);
-        logParam(getFullParamName(node, paramName),value);
+        logParam(getFullParamName(node, paramName), value);
         return value;
     }
     std::string getFullParamName(ros::NodeHandle node, const std::string& paramName) {
-        return std::string(node.getNamespace()) +"/" + baseName + "_" + paramName;
+        return std::string(node.getNamespace()) + "/" + baseName + "_" + paramName;
     }
     std::string baseName;
-    private:
+
+   private:
     template <typename T>
     inline void logParam(const std::string& name, T value) {
         std::stringstream ss;

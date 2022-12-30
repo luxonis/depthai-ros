@@ -15,7 +15,7 @@ CameraSensor::CameraSensor(const std::string& daiNodeName,
                            std::shared_ptr<dai::Device> device,
                            dai::CameraBoardSocket socket)
     : BaseNode(daiNodeName, node, pipeline) {
-    ROS_DEBUG( "Creating node %s base", daiNodeName.c_str());
+    ROS_DEBUG("Creating node %s base", daiNodeName.c_str());
 
     auto sensorName = device->getCameraSensorNames().at(socket);
 
@@ -23,14 +23,14 @@ CameraSensor::CameraSensor(const std::string& daiNodeName,
         std::find_if(sensor_helpers::availableSensors.begin(), sensor_helpers::availableSensors.end(), [&sensorName](const sensor_helpers::ImageSensor& s) {
             return s.name == sensorName;
         });
-    ROS_DEBUG( "Node %s has sensor %s", daiNodeName.c_str(), sensorName.c_str());
+    ROS_DEBUG("Node %s has sensor %s", daiNodeName.c_str(), sensorName.c_str());
     if((*sensorIt).color) {
         sensorNode = std::make_unique<RGB>(daiNodeName, node, pipeline, socket, (*sensorIt));
     } else {
         sensorNode = std::make_unique<Mono>(daiNodeName, node, pipeline, socket, (*sensorIt));
     }
 
-    ROS_DEBUG( "Base node %s created", daiNodeName.c_str());
+    ROS_DEBUG("Base node %s created", daiNodeName.c_str());
 };
 void CameraSensor::setNames() {}
 
@@ -51,7 +51,7 @@ dai::Node::Input CameraSensor::getInput(int linkType) {
     return sensorNode->getInput(linkType);
 }
 
-void CameraSensor::updateParams(parametersConfig &config) {
+void CameraSensor::updateParams(parametersConfig& config) {
     sensorNode->updateParams(config);
 }
 

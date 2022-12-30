@@ -30,9 +30,6 @@ StereoParamHandler::StereoParamHandler(const std::string& name) : BaseParamHandl
 
 StereoParamHandler::~StereoParamHandler() = default;
 void StereoParamHandler::declareParams(ros::NodeHandle node, std::shared_ptr<dai::node::StereoDepth> stereo) {
-
-
-
     getParam<int>(node, "i_max_q_size");
     stereo->setLeftRightCheck(getParam<bool>(node, "i_lr_check"));
     if(getParam<bool>(node, "i_align_depth")) {
@@ -55,8 +52,7 @@ void StereoParamHandler::declareParams(ros::NodeHandle node, std::shared_ptr<dai
     if(config.postProcessing.temporalFilter.enable) {
         config.postProcessing.temporalFilter.alpha = getParam<float>(node, "i_temporal_filter_alpha");
         config.postProcessing.temporalFilter.delta = getParam<int>(node, "i_temporal_filter_delta");
-        config.postProcessing.temporalFilter.persistencyMode =
-            temporalPersistencyMap.at(getParam<std::string>(node, "i_temporal_filter_persistency"));
+        config.postProcessing.temporalFilter.persistencyMode = temporalPersistencyMap.at(getParam<std::string>(node, "i_temporal_filter_persistency"));
     }
     if(config.postProcessing.speckleFilter.enable) {
         config.postProcessing.speckleFilter.enable = getParam<bool>(node, "i_enable_speckle_filter");
@@ -74,13 +70,12 @@ void StereoParamHandler::declareParams(ros::NodeHandle node, std::shared_ptr<dai
         config.postProcessing.thresholdFilter.maxRange = getParam<int>(node, "i_threshold_filter_max_range");
     }
     if(getParam<bool>(node, "i_enable_deciamation_filter")) {
-        config.postProcessing.decimationFilter.decimationMode =
-            decimationModeMap.at(getParam<std::string>(node, "i_decimation_filter_decimation_mode"));
+        config.postProcessing.decimationFilter.decimationMode = decimationModeMap.at(getParam<std::string>(node, "i_decimation_filter_decimation_mode"));
         config.postProcessing.decimationFilter.decimationFactor = getParam<int>(node, "i_decimation_filter_decimation_factor");
     }
     stereo->initialConfig.set(config);
 }
-dai::CameraControl StereoParamHandler::setRuntimeParams(ros::NodeHandle node, parametersConfig &config) {
+dai::CameraControl StereoParamHandler::setRuntimeParams(ros::NodeHandle node, parametersConfig& config) {
     dai::CameraControl ctrl;
     return ctrl;
 }

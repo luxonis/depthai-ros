@@ -35,21 +35,18 @@ void MonoParamHandler::declareParams(ros::NodeHandle node,
         mono_cam->initialControl.setManualExposure(exposure, iso);
     }
 }
-dai::CameraControl MonoParamHandler::setRuntimeParams(ros::NodeHandle node, parametersConfig &config) {
+dai::CameraControl MonoParamHandler::setRuntimeParams(ros::NodeHandle node, parametersConfig& config) {
     dai::CameraControl ctrl;
-    if (getName()=="left"){
-        if (config.left_r_set_man_exposure){
+    if(getName() == "left") {
+        if(config.left_r_set_man_exposure) {
             ctrl.setManualExposure(config.left_r_exposure, config.left_r_iso);
-        }
-        else{
+        } else {
             ctrl.setAutoExposureEnable();
         }
-    }
-    else if (getName()=="right"){
-        if (config.right_r_set_man_exposure){
+    } else if(getName() == "right") {
+        if(config.right_r_set_man_exposure) {
             ctrl.setManualExposure(config.right_r_exposure, config.right_r_iso);
-        }
-        else{
+        } else {
             ctrl.setAutoExposureEnable();
         }
     }

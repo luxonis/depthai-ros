@@ -12,15 +12,14 @@ RGB::RGB(const std::string& daiNodeName,
          std::shared_ptr<dai::Pipeline> pipeline,
          dai::CameraBoardSocket socket = dai::CameraBoardSocket::RGB,
          sensor_helpers::ImageSensor sensor = {"IMX378", {"12mp", "4k"}, true})
-    : BaseNode(daiNodeName, node, pipeline),
-    it(node) {
-    ROS_DEBUG( "Creating node %s", daiNodeName.c_str());
+    : BaseNode(daiNodeName, node, pipeline), it(node) {
+    ROS_DEBUG("Creating node %s", daiNodeName.c_str());
     setNames();
     colorCamNode = pipeline->create<dai::node::ColorCamera>();
     ph = std::make_unique<param_handlers::RGBParamHandler>(daiNodeName);
     ph->declareParams(node, colorCamNode, socket, sensor);
     setXinXout(pipeline);
-    ROS_DEBUG( "Node %s created", daiNodeName.c_str());
+    ROS_DEBUG("Node %s created", daiNodeName.c_str());
 };
 void RGB::setNames() {
     ispQName = getName() + "_isp";
@@ -50,7 +49,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
     auto calibHandler = device->readCalibration();
     if(ph->getParam<bool>(getROSNode(), "i_publish_topic")) {
         auto tfPrefix = std::string(getROSNode().getNamespace()) + "_" + getName();
-        tfPrefix.erase(0,1);
+        tfPrefix.erase(0, 1);
         imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
         colorQ = device->getOutputQueue(ispQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
         colorQ->addCallback(std::bind(&RGB::colorQCB, this, std::placeholders::_1, std::placeholders::_2));
@@ -60,15 +59,14 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
             previewQ->addCallback(std::bind(&RGB::colorQCB, this, std::placeholders::_1, std::placeholders::_2));
             previewPub = it.advertiseCamera(getName() + "/preview/image_raw", 1);
             previewInfo = imageConverter->calibrationToCameraInfo(calibHandler,
-                                                            static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
-                                                            ph->getParam<int>(getROSNode(), "i_preview_size"),
-                                                            ph->getParam<int>(getROSNode(), "i_preview_size"));
+                                                                  static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
+                                                                  ph->getParam<int>(getROSNode(), "i_preview_size"),
+                                                                  ph->getParam<int>(getROSNode(), "i_preview_size"));
         };
         rgbInfo = imageConverter->calibrationToCameraInfo(calibHandler,
-                                                    static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
-                                                    ph->getParam<int>(getROSNode(), "i_width"),
-                                                    ph->getParam<int>(getROSNode(), "i_height"));
-                                                    
+                                                          static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
+                                                          ph->getParam<int>(getROSNode(), "i_width"),
+                                                          ph->getParam<int>(getROSNode(), "i_height"));
     }
     controlQ = device->getInputQueue(controlQName);
 }
@@ -116,7 +114,7 @@ dai::Node::Input RGB::getInput(int /*linkType*/) {
     throw(std::runtime_error("Class RGB has no input."));
 }
 
-void RGB::updateParams(parametersConfig &config) {
+void RGB::updateParams(parametersConfig& config) {
     auto ctrl = ph->setRuntimeParams(getROSNode(), config);
     controlQ->send(ctrl);
 }

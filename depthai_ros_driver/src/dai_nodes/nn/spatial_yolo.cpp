@@ -5,13 +5,13 @@
 #include "image_transport/camera_publisher.h"
 #include "image_transport/image_transport.h"
 
-
 namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace nn {
 
-SpatialYolo::SpatialYolo(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
-    ROS_DEBUG( "Creating node %s", daiNodeName.c_str());
+SpatialYolo::SpatialYolo(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline)
+    : BaseNode(daiNodeName, node, pipeline) {
+    ROS_DEBUG("Creating node %s", daiNodeName.c_str());
     setNames();
     yoloNode = pipeline->create<dai::node::YoloSpatialDetectionNetwork>();
     imageManip = pipeline->create<dai::node::ImageManip>();
@@ -19,7 +19,7 @@ SpatialYolo::SpatialYolo(const std::string& daiNodeName, ros::NodeHandle node, s
     ph->declareParams(node, yoloNode, imageManip);
     imageManip->out.link(yoloNode->input);
     setXinXout(pipeline);
-    ROS_DEBUG( "Node %s created", daiNodeName.c_str());
+    ROS_DEBUG("Node %s created", daiNodeName.c_str());
 }
 
 void SpatialYolo::setNames() {
@@ -35,7 +35,7 @@ void SpatialYolo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 void SpatialYolo::setupQueues(std::shared_ptr<dai::Device> device) {
     nnQ = device->getOutputQueue(nnQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
     auto tfPrefix = std::string(getROSNode().getNamespace());
-    tfPrefix.erase(0,1);
+    tfPrefix.erase(0, 1);
     detConverter = std::make_unique<dai::ros::SpatialDetectionConverter>(
         tfPrefix + "_rgb_camera_optical_frame", imageManip->initialConfig.getResizeConfig().width, imageManip->initialConfig.getResizeConfig().height, false);
     nnQ->addCallback(std::bind(&SpatialYolo::yoloCB, this, std::placeholders::_1, std::placeholders::_2));
@@ -68,7 +68,7 @@ dai::Node::Input SpatialYolo::getInput(int linkType) {
     }
 }
 
-void SpatialYolo::updateParams(parametersConfig &config) {
+void SpatialYolo::updateParams(parametersConfig& config) {
     ph->setRuntimeParams(getROSNode(), config);
 }
 }  // namespace nn

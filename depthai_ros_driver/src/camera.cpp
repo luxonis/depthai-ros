@@ -1,6 +1,9 @@
-#include <memory>
-
 #include "depthai_ros_driver/camera.hpp"
+
+#include <nodelet/nodelet.h>
+#include <pluginlib/class_list_macros.h>
+
+#include <memory>
 
 #include "depthai_ros_driver/dai_nodes/nn/nn_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/nn_wrapper.hpp"
@@ -9,13 +12,11 @@
 #include "depthai_ros_driver/dai_nodes/sensors/imu.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/stereo.hpp"
-#include <nodelet/nodelet.h>
-#include <pluginlib/class_list_macros.h>
 #include "dynamic_reconfigure/server.h"
 
 namespace depthai_ros_driver {
 
-void Camera::onInit(){
+void Camera::onInit() {
     pNH = getPrivateNodeHandle();
     paramServer = std::make_shared<dynamic_reconfigure::Server<parametersConfig>>(pNH);
     paramServer->setCallback(std::bind(&Camera::parameterCB, this, std::placeholders::_1, std::placeholders::_2));
@@ -26,18 +27,18 @@ void Camera::onInit(){
     stopSrv = pNH.advertiseService("stop_camera", &Camera::stopCB, this);
 }
 
-void Camera::parameterCB(parametersConfig &config, uint32_t level){
+void Camera::parameterCB(parametersConfig& config, uint32_t level) {
     enableIR = config.camera_i_enable_ir;
     floodlightBrighness = config.camera_i_floodlight_brightness;
     laserDotBrightness = config.camera_i_laser_dot_brightness;
-    if(camRunning && enableIR && !device->getIrDrivers().empty()){
+    if(camRunning && enableIR && !device->getIrDrivers().empty()) {
         device->setIrFloodLightBrightness(floodlightBrighness);
         device->setIrLaserDotProjectorBrightness(laserDotBrightness);
     }
-    if(!daiNodes.empty()){
+    if(!daiNodes.empty()) {
         for(const auto& node : daiNodes) {
-        node->updateParams(config);
-    }
+            node->updateParams(config);
+        }
     }
 }
 
@@ -64,7 +65,7 @@ bool Camera::stopCB(Trigger::Request& /*req*/, Trigger::Response& res) {
     daiNodes.clear();
     device.reset();
     pipeline.reset();
-    camRunning=false;
+    camRunning = false;
     res.success = true;
     return true;
 }
@@ -98,7 +99,7 @@ void Camera::createPipeline() {
                 break;
             }
             case param_handlers::camera::NNType::Spatial: {
-                ROS_WARN( "Spatial NN selected, but configuration is RGB.");
+                ROS_WARN("Spatial NN selected, but configuration is RGB.");
             }
             default:
                 break;
@@ -195,12 +196,11 @@ void Camera::startDevice() {
 }
 
 void Camera::setIR() {
-    if(camRunning && enableIR && !device->getIrDrivers().empty()){
+    if(camRunning && enableIR && !device->getIrDrivers().empty()) {
         device->setIrFloodLightBrightness(floodlightBrighness);
         device->setIrLaserDotProjectorBrightness(laserDotBrightness);
     }
 }
-
 
 }  // namespace depthai_ros_driver
 
@@ -208,4 +208,3 @@ void Camera::setIR() {
 
 // watch the capitalization carefully
 PLUGINLIB_EXPORT_CLASS(depthai_ros_driver::Camera, nodelet::Nodelet)
-

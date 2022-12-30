@@ -5,15 +5,13 @@
 #include "image_transport/camera_publisher.h"
 #include "image_transport/image_transport.h"
 
-
-
 namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace nn {
 
 SpatialMobilenet::SpatialMobilenet(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline)
     : BaseNode(daiNodeName, node, pipeline) {
-    ROS_DEBUG( "Creating node %s", daiNodeName.c_str());
+    ROS_DEBUG("Creating node %s", daiNodeName.c_str());
     setNames();
     mobileNode = pipeline->create<dai::node::MobileNetSpatialDetectionNetwork>();
     imageManip = pipeline->create<dai::node::ImageManip>();
@@ -21,7 +19,7 @@ SpatialMobilenet::SpatialMobilenet(const std::string& daiNodeName, ros::NodeHand
     ph->declareParams(node, mobileNode, imageManip);
     imageManip->out.link(mobileNode->input);
     setXinXout(pipeline);
-    ROS_DEBUG( "Node %s created", daiNodeName.c_str());
+    ROS_DEBUG("Node %s created", daiNodeName.c_str());
 }
 
 void SpatialMobilenet::setNames() {
@@ -37,7 +35,7 @@ void SpatialMobilenet::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 void SpatialMobilenet::setupQueues(std::shared_ptr<dai::Device> device) {
     nnQ = device->getOutputQueue(nnQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
     auto tfPrefix = std::string(getROSNode().getNamespace());
-    tfPrefix.erase(0,1);
+    tfPrefix.erase(0, 1);
     detConverter = std::make_unique<dai::ros::SpatialDetectionConverter>(
         tfPrefix + "_rgb_camera_optical_frame", imageManip->initialConfig.getResizeConfig().width, imageManip->initialConfig.getResizeConfig().height, false);
     nnQ->addCallback(std::bind(&SpatialMobilenet::mobilenetCB, this, std::placeholders::_1, std::placeholders::_2));
@@ -70,7 +68,7 @@ dai::Node::Input SpatialMobilenet::getInput(int linkType) {
     }
 }
 
-void SpatialMobilenet::updateParams(parametersConfig &config) {
+void SpatialMobilenet::updateParams(parametersConfig& config) {
     ph->setRuntimeParams(getROSNode(), config);
 }
 

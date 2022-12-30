@@ -6,13 +6,13 @@
 namespace depthai_ros_driver {
 namespace dai_nodes {
 Imu::Imu(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
-    ROS_DEBUG( "Creating node %s", daiNodeName.c_str());
+    ROS_DEBUG("Creating node %s", daiNodeName.c_str());
     setNames();
     imuNode = pipeline->create<dai::node::IMU>();
     ph = std::make_unique<param_handlers::ImuParamHandler>(daiNodeName);
     ph->declareParams(node, imuNode);
     setXinXout(pipeline);
-    ROS_DEBUG( "Node %s created", daiNodeName.c_str());
+    ROS_DEBUG("Node %s created", daiNodeName.c_str());
 };
 void Imu::setNames() {
     imuQName = getName() + "_imu";
@@ -27,11 +27,11 @@ void Imu::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 void Imu::setupQueues(std::shared_ptr<dai::Device> device) {
     imuQ = device->getOutputQueue(imuQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
     auto tfPrefix = std::string(getROSNode().getNamespace()) + "_" + getName();
-    tfPrefix.erase(0,1);
+    tfPrefix.erase(0, 1);
     auto imuMode = static_cast<dai::ros::ImuSyncMethod>(0);
     imuConverter = std::make_unique<dai::ros::ImuConverter>(tfPrefix + "_frame", imuMode, 0.0, 0.0);
     imuQ->addCallback(std::bind(&Imu::imuQCB, this, std::placeholders::_1, std::placeholders::_2));
-    imuPub = getROSNode().advertise<sensor_msgs::Imu>(getName()+"imu/data", 10);
+    imuPub = getROSNode().advertise<sensor_msgs::Imu>(getName() + "imu/data", 10);
 }
 
 void Imu::closeQueues() {
@@ -57,7 +57,7 @@ dai::Node::Input Imu::getInput(int linkType) {
     throw(std::runtime_error("Class Imu has no input."));
 }
 
-void Imu::updateParams(parametersConfig &config) {
+void Imu::updateParams(parametersConfig& config) {
     ph->setRuntimeParams(getROSNode(), config);
 }
 

@@ -2,7 +2,6 @@
 
 #include <depthai_ros_msgs/SpatialDetectionArray.h>
 #include <ros/ros.h>
-#include "vision_msgs/Detection3DArray.h"
 
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
@@ -10,6 +9,7 @@
 #include <depthai_bridge/depthaiUtility.hpp>
 
 #include "depthai/depthai.hpp"
+#include "vision_msgs/Detection3DArray.h"
 
 namespace dai {
 

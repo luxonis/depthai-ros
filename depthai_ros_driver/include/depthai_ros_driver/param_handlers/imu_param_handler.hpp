@@ -13,7 +13,7 @@ class ImuParamHandler : public BaseParamHandler {
     explicit ImuParamHandler(const std::string& name);
     ~ImuParamHandler();
     void declareParams(ros::NodeHandle node, std::shared_ptr<dai::node::IMU> imu);
-    dai::CameraControl setRuntimeParams(ros::NodeHandle node, parametersConfig &config) override;
+    dai::CameraControl setRuntimeParams(ros::NodeHandle node, parametersConfig& config) override;
 };
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver

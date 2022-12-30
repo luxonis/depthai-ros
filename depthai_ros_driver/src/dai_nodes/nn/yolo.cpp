@@ -4,13 +4,12 @@
 #include "image_transport/camera_publisher.h"
 #include "image_transport/image_transport.h"
 
-
 namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace nn {
 
 Yolo::Yolo(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
-    ROS_DEBUG( "Creating node %s", daiNodeName.c_str());
+    ROS_DEBUG("Creating node %s", daiNodeName.c_str());
     setNames();
     yoloNode = pipeline->create<dai::node::YoloDetectionNetwork>();
     imageManip = pipeline->create<dai::node::ImageManip>();
@@ -18,7 +17,7 @@ Yolo::Yolo(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr
     ph->declareParams(node, yoloNode, imageManip);
     imageManip->out.link(yoloNode->input);
     setXinXout(pipeline);
-    ROS_DEBUG( "Node %s created", daiNodeName.c_str());
+    ROS_DEBUG("Node %s created", daiNodeName.c_str());
 }
 
 void Yolo::setNames() {
@@ -34,7 +33,7 @@ void Yolo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 void Yolo::setupQueues(std::shared_ptr<dai::Device> device) {
     nnQ = device->getOutputQueue(nnQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
     auto tfPrefix = std::string(getROSNode().getNamespace());
-    tfPrefix.erase(0,1);
+    tfPrefix.erase(0, 1);
     detConverter = std::make_unique<dai::ros::ImgDetectionConverter>(
         tfPrefix + "_rgb_camera_optical_frame", imageManip->initialConfig.getResizeConfig().width, imageManip->initialConfig.getResizeConfig().height, false);
     nnQ->addCallback(std::bind(&Yolo::yoloCB, this, std::placeholders::_1, std::placeholders::_2));
@@ -64,7 +63,7 @@ dai::Node::Input Yolo::getInput(int /*linkType*/) {
     return imageManip->inputImage;
 }
 
-void Yolo::updateParams(parametersConfig &config) {
+void Yolo::updateParams(parametersConfig& config) {
     ph->setRuntimeParams(getROSNode(), config);
 }
 }  // namespace nn

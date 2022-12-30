@@ -14,7 +14,7 @@ void ImuParamHandler::declareParams(ros::NodeHandle node, std::shared_ptr<dai::n
     imu->setBatchReportThreshold(1);
     imu->setMaxBatchReports(10);
 }
-dai::CameraControl ImuParamHandler::setRuntimeParams(ros::NodeHandle node, parametersConfig &config) {
+dai::CameraControl ImuParamHandler::setRuntimeParams(ros::NodeHandle node, parametersConfig& config) {
     dai::CameraControl ctrl;
     return ctrl;
 }

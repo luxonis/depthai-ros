@@ -8,9 +8,8 @@
 namespace depthai_ros_driver {
 namespace dai_nodes {
 Stereo::Stereo(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device)
-    : BaseNode(daiNodeName, node, pipeline),
-    it(node) {
-    ROS_DEBUG( "Creating node %s", daiNodeName.c_str());
+    : BaseNode(daiNodeName, node, pipeline), it(node) {
+    ROS_DEBUG("Creating node %s", daiNodeName.c_str());
     setNames();
     stereoCamNode = pipeline->create<dai::node::StereoDepth>();
     left = std::make_unique<CameraSensor>("left", node, pipeline, device, dai::CameraBoardSocket::LEFT);
@@ -21,7 +20,7 @@ Stereo::Stereo(const std::string& daiNodeName, ros::NodeHandle node, std::shared
     setXinXout(pipeline);
     left->link(stereoCamNode->left);
     right->link(stereoCamNode->right);
-    ROS_DEBUG( "Node %s created", daiNodeName.c_str());
+    ROS_DEBUG("Node %s created", daiNodeName.c_str());
 };
 void Stereo::setNames() {
     stereoQName = getName() + "_stereo";
@@ -44,15 +43,15 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
         frameName = "right";
     }
     auto tfPrefix = std::string(getROSNode().getNamespace()) + "_" + frameName;
-    tfPrefix.erase(0,1);
+    tfPrefix.erase(0, 1);
     imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
     stereoQ->addCallback(std::bind(&Stereo::stereoQCB, this, std::placeholders::_1, std::placeholders::_2));
     stereoPub = it.advertiseCamera(getName() + "/image_raw", 1);
     auto calibHandler = device->readCalibration();
     stereoInfo = imageConverter->calibrationToCameraInfo(calibHandler,
-                                                   static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
-                                                   ph->getParam<int>(getROSNode(), "i_width"),
-                                                   ph->getParam<int>(getROSNode(), "i_height"));
+                                                         static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
+                                                         ph->getParam<int>(getROSNode(), "i_width"),
+                                                         ph->getParam<int>(getROSNode(), "i_height"));
 }
 void Stereo::closeQueues() {
     left->closeQueues();
@@ -85,7 +84,7 @@ dai::Node::Input Stereo::getInput(int linkType) {
     }
 }
 
-void Stereo::updateParams(parametersConfig &config) {
+void Stereo::updateParams(parametersConfig& config) {
     ph->setRuntimeParams(getROSNode(), config);
 }
 

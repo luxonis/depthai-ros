@@ -3,9 +3,8 @@
 #include "depthai/depthai.hpp"
 #include "depthai/pipeline/Node.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
-#include "ros/ros.h"
 #include "depthai_ros_driver/parametersConfig.h"
-
+#include "ros/ros.h"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -16,7 +15,7 @@ class BaseNode {
         setROSNodePointer(node);
     };
     virtual ~BaseNode(){};
-    virtual void updateParams(parametersConfig &config) = 0;
+    virtual void updateParams(parametersConfig& config) = 0;
     virtual void link(const dai::Node::Input& in, int linkType = 0) = 0;
     virtual dai::Node::Input getInput(int linkType = 0) = 0;
     virtual void setupQueues(std::shared_ptr<dai::Device> device) = 0;

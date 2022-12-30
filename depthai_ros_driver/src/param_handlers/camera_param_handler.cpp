@@ -29,7 +29,7 @@ camera::NNType CameraParamHandler::getNNType(ros::NodeHandle node) {
 dai::UsbSpeed CameraParamHandler::getUSBSpeed(ros::NodeHandle node) {
     return usbSpeedMap.at(getParam<std::string>(node, "i_usb_speed"));
 }
-void CameraParamHandler::declareParams(ros::NodeHandle node) { 
+void CameraParamHandler::declareParams(ros::NodeHandle node) {
     getParam<std::string>(node, "i_pipeline_type");
     getParam<std::string>(node, "i_nn_type");
     getParam<bool>(node, "i_enable_imu");
@@ -40,7 +40,7 @@ void CameraParamHandler::declareParams(ros::NodeHandle node) {
     getParam<int>(node, "i_laser_dot_brightness");
     getParam<int>(node, "i_floodlight_brightness");
 }
-dai::CameraControl CameraParamHandler::setRuntimeParams(ros::NodeHandle node, parametersConfig &config) {
+dai::CameraControl CameraParamHandler::setRuntimeParams(ros::NodeHandle node, parametersConfig& config) {
     dai::CameraControl ctrl;
     return ctrl;
 }

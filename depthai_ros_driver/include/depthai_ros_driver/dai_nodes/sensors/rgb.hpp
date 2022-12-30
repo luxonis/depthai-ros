@@ -5,12 +5,11 @@
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/rgb_param_handler.hpp"
+#include "depthai_ros_driver/parametersConfig.h"
 #include "image_transport/camera_publisher.h"
 #include "image_transport/image_transport.h"
 #include "ros/ros.h"
 #include "sensor_msgs/CameraInfo.h"
-#include "depthai_ros_driver/parametersConfig.h"
-
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -23,7 +22,7 @@ class RGB : public BaseNode {
                  dai::CameraBoardSocket socket,
                  sensor_helpers::ImageSensor sensor);
     virtual ~RGB() = default;
-    void updateParams(parametersConfig &config) override;
+    void updateParams(parametersConfig& config) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(const dai::Node::Input& in, int linkType = 0) override;
     dai::Node::Input getInput(int linkType = 0) override;

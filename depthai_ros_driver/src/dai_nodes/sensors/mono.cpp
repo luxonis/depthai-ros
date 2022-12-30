@@ -12,15 +12,14 @@ Mono::Mono(const std::string& daiNodeName,
            std::shared_ptr<dai::Pipeline> pipeline,
            dai::CameraBoardSocket socket,
            dai_nodes::sensor_helpers::ImageSensor sensor)
-    : BaseNode(daiNodeName, node, pipeline),
-    it(node) {
-    ROS_DEBUG( "Creating node %s", daiNodeName.c_str());
+    : BaseNode(daiNodeName, node, pipeline), it(node) {
+    ROS_DEBUG("Creating node %s", daiNodeName.c_str());
     setNames();
     monoCamNode = pipeline->create<dai::node::MonoCamera>();
     ph = std::make_unique<param_handlers::MonoParamHandler>(daiNodeName);
     ph->declareParams(node, monoCamNode, socket, sensor);
     setXinXout(pipeline);
-    ROS_DEBUG( "Node %s created", daiNodeName.c_str());
+    ROS_DEBUG("Node %s created", daiNodeName.c_str());
 };
 void Mono::setNames() {
     monoQName = getName() + "_mono";
@@ -43,14 +42,14 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
         monoQ = device->getOutputQueue(monoQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
         monoQ->addCallback(std::bind(&Mono::monoQCB, this, std::placeholders::_1, std::placeholders::_2));
         auto tfPrefix = std::string(getROSNode().getNamespace()) + "_" + getName();
-        tfPrefix.erase(0,1);
+        tfPrefix.erase(0, 1);
         imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
         monoPub = it.advertiseCamera(getName() + "/image_raw", 1);
         auto calibHandler = device->readCalibration();
         monoInfo = imageConverter->calibrationToCameraInfo(calibHandler,
-                                                     static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
-                                                     ph->getParam<int>(getROSNode(), "i_width"),
-                                                     ph->getParam<int>(getROSNode(), "i_height"));
+                                                           static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
+                                                           ph->getParam<int>(getROSNode(), "i_width"),
+                                                           ph->getParam<int>(getROSNode(), "i_height"));
     }
     controlQ = device->getInputQueue(controlQName);
 }
@@ -81,7 +80,7 @@ dai::Node::Input Mono::getInput(int linkType) {
     throw(std::runtime_error("Class Mono has no input."));
 }
 
-void Mono::updateParams(parametersConfig &config) {
+void Mono::updateParams(parametersConfig& config) {
     auto ctrl = ph->setRuntimeParams(getROSNode(), config);
     controlQ->send(ctrl);
 }

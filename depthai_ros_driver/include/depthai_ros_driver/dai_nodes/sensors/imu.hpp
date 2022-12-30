@@ -4,9 +4,9 @@
 #include "depthai_bridge/ImuConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/param_handlers/imu_param_handler.hpp"
+#include "depthai_ros_driver/parametersConfig.h"
 #include "ros/ros.h"
 #include "sensor_msgs/Imu.h"
-#include "depthai_ros_driver/parametersConfig.h"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -15,7 +15,7 @@ class Imu : public BaseNode {
    public:
     explicit Imu(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline);
     virtual ~Imu() = default;
-    void updateParams(parametersConfig &config) override;
+    void updateParams(parametersConfig& config) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(const dai::Node::Input& in, int linkType = 0) override;
     dai::Node::Input getInput(int linkType = 0) override;
