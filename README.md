@@ -106,6 +106,10 @@ This runs your camera as a ROS2 Component and gives you the ability to customize
 Paramerers that begin with `r_` can be freely modified during runtime, for example with rqt. 
 Parameters that begin with `i_` are set when camera is initializing, to change them you have to call `stop` and `start` services. This can be used to hot swap NNs during runtime, changing resolutions, etc. Below you can see some examples:
 
+### **Note** There is a difference in parameter naming with ROS1 & ROS2, an example:
+In ROS1 - `rgb_i_fps`, ROS2, `rgb.i_fps`
+This is due to change in parameter design in ROS versions (dynamic reconfigure doesn't support parameter namespacing)
+
 #### Setting RGB parameters
 ![](docs/param_rgb.gif)
 #### Setting Stereo parameters
@@ -158,6 +162,20 @@ For more examples please check the launch files.
 
 ## Running Examples
 
+### Depthai Ros Driver:
+#### Default camera:
+```roslaunch depthai_ros_driver camera.launch`
+#### RGBD camera:
+```roslaunch depthai_ros_driver rgbd_pcl.launch`
+#### Segmentation:
+```roslaunch depthai_ros_driver example_segmentation.launch`
+#### Multi-camera example:
+First, add mx_ids,IPs to the config file (see config/multicam.yaml for reference)
+```roslaunch depthai_ros_driver example_multicam.launch`
+#### Basic Pointcloud (no RGB)
+```roslaunch depthai_ros_driver pointcloud.launch```
+
+
 ### Mobilenet Publisher:
 #### ROS1:
 ##### OAK-D
@@ -175,6 +193,20 @@ roslaunch depthai_examples mobile_publisher.launch | rqt_image_view -t /mobilene
 
 #### ROS2:
 
+### Depthai Ros Driver:
+#### Default camera:
+```ros2 launch depthai_ros_driver camera.launch.py`
+#### RGBD camera:
+```ros2 launch depthai_ros_driver rgbd_pcl.launch.py`
+#### Segmentation:
+```ros2 launch depthai_ros_driver example_segmentation.launch.py`
+#### Multi-camera example:
+First, add mx_ids,IPs to the config file (see config/multicam.yaml for reference)
+```ros2 launch depthai_ros_driver example_multicam.launch.py`
+#### Basic Pointcloud (no RGB)
+```ros2 launch depthai_ros_driver pointcloud.launch.py```
+
+
 ##### OAK-D
 ```
 ros2 launch depthai_examples mobile_publisher.launch.py camera_model:=OAK-D
@@ -184,12 +216,6 @@ ros2 launch depthai_examples mobile_publisher.launch.py camera_model:=OAK-D
 ```
 ros2 launch depthai_examples mobile_publisher.launch.py camera_model:=OAK-D-LITE
 ```
-
-
-### Testing results
-- ImageConverter - Tested using `roslaunch depthai_examples stereo_inertial_node.launch` && `roslaunch depthai_examples rgb_publisher.launch`'
-- ImgDetectionCnverter - tested using `roslaunch depthai_examples mobile_publisher.launch`
-- SpatialImgDetectionConverter - Ntested using `roslaunch depthai_examples stereo_inertial_node.launch`
 
 
 ### Users can write Custom converters and plug them in for bridge Publisher. 
