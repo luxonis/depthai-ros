@@ -14,13 +14,13 @@ RGB::RGB(const std::string& daiNodeName,
          sensor_helpers::ImageSensor sensor = {"IMX378", {"12mp", "4k"}, true})
     : BaseNode(daiNodeName, node, pipeline),
     it(node) {
-    ROS_INFO( "Creating node %s", daiNodeName.c_str());
+    ROS_DEBUG( "Creating node %s", daiNodeName.c_str());
     setNames();
     colorCamNode = pipeline->create<dai::node::ColorCamera>();
     ph = std::make_unique<param_handlers::RGBParamHandler>(daiNodeName);
     ph->declareParams(node, colorCamNode, socket, sensor);
     setXinXout(pipeline);
-    ROS_INFO( "Node %s created", daiNodeName.c_str());
+    ROS_DEBUG( "Node %s created", daiNodeName.c_str());
 };
 void RGB::setNames() {
     ispQName = getName() + "_isp";

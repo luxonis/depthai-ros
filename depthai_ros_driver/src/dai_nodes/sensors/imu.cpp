@@ -6,13 +6,13 @@
 namespace depthai_ros_driver {
 namespace dai_nodes {
 Imu::Imu(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
-    ROS_INFO( "Creating node %s", daiNodeName.c_str());
+    ROS_DEBUG( "Creating node %s", daiNodeName.c_str());
     setNames();
     imuNode = pipeline->create<dai::node::IMU>();
     ph = std::make_unique<param_handlers::ImuParamHandler>(daiNodeName);
     ph->declareParams(node, imuNode);
     setXinXout(pipeline);
-    ROS_INFO( "Node %s created", daiNodeName.c_str());
+    ROS_DEBUG( "Node %s created", daiNodeName.c_str());
 };
 void Imu::setNames() {
     imuQName = getName() + "_imu";

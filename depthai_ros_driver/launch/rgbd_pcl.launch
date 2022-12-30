@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-    <rosparam file="$(find depthai_ros_driver)/config/rgbd.yaml" />
+    <arg name="params_file" default="$(find depthai_ros_driver)/config/rgbd.yaml"/>
+
     <arg name="name" default="oak" />
     <arg name="camera_model" default="OAK-D" />
     <!-- 'zed' or 'zedm' -->
@@ -20,6 +21,7 @@
     <arg name="cam_yaw" default="0.0" />
     <!-- Orientation respect to base frame (i.e. "base_link) -->
 
+    <rosparam file="$(arg params_file)" />
 
     <include file="$(find depthai_bridge)/launch/urdf.launch">
         <arg name="base_frame" value="$(arg  name)" />

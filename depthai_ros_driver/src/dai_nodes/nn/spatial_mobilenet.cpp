@@ -13,15 +13,15 @@ namespace nn {
 
 SpatialMobilenet::SpatialMobilenet(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline)
     : BaseNode(daiNodeName, node, pipeline) {
-    ROS_INFO( "Creating node %s", daiNodeName.c_str());
+    ROS_DEBUG( "Creating node %s", daiNodeName.c_str());
     setNames();
     mobileNode = pipeline->create<dai::node::MobileNetSpatialDetectionNetwork>();
     imageManip = pipeline->create<dai::node::ImageManip>();
     ph = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
     ph->declareParams(node, mobileNode, imageManip);
-    ROS_INFO( "Node %s created", daiNodeName.c_str());
     imageManip->out.link(mobileNode->input);
     setXinXout(pipeline);
+    ROS_DEBUG( "Node %s created", daiNodeName.c_str());
 }
 
 void SpatialMobilenet::setNames() {

@@ -14,13 +14,13 @@ Mono::Mono(const std::string& daiNodeName,
            dai_nodes::sensor_helpers::ImageSensor sensor)
     : BaseNode(daiNodeName, node, pipeline),
     it(node) {
-    ROS_INFO( "Creating node %s", daiNodeName.c_str());
+    ROS_DEBUG( "Creating node %s", daiNodeName.c_str());
     setNames();
     monoCamNode = pipeline->create<dai::node::MonoCamera>();
     ph = std::make_unique<param_handlers::MonoParamHandler>(daiNodeName);
     ph->declareParams(node, monoCamNode, socket, sensor);
     setXinXout(pipeline);
-    ROS_INFO( "Node %s created", daiNodeName.c_str());
+    ROS_DEBUG( "Node %s created", daiNodeName.c_str());
 };
 void Mono::setNames() {
     monoQName = getName() + "_mono";

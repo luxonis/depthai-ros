@@ -10,7 +10,7 @@
 namespace depthai_ros_driver {
 namespace dai_nodes {
 NNWrapper::NNWrapper(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
-    ROS_INFO( "Creating node %s base", daiNodeName.c_str());
+    ROS_DEBUG( "Creating node %s base", daiNodeName.c_str());
     ph = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
     auto family = ph->getNNFamily(getROSNode());
     switch(family) {
@@ -28,7 +28,7 @@ NNWrapper::NNWrapper(const std::string& daiNodeName, ros::NodeHandle node, std::
         }
     }
 
-    ROS_INFO( "Base node %s created", daiNodeName.c_str());
+    ROS_DEBUG( "Base node %s created", daiNodeName.c_str());
 };
 void NNWrapper::setNames() {}
 

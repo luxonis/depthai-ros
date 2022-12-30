@@ -10,7 +10,7 @@ namespace dai_nodes {
 Stereo::Stereo(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device)
     : BaseNode(daiNodeName, node, pipeline),
     it(node) {
-    ROS_INFO( "Creating node %s", daiNodeName.c_str());
+    ROS_DEBUG( "Creating node %s", daiNodeName.c_str());
     setNames();
     stereoCamNode = pipeline->create<dai::node::StereoDepth>();
     left = std::make_unique<CameraSensor>("left", node, pipeline, device, dai::CameraBoardSocket::LEFT);
@@ -21,7 +21,7 @@ Stereo::Stereo(const std::string& daiNodeName, ros::NodeHandle node, std::shared
     setXinXout(pipeline);
     left->link(stereoCamNode->left);
     right->link(stereoCamNode->right);
-    ROS_INFO( "Node %s created", daiNodeName.c_str());
+    ROS_DEBUG( "Node %s created", daiNodeName.c_str());
 };
 void Stereo::setNames() {
     stereoQName = getName() + "_stereo";

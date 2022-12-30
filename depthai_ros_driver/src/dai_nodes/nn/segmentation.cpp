@@ -13,15 +13,15 @@ namespace nn {
 Segmentation::Segmentation(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline)
     : BaseNode(daiNodeName, node, pipeline),
     it(node) {
-    ROS_INFO( "Creating node %s", daiNodeName.c_str());
+    ROS_DEBUG( "Creating node %s", daiNodeName.c_str());
     setNames();
     segNode = pipeline->create<dai::node::NeuralNetwork>();
     imageManip = pipeline->create<dai::node::ImageManip>();
     ph = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
     ph->declareParams(node, segNode, imageManip);
-    ROS_INFO( "Node %s created", daiNodeName.c_str());
     imageManip->out.link(segNode->input);
     setXinXout(pipeline);
+    ROS_DEBUG( "Node %s created", daiNodeName.c_str());
 }
 
 void Segmentation::setNames() {
