@@ -1,0 +1,7 @@
+<library path="lib/libdepthai_ros_driver">
+  <class name="depthai_ros_driver/Camera" type="depthai_ros_driver::Camera" base_class_type="nodelet::Nodelet">
+  <description>
+  OAK Camera nodelet.
+  </description>
+  </class>
+</library>

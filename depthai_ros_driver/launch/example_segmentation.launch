@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="name" default="oak" />
+    <arg name="params_file" default="$(find depthai_ros_driver)/config/camera.yaml"/>
+
+    <rosparam file="$(arg params_file)" />
+
+    <include file="$(find depthai_ros_driver)/launch/camera.launch">
+        <arg name="name" value="$(arg name)"/>
+    </include>
+
+</launch>

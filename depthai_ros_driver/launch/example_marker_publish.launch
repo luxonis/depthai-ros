@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="name" default="oak" />
+
+    <include file="$(find depthai_ros_driver)/launch/camera.launch">
+        <arg name="name" value="$(arg name)"/>
+    </include>
+    <node type="obj_pub.py" name="publisher" pkg="depthai_ros_driver">
+    </node>
+
+</launch>

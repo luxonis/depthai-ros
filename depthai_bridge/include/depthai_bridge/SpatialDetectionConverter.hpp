@@ -9,6 +9,7 @@
 #include <depthai_bridge/depthaiUtility.hpp>
 
 #include "depthai/depthai.hpp"
+#include "vision_msgs/Detection3DArray.h"
 
 namespace dai {
 
@@ -21,6 +22,8 @@ class SpatialDetectionConverter {
     SpatialDetectionConverter(std::string frameName, int width, int height, bool normalized = false);
 
     void toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData, std::deque<SpatialMessages::SpatialDetectionArray>& opDetectionMsg);
+
+    void toRosVisionMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData, std::deque<vision_msgs::Detection3DArray>& opDetectionMsg);
 
     SpatialDetectionArrayPtr toRosMsgPtr(std::shared_ptr<dai::SpatialImgDetections> inNetData);
 

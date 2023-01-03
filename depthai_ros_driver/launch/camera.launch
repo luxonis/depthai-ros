@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="name" default="oak" />
+    <arg name="params_file" default="$(find depthai_ros_driver)/config/camera.yaml"/>
+    <arg name="camera_model" default="OAK-D" />
+    <!-- 'zed' or 'zedm' -->
+    <arg name="base_frame" default="oak-d_frame" />
+    <arg name="parent_frame" default="oak-d-base-frame" />
+
+    <arg name="cam_pos_x" default="0.0" />
+    <!-- Position respect to base frame (i.e. "base_link) -->
+    <arg name="cam_pos_y" default="0.0" />
+    <!-- Position respect to base frame (i.e. "base_link) -->
+    <arg name="cam_pos_z" default="0.0" />
+    <!-- Position respect to base frame (i.e. "base_link) -->
+    <arg name="cam_roll" default="0.0" />
+    <!-- Orientation respect to base frame (i.e. "base_link) -->
+    <arg name="cam_pitch" default="0.0" />
+    <!-- Orientation respect to base frame (i.e. "base_link) -->
+    <arg name="cam_yaw" default="0.0" />
+    <!-- Orientation respect to base frame (i.e. "base_link) -->
+
+    <rosparam file="$(arg params_file)" />
+
+    <include file="$(find depthai_bridge)/launch/urdf.launch">
+        <arg name="base_frame" value="$(arg  name)" />
+        <arg name="parent_frame" value="$(arg  parent_frame)"/>
+        <arg name="camera_model" value="$(arg  camera_model)"/>
+        <arg name="tf_prefix" value="$(arg  name)" />
+        <arg name="cam_pos_x" value="$(arg  cam_pos_x)" />
+        <arg name="cam_pos_y" value="$(arg  cam_pos_y)" />
+        <arg name="cam_pos_z" value="$(arg  cam_pos_z)" />
+        <arg name="cam_roll" value="$(arg  cam_roll)" />
+        <arg name="cam_pitch" value="$(arg  cam_pitch)" />
+        <arg name="cam_yaw" value="$(arg  cam_yaw)" />
+    </include>
+
+    <node pkg="nodelet" type="nodelet" name="$(arg  name)_nodelet_manager" args="manager" output="screen">
+        <remap from="/nodelet_manager/load_nodelet" to="$(arg name)/nodelet_manager/load_nodelet"/>
+        <remap from="/nodelet_manager/unload_nodelet" to="$(arg name)/nodelet_manager/unload_nodelet"/>
+        <remap from="/nodelet_manager/list" to="$(arg name)/nodelet_manager/list"/>
+    </node>
+
+    <node name="$(arg  name)" pkg="nodelet" type="nodelet" output="screen" required="true" args="load depthai_ros_driver/Camera $(arg  name)_nodelet_manager">
+    </node>
+
+
+</launch>

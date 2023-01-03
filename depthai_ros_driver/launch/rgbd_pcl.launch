@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="params_file" default="$(find depthai_ros_driver)/config/rgbd.yaml"/>
+
+    <arg name="name" default="oak" />
+    <arg name="camera_model" default="OAK-D" />
+    <!-- 'zed' or 'zedm' -->
+    <arg name="base_frame" default="oak-d_frame" />
+    <arg name="parent_frame" default="oak-d-base-frame" />
+
+    <arg name="cam_pos_x" default="0.0" />
+    <!-- Position respect to base frame (i.e. "base_link) -->
+    <arg name="cam_pos_y" default="0.0" />
+    <!-- Position respect to base frame (i.e. "base_link) -->
+    <arg name="cam_pos_z" default="0.0" />
+    <!-- Position respect to base frame (i.e. "base_link) -->
+    <arg name="cam_roll" default="0.0" />
+    <!-- Orientation respect to base frame (i.e. "base_link) -->
+    <arg name="cam_pitch" default="0.0" />
+    <!-- Orientation respect to base frame (i.e. "base_link) -->
+    <arg name="cam_yaw" default="0.0" />
+    <!-- Orientation respect to base frame (i.e. "base_link) -->
+
+    <rosparam file="$(arg params_file)" />
+
+    <include file="$(find depthai_bridge)/launch/urdf.launch">
+        <arg name="base_frame" value="$(arg  name)" />
+        <arg name="parent_frame" value="$(arg  parent_frame)"/>
+        <arg name="camera_model" value="$(arg  camera_model)"/>
+        <arg name="tf_prefix" value="$(arg  name)" />
+        <arg name="cam_pos_x" value="$(arg  cam_pos_x)" />
+        <arg name="cam_pos_y" value="$(arg  cam_pos_y)" />
+        <arg name="cam_pos_z" value="$(arg  cam_pos_z)" />
+        <arg name="cam_roll" value="$(arg  cam_roll)" />
+        <arg name="cam_pitch" value="$(arg  cam_pitch)" />
+        <arg name="cam_yaw" value="$(arg  cam_yaw)" />
+    </include>
+
+    <node pkg="nodelet" type="nodelet" name="depth_image_convertion_nodelet"
+        args="load depth_image_proc/convert_metric nodelet_manager">
+        <remap from="image_raw" to="$(arg name)/stereo/image_raw"/>    
+        <remap from="image" to="$(arg name)/stereo/image"/>
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="depth_image_to_rgb_pointcloud"
+        args="load depth_image_proc/point_cloud_xyzrgb nodelet_manager">
+        <param name="queue_size"          value="10"/>
+
+        <remap from="rgb/camera_info" to="$(arg name)/rgb/camera_info"/>
+        <remap from="rgb/image_rect_color" to="$(arg name)/rgb/image_raw"/>
+        <remap from="depth_registered/image_rect" to="$(arg name)/stereo/image"/>    
+        <remap from="depth_registered/points" to="$(arg name)/points"/>
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="nodelet_manager" args="manager" output="screen"/>
+
+    <node name="oak" pkg="nodelet" type="nodelet" output="screen" required="true" args="load depthai_ros_driver/Camera nodelet_manager">
+    </node>
+
+
+</launch>

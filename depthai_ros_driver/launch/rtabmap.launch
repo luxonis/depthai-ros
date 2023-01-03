@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="name" default="oak" />
+    <rosparam file="$(find depthai_ros_driver)/config/rgbd.yaml" />
+
+
+
+    <include file="$(find depthai_ros_driver)/launch/camera.launch">
+        <arg name="name" value="$(arg name)"/>
+    </include>
+    <node type="rgbd_odometry" name="rgbd_odometry" pkg="rtabmap_ros">
+        <remap from="rgb/image" to="$(arg name)/rgb/image_raw"/>
+        <remap from="rgb/camera_info" to="$(arg name)/rgb/camera_info"/>
+        <remap from="depth/image" to="$(arg name)/stereo/image_raw"/>
+        <param name="frame_id" type="string" value="$(arg name)"/>
+
+        <rosparam param="subscribe_depth">True</rosparam>
+        <rosparam param="approx_sync">True</rosparam>
+        <rosparam param="approx_sync_max_interval">0.02</rosparam>
+        
+    </node>
+    <node type="rtabmap" name="rtabmap" pkg="rtabmap_ros">
+        <remap from="rgb/image" to="$(arg name)/rgb/image_raw"/>
+        <remap from="rgb/camera_info" to="$(arg name)/rgb/camera_info"/>
+        <remap from="depth/image" to="$(arg name)/stereo/image_raw"/>
+        <rosparam param="Rtabmap/DetectionRate">3.5</rosparam>
+    </node>
+    <node type="rtabmapviz" name="rtabmap_viz" pkg="rtabmap_ros">
+        <remap from="rgb/image" to="$(arg name)/rgb/image_raw"/>
+        <remap from="rgb/camera_info" to="$(arg name)/rgb/camera_info"/>
+        <remap from="depth/image" to="$(arg name)/stereo/image_raw"/>
+    </node>
+
+</launch>
