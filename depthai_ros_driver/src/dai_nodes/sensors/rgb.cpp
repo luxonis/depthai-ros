@@ -58,15 +58,23 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
             previewQ = device->getOutputQueue(previewQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
             previewQ->addCallback(std::bind(&RGB::colorQCB, this, std::placeholders::_1, std::placeholders::_2));
             previewPub = it.advertiseCamera(getName() + "/preview/image_raw", 1);
-            previewInfo = imageConverter->calibrationToCameraInfo(calibHandler,
-                                                                  static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
-                                                                  ph->getParam<int>(getROSNode(), "i_preview_size"),
-                                                                  ph->getParam<int>(getROSNode(), "i_preview_size"));
+            try {
+                previewInfo = imageConverter->calibrationToCameraInfo(calibHandler,
+                                                                      static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
+                                                                      ph->getParam<int>(getROSNode(), "i_preview_size"),
+                                                                      ph->getParam<int>(getROSNode(), "i_preview_size"));
+            } catch(std::runtime_error& e) {
+                ROS_ERROR("No calibration! Publishing empty camera_info.");
+            }
         };
-        rgbInfo = imageConverter->calibrationToCameraInfo(calibHandler,
-                                                          static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
-                                                          ph->getParam<int>(getROSNode(), "i_width"),
-                                                          ph->getParam<int>(getROSNode(), "i_height"));
+        try {
+            rgbInfo = imageConverter->calibrationToCameraInfo(calibHandler,
+                                                              static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
+                                                              ph->getParam<int>(getROSNode(), "i_width"),
+                                                              ph->getParam<int>(getROSNode(), "i_height"));
+        } catch(std::runtime_error& e) {
+            ROS_ERROR("No calibration! Publishing empty camera_info.");
+        }
     }
     controlQ = device->getInputQueue(controlQName);
 }

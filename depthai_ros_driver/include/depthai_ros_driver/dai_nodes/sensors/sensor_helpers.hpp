@@ -13,6 +13,35 @@ struct ImageSensor {
     std::string name;
     std::vector<std::string> allowedResolutions;
     bool color;
+    void getSizeFromResolution(const dai::ColorCameraProperties::SensorResolution& res, int& width, int& height) {
+        switch(res) {
+            case dai::ColorCameraProperties::SensorResolution::THE_720_P: {
+                width = 1280;
+                height = 800;
+                break;
+            }
+            case dai::ColorCameraProperties::SensorResolution::THE_800_P: {
+                width = 1280;
+                height = 800;
+                break;
+            }
+            case dai::ColorCameraProperties::SensorResolution::THE_1080_P: {
+                width = 1920;
+                height = 1080;
+                break;
+            }
+            case dai::ColorCameraProperties::SensorResolution::THE_4_K: {
+                width = 3840;
+                height = 2160;
+                break;
+            }
+            case dai::ColorCameraProperties::SensorResolution::THE_12_MP: {
+                height = 4056;
+                width = 3040;
+                break;
+            }
+        }
+    }
 };
 inline std::vector<ImageSensor> availableSensors{
     {"IMX378", {"12mp", "4k"}, true},

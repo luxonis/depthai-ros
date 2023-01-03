@@ -48,10 +48,14 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
     stereoQ->addCallback(std::bind(&Stereo::stereoQCB, this, std::placeholders::_1, std::placeholders::_2));
     stereoPub = it.advertiseCamera(getName() + "/image_raw", 1);
     auto calibHandler = device->readCalibration();
-    stereoInfo = imageConverter->calibrationToCameraInfo(calibHandler,
-                                                         static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
-                                                         ph->getParam<int>(getROSNode(), "i_width"),
-                                                         ph->getParam<int>(getROSNode(), "i_height"));
+    try {
+        stereoInfo = imageConverter->calibrationToCameraInfo(calibHandler,
+                                                             static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
+                                                             ph->getParam<int>(getROSNode(), "i_width"),
+                                                             ph->getParam<int>(getROSNode(), "i_height"));
+    } catch(std::runtime_error& e) {
+        ROS_ERROR("No calibration! Publishing empty camera_info.");
+    }
 }
 void Stereo::closeQueues() {
     left->closeQueues();
