@@ -21,8 +21,8 @@ def generate_launch_description():
                                 'rviz', 'stereoInertial.rviz')
     default_resources_path = os.path.join(depthai_examples_path,
                                 'resources')
-    ipAddress    = LaunchConfiguration('ipAddress',     default = 'x')
-    mxId         = LaunchConfiguration('mxId',      default = 'x')
+    ipAddress    = LaunchConfiguration('ipAddress',     default = '')
+    mxId         = LaunchConfiguration('mxId',      default = '')
     usb2Mode     = LaunchConfiguration('usb2Mode',  default = False)
     poeMode      = LaunchConfiguration('poeMode',   default = False)
 
