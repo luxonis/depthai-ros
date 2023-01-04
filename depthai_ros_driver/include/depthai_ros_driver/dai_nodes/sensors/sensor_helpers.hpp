@@ -17,7 +17,7 @@ struct ImageSensor {
         switch(res) {
             case dai::ColorCameraProperties::SensorResolution::THE_720_P: {
                 width = 1280;
-                height = 800;
+                height = 720;
                 break;
             }
             case dai::ColorCameraProperties::SensorResolution::THE_800_P: {
