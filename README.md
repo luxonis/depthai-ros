@@ -144,6 +144,11 @@ Currently, we provide few examples:
 * `example_marker_publish.launch` launches `camera.launch.py` + small python node that publishes detected objects as markers/tfs
 * `rtabmap.launch` launches camera and RTAB-MAP RGBD SLAM (you need to install it first - `sudo apt install ros-$ROS_DISTRO-rtabmap-ros`). You might need to set manual focus via parameters here.
 ![](docs/rtabmap.gif)
+
+#### Specific camera configurations:
+##### **OAK D PRO W**
+To properly align with depth, you need to set `rgb_i_resolution` parameter to `720` (see `config/oak_d_w_pro.yaml`). 
+
 ## Executing an example
 
 ### ROS1
