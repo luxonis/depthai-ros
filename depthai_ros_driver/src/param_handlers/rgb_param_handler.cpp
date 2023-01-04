@@ -7,6 +7,7 @@ namespace depthai_ros_driver {
 namespace param_handlers {
 RGBParamHandler::RGBParamHandler(const std::string& name) : BaseParamHandler(name) {
     rgbResolutionMap = {
+        {"720", dai::ColorCameraProperties::SensorResolution::THE_720_P},
         {"1080", dai::ColorCameraProperties::SensorResolution::THE_1080_P},
         {"4k", dai::ColorCameraProperties::SensorResolution::THE_4_K},
         {"12MP", dai::ColorCameraProperties::SensorResolution::THE_12_MP},
@@ -27,32 +28,24 @@ void RGBParamHandler::declareParams(ros::NodeHandle node,
     color_cam->setPreviewSize(getParam<int>(node, "i_preview_size"), getParam<int>(node, "i_preview_size"));
     auto resolution = rgbResolutionMap.at(getParam<std::string>(node, "i_resolution"));
     int width, height;
-    switch(resolution) {
-        case dai::ColorCameraProperties::SensorResolution::THE_1080_P: {
-            width = 1920;
-            height = 1080;
-            break;
-        }
-        case dai::ColorCameraProperties::SensorResolution::THE_4_K: {
-            width = 3840;
-            height = 2160;
-            break;
-        }
-        case dai::ColorCameraProperties::SensorResolution::THE_12_MP: {
-            height = 4056;
-            width = 3040;
-            break;
-        }
-    }
     color_cam->setResolution(resolution);
+    sensor.getSizeFromResolution(color_cam->getResolution(), width, height);
 
     color_cam->setInterleaved(getParam<bool>(node, "i_interleaved"));
     if(getParam<bool>(node, "i_set_isp_scale")) {
-        color_cam->setIspScale(2, 3);
-        width = width * 2 / 3;
-        height = height * 2 / 3;
+        int new_width = width * 2 / 3;
+        int new_height = height * 2 / 3;
+        if(new_width % 16 == 0 && new_height % 16 == 0) {
+            width = new_width;
+            height = new_height;
+            color_cam->setIspScale(2, 3);
+        } else {
+            ROS_ERROR("ISP scaling not supported for given width & height");
+        }
     }
     color_cam->setVideoSize(width, height);
+    setParam<int>(node, "i_height", height);
+    setParam<int>(node, "i_width", width);
 
     color_cam->setPreviewKeepAspectRatio(getParam<bool>(node, "i_keep_preview_aspect_ratio"));
     size_t iso = getParam<int>(node, "r_iso");

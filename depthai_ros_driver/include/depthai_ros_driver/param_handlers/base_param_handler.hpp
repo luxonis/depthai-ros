@@ -17,11 +17,16 @@ class BaseParamHandler {
         return baseName;
     }
     template <typename T>
-    T getParam(ros::NodeHandle node, const std::string paramName) {
+    T getParam(ros::NodeHandle node, const std::string& paramName) {
         T value;
         node.getParam(getFullParamName(node, paramName), value);
         logParam(getFullParamName(node, paramName), value);
         return value;
+    }
+    template <typename T>
+    T setParam(ros::NodeHandle node, const std::string& paramName, T value) {
+        logParam(getFullParamName(node, paramName), value);
+        node.setParam(getFullParamName(node, paramName), value);
     }
     std::string getFullParamName(ros::NodeHandle node, const std::string& paramName) {
         return std::string(node.getNamespace()) + "/" + baseName + "_" + paramName;
