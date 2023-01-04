@@ -31,7 +31,7 @@ void Imu::setupQueues(std::shared_ptr<dai::Device> device) {
     auto imuMode = static_cast<dai::ros::ImuSyncMethod>(0);
     imuConverter = std::make_unique<dai::ros::ImuConverter>(tfPrefix + "_frame", imuMode, 0.0, 0.0);
     imuQ->addCallback(std::bind(&Imu::imuQCB, this, std::placeholders::_1, std::placeholders::_2));
-    imuPub = getROSNode().advertise<sensor_msgs::Imu>(getName() + "imu/data", 10);
+    imuPub = getROSNode().advertise<sensor_msgs::Imu>(getName() + "/data", 10);
 }
 
 void Imu::closeQueues() {
