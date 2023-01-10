@@ -381,10 +381,11 @@ def generate_launch_description():
                                 ('points', pointcloud_topic )]
                 )
 
-        rviz_node = launch_ros.actions.Node(
-            package='rviz2', executable='rviz2', output='screen',
-            arguments=['--display-config', aligned_rviz],
-            condition=IfCondition(enableRviz))
+        if LaunchConfigurationEquals('enableRviz', 'True'):
+            rviz_node = launch_ros.actions.Node(
+                package='rviz2', executable='rviz2', output='screen',
+                arguments=['--display-config', aligned_rviz],
+                condition=IfCondition(enableRviz))
 
     else:
         point_cloud_creator = launch_ros.descriptions.ComposableNode(
@@ -398,11 +399,11 @@ def generate_launch_description():
                                 ('points', pointcloud_topic)]
                 )
 
-
-        rviz_node = launch_ros.actions.Node(
-            package='rviz2', executable='rviz2', output='screen',
-            arguments=['--display-config', rectify_rviz],
-            condition=IfCondition(enableRviz))
+        if LaunchConfigurationEquals('enableRviz', 'True'):
+            rviz_node = launch_ros.actions.Node(
+                package='rviz2', executable='rviz2', output='screen',
+                arguments=['--display-config', rectify_rviz],
+                condition=IfCondition(enableRviz))
 
 
 
