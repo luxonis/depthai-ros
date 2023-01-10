@@ -25,7 +25,6 @@ class RGB : public BaseNode {
     void updateParams(parametersConfig& config) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(const dai::Node::Input& in, int linkType = 0) override;
-    dai::Node::Input getInput(int linkType = 0) override;
     void setNames() override;
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
@@ -37,6 +36,7 @@ class RGB : public BaseNode {
     image_transport::CameraPublisher rgbPub, previewPub;
     sensor_msgs::CameraInfo rgbInfo, previewInfo;
     std::shared_ptr<dai::node::ColorCamera> colorCamNode;
+    std::shared_ptr<dai::node::VideoEncoder> videoEnc;
     std::unique_ptr<param_handlers::RGBParamHandler> ph;
     std::shared_ptr<dai::DataOutputQueue> colorQ, previewQ;
     std::shared_ptr<dai::DataInputQueue> controlQ;

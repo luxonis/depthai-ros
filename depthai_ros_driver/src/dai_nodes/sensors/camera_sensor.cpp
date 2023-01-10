@@ -18,7 +18,6 @@ CameraSensor::CameraSensor(const std::string& daiNodeName,
     ROS_DEBUG("Creating node %s base", daiNodeName.c_str());
 
     auto sensorName = device->getCameraSensorNames().at(socket);
-
     std::vector<sensor_helpers::ImageSensor>::iterator sensorIt =
         std::find_if(sensor_helpers::availableSensors.begin(), sensor_helpers::availableSensors.end(), [&sensorName](const sensor_helpers::ImageSensor& s) {
             return s.name == sensorName;
@@ -47,9 +46,6 @@ void CameraSensor::link(const dai::Node::Input& in, int linkType) {
     sensorNode->link(in, linkType);
 }
 
-dai::Node::Input CameraSensor::getInput(int linkType) {
-    return sensorNode->getInput(linkType);
-}
 
 void CameraSensor::updateParams(parametersConfig& config) {
     sensorNode->updateParams(config);

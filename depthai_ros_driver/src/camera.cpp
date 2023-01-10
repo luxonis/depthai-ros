@@ -27,7 +27,7 @@ void Camera::onInit() {
     stopSrv = pNH.advertiseService("stop_camera", &Camera::stopCB, this);
 }
 
-void Camera::parameterCB(parametersConfig& config, uint32_t level) {
+void Camera::parameterCB(parametersConfig& config, uint32_t /*level*/) {
     enableIR = config.camera_i_enable_ir;
     floodlightBrighness = config.camera_i_floodlight_brightness;
     laserDotBrightness = config.camera_i_laser_dot_brightness;
@@ -189,9 +189,14 @@ void Camera::startDevice() {
 
     auto devicename = device->getMxId();
     ROS_INFO("Camera %s connected!", devicename.c_str());
-    if(ip.empty()) {
+    auto protocol = device->getDeviceInfo().getXLinkDeviceDesc().protocol;
+    
+    if(protocol !=XLinkProtocol_t::X_LINK_TCP_IP) {
         auto speed = usbStrings[static_cast<int32_t>(device->getUsbSpeed())];
         ROS_INFO("USB SPEED: %s", speed.c_str());
+    }
+    else{
+        ROS_INFO("PoE camera detected. Consider enabling low bandwidth for specific image topics (see readme).");
     }
 }
 

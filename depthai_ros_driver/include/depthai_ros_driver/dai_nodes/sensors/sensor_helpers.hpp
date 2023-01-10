@@ -7,7 +7,7 @@ namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace link_types {
 enum class RGBLinkType { video, isp, preview };
-};
+}
 namespace sensor_helpers {
 struct ImageSensor {
     std::string name;

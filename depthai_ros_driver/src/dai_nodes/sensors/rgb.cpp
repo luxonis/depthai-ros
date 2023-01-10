@@ -18,6 +18,7 @@ RGB::RGB(const std::string& daiNodeName,
     colorCamNode = pipeline->create<dai::node::ColorCamera>();
     ph = std::make_unique<param_handlers::RGBParamHandler>(daiNodeName);
     ph->declareParams(node, colorCamNode, socket, sensor);
+
     setXinXout(pipeline);
     ROS_DEBUG("Node %s created", daiNodeName.c_str());
 };
@@ -31,7 +32,16 @@ void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     if(ph->getParam<bool>(getROSNode(), "i_publish_topic")) {
         xoutColor = pipeline->create<dai::node::XLinkOut>();
         xoutColor->setStreamName(ispQName);
+        if (ph->getParam<bool>(getROSNode(), "i_low_bandwidth")){
+            videoEnc = pipeline->create<dai::node::VideoEncoder>();
+            videoEnc->setQuality(ph->getParam<int>(getROSNode(), "i_low_bandwidth_quality"));
+            videoEnc->setProfile(dai::VideoEncoderProperties::Profile::MJPEG);
+            colorCamNode->video.link(videoEnc->input);
+            videoEnc->bitstream.link(xoutColor->input);
+        }
+        else{
         colorCamNode->isp.link(xoutColor->input);
+        }
         if(ph->getParam<bool>(getROSNode(), "i_enable_preview")) {
             xoutPreview = pipeline->create<dai::node::XLinkOut>();
             xoutPreview->setStreamName(previewQName);
@@ -92,7 +102,10 @@ void RGB::closeQueues() {
 void RGB::colorQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
     auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
     std::deque<sensor_msgs::Image> deq;
-    imageConverter->toRosMsg(img, deq);
+    if(ph->getParam<bool>(getROSNode(), "i_low_bandwidth"))
+        imageConverter->toRosMsgFromBitStream(img, deq, dai::RawImgFrame::Type::BGR888i, rgbInfo);
+    else 
+        imageConverter->toRosMsg(img, deq);
     while(deq.size() > 0) {
         auto currMsg = deq.front();
         if(name == ispQName) {
@@ -118,9 +131,6 @@ void RGB::link(const dai::Node::Input& in, int linkType) {
     }
 }
 
-dai::Node::Input RGB::getInput(int /*linkType*/) {
-    throw(std::runtime_error("Class RGB has no input."));
-}
 
 void RGB::updateParams(parametersConfig& config) {
     auto ctrl = ph->setRuntimeParams(getROSNode(), config);
