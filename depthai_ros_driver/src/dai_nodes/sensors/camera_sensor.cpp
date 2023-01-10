@@ -46,7 +46,6 @@ void CameraSensor::link(const dai::Node::Input& in, int linkType) {
     sensorNode->link(in, linkType);
 }
 
-
 void CameraSensor::updateParams(parametersConfig& config) {
     sensorNode->updateParams(config);
 }

@@ -61,7 +61,7 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
                                                              static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
                                                              ph->getParam<int>(getROSNode(), "i_width"),
                                                              ph->getParam<int>(getROSNode(), "i_height"));
-        stereoInfo.P[3] = calibHandler.getBaselineDistance()*10.0; //baseline in mm
+        stereoInfo.P[3] = calibHandler.getBaselineDistance() * 10.0;  // baseline in mm
     } catch(std::runtime_error& e) {
         ROS_ERROR("No calibration! Publishing empty camera_info.");
     }
@@ -76,7 +76,7 @@ void Stereo::stereoQCB(const std::string& /*name*/, const std::shared_ptr<dai::A
     std::deque<sensor_msgs::Image> deq;
     if(ph->getParam<bool>(getROSNode(), "i_low_bandwidth"))
         imageConverter->toRosMsgFromBitStream(img, deq, dai::RawImgFrame::Type::RAW8, stereoInfo);
-    else 
+    else
         imageConverter->toRosMsg(img, deq);
     while(deq.size() > 0) {
         auto currMsg = deq.front();

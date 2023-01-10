@@ -91,7 +91,6 @@ void Mono::link(const dai::Node::Input& in, int /*linkType*/) {
     monoCamNode->out.link(in);
 }
 
-
 void Mono::updateParams(parametersConfig& config) {
     auto ctrl = ph->setRuntimeParams(getROSNode(), config);
     controlQ->send(ctrl);

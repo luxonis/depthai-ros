@@ -190,12 +190,11 @@ void Camera::startDevice() {
     auto devicename = device->getMxId();
     ROS_INFO("Camera %s connected!", devicename.c_str());
     auto protocol = device->getDeviceInfo().getXLinkDeviceDesc().protocol;
-    
-    if(protocol !=XLinkProtocol_t::X_LINK_TCP_IP) {
+
+    if(protocol != XLinkProtocol_t::X_LINK_TCP_IP) {
         auto speed = usbStrings[static_cast<int32_t>(device->getUsbSpeed())];
         ROS_INFO("USB SPEED: %s", speed.c_str());
-    }
-    else{
+    } else {
         ROS_INFO("PoE camera detected. Consider enabling low bandwidth for specific image topics (see readme).");
     }
 }

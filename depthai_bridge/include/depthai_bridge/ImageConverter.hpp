@@ -33,7 +33,10 @@ class ImageConverter {
     // ImageConverter() = default;
     ImageConverter(const std::string frameName, bool interleaved);
     ImageConverter(bool interleaved);
-    void toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs, dai::RawImgFrame::Type type, const sensor_msgs::CameraInfo &info);
+    void toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData,
+                               std::deque<ImageMsgs::Image>& outImageMsgs,
+                               dai::RawImgFrame::Type type,
+                               const sensor_msgs::CameraInfo& info);
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs);
     ImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
 

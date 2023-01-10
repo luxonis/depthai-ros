@@ -44,7 +44,7 @@ class Stereo : public BaseNode {
     std::shared_ptr<dai::node::XLinkOut> xoutStereo;
     std::shared_ptr<dai::node::XLinkIn> xinControl;
     std::string stereoQName;
-    bool poeMode=false;
+    bool poeMode = false;
 };
 
 }  // namespace dai_nodes
