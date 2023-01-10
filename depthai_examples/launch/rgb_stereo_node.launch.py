@@ -237,9 +237,9 @@ def generate_launch_description():
             ],
             output='screen',)
 
-    rviz_node = launch_ros.actions.Node(
-            package='rviz2', executable='rviz2', output='screen',
-            arguments=['--display-config', default_rviz])
+    # rviz_node = launch_ros.actions.Node(
+    #         package='rviz2', executable='rviz2', output='screen',
+    #         arguments=['--display-config', default_rviz])
 
     ld = LaunchDescription()
     ld.add_action(declare_tf_prefix_cmd)
