@@ -23,7 +23,6 @@ class Mono : public BaseNode {
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(const dai::Node::Input& in, int linkType = 0) override;
-    dai::Node::Input getInput(int linkType = 0) override;
     void setNames() override;
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
@@ -34,6 +33,7 @@ class Mono : public BaseNode {
     image_transport::CameraPublisher monoPub;
     sensor_msgs::msg::CameraInfo monoInfo;
     std::shared_ptr<dai::node::MonoCamera> monoCamNode;
+    std::shared_ptr<dai::node::VideoEncoder> videoEnc;
     std::unique_ptr<param_handlers::MonoParamHandler> ph;
     std::shared_ptr<dai::DataOutputQueue> monoQ;
     std::shared_ptr<dai::DataInputQueue> controlQ;

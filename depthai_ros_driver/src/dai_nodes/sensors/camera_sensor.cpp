@@ -47,9 +47,6 @@ void CameraSensor::link(const dai::Node::Input& in, int linkType) {
     sensorNode->link(in, linkType);
 }
 
-dai::Node::Input CameraSensor::getInput(int linkType) {
-    return sensorNode->getInput(linkType);
-}
 
 void CameraSensor::updateParams(const std::vector<rclcpp::Parameter>& params) {
     sensorNode->updateParams(params);

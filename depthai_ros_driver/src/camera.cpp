@@ -177,9 +177,13 @@ void Camera::startDevice() {
 
     auto deviceName = device->getMxId();
     RCLCPP_INFO(this->get_logger(), "Camera %s connected!", deviceName.c_str());
-    if(ip.empty()) {
+    auto protocol = device->getDeviceInfo().getXLinkDeviceDesc().protocol;
+
+    if(protocol != XLinkProtocol_t::X_LINK_TCP_IP) {
         auto speed = usbStrings[static_cast<int32_t>(device->getUsbSpeed())];
-        RCLCPP_INFO(this->get_logger(), "USB SPEED: %s", speed.c_str());
+        RCLCPP_INFO(this->get_logger(),"USB SPEED: %s", speed.c_str());
+    } else {
+        RCLCPP_INFO(this->get_logger(),"PoE camera detected. Consider enabling low bandwidth for specific image topics (see readme).");
     }
 }
 

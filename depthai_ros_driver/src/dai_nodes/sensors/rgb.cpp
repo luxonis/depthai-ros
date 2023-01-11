@@ -31,7 +31,17 @@ void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     if(ph->getParam<bool>(getROSNode(), "i_publish_topic")) {
         xoutColor = pipeline->create<dai::node::XLinkOut>();
         xoutColor->setStreamName(ispQName);
-        colorCamNode->isp.link(xoutColor->input);
+        if(ph->getParam<bool>(getROSNode(), "i_low_bandwidth")) {
+            RCLCPP_INFO(getROSNode()->get_logger(), "POE");
+
+            videoEnc = pipeline->create<dai::node::VideoEncoder>();
+            videoEnc->setQuality(ph->getParam<int>(getROSNode(), "i_low_bandwidth_quality"));
+            videoEnc->setProfile(dai::VideoEncoderProperties::Profile::MJPEG);
+            colorCamNode->video.link(videoEnc->input);
+            videoEnc->bitstream.link(xoutColor->input);
+        } else {
+            colorCamNode->isp.link(xoutColor->input);
+        }
         if(ph->getParam<bool>(getROSNode(), "i_enable_preview")) {
             xoutPreview = pipeline->create<dai::node::XLinkOut>();
             xoutPreview->setStreamName(previewQName);
@@ -58,15 +68,23 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
             previewQ = device->getOutputQueue(previewQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
             previewQ->addCallback(std::bind(&RGB::colorQCB, this, std::placeholders::_1, std::placeholders::_2));
             previewPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/preview/image_raw");
-            previewInfo = dai::ros::calibrationToCameraInfo(calibHandler,
-                                                            static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
-                                                            ph->getParam<int>(getROSNode(), "i_preview_size"),
-                                                            ph->getParam<int>(getROSNode(), "i_preview_size"));
+            try {
+                previewInfo = imageConverter->calibrationToCameraInfo(calibHandler,
+                                                                      static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
+                                                                      ph->getParam<int>(getROSNode(), "i_preview_size"),
+                                                                      ph->getParam<int>(getROSNode(), "i_preview_size"));
+            } catch(std::runtime_error& e) {
+                RCLCPP_ERROR(getROSNode()->get_logger(), "No calibration! Publishing empty camera_info.");
+            }
         };
-        rgbInfo = dai::ros::calibrationToCameraInfo(calibHandler,
-                                                    static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
-                                                    ph->getParam<int>(getROSNode(), "i_width"),
-                                                    ph->getParam<int>(getROSNode(), "i_height"));
+        try {
+            rgbInfo = imageConverter->calibrationToCameraInfo(calibHandler,
+                                                              static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
+                                                              ph->getParam<int>(getROSNode(), "i_width"),
+                                                              ph->getParam<int>(getROSNode(), "i_height"));
+        } catch(std::runtime_error& e) {
+            RCLCPP_ERROR(getROSNode()->get_logger(), "No calibration! Publishing empty camera_info.");
+        }
     }
     controlQ = device->getInputQueue(controlQName);
 }
@@ -84,7 +102,10 @@ void RGB::closeQueues() {
 void RGB::colorQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
     auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
     std::deque<sensor_msgs::msg::Image> deq;
-    imageConverter->toRosMsg(img, deq);
+    if(ph->getParam<bool>(getROSNode(), "i_low_bandwidth"))
+        imageConverter->toRosMsgFromBitStream(img, deq, dai::RawImgFrame::Type::BGR888i, rgbInfo);
+    else
+        imageConverter->toRosMsg(img, deq);
     while(deq.size() > 0) {
         auto currMsg = deq.front();
         if(name == ispQName) {
@@ -108,10 +129,6 @@ void RGB::link(const dai::Node::Input& in, int linkType) {
     } else {
         throw std::runtime_error("Link type not supported");
     }
-}
-
-dai::Node::Input RGB::getInput(int /*linkType*/) {
-    throw(std::runtime_error("Class RGB has no input."));
 }
 
 void RGB::updateParams(const std::vector<rclcpp::Parameter>& params) {

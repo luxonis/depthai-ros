@@ -21,7 +21,7 @@ class Stereo : public BaseNode {
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(const dai::Node::Input& in, int linkType = 0) override;
-    dai::Node::Input getInput(int linkType = 0) override;
+    dai::Node::Input getInput(int linkType = 0);
     void setNames() override;
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
@@ -32,6 +32,7 @@ class Stereo : public BaseNode {
     image_transport::CameraPublisher stereoPub;
     sensor_msgs::msg::CameraInfo stereoInfo;
     std::shared_ptr<dai::node::StereoDepth> stereoCamNode;
+    std::shared_ptr<dai::node::VideoEncoder> videoEnc;
     std::unique_ptr<BaseNode> left;
     std::unique_ptr<BaseNode> right;
     std::unique_ptr<param_handlers::StereoParamHandler> ph;

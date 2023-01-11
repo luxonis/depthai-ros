@@ -7,66 +7,65 @@ namespace depthai_ros_driver {
 namespace param_handlers {
 RGBParamHandler::RGBParamHandler(const std::string& name) : BaseParamHandler(name) {
     rgbResolutionMap = {
+        {"720", dai::ColorCameraProperties::SensorResolution::THE_720_P},
         {"1080", dai::ColorCameraProperties::SensorResolution::THE_1080_P},
-        {"4k", dai::ColorCameraProperties::SensorResolution::THE_4_K},
+        {"4K", dai::ColorCameraProperties::SensorResolution::THE_4_K},
         {"12MP", dai::ColorCameraProperties::SensorResolution::THE_12_MP},
+        {"13MP", dai::ColorCameraProperties::SensorResolution::THE_13_MP},
+        {"800", dai::ColorCameraProperties::SensorResolution::THE_800_P},
+        {"1200", dai::ColorCameraProperties::SensorResolution::THE_1200_P},
+        {"5MP", dai::ColorCameraProperties::SensorResolution::THE_5_MP},
+        {"4000x3000", dai::ColorCameraProperties::SensorResolution::THE_4000X3000},
+        {"5312X6000", dai::ColorCameraProperties::SensorResolution::THE_5312X6000},
+        {"48_MP", dai::ColorCameraProperties::SensorResolution::THE_48_MP}
     };
 };
 RGBParamHandler::~RGBParamHandler() = default;
 void RGBParamHandler::declareParams(rclcpp::Node* node,
-                                    std::shared_ptr<dai::node::ColorCamera> color_cam,
+                                    std::shared_ptr<dai::node::ColorCamera> colorCam,
                                     dai::CameraBoardSocket socket,
                                     dai_nodes::sensor_helpers::ImageSensor sensor) {
     declareAndLogParam<int>(node, "i_max_q_size", 30);
     declareAndLogParam<bool>(node, "i_publish_topic", true);
     declareAndLogParam<bool>(node, "i_enable_preview", false);
+    declareAndLogParam<bool>(node, "i_low_bandwidth", false);
+    declareAndLogParam<int>(node, "i_low_bandwidth_quality", 50);
     declareAndLogParam<int>(node, "i_board_socket_id", static_cast<int>(socket));
-    color_cam->setBoardSocket(socket);
-    color_cam->setFps(declareAndLogParam<double>(node, "i_fps", 30.0));
+    colorCam->setBoardSocket(socket);
+    colorCam->setFps(declareAndLogParam<double>(node, "i_fps", 30.0));
     size_t preview_size = declareAndLogParam<int>(node, "i_preview_size", 416);
-    color_cam->setPreviewSize(preview_size, preview_size);
+    colorCam->setPreviewSize(preview_size, preview_size);
     auto resolution = rgbResolutionMap.at(declareAndLogParam<std::string>(node, "i_resolution", "1080"));
     int width, height;
+    colorCam->setResolution(resolution);
+    sensor.getSizeFromResolution(colorCam->getResolution(), width, height);
 
-    switch(resolution) {
-        case dai::ColorCameraProperties::SensorResolution::THE_1080_P: {
-            width = 1920;
-            height = 1080;
-            break;
-        }
-        case dai::ColorCameraProperties::SensorResolution::THE_4_K: {
-            width = 3840;
-            height = 2160;
-            break;
-        }
-        case dai::ColorCameraProperties::SensorResolution::THE_12_MP: {
-            height = 4056;
-            width = 3040;
-            break;
-        }
-    }
-    color_cam->setResolution(resolution);
-
-    color_cam->setInterleaved(declareAndLogParam<bool>(node, "i_interleaved", false));
+    colorCam->setInterleaved(declareAndLogParam<bool>(node, "i_interleaved", false));
     if(declareAndLogParam<bool>(node, "i_set_isp_scale", true)) {
-        color_cam->setIspScale(2, 3);
-        width = width * 2 / 3;
-        height = height * 2 / 3;
+        int new_width = width * 2 / 3;
+        int new_height = height * 2 / 3;
+        if(new_width % 16 == 0 && new_height % 16 == 0) {
+            width = new_width;
+            height = new_height;
+            colorCam->setIspScale(2, 3);
+        } else {
+            RCLCPP_ERROR(node->get_logger(),"ISP scaling not supported for given width & height");
+        }
     }
-    color_cam->setVideoSize(declareAndLogParam<int>(node, "i_width", width), declareAndLogParam<int>(node, "i_height", height));
-    color_cam->setPreviewKeepAspectRatio(declareAndLogParam(node, "i_keep_preview_aspect_ratio", true));
+    colorCam->setVideoSize(declareAndLogParam<int>(node, "i_width", width), declareAndLogParam<int>(node, "i_height", height));
+    colorCam->setPreviewKeepAspectRatio(declareAndLogParam(node, "i_keep_preview_aspect_ratio", true));
     size_t iso = declareAndLogParam(node, "r_iso", 800, getRangedIntDescriptor(100, 1600));
     size_t exposure = declareAndLogParam(node, "r_exposure", 20000, getRangedIntDescriptor(1, 33000));
     size_t whitebalance = declareAndLogParam(node, "r_whitebalance", 3300, getRangedIntDescriptor(1000, 12000));
     size_t focus = declareAndLogParam(node, "r_focus", 1, getRangedIntDescriptor(0, 255));
     if(declareAndLogParam(node, "r_set_man_focus", false)) {
-        color_cam->initialControl.setManualFocus(focus);
+        colorCam->initialControl.setManualFocus(focus);
     }
     if(declareAndLogParam(node, "r_set_man_exposure", false)) {
-        color_cam->initialControl.setManualExposure(exposure, iso);
+        colorCam->initialControl.setManualExposure(exposure, iso);
     }
     if(declareAndLogParam(node, "r_set_man_whitebalance", false)) {
-        color_cam->initialControl.setManualWhiteBalance(whitebalance);
+        colorCam->initialControl.setManualWhiteBalance(whitebalance);
     }
 }
 dai::CameraControl RGBParamHandler::setRuntimeParams(rclcpp::Node* node, const std::vector<rclcpp::Parameter>& params) {
