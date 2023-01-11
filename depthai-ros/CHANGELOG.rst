@@ -2,6 +2,10 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.6.0 (2023-01-11)
+___________
+* Added depthai_ros_driver package
+
 2.5.3 (2022-08-21)
 -----------
 * Updated release version
