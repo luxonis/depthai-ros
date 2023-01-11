@@ -16,23 +16,23 @@ MonoParamHandler::MonoParamHandler(const std::string& name) : BaseParamHandler(n
 };
 MonoParamHandler::~MonoParamHandler() = default;
 void MonoParamHandler::declareParams(ros::NodeHandle node,
-                                     std::shared_ptr<dai::node::MonoCamera> mono_cam,
+                                     std::shared_ptr<dai::node::MonoCamera> monoCam,
                                      dai::CameraBoardSocket socket,
                                      dai_nodes::sensor_helpers::ImageSensor) {
     getParam<int>(node, "i_max_q_size");
     getParam<bool>(node, "i_publish_topic");
 
-    mono_cam->setBoardSocket(socket);
-    mono_cam->setFps(getParam<double>(node, "i_fps"));
+    monoCam->setBoardSocket(socket);
+    monoCam->setFps(getParam<double>(node, "i_fps"));
 
-    mono_cam->setResolution(monoResolutionMap.at(getParam<std::string>(node, "i_resolution")));
+    monoCam->setResolution(monoResolutionMap.at(getParam<std::string>(node, "i_resolution")));
     getParam<int>(node, "i_width");
     getParam<int>(node, "i_height");
     size_t iso = getParam<int>(node, "r_iso");
     size_t exposure = getParam<int>(node, "r_exposure");
 
     if(getParam<bool>(node, "r_set_man_exposure")) {
-        mono_cam->initialControl.setManualExposure(exposure, iso);
+        monoCam->initialControl.setManualExposure(exposure, iso);
     }
 }
 dai::CameraControl MonoParamHandler::setRuntimeParams(ros::NodeHandle node, parametersConfig& config) {
