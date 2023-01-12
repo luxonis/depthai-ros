@@ -68,15 +68,13 @@ void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData
     if(type == dai::RawImgFrame::Type::RAW8) {
         auto factor = (info.k[0] * info.p[3]);
         cv::Mat depthOut = cv::Mat(cv::Size(output.cols, output.rows), CV_16UC1);
-        for(int row = 0; row < output.rows; ++row) {
-            for(int col = 0; col < output.cols; ++col) {
-                auto disp = output.at<int8_t>(row, col);
-                if(disp = 0)
-                    depthOut.at<short>(row, col) = 0;
-                else
-                    depthOut.at<short>(row, col) = factor / output.at<int8_t>(row, col);
-            }
-        }
+        depthOut.forEach<short>([&output, &factor](short& pixel, const int* position) -> void {
+            auto disp = output.at<int8_t>(position);
+            if(disp == 0)
+                pixel = 0;
+            else
+                pixel = factor / disp;
+        });
         output = depthOut.clone();
     }
     cv_bridge::CvImage(header, encoding, output).toImageMsg(outImageMsg);
