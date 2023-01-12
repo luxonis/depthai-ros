@@ -71,9 +71,9 @@ void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData
         cv::Mat depthOut = cv::Mat(cv::Size(output.cols, output.rows), CV_16UC1);
         depthOut.forEach<short>([&output, &factor](short& pixel, const int* position) -> void {
             auto disp = output.at<int8_t>(position);
-            if(disp == 0) 
+            if(disp == 0)
                 pixel = 0;
-            else 
+            else
                 pixel = factor / disp;
         });
         output = depthOut.clone();
