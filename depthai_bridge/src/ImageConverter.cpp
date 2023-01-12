@@ -75,7 +75,6 @@ void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData
                 pixel = 0;
             else 
                 pixel = factor / disp;
-            
         });
         output = depthOut.clone();
     }
