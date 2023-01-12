@@ -16,24 +16,25 @@ MonoParamHandler::MonoParamHandler(const std::string& name) : BaseParamHandler(n
 };
 MonoParamHandler::~MonoParamHandler() = default;
 void MonoParamHandler::declareParams(rclcpp::Node* node,
-                                     std::shared_ptr<dai::node::MonoCamera> mono_cam,
+                                     std::shared_ptr<dai::node::MonoCamera> monoCam,
                                      dai::CameraBoardSocket socket,
                                      dai_nodes::sensor_helpers::ImageSensor) {
     declareAndLogParam<int>(node, "i_max_q_size", 30);
     declareAndLogParam<bool>(node, "i_publish_topic", false);
-
+    declareAndLogParam<bool>(node, "i_low_bandwidth", false);
+    declareAndLogParam<int>(node, "i_low_bandwidth_quality", 50);
     declareAndLogParam<int>(node, "i_board_socket_id", static_cast<int>(socket));
-    mono_cam->setBoardSocket(socket);
-    mono_cam->setFps(declareAndLogParam<double>(node, "i_fps", 30.0));
+    monoCam->setBoardSocket(socket);
+    monoCam->setFps(declareAndLogParam<double>(node, "i_fps", 30.0));
 
-    mono_cam->setResolution(monoResolutionMap.at(declareAndLogParam<std::string>(node, "i_resolution", "720")));
-    declareAndLogParam<int>(node, "i_width", mono_cam->getResolutionWidth());
-    declareAndLogParam<int>(node, "i_height", mono_cam->getResolutionHeight());
+    monoCam->setResolution(monoResolutionMap.at(declareAndLogParam<std::string>(node, "i_resolution", "720")));
+    declareAndLogParam<int>(node, "i_width", monoCam->getResolutionWidth());
+    declareAndLogParam<int>(node, "i_height", monoCam->getResolutionHeight());
     size_t iso = declareAndLogParam(node, "r_iso", 800, getRangedIntDescriptor(100, 1600));
     size_t exposure = declareAndLogParam(node, "r_exposure", 1000, getRangedIntDescriptor(1, 33000));
 
     if(declareAndLogParam(node, "r_set_man_exposure", false)) {
-        mono_cam->initialControl.setManualExposure(exposure, iso);
+        monoCam->initialControl.setManualExposure(exposure, iso);
     }
 }
 dai::CameraControl MonoParamHandler::setRuntimeParams(rclcpp::Node* node, const std::vector<rclcpp::Parameter>& params) {

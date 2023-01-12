@@ -5,86 +5,6 @@ namespace dai {
 
 namespace ros {
 
-ImageMsgs::CameraInfo calibrationToCameraInfo(
-    dai::CalibrationHandler calibHandler, dai::CameraBoardSocket cameraId, int width, int height, Point2f topLeftPixelId, Point2f bottomRightPixelId) {
-    std::vector<std::vector<float>> camIntrinsics, rectifiedRotation;
-    std::vector<float> distCoeffs;
-    std::vector<double> flatIntrinsics, distCoeffsDouble;
-    int defWidth, defHeight;
-    ImageMsgs::CameraInfo cameraData;
-    std::tie(std::ignore, defWidth, defHeight) = calibHandler.getDefaultIntrinsics(cameraId);
-
-    if(width == -1) {
-        cameraData.width = static_cast<uint32_t>(defWidth);
-    } else {
-        cameraData.width = static_cast<uint32_t>(width);
-    }
-
-    if(height == -1) {
-        cameraData.height = static_cast<uint32_t>(defHeight);
-    } else {
-        cameraData.height = static_cast<uint32_t>(height);
-    }
-
-    camIntrinsics = calibHandler.getCameraIntrinsics(cameraId, cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);
-
-    flatIntrinsics.resize(9);
-    for(int i = 0; i < 3; i++) {
-        std::copy(camIntrinsics[i].begin(), camIntrinsics[i].end(), flatIntrinsics.begin() + 3 * i);
-    }
-
-    auto& intrinsics = cameraData.k;
-    auto& distortions = cameraData.d;
-    auto& projection = cameraData.p;
-    auto& rotation = cameraData.r;
-    // Set rotation to reasonable default even for non-stereo pairs
-    rotation[0] = rotation[4] = rotation[8] = 1;
-    for(size_t i = 0; i < 3; i++) {
-        std::copy(flatIntrinsics.begin() + i * 3, flatIntrinsics.begin() + (i + 1) * 3, projection.begin() + i * 4);
-    }
-    std::copy(flatIntrinsics.begin(), flatIntrinsics.end(), intrinsics.begin());
-
-    distCoeffs = calibHandler.getDistortionCoefficients(cameraId);
-
-    for(size_t i = 0; i < 8; i++) {
-        distortions.push_back(static_cast<double>(distCoeffs[i]));
-    }
-
-    // Setting Projection matrix if the cameras are stereo pair. Right as the first and left as the second.
-    if(calibHandler.getStereoRightCameraId() != dai::CameraBoardSocket::AUTO && calibHandler.getStereoLeftCameraId() != dai::CameraBoardSocket::AUTO) {
-        if(calibHandler.getStereoRightCameraId() == cameraId || calibHandler.getStereoLeftCameraId() == cameraId) {
-            std::vector<std::vector<float>> stereoIntrinsics = calibHandler.getCameraIntrinsics(
-                calibHandler.getStereoRightCameraId(), cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);
-            std::vector<double> stereoFlatIntrinsics(12), flatRectifiedRotation(9);
-            for(int i = 0; i < 3; i++) {
-                std::copy(stereoIntrinsics[i].begin(), stereoIntrinsics[i].end(), stereoFlatIntrinsics.begin() + 4 * i);
-                stereoFlatIntrinsics[(4 * i) + 3] = 0;
-            }
-
-            if(calibHandler.getStereoLeftCameraId() == cameraId) {
-                // This defines where the first camera is w.r.t second camera coordinate system giving it a translation to place all the points in the first
-                // camera to second camera by multiplying that translation vector using transformation function.
-                stereoFlatIntrinsics[3] = stereoFlatIntrinsics[0]
-                                          * calibHandler.getCameraExtrinsics(calibHandler.getStereoRightCameraId(), calibHandler.getStereoLeftCameraId())[0][3]
-                                          / 100.0;  // Converting to meters
-                rectifiedRotation = calibHandler.getStereoLeftRectificationRotation();
-            } else {
-                rectifiedRotation = calibHandler.getStereoRightRectificationRotation();
-            }
-
-            for(int i = 0; i < 3; i++) {
-                std::copy(rectifiedRotation[i].begin(), rectifiedRotation[i].end(), flatRectifiedRotation.begin() + 3 * i);
-            }
-
-            std::copy(stereoFlatIntrinsics.begin(), stereoFlatIntrinsics.end(), projection.begin());
-            std::copy(flatRectifiedRotation.begin(), flatRectifiedRotation.end(), rotation.begin());
-        }
-    }
-    cameraData.distortion_model = "rational_polynomial";
-
-    return cameraData;
-}
-
 std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::encodingEnumMap = {{dai::RawImgFrame::Type::YUV422i, "yuv422"},
                                                                                            {dai::RawImgFrame::Type::RGBA8888, "rgba8"},
                                                                                            {dai::RawImgFrame::Type::RGB888i, "rgb8"},
@@ -108,6 +28,58 @@ ImageConverter::ImageConverter(bool interleaved) : _daiInterleaved(interleaved),
 ImageConverter::ImageConverter(const std::string frameName, bool interleaved)
     : _frameName(frameName), _daiInterleaved(interleaved), _steadyBaseTime(std::chrono::steady_clock::now()) {
     _rosBaseTime = rclcpp::Clock().now();
+}
+void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData,
+                                           std::deque<ImageMsgs::Image>& outImageMsgs,
+                                           dai::RawImgFrame::Type type,
+                                           const sensor_msgs::msg::CameraInfo& info) {
+    auto tstamp = inData->getTimestamp();
+    ImageMsgs::Image outImageMsg;
+    StdMsgs::Header header;
+    header.frame_id = _frameName;
+    header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
+    std::string encoding;
+    int decodeFlags;
+    cv::Mat output;
+    switch(type) {
+        case dai::RawImgFrame::Type::BGR888i: {
+            encoding = sensor_msgs::image_encodings::BGR8;
+            decodeFlags = cv::IMREAD_COLOR;
+            break;
+        }
+        case dai::RawImgFrame::Type::GRAY8: {
+            encoding = sensor_msgs::image_encodings::MONO8;
+            decodeFlags = cv::IMREAD_GRAYSCALE;
+            break;
+        }
+        case dai::RawImgFrame::Type::RAW8: {
+            encoding = sensor_msgs::image_encodings::TYPE_16UC1;
+            decodeFlags = cv::IMREAD_GRAYSCALE;
+            break;
+        }
+        default: {
+            throw(std::runtime_error("Converted type not supported!"));
+        }
+    }
+
+    output = cv::imdecode(cv::Mat(inData->getData()), decodeFlags);
+
+    // converting disparity
+    if(type == dai::RawImgFrame::Type::RAW8) {
+        auto factor = (info.k[0] * info.p[3]);
+        cv::Mat depthOut = cv::Mat(cv::Size(output.cols, output.rows), CV_16UC1);
+        depthOut.forEach<short>([&output, &factor](short& pixel, const int* position) -> void {
+            auto disp = output.at<int8_t>(position);
+            if(disp == 0)
+                pixel = 0;
+            else
+                pixel = factor / disp;
+        });
+        output = depthOut.clone();
+    }
+    cv_bridge::CvImage(header, encoding, output).toImageMsg(outImageMsg);
+    outImageMsgs.push_back(outImageMsg);
+    return;
 }
 
 void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs) {
@@ -322,7 +294,82 @@ cv::Mat ImageConverter::rosMsgtoCvMat(ImageMsgs::Image& inMsg) {
 }
 ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
     dai::CalibrationHandler calibHandler, dai::CameraBoardSocket cameraId, int width, int height, Point2f topLeftPixelId, Point2f bottomRightPixelId) {
-    return dai::ros::calibrationToCameraInfo(calibHandler, cameraId, width, height, topLeftPixelId, bottomRightPixelId);
+    std::vector<std::vector<float>> camIntrinsics, rectifiedRotation;
+    std::vector<float> distCoeffs;
+    std::vector<double> flatIntrinsics, distCoeffsDouble;
+    int defWidth, defHeight;
+    ImageMsgs::CameraInfo cameraData;
+    std::tie(std::ignore, defWidth, defHeight) = calibHandler.getDefaultIntrinsics(cameraId);
+
+    if(width == -1) {
+        cameraData.width = static_cast<uint32_t>(defWidth);
+    } else {
+        cameraData.width = static_cast<uint32_t>(width);
+    }
+
+    if(height == -1) {
+        cameraData.height = static_cast<uint32_t>(defHeight);
+    } else {
+        cameraData.height = static_cast<uint32_t>(height);
+    }
+
+    camIntrinsics = calibHandler.getCameraIntrinsics(cameraId, cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);
+
+    flatIntrinsics.resize(9);
+    for(int i = 0; i < 3; i++) {
+        std::copy(camIntrinsics[i].begin(), camIntrinsics[i].end(), flatIntrinsics.begin() + 3 * i);
+    }
+
+    auto& intrinsics = cameraData.k;
+    auto& distortions = cameraData.d;
+    auto& projection = cameraData.p;
+    auto& rotation = cameraData.r;
+    // Set rotation to reasonable default even for non-stereo pairs
+    rotation[0] = rotation[4] = rotation[8] = 1;
+    for(size_t i = 0; i < 3; i++) {
+        std::copy(flatIntrinsics.begin() + i * 3, flatIntrinsics.begin() + (i + 1) * 3, projection.begin() + i * 4);
+    }
+    std::copy(flatIntrinsics.begin(), flatIntrinsics.end(), intrinsics.begin());
+
+    distCoeffs = calibHandler.getDistortionCoefficients(cameraId);
+
+    for(size_t i = 0; i < 8; i++) {
+        distortions.push_back(static_cast<double>(distCoeffs[i]));
+    }
+
+    // Setting Projection matrix if the cameras are stereo pair. Right as the first and left as the second.
+    if(calibHandler.getStereoRightCameraId() != dai::CameraBoardSocket::AUTO && calibHandler.getStereoLeftCameraId() != dai::CameraBoardSocket::AUTO) {
+        if(calibHandler.getStereoRightCameraId() == cameraId || calibHandler.getStereoLeftCameraId() == cameraId) {
+            std::vector<std::vector<float>> stereoIntrinsics = calibHandler.getCameraIntrinsics(
+                calibHandler.getStereoRightCameraId(), cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);
+            std::vector<double> stereoFlatIntrinsics(12), flatRectifiedRotation(9);
+            for(int i = 0; i < 3; i++) {
+                std::copy(stereoIntrinsics[i].begin(), stereoIntrinsics[i].end(), stereoFlatIntrinsics.begin() + 4 * i);
+                stereoFlatIntrinsics[(4 * i) + 3] = 0;
+            }
+
+            if(calibHandler.getStereoLeftCameraId() == cameraId) {
+                // This defines where the first camera is w.r.t second camera coordinate system giving it a translation to place all the points in the first
+                // camera to second camera by multiplying that translation vector using transformation function.
+                stereoFlatIntrinsics[3] = stereoFlatIntrinsics[0]
+                                          * calibHandler.getCameraExtrinsics(calibHandler.getStereoRightCameraId(), calibHandler.getStereoLeftCameraId())[0][3]
+                                          / 100.0;  // Converting to meters
+                rectifiedRotation = calibHandler.getStereoLeftRectificationRotation();
+            } else {
+                rectifiedRotation = calibHandler.getStereoRightRectificationRotation();
+            }
+
+            for(int i = 0; i < 3; i++) {
+                std::copy(rectifiedRotation[i].begin(), rectifiedRotation[i].end(), flatRectifiedRotation.begin() + 3 * i);
+            }
+
+            std::copy(stereoFlatIntrinsics.begin(), stereoFlatIntrinsics.end(), projection.begin());
+            std::copy(flatRectifiedRotation.begin(), flatRectifiedRotation.end(), rotation.begin());
+        }
+    }
+    cameraData.distortion_model = "rational_polynomial";
+
+    return cameraData;
 }
 }  // namespace ros
 }  // namespace dai

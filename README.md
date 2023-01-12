@@ -140,6 +140,16 @@ Currently, we provide few examples:
 * `example_marker_publish.launch.py` launches `camera.launch.py` + small python node that publishes detected objects as markers/tfs
 * `rtabmap.launch.py` launches camera and RTAB-MAP RGBD SLAM (you need to install it first - `sudo apt install ros-$ROS_DISTRO-rtabmap-ros`). You might need to set manual focus via parameters here.
 ![](docs/rtabmap.gif)
+
+#### Specific camera configurations:
+##### **PoE Cameras**
+Since PoE cameras use protocol that has lower throughput than USB, running default camera launch can result in lags depending on chosen resolution/fps. To combat this issue, you can use encoded frames, which let you keep desired resolution/fps at the cost of image quality reduction due to compression. One additional difference is that `subpixel` depth filtering is disabled in this mode. To enable low_bandwidth, for example for rgb camera, change parameters:
+* `rgb.i_low_bandwidth` - `true` to enable
+* `rgb.i_low_bandwidth_quality` - desired quality % (default-50)
+See `low_bandwidth.yaml` file for example parameters for all streams
+##### **OAK D PRO W**
+To properly align with depth, you need to set `rgb.i_resolution` parameter to `720` (see `config/oak_d_w_pro.yaml`).
+
 ## Executing an example
 
 ### ROS1
