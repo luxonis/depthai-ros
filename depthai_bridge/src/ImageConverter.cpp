@@ -70,7 +70,11 @@ void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData
         cv::Mat depthOut = cv::Mat(cv::Size(output.cols, output.rows), CV_16UC1);
         for(int row = 0; row < output.rows; ++row) {
             for(int col = 0; col < output.cols; ++col) {
-                depthOut.at<short>(row, col) = factor / output.at<int8_t>(row, col);
+                auto disp = output.at<int8_t>(row, col);
+                if(disp = 0)
+                    depthOut.at<short>(row, col) = 0;
+                else
+                    depthOut.at<short>(row, col) = factor / output.at<int8_t>(row, col);
             }
         }
         output = depthOut.clone();

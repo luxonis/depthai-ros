@@ -3,7 +3,3 @@
     camera:
       i_nn_type: none
       i_laser_dot_brightness: 800
-    rgb:
-      i_low_bandwidth: true
-    stereo:
-      i_low_bandwidth: true
