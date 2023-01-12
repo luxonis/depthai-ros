@@ -29,7 +29,15 @@ void Stereo::setNames() {
 void Stereo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     xoutStereo = pipeline->create<dai::node::XLinkOut>();
     xoutStereo->setStreamName(stereoQName);
-    stereoCamNode->depth.link(xoutStereo->input);
+    if(ph->getParam<bool>(getROSNode(), "i_low_bandwidth")) {
+        videoEnc = pipeline->create<dai::node::VideoEncoder>();
+        videoEnc->setQuality(ph->getParam<int>(getROSNode(), "i_low_bandwidth_quality"));
+        videoEnc->setProfile(dai::VideoEncoderProperties::Profile::MJPEG);
+        stereoCamNode->disparity.link(videoEnc->input);
+        videoEnc->bitstream.link(xoutStereo->input);
+    } else {
+        stereoCamNode->depth.link(xoutStereo->input);
+    }
 }
 
 void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
@@ -53,6 +61,7 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
                                                              static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
                                                              ph->getParam<int>(getROSNode(), "i_width"),
                                                              ph->getParam<int>(getROSNode(), "i_height"));
+        stereoInfo.P[3] = calibHandler.getBaselineDistance() * 10.0;  // baseline in mm
     } catch(std::runtime_error& e) {
         ROS_ERROR("No calibration! Publishing empty camera_info.");
     }
@@ -65,7 +74,10 @@ void Stereo::closeQueues() {
 void Stereo::stereoQCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
     auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
     std::deque<sensor_msgs::Image> deq;
-    imageConverter->toRosMsg(img, deq);
+    if(ph->getParam<bool>(getROSNode(), "i_low_bandwidth"))
+        imageConverter->toRosMsgFromBitStream(img, deq, dai::RawImgFrame::Type::RAW8, stereoInfo);
+    else
+        imageConverter->toRosMsg(img, deq);
     while(deq.size() > 0) {
         auto currMsg = deq.front();
         stereoInfo.header = currMsg.header;

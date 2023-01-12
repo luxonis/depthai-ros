@@ -28,52 +28,6 @@ jobs:
         extensions: 'h,hpp,c,cpp'
         clangFormatVersion: 10
   
-  ROS1-build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
-        ROS_DISTRO: [melodic, noetic]
-    
-    steps:
-      - uses: actions/checkout@v2
-      
-      - name: Melodic build
-        if: matrix.os == 'ubuntu-18.04'
-        uses: ros-tooling/setup-ros@v0.2
-        with:
-          required-ros-distributions: melodic
-      
-      - name: Noetic build
-        if: matrix.os == 'ubuntu-20.04'
-        uses: ros-tooling/setup-ros@v0.2
-        with:
-          required-ros-distributions: noetic
-
-      - name: Installing libusb
-        run: sudo apt-get install libusb-1.0-0-dev
-
-      - name: Installing DepthAi Core
-        run: sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/$GITHUB_SHA/install_dependencies.sh | sudo bash
-      
-      - name: Build depthai-bridge melodic
-        if: matrix.os == 'ubuntu-18.04'  
-        uses: ros-tooling/action-ros-ci@v0.2
-        with:
-          # vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/examples.repos"
-          # package-name: depthai_examples
-          target-ros1-distro: melodic
-          skip-tests: true
-
-      - name: Build depthai-bridge noetic
-        if: matrix.os == 'ubuntu-20.04'
-        uses: ros-tooling/action-ros-ci@v0.2
-        with:
-          # vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/examples.repos"
-          # package-name: depthai_examples
-          target-ros1-distro: noetic
-          skip-tests: true
-      
   docker-build:
     name: Build and Upload to Docker Hub
     runs-on: ubuntu-latest

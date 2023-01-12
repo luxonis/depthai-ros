@@ -6,16 +6,21 @@
 namespace depthai_ros_driver {
 namespace param_handlers {
 RGBParamHandler::RGBParamHandler(const std::string& name) : BaseParamHandler(name) {
-    rgbResolutionMap = {
-        {"720", dai::ColorCameraProperties::SensorResolution::THE_720_P},
-        {"1080", dai::ColorCameraProperties::SensorResolution::THE_1080_P},
-        {"4k", dai::ColorCameraProperties::SensorResolution::THE_4_K},
-        {"12MP", dai::ColorCameraProperties::SensorResolution::THE_12_MP},
-    };
+    rgbResolutionMap = {{"720", dai::ColorCameraProperties::SensorResolution::THE_720_P},
+                        {"1080", dai::ColorCameraProperties::SensorResolution::THE_1080_P},
+                        {"4K", dai::ColorCameraProperties::SensorResolution::THE_4_K},
+                        {"12MP", dai::ColorCameraProperties::SensorResolution::THE_12_MP},
+                        {"13MP", dai::ColorCameraProperties::SensorResolution::THE_13_MP},
+                        {"800", dai::ColorCameraProperties::SensorResolution::THE_800_P},
+                        {"1200", dai::ColorCameraProperties::SensorResolution::THE_1200_P},
+                        {"5MP", dai::ColorCameraProperties::SensorResolution::THE_5_MP},
+                        {"4000x3000", dai::ColorCameraProperties::SensorResolution::THE_4000X3000},
+                        {"5312X6000", dai::ColorCameraProperties::SensorResolution::THE_5312X6000},
+                        {"48_MP", dai::ColorCameraProperties::SensorResolution::THE_48_MP}};
 };
 RGBParamHandler::~RGBParamHandler() = default;
 void RGBParamHandler::declareParams(ros::NodeHandle node,
-                                    std::shared_ptr<dai::node::ColorCamera> color_cam,
+                                    std::shared_ptr<dai::node::ColorCamera> colorCam,
                                     dai::CameraBoardSocket socket,
                                     dai_nodes::sensor_helpers::ImageSensor sensor) {
     getParam<int>(node, "i_max_q_size");
@@ -23,43 +28,43 @@ void RGBParamHandler::declareParams(ros::NodeHandle node,
     getParam<bool>(node, "i_enable_preview");
     getParam<int>(node, "i_board_socket_id");
 
-    color_cam->setBoardSocket(socket);
-    color_cam->setFps(getParam<int>(node, "i_fps"));
-    color_cam->setPreviewSize(getParam<int>(node, "i_preview_size"), getParam<int>(node, "i_preview_size"));
+    colorCam->setBoardSocket(socket);
+    colorCam->setFps(getParam<int>(node, "i_fps"));
+    colorCam->setPreviewSize(getParam<int>(node, "i_preview_size"), getParam<int>(node, "i_preview_size"));
     auto resolution = rgbResolutionMap.at(getParam<std::string>(node, "i_resolution"));
     int width, height;
-    color_cam->setResolution(resolution);
-    sensor.getSizeFromResolution(color_cam->getResolution(), width, height);
+    colorCam->setResolution(resolution);
+    sensor.getSizeFromResolution(colorCam->getResolution(), width, height);
 
-    color_cam->setInterleaved(getParam<bool>(node, "i_interleaved"));
+    colorCam->setInterleaved(getParam<bool>(node, "i_interleaved"));
     if(getParam<bool>(node, "i_set_isp_scale")) {
         int new_width = width * 2 / 3;
         int new_height = height * 2 / 3;
         if(new_width % 16 == 0 && new_height % 16 == 0) {
             width = new_width;
             height = new_height;
-            color_cam->setIspScale(2, 3);
+            colorCam->setIspScale(2, 3);
         } else {
             ROS_ERROR("ISP scaling not supported for given width & height");
         }
     }
-    color_cam->setVideoSize(width, height);
+    colorCam->setVideoSize(width, height);
     setParam<int>(node, "i_height", height);
     setParam<int>(node, "i_width", width);
 
-    color_cam->setPreviewKeepAspectRatio(getParam<bool>(node, "i_keep_preview_aspect_ratio"));
+    colorCam->setPreviewKeepAspectRatio(getParam<bool>(node, "i_keep_preview_aspect_ratio"));
     size_t iso = getParam<int>(node, "r_iso");
     size_t exposure = getParam<int>(node, "r_exposure");
     size_t whitebalance = getParam<int>(node, "r_whitebalance");
     size_t focus = getParam<int>(node, "r_focus");
     if(getParam<bool>(node, "r_set_man_focus")) {
-        color_cam->initialControl.setManualFocus(focus);
+        colorCam->initialControl.setManualFocus(focus);
     }
     if(getParam<bool>(node, "r_set_man_exposure")) {
-        color_cam->initialControl.setManualExposure(exposure, iso);
+        colorCam->initialControl.setManualExposure(exposure, iso);
     }
     if(getParam<bool>(node, "r_set_man_whitebalance")) {
-        color_cam->initialControl.setManualWhiteBalance(whitebalance);
+        colorCam->initialControl.setManualWhiteBalance(whitebalance);
     }
 }
 dai::CameraControl RGBParamHandler::setRuntimeParams(ros::NodeHandle node, parametersConfig& config) {

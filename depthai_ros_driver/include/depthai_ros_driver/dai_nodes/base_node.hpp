@@ -17,7 +17,9 @@ class BaseNode {
     virtual ~BaseNode(){};
     virtual void updateParams(parametersConfig& config) = 0;
     virtual void link(const dai::Node::Input& in, int linkType = 0) = 0;
-    virtual dai::Node::Input getInput(int linkType = 0) = 0;
+    virtual dai::Node::Input getInput(int /*linkType = 0*/) {
+        throw(std::runtime_error("getInput() not implemented"));
+    };
     virtual void setupQueues(std::shared_ptr<dai::Device> device) = 0;
     virtual void setNames() = 0;
     virtual void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) = 0;

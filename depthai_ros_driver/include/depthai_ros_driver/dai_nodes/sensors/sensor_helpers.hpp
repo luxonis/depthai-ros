@@ -7,7 +7,7 @@ namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace link_types {
 enum class RGBLinkType { video, isp, preview };
-};
+}
 namespace sensor_helpers {
 struct ImageSensor {
     std::string name;
@@ -38,6 +38,36 @@ struct ImageSensor {
             case dai::ColorCameraProperties::SensorResolution::THE_12_MP: {
                 height = 4056;
                 width = 3040;
+                break;
+            }
+            case dai::ColorCameraProperties::SensorResolution::THE_1200_P: {
+                height = 1920;
+                width = 1200;
+                break;
+            }
+            case dai::ColorCameraProperties::SensorResolution::THE_5_MP: {
+                height = 2592;
+                width = 1944;
+                break;
+            }
+            case dai::ColorCameraProperties::SensorResolution::THE_13_MP: {
+                height = 4208;
+                width = 3120;
+                break;
+            }
+            case dai::ColorCameraProperties::SensorResolution::THE_4000X3000: {
+                height = 4000;
+                width = 3000;
+                break;
+            }
+            case dai::ColorCameraProperties::SensorResolution::THE_5312X6000: {
+                height = 5312;
+                width = 6000;
+                break;
+            }
+            case dai::ColorCameraProperties::SensorResolution::THE_48_MP: {
+                height = 8000;
+                width = 6000;
                 break;
             }
         }

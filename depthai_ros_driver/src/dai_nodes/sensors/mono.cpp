@@ -30,7 +30,15 @@ void Mono::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     if(ph->getParam<bool>(getROSNode(), "i_publish_topic")) {
         xoutMono = pipeline->create<dai::node::XLinkOut>();
         xoutMono->setStreamName(monoQName);
-        monoCamNode->out.link(xoutMono->input);
+        if(ph->getParam<bool>(getROSNode(), "i_low_bandwidth")) {
+            videoEnc = pipeline->create<dai::node::VideoEncoder>();
+            videoEnc->setQuality(ph->getParam<int>(getROSNode(), "i_low_bandwidth_quality"));
+            videoEnc->setProfile(dai::VideoEncoderProperties::Profile::MJPEG);
+            monoCamNode->out.link(videoEnc->input);
+            videoEnc->bitstream.link(xoutMono->input);
+        } else {
+            monoCamNode->out.link(xoutMono->input);
+        }
     }
     xinControl = pipeline->create<dai::node::XLinkIn>();
     xinControl->setStreamName(controlQName);
@@ -67,7 +75,10 @@ void Mono::closeQueues() {
 void Mono::monoQCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
     auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
     std::deque<sensor_msgs::Image> deq;
-    imageConverter->toRosMsg(img, deq);
+    if(ph->getParam<bool>(getROSNode(), "i_low_bandwidth"))
+        imageConverter->toRosMsgFromBitStream(img, deq, dai::RawImgFrame::Type::GRAY8, monoInfo);
+    else
+        imageConverter->toRosMsg(img, deq);
     while(deq.size() > 0) {
         auto currMsg = deq.front();
         monoInfo.header = currMsg.header;
@@ -78,10 +89,6 @@ void Mono::monoQCB(const std::string& /*name*/, const std::shared_ptr<dai::AData
 
 void Mono::link(const dai::Node::Input& in, int /*linkType*/) {
     monoCamNode->out.link(in);
-}
-
-dai::Node::Input Mono::getInput(int linkType) {
-    throw(std::runtime_error("Class Mono has no input."));
 }
 
 void Mono::updateParams(parametersConfig& config) {

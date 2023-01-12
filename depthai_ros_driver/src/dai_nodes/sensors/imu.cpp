@@ -53,10 +53,6 @@ void Imu::link(const dai::Node::Input& in, int /*linkType*/) {
     imuNode->out.link(in);
 }
 
-dai::Node::Input Imu::getInput(int linkType) {
-    throw(std::runtime_error("Class Imu has no input."));
-}
-
 void Imu::updateParams(parametersConfig& config) {
     ph->setRuntimeParams(getROSNode(), config);
 }
