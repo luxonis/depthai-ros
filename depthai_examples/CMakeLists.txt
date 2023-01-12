@@ -20,6 +20,7 @@ endif()
 
 set(tiny_yolo_v4_blob_name "yolov4_tiny_coco_416x416_openvino_2021.4_6shave_bgr.blob")
 set(mobilenet_blob_name "mobilenet-ssd_openvino_2021.2_6shave.blob")
+set(deeplab_blob_name "deeplab_v3_plus_mnv2_decoder_256_openvino_2021.4.blob")
 
 set(mobilenet_blob "${PROJECT_SOURCE_DIR}/resources/${mobilenet_blob_name}")
 file(DOWNLOAD "https://artifacts.luxonis.com/artifactory/luxonis-depthai-data-local/network/mobilenet-ssd_openvino_2021.2_6shave.blob" 
@@ -35,6 +36,13 @@ file(DOWNLOAD "https://artifacts.luxonis.com/artifactory/luxonis-depthai-data-lo
   EXPECTED_HASH SHA1=219d949610a5760e62a8458941e1300b81c3fe4a
   TLS_VERIFY ON)
 
+set(deeplab_blob "${PROJECT_SOURCE_DIR}/resources/${deeplab_blob_name}")
+  file(DOWNLOAD
+  "https://github.com/luxonis/depthai-experiments/blob/master/gen2-deeplabv3_multiclass/models/deeplab_v3_plus_mnv2_decoder_256_openvino_2021.4.blob?raw=true"
+    ${deeplab_blob}
+    TIMEOUT 60  # seconds
+    EXPECTED_HASH SHA1=bdc2529f765f34c4799b478690fb4e32f1ad5d89
+    TLS_VERIFY ON)
 
 find_package(catkin REQUIRED COMPONENTS
   camera_info_manager
