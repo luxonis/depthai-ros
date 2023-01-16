@@ -2,7 +2,6 @@
 
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 
-
 namespace depthai_ros_driver {
 namespace pipeline_gen {
 enum class PipelineType { RGB, RGBD, RGBStereo, Stereo };
@@ -20,10 +19,7 @@ class PipelineGenerator {
 
    private:
     std::unordered_map<std::string, PipelineType> pipelineTypeMap{
-        {"RGB", PipelineType::RGB}, 
-        {"RGBD", PipelineType::RGBD}, 
-        {"RGBStereo", PipelineType::RGBStereo}, 
-        {"Stereo", PipelineType::Stereo}};
+        {"RGB", PipelineType::RGB}, {"RGBD", PipelineType::RGBD}, {"RGBStereo", PipelineType::RGBStereo}, {"Stereo", PipelineType::Stereo}};
     std::unordered_map<std::string, NNType> nnTypeMap = {
         {"", NNType::None},
         {"none", NNType::None},
@@ -31,5 +27,5 @@ class PipelineGenerator {
         {"spatial", NNType::Spatial},
     };
 };
-}  // namespace pipeline
+}  // namespace pipeline_gen
 }  // namespace depthai_ros_driver

@@ -96,5 +96,5 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
     ROS_INFO("Finished setting up pipeline.");
     return daiNodes;
 }
-}  // namespace pipeline
+}  // namespace pipeline_gen
 }  // namespace depthai_ros_driver
