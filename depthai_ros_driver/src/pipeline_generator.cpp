@@ -14,26 +14,26 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
                                                                                     std::shared_ptr<dai::Device> device,
                                                                                     std::shared_ptr<dai::Pipeline> pipeline,
                                                                                     const std::string& pipelineType,
-                                                                                    const std::string& nnType) {
+                                                                                    const std::string& nnType,
+                                                                                    bool enableImu) {
     ROS_INFO("Pipeline type: %s", pipelineType.c_str());
     auto pType = pipelineTypeMap.at(pipelineType);
+    pType = validatePipeline(pType, device->getCameraSensorNames().size());
     auto nType = nnTypeMap.at(nnType);
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
     switch(pType) {
         case PipelineType::RGB: {
             auto rgb = std::make_unique<dai_nodes::CameraSensor>("rgb", node, pipeline, device, dai::CameraBoardSocket::RGB);
-
             switch(nType) {
                 case NNType::None:
                     break;
                 case NNType::RGB: {
-                    auto nn = std::make_unique<dai_nodes::NNWrapper>("nn", node, pipeline);
-                    rgb->link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
+                    auto nn = createNN(node, pipeline, *rgb);
                     daiNodes.push_back(std::move(nn));
                     break;
                 }
                 case NNType::Spatial: {
-                    ROS_WARN("Spatial NN selected, but configuration is RGB.");
+                    ROS_WARN("Spatial NN selected, but configuration is RGB. NN not created.");
                 }
                 default:
                     break;
@@ -49,16 +49,11 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
                 case NNType::None:
                     break;
                 case NNType::RGB: {
-                    auto nn = std::make_unique<dai_nodes::NNWrapper>("nn", node, pipeline);
-                    rgb->link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
-                    daiNodes.push_back(std::move(nn));
+                    auto nn = createNN(node, pipeline, *rgb);
                     break;
                 }
                 case NNType::Spatial: {
-                    auto nn = std::make_unique<dai_nodes::SpatialNNWrapper>("nn", node, pipeline);
-                    rgb->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::input)),
-                              static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
-                    stereo->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::inputDepth)));
+                    auto nn = createSpatialNN(node, pipeline, *rgb, *stereo);
                     daiNodes.push_back(std::move(nn));
                     break;
                 }
@@ -73,6 +68,19 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
             auto rgb = std::make_unique<dai_nodes::CameraSensor>("rgb", node, pipeline, device, dai::CameraBoardSocket::RGB);
             auto left = std::make_unique<dai_nodes::CameraSensor>("left", node, pipeline, device, dai::CameraBoardSocket::LEFT);
             auto right = std::make_unique<dai_nodes::CameraSensor>("right", node, pipeline, device, dai::CameraBoardSocket::RIGHT);
+            switch(nType) {
+                case NNType::None:
+                    break;
+                case NNType::RGB: {
+                    auto nn = createNN(node, pipeline, *rgb);
+                    break;
+                }
+                case NNType::Spatial: {
+                    ROS_WARN("Spatial NN selected, but configuration is RGBStereo. NN not created.");
+                }
+                default:
+                    break;
+            }
             daiNodes.push_back(std::move(rgb));
             daiNodes.push_back(std::move(left));
             daiNodes.push_back(std::move(right));
@@ -85,16 +93,55 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
             daiNodes.push_back(std::move(right));
             break;
         }
+        case PipelineType::Depth: {
+            auto stereo = std::make_unique<dai_nodes::Stereo>("stereo", node, pipeline, device);
+            daiNodes.push_back(std::move(stereo));
+            break;
+        }
         default: {
             std::string configuration = pipelineType;
             throw std::runtime_error("UNKNOWN PIPELINE TYPE SPECIFIED/CAMERA DOESN'T SUPPORT GIVEN PIPELINE. Configuration: " + configuration);
         }
     }
-    auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline);
-    daiNodes.push_back(std::move(imu));
-
+    if(enableImu) {
+        auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline);
+        daiNodes.push_back(std::move(imu));
+    }
     ROS_INFO("Finished setting up pipeline.");
     return daiNodes;
 }
+std::unique_ptr<dai_nodes::BaseNode> PipelineGenerator::createNN(ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline, dai_nodes::BaseNode& daiNode) {
+    auto nn = std::make_unique<dai_nodes::NNWrapper>("nn", node, pipeline);
+    daiNode.link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
+    return nn;
+}
+std::unique_ptr<dai_nodes::BaseNode> PipelineGenerator::createSpatialNN(ros::NodeHandle node,
+                                                                        std::shared_ptr<dai::Pipeline> pipeline,
+                                                                        dai_nodes::BaseNode& daiNode,
+                                                                        dai_nodes::BaseNode& daiStereoNode) {
+    auto nn = std::make_unique<dai_nodes::SpatialNNWrapper>("nn", node, pipeline);
+    daiNode.link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::input)),
+                 static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
+    daiStereoNode.link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::inputDepth)));
+    return nn;
+}
+PipelineType PipelineGenerator::validatePipeline(PipelineType type, int sensorNum) {
+    if(sensorNum == 1) {
+        if(type != PipelineType::RGB) {
+            ROS_ERROR("Wrong pipeline chosen for camera as it has only one sensor. Switching to RGB.");
+            return PipelineType::RGB;
+        }
+    } else if(sensorNum == 2) {
+        if(type != PipelineType::Stereo || type != PipelineType::Depth) {
+            ROS_ERROR("Wrong pipeline chosen for camera as it has only stereo pair. Switching to Stereo.");
+            return PipelineType::Stereo;
+        }
+    } else if(sensorNum > 3) {
+        throw(
+            std::runtime_error("Pipeline configuration not supported for more than three sensors. Please feel free to make an issue for your case on Github."));
+    }
+    return type;
+}
+
 }  // namespace pipeline_gen
 }  // namespace depthai_ros_driver

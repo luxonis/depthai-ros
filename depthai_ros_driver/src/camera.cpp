@@ -80,7 +80,12 @@ void Camera::getDeviceType() {
 
 void Camera::createPipeline() {
     auto generator = std::make_unique<pipeline_gen::PipelineGenerator>();
-    daiNodes = generator->createPipeline(pNH, device, pipeline, ph->getParam<std::string>(pNH, "i_pipeline_type"), ph->getParam<std::string>(pNH, "i_nn_type"));
+    daiNodes = generator->createPipeline(pNH,
+                                         device,
+                                         pipeline,
+                                         ph->getParam<std::string>(pNH, "i_pipeline_type"),
+                                         ph->getParam<std::string>(pNH, "i_nn_type"),
+                                         ph->getParam<bool>(pNH, "i_enable_imu"));
 }
 
 void Camera::setupQueues() {
