@@ -12,9 +12,7 @@ Camera::Camera(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : rcl
 }
 void Camera::onConfigure() {
     getDeviceType();
-    RCLCPP_INFO(this->get_logger(), "Successfully received information. Generating pipeline.");
     createPipeline();
-    RCLCPP_INFO(this->get_logger(), "Starting pipeline...");
     device->startPipeline(*pipeline);
     setupQueues();
     setIR();
@@ -42,6 +40,7 @@ void Camera::stopCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response
 void Camera::getDeviceType() {
     RCLCPP_INFO(this->get_logger(), "Getting device info...");
     pipeline = std::make_shared<dai::Pipeline>();
+    RCLCPP_INFO(this->get_logger(), "Getting device info...");
     startDevice();
     auto name = device->getDeviceName();
     RCLCPP_INFO(this->get_logger(), "Device type: %s", name.c_str());
@@ -58,7 +57,12 @@ void Camera::getDeviceType() {
 
 void Camera::createPipeline() {
     auto generator = std::make_unique<pipeline_gen::PipelineGenerator>();
-    daiNodes = generator->createPipeline(this, device, pipeline, ph->getParam<std::string>(this, "i_pipeline_type"), ph->getParam<std::string>(this, "i_nn_type"));
+    daiNodes = generator->createPipeline(this,
+                                         device,
+                                         pipeline,
+                                         ph->getParam<std::string>(this, "i_pipeline_type"),
+                                         ph->getParam<std::string>(this, "i_nn_type"),
+                                         ph->getParam<bool>(this, "i_enable_imu"));
 }
 
 void Camera::setupQueues() {
@@ -115,9 +119,9 @@ void Camera::startDevice() {
 
     if(protocol != XLinkProtocol_t::X_LINK_TCP_IP) {
         auto speed = usbStrings[static_cast<int32_t>(device->getUsbSpeed())];
-        RCLCPP_INFO(this->get_logger(),"USB SPEED: %s", speed.c_str());
+        RCLCPP_INFO(this->get_logger(), "USB SPEED: %s", speed.c_str());
     } else {
-        RCLCPP_INFO(this->get_logger(),"PoE camera detected. Consider enabling low bandwidth for specific image topics (see readme).");
+        RCLCPP_INFO(this->get_logger(), "PoE camera detected. Consider enabling low bandwidth for specific image topics (see readme).");
     }
 }
 

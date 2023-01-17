@@ -90,7 +90,6 @@ void Mono::link(const dai::Node::Input& in, int /*linkType*/) {
     monoCamNode->out.link(in);
 }
 
-
 void Mono::updateParams(const std::vector<rclcpp::Parameter>& params) {
     auto ctrl = ph->setRuntimeParams(getROSNode(), params);
     controlQ->send(ctrl);

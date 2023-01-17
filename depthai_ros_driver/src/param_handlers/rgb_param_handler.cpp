@@ -6,19 +6,17 @@
 namespace depthai_ros_driver {
 namespace param_handlers {
 RGBParamHandler::RGBParamHandler(const std::string& name) : BaseParamHandler(name) {
-    rgbResolutionMap = {
-        {"720", dai::ColorCameraProperties::SensorResolution::THE_720_P},
-        {"1080", dai::ColorCameraProperties::SensorResolution::THE_1080_P},
-        {"4K", dai::ColorCameraProperties::SensorResolution::THE_4_K},
-        {"12MP", dai::ColorCameraProperties::SensorResolution::THE_12_MP},
-        {"13MP", dai::ColorCameraProperties::SensorResolution::THE_13_MP},
-        {"800", dai::ColorCameraProperties::SensorResolution::THE_800_P},
-        {"1200", dai::ColorCameraProperties::SensorResolution::THE_1200_P},
-        {"5MP", dai::ColorCameraProperties::SensorResolution::THE_5_MP},
-        {"4000x3000", dai::ColorCameraProperties::SensorResolution::THE_4000X3000},
-        {"5312X6000", dai::ColorCameraProperties::SensorResolution::THE_5312X6000},
-        {"48_MP", dai::ColorCameraProperties::SensorResolution::THE_48_MP}
-    };
+    rgbResolutionMap = {{"720", dai::ColorCameraProperties::SensorResolution::THE_720_P},
+                        {"1080", dai::ColorCameraProperties::SensorResolution::THE_1080_P},
+                        {"4K", dai::ColorCameraProperties::SensorResolution::THE_4_K},
+                        {"12MP", dai::ColorCameraProperties::SensorResolution::THE_12_MP},
+                        {"13MP", dai::ColorCameraProperties::SensorResolution::THE_13_MP},
+                        {"800", dai::ColorCameraProperties::SensorResolution::THE_800_P},
+                        {"1200", dai::ColorCameraProperties::SensorResolution::THE_1200_P},
+                        {"5MP", dai::ColorCameraProperties::SensorResolution::THE_5_MP},
+                        {"4000x3000", dai::ColorCameraProperties::SensorResolution::THE_4000X3000},
+                        {"5312X6000", dai::ColorCameraProperties::SensorResolution::THE_5312X6000},
+                        {"48_MP", dai::ColorCameraProperties::SensorResolution::THE_48_MP}};
 };
 RGBParamHandler::~RGBParamHandler() = default;
 void RGBParamHandler::declareParams(rclcpp::Node* node,
@@ -49,7 +47,7 @@ void RGBParamHandler::declareParams(rclcpp::Node* node,
             height = new_height;
             colorCam->setIspScale(2, 3);
         } else {
-            RCLCPP_ERROR(node->get_logger(),"ISP scaling not supported for given width & height");
+            RCLCPP_ERROR(node->get_logger(), "ISP scaling not supported for given width & height");
         }
     }
     colorCam->setVideoSize(declareAndLogParam<int>(node, "i_width", width), declareAndLogParam<int>(node, "i_height", height));
