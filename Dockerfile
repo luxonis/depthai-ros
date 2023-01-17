@@ -25,5 +25,5 @@ RUN echo 'eval "$(register-python-argcomplete3 colcon)"' >> $HOME/.zshrc
 RUN echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> $HOME/.zshrc
 RUN echo "if [ -f ${WS}/install/setup.bash ]; then source ${WS}/install/setup.bash; fi" >> $HOME/.bashrc
 RUN echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> $HOME/.bashrc
-ENTRYPOINT [ "/ws/src/depthai_ros/entrypoint.sh" ]
+ENTRYPOINT [ "/ws/src/depthai-ros/entrypoint.sh" ]
 CMD ["zsh"]
