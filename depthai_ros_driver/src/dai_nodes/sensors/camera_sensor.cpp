@@ -13,7 +13,8 @@ CameraSensor::CameraSensor(const std::string& daiNodeName,
                            rclcpp::Node* node,
                            std::shared_ptr<dai::Pipeline> pipeline,
                            std::shared_ptr<dai::Device> device,
-                           dai::CameraBoardSocket socket)
+                           dai::CameraBoardSocket socket,
+                           bool publish)
     : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s base", daiNodeName.c_str());
 
@@ -25,9 +26,9 @@ CameraSensor::CameraSensor(const std::string& daiNodeName,
         });
     RCLCPP_DEBUG(node->get_logger(), "Node %s has sensor %s", daiNodeName.c_str(), sensorName.c_str());
     if((*sensorIt).color) {
-        sensorNode = std::make_unique<RGB>(daiNodeName, node, pipeline, socket, (*sensorIt));
+        sensorNode = std::make_unique<RGB>(daiNodeName, node, pipeline, socket, (*sensorIt), publish);
     } else {
-        sensorNode = std::make_unique<Mono>(daiNodeName, node, pipeline, socket, (*sensorIt));
+        sensorNode = std::make_unique<Mono>(daiNodeName, node, pipeline, socket, (*sensorIt), publish);
     }
 
     RCLCPP_DEBUG(node->get_logger(), "Base node %s created", daiNodeName.c_str());
@@ -46,7 +47,6 @@ void CameraSensor::closeQueues() {
 void CameraSensor::link(const dai::Node::Input& in, int linkType) {
     sensorNode->link(in, linkType);
 }
-
 
 void CameraSensor::updateParams(const std::vector<rclcpp::Parameter>& params) {
     sensorNode->updateParams(params);

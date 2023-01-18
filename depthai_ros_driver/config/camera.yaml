@@ -4,9 +4,9 @@
       i_enable_imu: true
       i_enable_ir: true
       i_floodlight_brightness: 0
-      i_ip: '1.1.2.1.1'
+      i_ip: ''
       i_laser_dot_brightness: 800
-      i_mx_id: '1944301051FB4D1300'
+      i_mx_id: ''
       i_nn_type: spatial
       i_pipeline_type: RGBD
       i_usb_speed: SUPER_PLUS

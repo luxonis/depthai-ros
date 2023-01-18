@@ -11,13 +11,14 @@ Mono::Mono(const std::string& daiNodeName,
            rclcpp::Node* node,
            std::shared_ptr<dai::Pipeline> pipeline,
            dai::CameraBoardSocket socket,
-           dai_nodes::sensor_helpers::ImageSensor sensor)
+           dai_nodes::sensor_helpers::ImageSensor sensor,
+           bool publish = true)
     : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     monoCamNode = pipeline->create<dai::node::MonoCamera>();
     ph = std::make_unique<param_handlers::MonoParamHandler>(daiNodeName);
-    ph->declareParams(node, monoCamNode, socket, sensor);
+    ph->declareParams(node, monoCamNode, socket, sensor, publish);
     setXinXout(pipeline);
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
 };
@@ -89,7 +90,6 @@ void Mono::monoQCB(const std::string& /*name*/, const std::shared_ptr<dai::AData
 void Mono::link(const dai::Node::Input& in, int /*linkType*/) {
     monoCamNode->out.link(in);
 }
-
 
 void Mono::updateParams(const std::vector<rclcpp::Parameter>& params) {
     auto ctrl = ph->setRuntimeParams(getROSNode(), params);

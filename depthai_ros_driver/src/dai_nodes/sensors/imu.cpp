@@ -52,7 +52,6 @@ void Imu::link(const dai::Node::Input& in, int /*linkType*/) {
     imuNode->out.link(in);
 }
 
-
 void Imu::updateParams(const std::vector<rclcpp::Parameter>& params) {
     ph->setRuntimeParams(getROSNode(), params);
 }

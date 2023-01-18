@@ -14,6 +14,7 @@ include_directories(include)
 ament_auto_add_library(
   ${PROJECT_NAME} SHARED
   src/camera.cpp
+  src/pipeline_generator.cpp
   src/dai_nodes/sensors/imu.cpp
   src/dai_nodes/sensors/rgb.cpp
   src/dai_nodes/sensors/mono.cpp

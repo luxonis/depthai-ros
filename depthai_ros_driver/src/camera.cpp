@@ -1,13 +1,7 @@
 #include "depthai_ros_driver/camera.hpp"
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
-#include "depthai_ros_driver/dai_nodes/nn/nn_helpers.hpp"
-#include "depthai_ros_driver/dai_nodes/nn/nn_wrapper.hpp"
-#include "depthai_ros_driver/dai_nodes/nn/spatial_nn_wrapper.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/camera_sensor.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/imu.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
-#include "depthai_ros_driver/dai_nodes/stereo.hpp"
+#include "depthai_ros_driver/pipeline_generator.hpp"
 
 namespace depthai_ros_driver {
 
@@ -18,9 +12,7 @@ Camera::Camera(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : rcl
 }
 void Camera::onConfigure() {
     getDeviceType();
-    RCLCPP_INFO(this->get_logger(), "Successfully received information. Generating pipeline.");
     createPipeline();
-    RCLCPP_INFO(this->get_logger(), "Starting pipeline...");
     device->startPipeline(*pipeline);
     setupQueues();
     setIR();
@@ -48,6 +40,7 @@ void Camera::stopCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response
 void Camera::getDeviceType() {
     RCLCPP_INFO(this->get_logger(), "Getting device info...");
     pipeline = std::make_shared<dai::Pipeline>();
+    RCLCPP_INFO(this->get_logger(), "Getting device info...");
     startDevice();
     auto name = device->getDeviceName();
     RCLCPP_INFO(this->get_logger(), "Device type: %s", name.c_str());
@@ -63,68 +56,13 @@ void Camera::getDeviceType() {
 }
 
 void Camera::createPipeline() {
-    auto pipelineType = ph->getPipelineType(this);
-    switch(pipelineType) {
-        case param_handlers::camera::PipelineType::RGB: {
-            auto rgb = std::make_unique<dai_nodes::CameraSensor>("rgb", this, pipeline, device, dai::CameraBoardSocket::RGB);
-            auto nnType = ph->getNNType(this);
-            switch(nnType) {
-                case param_handlers::camera::NNType::None:
-                    break;
-                case param_handlers::camera::NNType::RGB: {
-                    auto nn = std::make_unique<dai_nodes::NNWrapper>("nn", this, pipeline);
-                    rgb->link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
-                    daiNodes.push_back(std::move(nn));
-                    break;
-                }
-                case param_handlers::camera::NNType::Spatial: {
-                    RCLCPP_WARN(this->get_logger(), "Spatial NN selected, but configuration is RGB.");
-                }
-                default:
-                    break;
-            }
-            daiNodes.push_back(std::move(rgb));
-            break;
-        }
-        case param_handlers::camera::PipelineType::RGBD: {
-            auto rgb = std::make_unique<dai_nodes::CameraSensor>("rgb", this, pipeline, device, dai::CameraBoardSocket::RGB);
-            auto stereo = std::make_unique<dai_nodes::Stereo>("stereo", this, pipeline, device);
-            auto nnType = ph->getNNType(this);
-            switch(nnType) {
-                case param_handlers::camera::NNType::None:
-                    break;
-                case param_handlers::camera::NNType::RGB: {
-                    auto nn = std::make_unique<dai_nodes::NNWrapper>("nn", this, pipeline);
-                    rgb->link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
-                    daiNodes.push_back(std::move(nn));
-                    break;
-                }
-                case param_handlers::camera::NNType::Spatial: {
-                    auto nn = std::make_unique<dai_nodes::SpatialNNWrapper>("nn", this, pipeline);
-                    rgb->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::input)),
-                              static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
-                    stereo->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::inputDepth)));
-                    daiNodes.push_back(std::move(nn));
-                    break;
-                }
-                default:
-                    break;
-            }
-            daiNodes.push_back(std::move(rgb));
-            daiNodes.push_back(std::move(stereo));
-            break;
-        }
-        default: {
-            std::string configuration = ph->getParam<std::string>(this, "i_pipeline_type") + " " + ph->getParam<std::string>(this, "i_cam_type");
-            throw std::runtime_error("UNKNOWN PIPELINE TYPE SPECIFIED/CAMERA DOESN'T SUPPORT GIVEN PIPELINE. Configuration: " + configuration);
-        }
-    }
-    if(ph->getParam<bool>(this, "i_enable_imu")) {
-        auto imu = std::make_unique<dai_nodes::Imu>("imu", this, pipeline);
-        daiNodes.push_back(std::move(imu));
-    }
-
-    RCLCPP_INFO(this->get_logger(), "Finished setting up pipeline.");
+    auto generator = std::make_unique<pipeline_gen::PipelineGenerator>();
+    daiNodes = generator->createPipeline(this,
+                                         device,
+                                         pipeline,
+                                         ph->getParam<std::string>(this, "i_pipeline_type"),
+                                         ph->getParam<std::string>(this, "i_nn_type"),
+                                         ph->getParam<bool>(this, "i_enable_imu"));
 }
 
 void Camera::setupQueues() {
@@ -181,9 +119,9 @@ void Camera::startDevice() {
 
     if(protocol != XLinkProtocol_t::X_LINK_TCP_IP) {
         auto speed = usbStrings[static_cast<int32_t>(device->getUsbSpeed())];
-        RCLCPP_INFO(this->get_logger(),"USB SPEED: %s", speed.c_str());
+        RCLCPP_INFO(this->get_logger(), "USB SPEED: %s", speed.c_str());
     } else {
-        RCLCPP_INFO(this->get_logger(),"PoE camera detected. Consider enabling low bandwidth for specific image topics (see readme).");
+        RCLCPP_INFO(this->get_logger(), "PoE camera detected. Consider enabling low bandwidth for specific image topics (see readme).");
     }
 }
 
