@@ -24,7 +24,7 @@ For usage check out respective git branches.
 ## Docker
 You can additionally build and run docker images on your local machine. To do that, **add USB rules as in above step**, clone the repository and inside it run (it matters on which branch you are on):
 ```
-docker build --build-arg USE_RVIZ=1 -t depthai_ros .
+docker build --build-arg USE_RVIZ=1 -t depthai-ros .
 ```
 If you find out that you run out of RAM during building, you can also set `BUILD_SEQUENTIAL=1` to build packages one at a time, it should take longer, but use less RAM.
 
@@ -35,12 +35,12 @@ xhost +local:docker
 
 Then you can run your image in following way:
 ```
-docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai=ros
+docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai-ros
 ```
 will run an interactive docker session. You can also try:
 
 ```
-docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai-ros:humble roslaunch depthai_examples stereo_inertial_node.launch.py
+docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai-ros roslaunch depthai_examples stereo_inertial_node.launch.py
 ```
 to run a launch file of your choice.
 
