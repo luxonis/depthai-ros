@@ -36,7 +36,7 @@ jobs:
       matrix: 
         ROS_DISTRO: [noetic]
     env: 
-      PUSH: ${{ (github.event_name != 'pull_request') && (github.repository == 'luxonis/depthai-ros') && contains(github.ref, 'refs/tags/v') }}
+      PUSH: ${{ (github.event_name != 'pull_request') && (github.repository == 'luxonis/depthai-ros') && contains(github.ref, 'refs/tags/') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
