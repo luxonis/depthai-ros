@@ -20,7 +20,14 @@ class BaseParamHandler {
     T getParam(ros::NodeHandle node, const std::string& paramName) {
         T value;
         node.getParam(getFullParamName(node, paramName), value);
-        logParam(getFullParamName(node, paramName), value);
+        return value;
+    }
+    template <typename T>
+    T getParam(ros::NodeHandle node, const std::string& paramName, T defaultVal) {
+        T value;
+        if(!node.param<T>(getFullParamName(node, paramName), value, defaultVal)) {
+            node.setParam(getFullParamName(node, paramName), defaultVal);
+        }
         return value;
     }
     template <typename T>

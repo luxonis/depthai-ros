@@ -14,18 +14,9 @@ CameraParamHandler::CameraParamHandler(const std::string& name) : BaseParamHandl
         {"SUPER", dai::UsbSpeed::SUPER},
         {"SUPER_PLUS", dai::UsbSpeed::SUPER_PLUS},
     };
-    nnTypeMap = {
-        {"", camera::NNType::None},
-        {"none", camera::NNType::None},
-        {"rgb", camera::NNType::RGB},
-        {"spatial", camera::NNType::Spatial},
-    };
-};
+}
 CameraParamHandler::~CameraParamHandler() = default;
 
-camera::NNType CameraParamHandler::getNNType(ros::NodeHandle node) {
-    return nnTypeMap.at(getParam<std::string>(node, "i_nn_type"));
-}
 dai::UsbSpeed CameraParamHandler::getUSBSpeed(ros::NodeHandle node) {
     return usbSpeedMap.at(getParam<std::string>(node, "i_usb_speed"));
 }
@@ -40,7 +31,7 @@ void CameraParamHandler::declareParams(ros::NodeHandle node) {
     getParam<int>(node, "i_laser_dot_brightness");
     getParam<int>(node, "i_floodlight_brightness");
 }
-dai::CameraControl CameraParamHandler::setRuntimeParams(ros::NodeHandle node, parametersConfig& config) {
+dai::CameraControl CameraParamHandler::setRuntimeParams(ros::NodeHandle /*node*/, parametersConfig& /*config*/) {
     dai::CameraControl ctrl;
     return ctrl;
 }

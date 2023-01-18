@@ -1,18 +1,11 @@
 #include "depthai_ros_driver/camera.hpp"
 
-#include <nodelet/nodelet.h>
-#include <pluginlib/class_list_macros.h>
-
 #include <memory>
 
-#include "depthai_ros_driver/dai_nodes/nn/nn_helpers.hpp"
-#include "depthai_ros_driver/dai_nodes/nn/nn_wrapper.hpp"
-#include "depthai_ros_driver/dai_nodes/nn/spatial_nn_wrapper.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/camera_sensor.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/imu.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
-#include "depthai_ros_driver/dai_nodes/stereo.hpp"
+#include "depthai_ros_driver/pipeline_generator.hpp"
 #include "dynamic_reconfigure/server.h"
+#include "nodelet/nodelet.h"
+#include "pluginlib/class_list_macros.h"
 
 namespace depthai_ros_driver {
 
@@ -86,60 +79,13 @@ void Camera::getDeviceType() {
 }
 
 void Camera::createPipeline() {
-    if(ph->getParam<std::string>(pNH, "i_pipeline_type") == "RGB") {
-        auto rgb = std::make_unique<dai_nodes::CameraSensor>("rgb", pNH, pipeline, device, dai::CameraBoardSocket::RGB);
-        auto nn_type = ph->getNNType(pNH);
-        switch(nn_type) {
-            case param_handlers::camera::NNType::None:
-                break;
-            case param_handlers::camera::NNType::RGB: {
-                auto nn = std::make_unique<dai_nodes::NNWrapper>("nn", pNH, pipeline);
-                rgb->link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
-                daiNodes.push_back(std::move(nn));
-                break;
-            }
-            case param_handlers::camera::NNType::Spatial: {
-                ROS_WARN("Spatial NN selected, but configuration is RGB.");
-            }
-            default:
-                break;
-        }
-        daiNodes.push_back(std::move(rgb));
-    } else if(ph->getParam<std::string>(pNH, "i_pipeline_type") == "RGBD") {
-        auto rgb = std::make_unique<dai_nodes::CameraSensor>("rgb", pNH, pipeline, device, dai::CameraBoardSocket::RGB);
-        auto stereo = std::make_unique<dai_nodes::Stereo>("stereo", pNH, pipeline, device);
-        auto nn_type = ph->getNNType(pNH);
-        switch(nn_type) {
-            case param_handlers::camera::NNType::None:
-                break;
-            case param_handlers::camera::NNType::RGB: {
-                auto nn = std::make_unique<dai_nodes::NNWrapper>("nn", pNH, pipeline);
-                rgb->link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
-                daiNodes.push_back(std::move(nn));
-                break;
-            }
-            case param_handlers::camera::NNType::Spatial: {
-                auto nn = std::make_unique<dai_nodes::SpatialNNWrapper>("nn", pNH, pipeline);
-                rgb->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::input)),
-                          static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
-                stereo->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::inputDepth)));
-                daiNodes.push_back(std::move(nn));
-                break;
-            }
-            default:
-                break;
-        }
-        daiNodes.push_back(std::move(rgb));
-        daiNodes.push_back(std::move(stereo));
-    } else {
-        std::string configuration = ph->getParam<std::string>(pNH, "i_pipeline_type") + " " + ph->getParam<std::string>(pNH, "i_cam_type");
-        throw std::runtime_error("UNKNOWN PIPELINE TYPE SPECIFIED/CAMERA DOESN'T SUPPORT GIVEN PIPELINE. Configuration: " + configuration);
-    }
-    if(ph->getParam<bool>(pNH, "i_enable_imu")) {
-        auto imu = std::make_unique<dai_nodes::Imu>("imu", pNH, pipeline);
-        daiNodes.push_back(std::move(imu));
-    }
-    ROS_INFO("Finished setting up pipeline.");
+    auto generator = std::make_unique<pipeline_gen::PipelineGenerator>();
+    daiNodes = generator->createPipeline(pNH,
+                                         device,
+                                         pipeline,
+                                         ph->getParam<std::string>(pNH, "i_pipeline_type"),
+                                         ph->getParam<std::string>(pNH, "i_nn_type"),
+                                         ph->getParam<bool>(pNH, "i_enable_imu"));
 }
 
 void Camera::setupQueues() {

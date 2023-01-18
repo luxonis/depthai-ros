@@ -13,7 +13,8 @@ CameraSensor::CameraSensor(const std::string& daiNodeName,
                            ros::NodeHandle node,
                            std::shared_ptr<dai::Pipeline> pipeline,
                            std::shared_ptr<dai::Device> device,
-                           dai::CameraBoardSocket socket)
+                           dai::CameraBoardSocket socket,
+                           bool publish)
     : BaseNode(daiNodeName, node, pipeline) {
     ROS_DEBUG("Creating node %s base", daiNodeName.c_str());
 
@@ -24,9 +25,9 @@ CameraSensor::CameraSensor(const std::string& daiNodeName,
         });
     ROS_DEBUG("Node %s has sensor %s", daiNodeName.c_str(), sensorName.c_str());
     if((*sensorIt).color) {
-        sensorNode = std::make_unique<RGB>(daiNodeName, node, pipeline, socket, (*sensorIt));
+        sensorNode = std::make_unique<RGB>(daiNodeName, node, pipeline, socket, (*sensorIt), publish);
     } else {
-        sensorNode = std::make_unique<Mono>(daiNodeName, node, pipeline, socket, (*sensorIt));
+        sensorNode = std::make_unique<Mono>(daiNodeName, node, pipeline, socket, (*sensorIt), publish);
     }
 
     ROS_DEBUG("Base node %s created", daiNodeName.c_str());

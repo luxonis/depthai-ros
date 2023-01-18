@@ -15,23 +15,22 @@ MonoParamHandler::MonoParamHandler(const std::string& name) : BaseParamHandler(n
     };
 };
 MonoParamHandler::~MonoParamHandler() = default;
-void MonoParamHandler::declareParams(ros::NodeHandle node,
-                                     std::shared_ptr<dai::node::MonoCamera> monoCam,
-                                     dai::CameraBoardSocket socket,
-                                     dai_nodes::sensor_helpers::ImageSensor) {
-    getParam<int>(node, "i_max_q_size");
-    getParam<bool>(node, "i_publish_topic");
+void MonoParamHandler::declareParams(
+    ros::NodeHandle node, std::shared_ptr<dai::node::MonoCamera> monoCam, dai::CameraBoardSocket socket, dai_nodes::sensor_helpers::ImageSensor, bool publish) {
+    getParam<int>(node, "i_max_q_size", 30);
+    getParam<bool>(node, "i_publish_topic", publish);
+    getParam<int>(node, "i_board_socket_id", static_cast<int>(socket));
 
     monoCam->setBoardSocket(socket);
-    monoCam->setFps(getParam<double>(node, "i_fps"));
+    monoCam->setFps(getParam<double>(node, "i_fps", 30.0));
 
-    monoCam->setResolution(monoResolutionMap.at(getParam<std::string>(node, "i_resolution")));
+    monoCam->setResolution(monoResolutionMap.at(getParam<std::string>(node, "i_resolution", "720")));
     getParam<int>(node, "i_width");
     getParam<int>(node, "i_height");
-    size_t iso = getParam<int>(node, "r_iso");
-    size_t exposure = getParam<int>(node, "r_exposure");
+    size_t iso = getParam<int>(node, "r_iso", 800);
+    size_t exposure = getParam<int>(node, "r_exposure", 1000);
 
-    if(getParam<bool>(node, "r_set_man_exposure")) {
+    if(getParam<bool>(node, "r_set_man_exposure", false)) {
         monoCam->initialControl.setManualExposure(exposure, iso);
     }
 }
