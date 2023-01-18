@@ -38,9 +38,7 @@ void Camera::stopCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response
     res->success = true;
 }
 void Camera::getDeviceType() {
-    RCLCPP_INFO(this->get_logger(), "Getting device info...");
     pipeline = std::make_shared<dai::Pipeline>();
-    RCLCPP_INFO(this->get_logger(), "Getting device info...");
     startDevice();
     auto name = device->getDeviceName();
     RCLCPP_INFO(this->get_logger(), "Device type: %s", name.c_str());

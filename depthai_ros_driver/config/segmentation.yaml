@@ -2,6 +2,8 @@
   ros__parameters:
     camera:
       i_nn_type: rgb
+    rgb:
+      i_enable_preview: true
     nn:
       i_nn_config_path: depthai_ros_driver/segmentation
 
