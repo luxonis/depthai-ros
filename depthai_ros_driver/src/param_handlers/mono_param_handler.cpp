@@ -15,12 +15,10 @@ MonoParamHandler::MonoParamHandler(const std::string& name) : BaseParamHandler(n
     };
 };
 MonoParamHandler::~MonoParamHandler() = default;
-void MonoParamHandler::declareParams(rclcpp::Node* node,
-                                     std::shared_ptr<dai::node::MonoCamera> monoCam,
-                                     dai::CameraBoardSocket socket,
-                                     dai_nodes::sensor_helpers::ImageSensor) {
+void MonoParamHandler::declareParams(
+    rclcpp::Node* node, std::shared_ptr<dai::node::MonoCamera> monoCam, dai::CameraBoardSocket socket, dai_nodes::sensor_helpers::ImageSensor, bool publish) {
     declareAndLogParam<int>(node, "i_max_q_size", 30);
-    declareAndLogParam<bool>(node, "i_publish_topic", false);
+    declareAndLogParam<bool>(node, "i_publish_topic", publish);
     declareAndLogParam<bool>(node, "i_low_bandwidth", false);
     declareAndLogParam<int>(node, "i_low_bandwidth_quality", 50);
     declareAndLogParam<int>(node, "i_board_socket_id", static_cast<int>(socket));
@@ -55,8 +53,8 @@ dai::CameraControl MonoParamHandler::setRuntimeParams(rclcpp::Node* node, const 
                 ctrl.setManualExposure(getParam<int>(node, "r_exposure"), p.get_value<int>());
             }
         }
-        return ctrl;
     }
+    return ctrl;
 }
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver

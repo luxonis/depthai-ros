@@ -99,6 +99,21 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
             daiNodes.push_back(std::move(stereo));
             break;
         }
+        case PipelineType::CamArray: {
+            int i = 0;
+            int j = 0;
+            for(auto& sensor : device->getCameraSensorNames()) {
+                // append letter for greater sensor number
+                if(i % alphabet.size() == 0) {
+                    j++;
+                }
+                std::string nodeName(j, alphabet[i % alphabet.size()]);
+                auto daiNode = std::make_unique<dai_nodes::CameraSensor>(nodeName, node, pipeline, device, sensor.first);
+                daiNodes.push_back(std::move(daiNode));
+                i++;
+            };
+            break;
+        }
         default: {
             std::string configuration = pipelineType;
             throw std::runtime_error("UNKNOWN PIPELINE TYPE SPECIFIED/CAMERA DOESN'T SUPPORT GIVEN PIPELINE. Configuration: " + configuration);
@@ -138,9 +153,9 @@ PipelineType PipelineGenerator::validatePipeline(rclcpp::Node* node, PipelineTyp
             RCLCPP_ERROR(node->get_logger(), "Wrong pipeline chosen for camera as it has only stereo pair. Switching to Stereo.");
             return PipelineType::Stereo;
         }
-    } else if(sensorNum > 3) {
-        throw(
-            std::runtime_error("Pipeline configuration not supported for more than three sensors. Please feel free to make an issue for your case on Github."));
+    } else if(sensorNum > 3 && type != PipelineType::CamArray) {
+        RCLCPP_ERROR(node->get_logger(), "For cameras with more than three sensors you can only use CamArray. Switching to CamArray.");
+        return PipelineType::CamArray;
     }
     return type;
 }

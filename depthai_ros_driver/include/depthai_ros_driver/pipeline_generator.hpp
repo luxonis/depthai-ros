@@ -4,7 +4,7 @@
 
 namespace depthai_ros_driver {
 namespace pipeline_gen {
-enum class PipelineType { RGB, RGBD, RGBStereo, Stereo, Depth };
+enum class PipelineType { RGB, RGBD, RGBStereo, Stereo, Depth, CamArray };
 enum class NNType { None, RGB, Spatial };
 class PipelineGenerator {
    public:
@@ -28,13 +28,15 @@ class PipelineGenerator {
                                                                   {"RGBD", PipelineType::RGBD},
                                                                   {"RGBStereo", PipelineType::RGBStereo},
                                                                   {"Stereo", PipelineType::Stereo},
-                                                                  {"Depth", PipelineType::Depth}};
+                                                                  {"Depth", PipelineType::Depth},
+                                                                  {"CamArray", PipelineType::CamArray}};
     std::unordered_map<std::string, NNType> nnTypeMap = {
         {"", NNType::None},
         {"none", NNType::None},
         {"rgb", NNType::RGB},
         {"spatial", NNType::Spatial},
     };
+    const std::string alphabet = "abcdefghijklmnopqrstuvwxyz";
 };
 }  // namespace pipeline_gen
 }  // namespace depthai_ros_driver

@@ -16,7 +16,8 @@ class MonoParamHandler : public BaseParamHandler {
     void declareParams(rclcpp::Node* node,
                        std::shared_ptr<dai::node::MonoCamera> monoCam,
                        dai::CameraBoardSocket socket,
-                       dai_nodes::sensor_helpers::ImageSensor sensor);
+                       dai_nodes::sensor_helpers::ImageSensor sensor,
+                       bool publish);
     dai::CameraControl setRuntimeParams(rclcpp::Node* node, const std::vector<rclcpp::Parameter>& params) override;
 
    private:

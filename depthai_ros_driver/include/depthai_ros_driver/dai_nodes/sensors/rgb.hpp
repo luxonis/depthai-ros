@@ -19,7 +19,8 @@ class RGB : public BaseNode {
                  rclcpp::Node* node,
                  std::shared_ptr<dai::Pipeline> pipeline,
                  dai::CameraBoardSocket socket,
-                 sensor_helpers::ImageSensor sensor);
+                 sensor_helpers::ImageSensor sensor,
+                 bool publish);
     virtual ~RGB() = default;
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;

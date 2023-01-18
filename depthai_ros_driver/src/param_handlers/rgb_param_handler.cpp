@@ -22,9 +22,10 @@ RGBParamHandler::~RGBParamHandler() = default;
 void RGBParamHandler::declareParams(rclcpp::Node* node,
                                     std::shared_ptr<dai::node::ColorCamera> colorCam,
                                     dai::CameraBoardSocket socket,
-                                    dai_nodes::sensor_helpers::ImageSensor sensor) {
+                                    dai_nodes::sensor_helpers::ImageSensor sensor,
+                                    bool publish) {
     declareAndLogParam<int>(node, "i_max_q_size", 30);
-    declareAndLogParam<bool>(node, "i_publish_topic", true);
+    declareAndLogParam<bool>(node, "i_publish_topic", publish);
     declareAndLogParam<bool>(node, "i_enable_preview", false);
     declareAndLogParam<bool>(node, "i_low_bandwidth", false);
     declareAndLogParam<int>(node, "i_low_bandwidth_quality", 50);
@@ -104,9 +105,8 @@ dai::CameraControl RGBParamHandler::setRuntimeParams(rclcpp::Node* node, const s
                 ctrl.setManualWhiteBalance(p.get_value<int>());
             }
         }
-
-        return ctrl;
     }
+    return ctrl;
 }
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver
