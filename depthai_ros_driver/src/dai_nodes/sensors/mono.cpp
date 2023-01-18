@@ -11,13 +11,14 @@ Mono::Mono(const std::string& daiNodeName,
            ros::NodeHandle node,
            std::shared_ptr<dai::Pipeline> pipeline,
            dai::CameraBoardSocket socket,
-           dai_nodes::sensor_helpers::ImageSensor sensor)
+           dai_nodes::sensor_helpers::ImageSensor sensor,
+           bool publish = true)
     : BaseNode(daiNodeName, node, pipeline), it(node) {
     ROS_DEBUG("Creating node %s", daiNodeName.c_str());
     setNames();
     monoCamNode = pipeline->create<dai::node::MonoCamera>();
     ph = std::make_unique<param_handlers::MonoParamHandler>(daiNodeName);
-    ph->declareParams(node, monoCamNode, socket, sensor);
+    ph->declareParams(node, monoCamNode, socket, sensor, publish);
     setXinXout(pipeline);
     ROS_DEBUG("Node %s created", daiNodeName.c_str());
 };

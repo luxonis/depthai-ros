@@ -12,8 +12,8 @@ Stereo::Stereo(const std::string& daiNodeName, ros::NodeHandle node, std::shared
     ROS_DEBUG("Creating node %s", daiNodeName.c_str());
     setNames();
     stereoCamNode = pipeline->create<dai::node::StereoDepth>();
-    left = std::make_unique<CameraSensor>("left", node, pipeline, device, dai::CameraBoardSocket::LEFT);
-    right = std::make_unique<CameraSensor>("right", node, pipeline, device, dai::CameraBoardSocket::RIGHT);
+    left = std::make_unique<CameraSensor>("left", node, pipeline, device, dai::CameraBoardSocket::LEFT, false);
+    right = std::make_unique<CameraSensor>("right", node, pipeline, device, dai::CameraBoardSocket::RIGHT, false);
 
     ph = std::make_unique<param_handlers::StereoParamHandler>(daiNodeName);
     ph->declareParams(node, stereoCamNode);

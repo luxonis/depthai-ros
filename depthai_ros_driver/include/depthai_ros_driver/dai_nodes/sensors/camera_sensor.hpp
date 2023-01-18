@@ -17,7 +17,8 @@ class CameraSensor : public BaseNode {
                           ros::NodeHandle node,
                           std::shared_ptr<dai::Pipeline> pipeline,
                           std::shared_ptr<dai::Device> device,
-                          dai::CameraBoardSocket socket);
+                          dai::CameraBoardSocket socket,
+                          bool publish = true);
     virtual ~CameraSensor() = default;
     void updateParams(parametersConfig& config) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;

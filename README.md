@@ -121,12 +121,14 @@ Stopping camera also can be used for power saving, as pipeline is removed from t
 
 As for the parameters themselves, there are a few crucial ones that decide on how camera behaves.
 * `camera_i_pipeline_type` can be either 
-  * `RGB`
-  * `RGBD`
-  * `Stereo`
-  * `RGBStereo`
-  * `Depth`
-This tells the camera whether it should load stereo components. Default set to `RGBD`.Note that if you want stereo output you also have to set `i_publish_topic` parameter to `true` for each of the cameras.
+  * `RGB` - only publishes RGB stream , NN available
+  * `RGBD` - Publishes RGB + Depth streams (set `i_publish_topic` for left and right cameras to enable them), NN & Spatial NN available
+  * `Stereo` - Publishes streams from left and right sensors, NN not available
+  * `RGBStereo` - Publishes RGB + Left + Right streams, only RGB NN available
+  * `Depth` - Publishes only depth stream, NN not available
+  * `CamArray` - Publishes streams for all detected sensors, NN not available
+This tells the camera whether it should load stereo components. Default set to `RGBD`.
+
 * `camera_i_nn_type` can be either `none`, `rgb` or `spatial`. This is responsible for whether the NN that we load should also take depth information (and for example provide detections in 3D format). Default set to `spatial`
 * `camera_i_mx_id`/`camera_i_ip` are for connecting to a specific camera. If not set, it automatically connects to the next available device.
 * `nn_i_nn_config_path` represents path to JSON that contains information on what type of NN to load, and what parameters to use. Currently we provide options to load MobileNet, Yolo and Segmentation (not in spatial) models. To see their example configs, navigate to `depthai_ros_driver/config/nn`. Defaults to `mobilenet.json` from `depthai_ros_driver`

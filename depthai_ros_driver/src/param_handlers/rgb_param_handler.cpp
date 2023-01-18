@@ -22,22 +22,23 @@ RGBParamHandler::~RGBParamHandler() = default;
 void RGBParamHandler::declareParams(ros::NodeHandle node,
                                     std::shared_ptr<dai::node::ColorCamera> colorCam,
                                     dai::CameraBoardSocket socket,
-                                    dai_nodes::sensor_helpers::ImageSensor sensor) {
-    getParam<int>(node, "i_max_q_size");
-    getParam<bool>(node, "i_publish_topic");
-    getParam<bool>(node, "i_enable_preview");
-    getParam<int>(node, "i_board_socket_id");
+                                    dai_nodes::sensor_helpers::ImageSensor sensor,
+                                    bool publish) {
+    getParam<int>(node, "i_max_q_size", 30);
+    getParam<bool>(node, "i_publish_topic", publish);
+    getParam<bool>(node, "i_enable_preview", false);
+    getParam<int>(node, "i_board_socket_id", static_cast<int>(socket));
 
     colorCam->setBoardSocket(socket);
-    colorCam->setFps(getParam<int>(node, "i_fps"));
-    colorCam->setPreviewSize(getParam<int>(node, "i_preview_size"), getParam<int>(node, "i_preview_size"));
-    auto resolution = rgbResolutionMap.at(getParam<std::string>(node, "i_resolution"));
+    colorCam->setFps(getParam<int>(node, "i_fps", 30.0));
+    colorCam->setPreviewSize(getParam<int>(node, "i_preview_size", 416), getParam<int>(node, "i_preview_size", 416));
+    auto resolution = rgbResolutionMap.at(getParam<std::string>(node, "i_resolution", "1080"));
     int width, height;
     colorCam->setResolution(resolution);
     sensor.getSizeFromResolution(colorCam->getResolution(), width, height);
 
-    colorCam->setInterleaved(getParam<bool>(node, "i_interleaved"));
-    if(getParam<bool>(node, "i_set_isp_scale")) {
+    colorCam->setInterleaved(getParam<bool>(node, "i_interleaved", false));
+    if(getParam<bool>(node, "i_set_isp_scale", true)) {
         int new_width = width * 2 / 3;
         int new_height = height * 2 / 3;
         if(new_width % 16 == 0 && new_height % 16 == 0) {
@@ -52,18 +53,18 @@ void RGBParamHandler::declareParams(ros::NodeHandle node,
     setParam<int>(node, "i_height", height);
     setParam<int>(node, "i_width", width);
 
-    colorCam->setPreviewKeepAspectRatio(getParam<bool>(node, "i_keep_preview_aspect_ratio"));
-    size_t iso = getParam<int>(node, "r_iso");
-    size_t exposure = getParam<int>(node, "r_exposure");
-    size_t whitebalance = getParam<int>(node, "r_whitebalance");
-    size_t focus = getParam<int>(node, "r_focus");
-    if(getParam<bool>(node, "r_set_man_focus")) {
+    colorCam->setPreviewKeepAspectRatio(getParam<bool>(node, "i_keep_preview_aspect_ratio", true));
+    size_t iso = getParam<int>(node, "r_iso", 800);
+    size_t exposure = getParam<int>(node, "r_exposure", 20000);
+    size_t whitebalance = getParam<int>(node, "r_whitebalance", 3300);
+    size_t focus = getParam<int>(node, "r_focus", 1);
+    if(getParam<bool>(node, "r_set_man_focus", false)) {
         colorCam->initialControl.setManualFocus(focus);
     }
-    if(getParam<bool>(node, "r_set_man_exposure")) {
+    if(getParam<bool>(node, "r_set_man_exposure", false)) {
         colorCam->initialControl.setManualExposure(exposure, iso);
     }
-    if(getParam<bool>(node, "r_set_man_whitebalance")) {
+    if(getParam<bool>(node, "r_set_man_whitebalance", false)) {
         colorCam->initialControl.setManualWhiteBalance(whitebalance);
     }
 }

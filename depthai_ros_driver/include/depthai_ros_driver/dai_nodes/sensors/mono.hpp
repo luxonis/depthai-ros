@@ -19,7 +19,8 @@ class Mono : public BaseNode {
                   ros::NodeHandle node,
                   std::shared_ptr<dai::Pipeline> pipeline,
                   dai::CameraBoardSocket socket,
-                  sensor_helpers::ImageSensor sensor);
+                  sensor_helpers::ImageSensor sensor,
+                  bool publish);
     virtual ~Mono() = default;
     void updateParams(parametersConfig& config) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
