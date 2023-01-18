@@ -24,7 +24,6 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
     switch(pType) {
         case PipelineType::RGB: {
             auto rgb = std::make_unique<dai_nodes::CameraSensor>("rgb", node, pipeline, device, dai::CameraBoardSocket::RGB);
-
             switch(nType) {
                 case NNType::None:
                     break;
@@ -51,6 +50,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
                     break;
                 case NNType::RGB: {
                     auto nn = createNN(node, pipeline, *rgb);
+                    daiNodes.push_back(std::move(nn));
                     break;
                 }
                 case NNType::Spatial: {
@@ -74,6 +74,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
                     break;
                 case NNType::RGB: {
                     auto nn = createNN(node, pipeline, *rgb);
+                    daiNodes.push_back(std::move(nn));
                     break;
                 }
                 case NNType::Spatial: {
