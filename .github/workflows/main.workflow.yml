@@ -65,7 +65,6 @@ jobs:
           build-args: |
             ROS_DISTRO=${{ matrix.ROS_DISTRO }}
             USE_RVIZ=1
-            BUILD_SEQUENTIAL=1
           platforms: |
             amd64
             arm64
@@ -78,7 +77,6 @@ jobs:
           build-args: |
             ROS_DISTRO=${{ matrix.ROS_DISTRO }}
             USE_RVIZ=1
-            BUILD_SEQUENTIAL=1
           platforms: |
             amd64
             arm64
