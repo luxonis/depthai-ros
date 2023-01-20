@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="name" default="oak" />
-    <arg name="params_file" default="$(find depthai_ros_driver)/config/camera.yaml"/>
+    <arg name="params_file" default="$(find depthai_ros_driver)/config/pcl.yaml"/>
     <arg name="camera_model" default="OAK-D" />
     <!-- 'zed' or 'zedm' -->
     <arg name="base_frame" default="oak-d_frame" />

@@ -1,0 +1,35 @@
+{
+    "model": {
+        "model_name": "deeplab_v3_plus_mnv2_decoder_256_openvino_2021.4",
+        "zoo": "depthai_examples"
+    },
+    "nn_config": {
+        "NN_family": "segmentation",
+        "confidence_threshold": 0.5
+    },
+    "mappings": {
+        "labels": [
+            "background",
+            "aeroplane",
+            "bicycle",
+            "bird",
+            "boat",
+            "bottle",
+            "bus",
+            "car",
+            "cat",
+            "chair",
+            "cow",
+            "diningtable",
+            "dog",
+            "horse",
+            "motorbike",
+            "person",
+            "pottedplant",
+            "sheep",
+            "sofa",
+            "train",
+            "tvmonitor"
+        ]
+    }
+}
