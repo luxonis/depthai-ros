@@ -34,7 +34,7 @@
       r_iso: 800
       r_set_man_exposure: false
     stereo:
-      i_align_depth: true
+      i_align_depth: false
       i_bilateral_sigma: 0
       i_board_socket_id: 0
       i_decimation_filter_decimation_factor: 1

@@ -2,5 +2,7 @@
 devel
 __pycache__
 build
+install
+log
 .DS_Store
 *.blob
