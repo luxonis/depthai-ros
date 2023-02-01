@@ -5,6 +5,7 @@ Changelog for package depthai-ros
 2.6.2 (2023-02-01)
 ___________
 * Fixed timestamp in SpatialDetector
+* Updated topic names in stereo_inertial_node
 
 2.6.1 (2023-01-11)
 ___________
