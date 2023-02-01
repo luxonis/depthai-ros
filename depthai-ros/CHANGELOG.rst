@@ -1,6 +1,11 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+2.6.2 (2023-02-01)
+___________
+* Fixed timestamp in SpatialDetector
+
 2.6.1 (2023-01-11)
 ___________
 * Update docker image building
