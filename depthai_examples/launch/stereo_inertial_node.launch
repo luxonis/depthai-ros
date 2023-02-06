@@ -129,24 +129,24 @@
         args="load depth_image_proc/point_cloud_xyzrgb nodelet_manager">
         <param name="queue_size"          value="10"/>
 
-        <remap from="rgb/camera_info" to="/stereo_inertial_publisher/color/camera_info"/>
-        <remap from="rgb/image_rect_color" to="/stereo_inertial_publisher/color/image"/>
-        <remap from="depth_registered/image_rect" to="/stereo_inertial_publisher/stereo/image"/>    
-        <remap from="depth_registered/points" to="/stereo_inertial_publisher/stereo/points"/>
+        <remap from="rgb/camera_info" to="stereo_inertial_publisher/color/camera_info"/>
+        <remap from="rgb/image_rect_color" to="stereo_inertial_publisher/color/image"/>
+        <remap from="depth_registered/image_rect" to="stereo_inertial_publisher/stereo/image"/>    
+        <remap from="depth_registered/points" to="stereo_inertial_publisher/stereo/points"/>
     </node>
 
     <node if="$(eval arg('depth_aligned') == false)" pkg="nodelet" type="nodelet" name="depth_image_to_pointcloud"
         args="load depth_image_proc/point_cloud_xyz nodelet_manager">
         <param name="queue_size"          value="10"/>
-        <remap from="camera_info" to="/stereo_inertial_publisher/stereo/camera_info"/>
-        <remap from="image_rect" to="/stereo_inertial_publisher/stereo/image"/>    
-        <remap from="points" to="/stereo_inertial_publisher/stereo/points"/>
+        <remap from="camera_info" to="stereo_inertial_publisher/stereo/camera_info"/>
+        <remap from="image_rect" to="stereo_inertial_publisher/stereo/image"/>    
+        <remap from="points" to="stereo_inertial_publisher/stereo/points"/>
     </node>
 
 
     <node if="$(eval arg('enableMarkerPublish') == true)" type="markerPublisher.py" name="markerPublisher" pkg="depthai_examples">
-        <remap from="spatialDetections" to="/stereo_inertial_publisher/color/yolov4_Spatial_detections"/>
-        <remap from="spatialDetectionMarkers" to="/stereo_inertial_publisher/color/spatialDetectionMarkers"/>
+        <remap from="spatialDetections" to="stereo_inertial_publisher/color/yolov4_Spatial_detections"/>
+        <remap from="spatialDetectionMarkers" to="stereo_inertial_publisher/color/spatialDetectionMarkers"/>
     </node>
 
   <group if="$(eval arg('enableRviz') == true)">
