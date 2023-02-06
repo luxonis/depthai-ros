@@ -18,6 +18,7 @@
   <exec_depend>depthai_bridge</exec_depend>
   <exec_depend>depthai_examples</exec_depend>
   <exec_depend>depthai_ros_driver</exec_depend>
+  <exec_depend>depthai_sdk_ros</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
