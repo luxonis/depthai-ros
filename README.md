@@ -11,7 +11,7 @@ You can develop your ROS applications in following ways:
   * Use classes provided in `depthai_bridge` to construct your own driver (see `stereo_inertial_node` example on how to do that)
   * Use `depthai_ros_driver` class (currently available on ROS2 Humble) to get default experience (see details below on how) 
 
-![](docs/segmentation.gif)
+![](docs/multicam.gif)
 
 
 Supported ROS versions:
@@ -141,8 +141,6 @@ Currently, we provide few examples:
 * `camera.launch.py` launches camera in RGBD, and NN in spatial (Mobilenet) mode.
 * `rgbd_pcl.launch.py` launches camera in basic RGBD configuration, doesn't load any NNs. Also loads ROS depth processing nodes for RGBD pointcloud.
 * `example_multicam.launch.py` launches several cameras at once, each one in different container. Edit the `multicam_example.yaml` config file in `config` directory to change parameters
-
-![](docs/multicam.gif)
 * `example_segmentation.launch.py` launches camera in RGBD + semantic segmentation (pipeline type=RGBD, nn_type=rgb)
 * `pointcloud.launch.py` - similar to `rgbd_pcl.launch.py`, but doesn't use RGB component for pointcloud
 * `example_marker_publish.launch.py` launches `camera.launch.py` + small python node that publishes detected objects as markers/tfs

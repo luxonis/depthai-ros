@@ -4,7 +4,9 @@ namespace dai {
 namespace ros {
 
 SpatialDetectionConverter::SpatialDetectionConverter(std::string frameName, int width, int height, bool normalized)
-    : _frameName(frameName), _width(width), _height(height), _normalized(normalized), _steadyBaseTime(std::chrono::steady_clock::now()) {}
+    : _frameName(frameName), _width(width), _height(height), _normalized(normalized), _steadyBaseTime(std::chrono::steady_clock::now()) {
+    _rosBaseTime = rclcpp::Clock().now();
+}
 
 void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData,
                                          std::deque<SpatialMessages::SpatialDetectionArray>& opDetectionMsgs) {
