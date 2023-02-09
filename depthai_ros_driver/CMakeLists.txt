@@ -56,6 +56,7 @@ add_library(
   src/dai_nodes/sensors/rgb.cpp
   src/dai_nodes/sensors/mono.cpp
   src/dai_nodes/sensors/camera_sensor.cpp
+  src/dai_nodes/sensors/sensor_helpers.cpp
   src/dai_nodes/stereo.cpp
   src/dai_nodes/nn/nn_wrapper.cpp
   src/dai_nodes/nn/spatial_nn_wrapper.cpp

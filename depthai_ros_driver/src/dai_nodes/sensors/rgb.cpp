@@ -34,9 +34,7 @@ void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
         xoutColor = pipeline->create<dai::node::XLinkOut>();
         xoutColor->setStreamName(ispQName);
         if(ph->getParam<bool>(getROSNode(), "i_low_bandwidth")) {
-            videoEnc = pipeline->create<dai::node::VideoEncoder>();
-            videoEnc->setQuality(ph->getParam<int>(getROSNode(), "i_low_bandwidth_quality"));
-            videoEnc->setProfile(dai::VideoEncoderProperties::Profile::MJPEG);
+            videoEnc = sensor_helpers::createEncoder(pipeline, ph->getParam<int>(getROSNode(), "i_low_bandwidth_quality"));
             colorCamNode->video.link(videoEnc->input);
             videoEnc->bitstream.link(xoutColor->input);
         } else {
@@ -56,36 +54,34 @@ void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 }
 
 void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
-    auto calibHandler = device->readCalibration();
     if(ph->getParam<bool>(getROSNode(), "i_publish_topic")) {
-        auto tfPrefix = std::string(getROSNode().getNamespace()) + "_" + getName();
-        tfPrefix.erase(0, 1);
+        auto tfPrefix = getTFPrefix(getName());
+        infoManager = std::make_unique<camera_info_manager::CameraInfoManager>(getROSNode(), getName());
         imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
-        colorQ = device->getOutputQueue(ispQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
-        colorQ->addCallback(std::bind(&RGB::colorQCB, this, std::placeholders::_1, std::placeholders::_2));
         rgbPub = it.advertiseCamera(getName() + "/image_raw", 1);
-        if(ph->getParam<bool>(getROSNode(), "i_enable_preview")) {
-            previewQ = device->getOutputQueue(previewQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
-            previewQ->addCallback(std::bind(&RGB::colorQCB, this, std::placeholders::_1, std::placeholders::_2));
-            previewPub = it.advertiseCamera(getName() + "/preview/image_raw", 1);
-            try {
-                previewInfo = imageConverter->calibrationToCameraInfo(calibHandler,
-                                                                      static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
-                                                                      ph->getParam<int>(getROSNode(), "i_preview_size"),
-                                                                      ph->getParam<int>(getROSNode(), "i_preview_size"));
-            } catch(std::runtime_error& e) {
-                ROS_ERROR("No calibration! Publishing empty camera_info.");
-            }
-        };
-        try {
-            rgbInfo = imageConverter->calibrationToCameraInfo(calibHandler,
-                                                              static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
-                                                              ph->getParam<int>(getROSNode(), "i_width"),
-                                                              ph->getParam<int>(getROSNode(), "i_height"));
-        } catch(std::runtime_error& e) {
-            ROS_ERROR("No calibration! Publishing empty camera_info.");
+        rgbInfo = sensor_helpers::getCalibInfo(*imageConverter,
+                               device,
+                               static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
+                               ph->getParam<int>(getROSNode(), "i_width"),
+                               ph->getParam<int>(getROSNode(), "i_height"));
+        colorQ = device->getOutputQueue(ispQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
+        if(ph->getParam<bool>(getROSNode(), "i_low_bandwidth")) {
+            colorQ->addCallback(std::bind(
+                sensor_helpers::compressedImgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, rgbPub, rgbInfo, dai::RawImgFrame::Type::BGR888i));
+        } else {
+            colorQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, rgbPub, rgbInfo));
         }
     }
+    if(ph->getParam<bool>(getROSNode(), "i_enable_preview")) {
+            previewQ = device->getOutputQueue(previewQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
+            previewPub = it.advertiseCamera(getName() + "/preview/image_raw", 1);
+            previewInfo = sensor_helpers::getCalibInfo(*imageConverter,
+                                       device,
+                                       static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
+                                       ph->getParam<int>(getROSNode(), "i_preview_size"),
+                                       ph->getParam<int>(getROSNode(), "i_preview_size"));
+            previewQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, previewPub, previewInfo));
+        };
     controlQ = device->getInputQueue(controlQName);
 }
 
@@ -99,25 +95,6 @@ void RGB::closeQueues() {
     controlQ->close();
 }
 
-void RGB::colorQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data) {
-    auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
-    std::deque<sensor_msgs::Image> deq;
-    if(ph->getParam<bool>(getROSNode(), "i_low_bandwidth"))
-        imageConverter->toRosMsgFromBitStream(img, deq, dai::RawImgFrame::Type::BGR888i, rgbInfo);
-    else
-        imageConverter->toRosMsg(img, deq);
-    while(deq.size() > 0) {
-        auto currMsg = deq.front();
-        if(name == ispQName) {
-            rgbInfo.header = currMsg.header;
-            rgbPub.publish(currMsg, rgbInfo);
-        } else {
-            previewInfo.header = currMsg.header;
-            previewPub.publish(currMsg, previewInfo);
-        }
-        deq.pop_front();
-    }
-}
 
 void RGB::link(const dai::Node::Input& in, int linkType) {
     if(linkType == static_cast<int>(link_types::RGBLinkType::video)) {

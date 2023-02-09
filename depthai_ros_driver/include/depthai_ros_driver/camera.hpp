@@ -38,7 +38,7 @@ class Camera : public nodelet::Nodelet {
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
     bool camRunning = false;
     bool enableIR = false;
-    int floodlightBrighness;
-    int laserDotBrightness;
+    double floodlightBrighness;
+    double laserDotBrightness;
 };
 }  // namespace depthai_ros_driver

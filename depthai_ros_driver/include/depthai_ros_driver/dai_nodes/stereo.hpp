@@ -3,6 +3,7 @@
 #include "depthai/depthai.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/stereo_param_handler.hpp"
 #include "depthai_ros_driver/parametersConfig.h"
 #include "image_transport/camera_publisher.h"

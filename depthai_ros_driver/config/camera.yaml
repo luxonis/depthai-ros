@@ -1,4 +1,4 @@
-oak:
+/oak:
   camera_i_enable_imu: true
   camera_i_enable_ir: true
   camera_i_floodlight_brightness: 0
