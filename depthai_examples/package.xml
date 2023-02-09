@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>depthai_examples</name>
-  <version>2.5.3</version>
+  <version>2.6.2</version>
   <description>The depthai_examples package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
@@ -31,6 +31,7 @@
   <depend>stereo_msgs</depend>
   <depend>vision_msgs</depend>
   <depend>foxglove_msgs</depend>
+  <depend>rviz_imu_plugin</depend>
 
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>depth_image_proc</exec_depend>

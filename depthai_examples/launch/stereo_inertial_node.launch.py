@@ -363,9 +363,9 @@ def generate_launch_description():
                                 package='depth_image_proc',
                                 plugin='depth_image_proc::ConvertMetricNode',
                                 name='convert_metric_node',
-                                remappings=[('image_raw', '/stereo/depth'),
-                                            ('camera_info', '/stereo/camera_info'),
-                                            ('image', '/stereo/converted_depth')]
+                                remappings=[('image_raw', 'stereo/depth'),
+                                            ('camera_info', 'stereo/camera_info'),
+                                            ('image', 'stereo/converted_depth')]
                                 )
     pointcloud_topic = '/stereo/points'
     point_cloud_creator = None
@@ -375,9 +375,9 @@ def generate_launch_description():
                     package='depth_image_proc',
                     plugin='depth_image_proc::PointCloudXyzrgbNode',
                     name='point_cloud_xyzrgb_node',
-                    remappings=[('depth_registered/image_rect', '/stereo/converted_depth'),
-                                ('rgb/image_rect_color', '/color/image'),
-                                ('rgb/camera_info', '/color/camera_info'),
+                    remappings=[('depth_registered/image_rect', 'stereo/converted_depth'),
+                                ('rgb/image_rect_color', 'color/image'),
+                                ('rgb/camera_info', 'color/camera_info'),
                                 ('points', pointcloud_topic )]
                 )
 
@@ -392,9 +392,9 @@ def generate_launch_description():
                     plugin='depth_image_proc::PointCloudXyziNode',
                     name='point_cloud_xyzi',
 
-                    remappings=[('depth/image_rect', '/stereo/converted_depth'),
-                                ('intensity/image_rect', '/right/image_rect'),
-                                ('intensity/camera_info', '/right/camera_info'),
+                    remappings=[('depth/image_rect', 'stereo/converted_depth'),
+                                ('intensity/image_rect', 'right/image_rect'),
+                                ('intensity/camera_info', 'right/camera_info'),
                                 ('points', pointcloud_topic)]
                 )
 
@@ -418,7 +418,10 @@ def generate_launch_description():
                     point_cloud_creator
                 ],
                 output='screen',)
-
+    marker_node = launch_ros.actions.Node(
+            package='depthai_examples', executable='rviz2', output='screen',
+            arguments=['--display-config', rectify_rviz],
+            condition=IfCondition(enableRviz))
 
     ld = LaunchDescription()
 

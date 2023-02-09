@@ -1,0 +1,9 @@
+/oak:
+    rgb:
+      i_low_bandwidth: true
+    left:
+      i_low_bandwidth: true
+    right:
+      i_low_bandwidth: true
+    stereo:
+      i_low_bandwidth: true

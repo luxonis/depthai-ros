@@ -2,6 +2,19 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.6.2 (2023-02-01)
+___________
+* Fixed timestamp in SpatialDetector
+* Updated topic names in stereo_inertial_node
+
+2.6.1 (2023-01-11)
+___________
+* Update docker image building
+
+2.6.0 (2023-01-11)
+___________
+* Added depthai_ros_driver package
+
 2.5.3 (2022-08-21)
 -----------
 * Updated release version

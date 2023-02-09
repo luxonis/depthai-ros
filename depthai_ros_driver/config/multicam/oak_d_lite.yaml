@@ -1,0 +1,9 @@
+camera:
+  i_mx_id: 18443010C1038C1200
+  i_nn_type: rgb
+left:
+  i_resolution: '480'
+right:
+  i_resolution: '480'
+nn:
+  i_nn_config_path: depthai_ros_driver/yolo

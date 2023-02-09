@@ -29,6 +29,58 @@ ImageConverter::ImageConverter(const std::string frameName, bool interleaved)
     : _frameName(frameName), _daiInterleaved(interleaved), _steadyBaseTime(std::chrono::steady_clock::now()) {
     _rosBaseTime = rclcpp::Clock().now();
 }
+void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData,
+                                           std::deque<ImageMsgs::Image>& outImageMsgs,
+                                           dai::RawImgFrame::Type type,
+                                           const sensor_msgs::msg::CameraInfo& info) {
+    auto tstamp = inData->getTimestamp();
+    ImageMsgs::Image outImageMsg;
+    StdMsgs::Header header;
+    header.frame_id = _frameName;
+    header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
+    std::string encoding;
+    int decodeFlags;
+    cv::Mat output;
+    switch(type) {
+        case dai::RawImgFrame::Type::BGR888i: {
+            encoding = sensor_msgs::image_encodings::BGR8;
+            decodeFlags = cv::IMREAD_COLOR;
+            break;
+        }
+        case dai::RawImgFrame::Type::GRAY8: {
+            encoding = sensor_msgs::image_encodings::MONO8;
+            decodeFlags = cv::IMREAD_GRAYSCALE;
+            break;
+        }
+        case dai::RawImgFrame::Type::RAW8: {
+            encoding = sensor_msgs::image_encodings::TYPE_16UC1;
+            decodeFlags = cv::IMREAD_GRAYSCALE;
+            break;
+        }
+        default: {
+            throw(std::runtime_error("Converted type not supported!"));
+        }
+    }
+
+    output = cv::imdecode(cv::Mat(inData->getData()), decodeFlags);
+
+    // converting disparity
+    if(type == dai::RawImgFrame::Type::RAW8) {
+        auto factor = (info.k[0] * info.p[3]);
+        cv::Mat depthOut = cv::Mat(cv::Size(output.cols, output.rows), CV_16UC1);
+        depthOut.forEach<short>([&output, &factor](short& pixel, const int* position) -> void {
+            auto disp = output.at<int8_t>(position);
+            if(disp == 0)
+                pixel = 0;
+            else
+                pixel = factor / disp;
+        });
+        output = depthOut.clone();
+    }
+    cv_bridge::CvImage(header, encoding, output).toImageMsg(outImageMsg);
+    outImageMsgs.push_back(outImageMsg);
+    return;
+}
 
 void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs) {
     auto tstamp = inData->getTimestamp();
@@ -240,7 +292,6 @@ cv::Mat ImageConverter::rosMsgtoCvMat(ImageMsgs::Image& inMsg) {
         return rgb;
     }
 }
-
 ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
     dai::CalibrationHandler calibHandler, dai::CameraBoardSocket cameraId, int width, int height, Point2f topLeftPixelId, Point2f bottomRightPixelId) {
     std::vector<std::vector<float>> camIntrinsics, rectifiedRotation;
@@ -320,6 +371,5 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
 
     return cameraData;
 }
-
 }  // namespace ros
 }  // namespace dai

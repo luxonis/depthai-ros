@@ -1,0 +1,5 @@
+camera:
+  i_nn_type: rgb
+nn:
+  i_nn_config_path: depthai_ros_driver/segmentation
+

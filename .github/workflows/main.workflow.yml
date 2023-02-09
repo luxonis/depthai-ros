@@ -116,5 +116,5 @@ jobs:
           push: ${{ env.PUSH }}
           no-cache: true
           tags: | 
-            luxonis/depthai-ros:${{ env.ROS_DISTRO }}-${{ steps.vars.outputs.short_ref }}
+            luxonis/depthai-ros:${{ steps.vars.outputs.short_ref }}
             luxonis/depthai-ros:${{ env.ROS_DISTRO }}-latest

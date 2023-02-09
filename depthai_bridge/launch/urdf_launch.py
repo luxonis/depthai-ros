@@ -1,5 +1,5 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch_ros.actions import Node
 from launch.substitutions import LaunchConfiguration, Command
 from ament_index_python.packages import get_package_share_directory
@@ -12,7 +12,7 @@ from launch.substitutions import LaunchConfiguration, Command
 from ament_index_python.packages import get_package_share_directory
 import os
 
-def generate_launch_description():
+def launch_setup(context, *args, **kwargs):
     bringup_dir = get_package_share_directory('depthai_bridge')
     xacro_path = os.path.join(bringup_dir, 'urdf', 'depthai_descr.urdf.xacro')
 
@@ -28,65 +28,11 @@ def generate_launch_description():
     cam_yaw      = LaunchConfiguration('cam_yaw',       default = '1.5708')
     namespace    = LaunchConfiguration('namespace',     default = '')
 
-    declare_namespace_cmd = DeclareLaunchArgument(
-        'namespace',
-        default_value=namespace,
-        description='Specifies the namespace of the robot state publisher node. Default value will be ""')
-
-    declare_camera_model_cmd = DeclareLaunchArgument(
-        'camera_model',
-        default_value=camera_model,
-        description='The model of the camera. Using a wrong camera model can disable camera features. Valid models: `OAK-D, OAK-D-LITE`.')
-
-    declare_tf_prefix_cmd = DeclareLaunchArgument(
-        'tf_prefix',
-        default_value=tf_prefix,
-        description='The name of the camera. It can be different from the camera model and it will be used as node `namespace`.')
-
-    declare_base_frame_cmd = DeclareLaunchArgument(
-        'base_frame',
-        default_value=base_frame,
-        description='Name of the base link.')
-
-    declare_parent_frame_cmd = DeclareLaunchArgument(
-        'parent_frame',
-        default_value=parent_frame,
-        description='Name of the parent link from other a robot TF for example that can be connected to the base of the OAK.')
-
-    declare_pos_x_cmd = DeclareLaunchArgument(
-        'cam_pos_x',
-        default_value=cam_pos_x,
-        description='Position X of the camera with respect to the base frame.')
-
-    declare_pos_y_cmd = DeclareLaunchArgument(
-        'cam_pos_y',
-        default_value=cam_pos_y,
-        description='Position Y of the camera with respect to the base frame.')
-
-    declare_pos_z_cmd = DeclareLaunchArgument(
-        'cam_pos_z',
-        default_value=cam_pos_z,
-        description='Position Z of the camera with respect to the base frame.')
-
-    declare_roll_cmd = DeclareLaunchArgument(
-        'cam_roll',
-        default_value=cam_roll,
-        description='Roll orientation of the camera with respect to the base frame.')
-
-    declare_pitch_cmd = DeclareLaunchArgument(
-        'cam_pitch',
-        default_value=cam_pitch,
-        description='Pitch orientation of the camera with respect to the base frame.')
-
-    declare_yaw_cmd = DeclareLaunchArgument(
-        'cam_yaw',
-        default_value=cam_yaw,
-        description='Yaw orientation of the camera with respect to the base frame.')
 
     rsp_node =  Node(
             package='robot_state_publisher',
             executable='robot_state_publisher',
-            name='oak_state_publisher',
+            name=LaunchConfiguration('tf_prefix').perform(context)+"_state_publisher",
             namespace=namespace,
             parameters=[{'robot_description': Command(
                 [
@@ -103,19 +49,66 @@ def generate_launch_description():
                     'cam_yaw:=', cam_yaw
                 ])}]
         )
-    
-    ld = LaunchDescription()
-    ld.add_action(declare_tf_prefix_cmd)
-    ld.add_action(declare_camera_model_cmd)
-    ld.add_action(declare_base_frame_cmd)
-    ld.add_action(declare_parent_frame_cmd)
-    ld.add_action(declare_pos_x_cmd)
-    ld.add_action(declare_pos_y_cmd)
-    ld.add_action(declare_pos_z_cmd)
-    ld.add_action(declare_roll_cmd)
-    ld.add_action(declare_pitch_cmd)
-    ld.add_action(declare_yaw_cmd)
-    ld.add_action(declare_namespace_cmd)
 
-    ld.add_action(rsp_node)
-    return ld
+    return [rsp_node]
+
+def generate_launch_description():
+    declared_arguments = [
+        DeclareLaunchArgument(
+            'namespace',
+            default_value='',
+            description='Specifies the namespace of the robot state publisher node. Default value will be ""'),
+        DeclareLaunchArgument(
+            'camera_model',
+            default_value='OAK-D',
+            description='The model of the camera. Using a wrong camera model can disable camera features. Valid models: `OAK-D, OAK-D-LITE`.'),
+
+        DeclareLaunchArgument(
+            'tf_prefix',
+            default_value='oak',
+            description='The name of the camera. It can be different from the camera model and it will be used as node `namespace`.'),
+
+        DeclareLaunchArgument(
+            'base_frame',
+            default_value='oak-d_frame',
+            description='Name of the base link.'),
+
+        DeclareLaunchArgument(
+            'parent_frame',
+            default_value='oak-d-base-frame',
+            description='Name of the parent link from other a robot TF for example that can be connected to the base of the OAK.'),
+
+        DeclareLaunchArgument(
+            'cam_pos_x',
+            default_value='0.0',
+            description='Position X of the camera with respect to the base frame.'),
+
+        DeclareLaunchArgument(
+            'cam_pos_y',
+            default_value='0.0',
+            description='Position Y of the camera with respect to the base frame.'),
+
+        DeclareLaunchArgument(
+            'cam_pos_z',
+            default_value='0.0',
+            description='Position Z of the camera with respect to the base frame.'),
+
+        DeclareLaunchArgument(
+            'cam_roll',
+            default_value='0.0',
+            description='Roll orientation of the camera with respect to the base frame.'),
+
+        DeclareLaunchArgument(
+            'cam_pitch',
+            default_value='0.0',
+            description='Pitch orientation of the camera with respect to the base frame.'),
+
+        DeclareLaunchArgument(
+            'cam_yaw',
+            default_value='0.0',
+            description='Yaw orientation of the camera with respect to the base frame.')
+    ]
+
+    return LaunchDescription(
+        declared_arguments + [OpaqueFunction(function=launch_setup)]
+    )

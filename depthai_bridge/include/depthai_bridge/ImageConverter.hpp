@@ -26,12 +26,21 @@ namespace ImageMsgs = sensor_msgs::msg;
 using ImagePtr = ImageMsgs::Image::SharedPtr;
 
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration>;
-
+ImageMsgs::CameraInfo calibrationToCameraInfo(dai::CalibrationHandler calibHandler,
+                                              dai::CameraBoardSocket cameraId,
+                                              int width = -1,
+                                              int height = -1,
+                                              Point2f topLeftPixelId = Point2f(),
+                                              Point2f bottomRightPixelId = Point2f());
 class ImageConverter {
    public:
     // ImageConverter() = default;
     ImageConverter(const std::string frameName, bool interleaved);
     ImageConverter(bool interleaved);
+    void toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData,
+                               std::deque<ImageMsgs::Image>& outImageMsgs,
+                               dai::RawImgFrame::Type type,
+                               const sensor_msgs::msg::CameraInfo& info);
 
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs);
     ImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
