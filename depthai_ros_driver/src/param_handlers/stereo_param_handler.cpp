@@ -69,7 +69,7 @@ void StereoParamHandler::declareParams(ros::NodeHandle node, std::shared_ptr<dai
         config.postProcessing.thresholdFilter.minRange = getParam<int>(node, "i_threshold_filter_min_range");
         config.postProcessing.thresholdFilter.maxRange = getParam<int>(node, "i_threshold_filter_max_range");
     }
-    if(getParam<bool>(node, "i_enable_deciamation_filter")) {
+    if(getParam<bool>(node, "i_enable_decimation_filter")) {
         config.postProcessing.decimationFilter.decimationMode = decimationModeMap.at(getParam<std::string>(node, "i_decimation_filter_decimation_mode"));
         config.postProcessing.decimationFilter.decimationFactor = getParam<int>(node, "i_decimation_filter_decimation_factor");
     }
