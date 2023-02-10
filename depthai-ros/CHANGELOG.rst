@@ -2,7 +2,7 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.6.3 (2023-02-01)
+2.6.3 (2023-02-10)
 ___________
 * Camera calibration updates
 
