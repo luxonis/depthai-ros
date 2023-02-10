@@ -40,13 +40,13 @@ void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
         } else {
             colorCamNode->isp.link(xoutColor->input);
         }
-        if(ph->getParam<bool>(getROSNode(), "i_enable_preview")) {
-            xoutPreview = pipeline->create<dai::node::XLinkOut>();
-            xoutPreview->setStreamName(previewQName);
-            xoutPreview->input.setQueueSize(2);
-            xoutPreview->input.setBlocking(false);
-            colorCamNode->preview.link(xoutPreview->input);
-        }
+    }
+    if(ph->getParam<bool>(getROSNode(), "i_enable_preview")) {
+        xoutPreview = pipeline->create<dai::node::XLinkOut>();
+        xoutPreview->setStreamName(previewQName);
+        xoutPreview->input.setQueueSize(2);
+        xoutPreview->input.setBlocking(false);
+        colorCamNode->preview.link(xoutPreview->input);
     }
     xinControl = pipeline->create<dai::node::XLinkIn>();
     xinControl->setStreamName(controlQName);
@@ -86,6 +86,8 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         previewQ = device->getOutputQueue(previewQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
         previewPub = it.advertiseCamera(getName() + "/preview/image_raw", 1);
         previewInfoManager = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), "/" + previewQName), previewQName);
+        auto tfPrefix = getTFPrefix(getName());
+        imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
         if(ph->getParam<std::string>(getROSNode(), "i_calibration_file").empty()) {
             previewInfoManager->setCameraInfo(
                 sensor_helpers::getCalibInfo(*imageConverter,
