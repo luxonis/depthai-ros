@@ -50,21 +50,26 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
         auto tfPrefix = getTFPrefix(getName());
         imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
         monoPub = it.advertiseCamera(getName() + "/image_raw", 1);
-        monoInfo = sensor_helpers::getCalibInfo(*imageConverter,
-                                                device,
-                                                static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
-                                                ph->getParam<int>(getROSNode(), "i_width"),
-                                                ph->getParam<int>(getROSNode(), "i_height"));
+        infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), getName()), "/" + getName());
+        if(ph->getParam<std::string>(getROSNode(), "i_calibration_file").empty()) {
+            infoManager->setCameraInfo(sensor_helpers::getCalibInfo(*imageConverter,
+                                                                    device,
+                                                                    static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
+                                                                    ph->getParam<int>(getROSNode(), "i_width"),
+                                                                    ph->getParam<int>(getROSNode(), "i_height")));
+        } else {
+            infoManager->loadCameraInfo(ph->getParam<std::string>(getROSNode(), "i_calibration_file"));
+        }
         if(ph->getParam<bool>(getROSNode(), "i_low_bandwidth")) {
             monoQ->addCallback(std::bind(sensor_helpers::compressedImgCB,
                                          std::placeholders::_1,
                                          std::placeholders::_2,
                                          *imageConverter,
                                          monoPub,
-                                         monoInfo,
+                                         infoManager,
                                          dai::RawImgFrame::Type::GRAY8));
         } else {
-            monoQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, monoPub, monoInfo));
+            monoQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, monoPub, infoManager));
         }
         controlQ = device->getInputQueue(controlQName);
     }

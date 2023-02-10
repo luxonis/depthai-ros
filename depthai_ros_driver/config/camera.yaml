@@ -1,17 +1,20 @@
 /oak:
   camera_i_enable_imu: true
   camera_i_enable_ir: true
-  camera_i_floodlight_brightness: 0
+  camera_i_floodlight_brightness: 0.0
   camera_i_ip: ''
-  camera_i_laser_dot_brightness: 800
+  camera_i_laser_dot_brightness: 800.0
   camera_i_mx_id: ''
   camera_i_nn_type: spatial
   camera_i_pipeline_type: RGBD
   camera_i_usb_speed: SUPER_PLUS
   imu_i_max_q_size: 30
   left_i_board_socket_id: 1
+  left_i_calibration_file: ''
   left_i_fps: 30.0
   left_i_height: 720
+  left_i_low_bandwidth: false
+  left_i_low_bandwidth_quality: 50
   left_i_max_q_size: 30
   left_i_preview_size: 416
   left_i_publish_topic: false
@@ -47,9 +50,14 @@
         quality: 31
         target_bitrate: 800000
   rgb_i_board_socket_id: 0
+  rgb_i_calibration_file: ''
   rgb_i_enable_preview: false
   rgb_i_fps: 60.0
   rgb_i_height: 720
+  rgb_i_interleaved: true
+  rgb_i_keep_preview_aspect_ratio: true
+  rgb_i_low_bandwidth: false
+  rgb_i_low_bandwidth_quality: 50
   rgb_i_max_q_size: 30
   rgb_i_preview_size: 416
   rgb_i_publish_topic: true
@@ -65,8 +73,11 @@
   rgb_r_set_man_whitebalance: false
   rgb_r_whitebalance: 3300
   right_i_board_socket_id: 2
+  right_i_calibration_file: ''
   right_i_fps: 30.0
   right_i_height: 720
+  right_i_low_bandwidth: false
+  right_i_low_bandwidth_quality: 50
   right_i_max_q_size: 30
   right_i_preview_size: 416
   right_i_publish_topic: false
@@ -103,6 +114,7 @@
   stereo_i_align_depth: true
   stereo_i_bilateral_sigma: 0
   stereo_i_board_socket_id: 0
+  stereo_i_calibration_file: ''
   stereo_i_decimation_filter_decimation_factor: 1
   stereo_i_decimation_filter_decimation_mode: PIXEL_SKIPPING
   stereo_i_depth_filter_size: 5
@@ -114,6 +126,8 @@
   stereo_i_enable_threshold_filter: false
   stereo_i_extended_disp: false
   stereo_i_height: 720
+  stereo_i_low_bandwidth: false
+  stereo_i_low_bandwidth_quality: 50
   stereo_i_lr_check: true
   stereo_i_lrc_threshold: 10
   stereo_i_max_q_size: 30

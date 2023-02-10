@@ -51,14 +51,20 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
     imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
 
     stereoPub = it.advertiseCamera(getName() + "/image_raw", 1);
+    infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), getName()), "/" + getName());
+    if(ph->getParam<std::string>(getROSNode(), "i_calibration_file").empty()) {
+        auto info = sensor_helpers::getCalibInfo(*imageConverter,
+                                                 device,
+                                                 static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
+                                                 ph->getParam<int>(getROSNode(), "i_width"),
+                                                 ph->getParam<int>(getROSNode(), "i_height"));
+        auto calibHandler = device->readCalibration();
+        info.P[3] = calibHandler.getBaselineDistance() * 10.0;  // baseline in mm
+        infoManager->setCameraInfo(info);
+    } else {
+        infoManager->loadCameraInfo(ph->getParam<std::string>(getROSNode(), "i_calibration_file"));
+    }
 
-    stereoInfo = sensor_helpers::getCalibInfo(*imageConverter,
-                                              device,
-                                              static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
-                                              ph->getParam<int>(getROSNode(), "i_width"),
-                                              ph->getParam<int>(getROSNode(), "i_height"));
-    auto calibHandler = device->readCalibration();
-    stereoInfo.P[3] = calibHandler.getBaselineDistance() * 10.0;  // baseline in mm
     if(ph->getParam<bool>(getROSNode(), "i_low_bandwidth")) {
         if(ph->getParam<bool>(getROSNode(), "i_output_disparity")) {
             stereoQ->addCallback(std::bind(sensor_helpers::compressedImgCB,
@@ -66,7 +72,7 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
                                            std::placeholders::_2,
                                            *imageConverter,
                                            stereoPub,
-                                           stereoInfo,
+                                           infoManager,
                                            dai::RawImgFrame::Type::GRAY8));
         } else {
             // converting disp->depth
@@ -75,12 +81,11 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
                                            std::placeholders::_2,
                                            *imageConverter,
                                            stereoPub,
-                                           stereoInfo,
+                                           infoManager,
                                            dai::RawImgFrame::Type::RAW8));
         }
     } else {
-        stereoQ->addCallback(
-            std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, stereoPub, stereoInfo));
+        stereoQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, stereoPub, infoManager));
     }
 }
 void Stereo::closeQueues() {

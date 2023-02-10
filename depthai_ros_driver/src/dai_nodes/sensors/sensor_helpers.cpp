@@ -8,10 +8,11 @@ void compressedImgCB(const std::string& /*name*/,
                      const std::shared_ptr<dai::ADatatype>& data,
                      dai::ros::ImageConverter& converter,
                      image_transport::CameraPublisher& pub,
-                     sensor_msgs::CameraInfo& info,
+                     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
                      dai::RawImgFrame::Type dataType) {
     auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
     std::deque<sensor_msgs::Image> deq;
+    auto info = infoManager->getCameraInfo();
     converter.toRosMsgFromBitStream(img, deq, dataType, info);
     while(deq.size() > 0) {
         auto currMsg = deq.front();
@@ -24,9 +25,10 @@ void imgCB(const std::string& /*name*/,
            const std::shared_ptr<dai::ADatatype>& data,
            dai::ros::ImageConverter& converter,
            image_transport::CameraPublisher& pub,
-           sensor_msgs::CameraInfo& info) {
+           std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager) {
     auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
     std::deque<sensor_msgs::Image> deq;
+    auto info = infoManager->getCameraInfo();
     converter.toRosMsg(img, deq);
     while(deq.size() > 0) {
         auto currMsg = deq.front();

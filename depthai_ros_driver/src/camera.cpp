@@ -25,13 +25,16 @@ void Camera::parameterCB(parametersConfig& config, uint32_t /*level*/) {
     floodlightBrighness = config.camera_i_floodlight_brightness;
     laserDotBrightness = config.camera_i_laser_dot_brightness;
     if(camRunning && enableIR && !device->getIrDrivers().empty()) {
-        bool succ = device->setIrFloodLightBrightness(floodlightBrighness);
-        bool succ1 = device->setIrLaserDotProjectorBrightness(laserDotBrightness);
-        ROS_INFO("TEST%d %d", succ, succ1);
+        device->setIrFloodLightBrightness(floodlightBrighness);
+        device->setIrLaserDotProjectorBrightness(laserDotBrightness);
     }
     if(!daiNodes.empty()) {
         for(const auto& node : daiNodes) {
-            node->updateParams(config);
+            try {
+                node->updateParams(config);
+            } catch(std::runtime_error& e) {
+                ROS_ERROR("%s", e.what());
+            }
         }
     }
 }

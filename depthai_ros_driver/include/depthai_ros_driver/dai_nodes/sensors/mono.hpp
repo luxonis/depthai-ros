@@ -34,8 +34,7 @@ class Mono : public BaseNode {
     std::unique_ptr<dai::ros::ImageConverter> imageConverter;
     image_transport::ImageTransport it;
     image_transport::CameraPublisher monoPub;
-    std::unique_ptr<camera_info_manager::CameraInfoManager> infoManager;
-    sensor_msgs::CameraInfo monoInfo;
+    std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
     std::shared_ptr<dai::node::MonoCamera> monoCamNode;
     std::shared_ptr<dai::node::VideoEncoder> videoEnc;
     std::unique_ptr<param_handlers::MonoParamHandler> ph;

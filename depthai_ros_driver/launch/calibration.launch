@@ -24,7 +24,7 @@
           args="--size 8x6 \
                 --square 0.108 \
                 image:=$(arg name)/rgb/image_raw \
-                --camera_name rgb \
+                --camera_name /rgb \
                 --no-service-check"/>
     <node unless="$(eval type=='mono')"
           type="cameracalibrator.py"
@@ -36,6 +36,7 @@
           right:=$(arg name)/right/image_raw  \
           left:=$(arg name)/left/image_raw \
           left_camera left \
+          --camera_name \
           right_camera right \
           --no-service-check"/>
 </launch>

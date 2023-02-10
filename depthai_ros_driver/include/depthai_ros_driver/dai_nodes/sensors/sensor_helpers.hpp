@@ -3,9 +3,10 @@
 #include <string>
 #include <vector>
 
+#include "camera_info_manager/camera_info_manager.h"
+#include "depthai_bridge/ImageConverter.hpp"
 #include "image_transport/camera_publisher.h"
 #include "sensor_msgs/CameraInfo.h"
-#include "depthai_bridge/ImageConverter.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -95,12 +96,12 @@ void imgCB(const std::string& /*name*/,
            const std::shared_ptr<dai::ADatatype>& data,
            dai::ros::ImageConverter& converter,
            image_transport::CameraPublisher& pub,
-           sensor_msgs::CameraInfo& info);
+           std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager);
 void compressedImgCB(const std::string& /*name*/,
                      const std::shared_ptr<dai::ADatatype>& data,
                      dai::ros::ImageConverter& converter,
                      image_transport::CameraPublisher& pub,
-                     sensor_msgs::CameraInfo& info,
+                     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
                      dai::RawImgFrame::Type dataType);
 sensor_msgs::CameraInfo getCalibInfo(
     dai::ros::ImageConverter& converter, std::shared_ptr<dai::Device> device, dai::CameraBoardSocket socket, int width = 0, int height = 0);
