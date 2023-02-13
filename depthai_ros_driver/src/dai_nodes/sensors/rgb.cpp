@@ -65,7 +65,6 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
                                                                     ph->getParam<int>(getROSNode(), "i_width"),
                                                                     ph->getParam<int>(getROSNode(), "i_height")));
         } else {
-            ROS_INFO("Loading params");
             infoManager->loadCameraInfo(ph->getParam<std::string>(getROSNode(), "i_calibration_file"));
         }
         rgbPub = it.advertiseCamera(getName() + "/image_raw", 1);
