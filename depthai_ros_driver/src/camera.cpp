@@ -119,7 +119,9 @@ void Camera::startDevice() {
         auto speed = usbStrings[static_cast<int32_t>(device->getUsbSpeed())];
         RCLCPP_INFO(this->get_logger(), "USB SPEED: %s", speed.c_str());
     } else {
-        RCLCPP_INFO(this->get_logger(), "PoE camera detected. Consider enabling low bandwidth for specific image topics (see readme).");
+        RCLCPP_INFO(this->get_logger(),
+                    "PoE camera detected. Consider enabling low bandwidth for specific image topics (see "
+                    "readme).");
     }
 }
 

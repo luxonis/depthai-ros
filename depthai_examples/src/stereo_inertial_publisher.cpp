@@ -190,20 +190,21 @@ std::tuple<dai::Pipeline, int, int> createPipeline(bool enableDepth,
         }
 
         if(rgbWidth > stereoWidth || rgbHeight > stereoHeight) {
-            DEPTHAI_ROS_WARN_STREAM(
-                "DEPTHAI",
-                "RGB Camera resolution is heigher than the configured stereo resolution. Upscaling the stereo depth/disparity to match RGB camera resolution.");
+            DEPTHAI_ROS_WARN_STREAM("DEPTHAI",
+                                    "RGB Camera resolution is heigher than the configured stereo resolution. Upscaling the "
+                                    "stereo depth/disparity to match RGB camera resolution.");
         } else if(rgbWidth > stereoWidth || rgbHeight > stereoHeight) {
             DEPTHAI_ROS_WARN_STREAM("DEPTHAI",
-                                    "RGB Camera resolution is heigher than the configured stereo resolution. Downscaling the stereo depth/disparity to match "
+                                    "RGB Camera resolution is heigher than the configured stereo resolution. Downscaling the "
+                                    "stereo depth/disparity to match "
                                     "RGB camera resolution.");
         }
 
         if(enableSpatialDetection) {
             if(previewWidth > rgbWidth or previewHeight > rgbHeight) {
-                DEPTHAI_ROS_ERROR_STREAM(
-                    "DEPTHAI",
-                    "Preview Image size should be smaller than the scaled resolution. Please adjust the scale parameters or the preview size accordingly.");
+                DEPTHAI_ROS_ERROR_STREAM("DEPTHAI",
+                                         "Preview Image size should be smaller than the scaled resolution. Please adjust the "
+                                         "scale parameters or the preview size accordingly.");
                 throw std::runtime_error("Invalid Image Size");
             }
 

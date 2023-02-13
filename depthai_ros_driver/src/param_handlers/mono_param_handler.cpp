@@ -22,6 +22,7 @@ void MonoParamHandler::declareParams(
     declareAndLogParam<bool>(node, "i_low_bandwidth", false);
     declareAndLogParam<int>(node, "i_low_bandwidth_quality", 50);
     declareAndLogParam<int>(node, "i_board_socket_id", static_cast<int>(socket));
+    declareAndLogParam<std::string>(node, "i_calibration_file", "");
     monoCam->setBoardSocket(socket);
     monoCam->setFps(declareAndLogParam<double>(node, "i_fps", 30.0));
 

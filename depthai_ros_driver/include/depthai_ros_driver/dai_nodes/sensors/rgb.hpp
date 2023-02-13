@@ -1,5 +1,6 @@
 #pragma once
 
+#include "camera_info_manager/camera_info_manager.hpp"
 #include "depthai/depthai.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
@@ -30,10 +31,9 @@ class RGB : public BaseNode {
     void closeQueues() override;
 
    private:
-    void colorQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
     std::unique_ptr<dai::ros::ImageConverter> imageConverter;
     image_transport::CameraPublisher rgbPub, previewPub;
-    sensor_msgs::msg::CameraInfo rgbInfo, previewInfo;
+    std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager, previewInfoManager;
     std::shared_ptr<dai::node::ColorCamera> colorCamNode;
     std::shared_ptr<dai::node::VideoEncoder> videoEnc;
     std::unique_ptr<param_handlers::RGBParamHandler> ph;

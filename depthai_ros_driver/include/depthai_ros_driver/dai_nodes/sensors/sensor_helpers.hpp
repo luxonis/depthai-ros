@@ -1,7 +1,13 @@
 #pragma once
 
+#include <deque>
 #include <string>
 #include <vector>
+
+#include "camera_info_manager/camera_info_manager.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
+#include "image_transport/camera_publisher.hpp"
+#include "sensor_msgs/msg/camera_info.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -86,6 +92,27 @@ inline std::vector<ImageSensor> availableSensors{
     {"AR0234", {"1200P"}, true},
     {"IMX582", {"48mp", "12mp", "4k"}, true},
 };
+
+void imgCB(const std::string& /*name*/,
+           const std::shared_ptr<dai::ADatatype>& data,
+           dai::ros::ImageConverter& converter,
+           image_transport::CameraPublisher& pub,
+           std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager);
+void compressedImgCB(const std::string& /*name*/,
+                     const std::shared_ptr<dai::ADatatype>& data,
+                     dai::ros::ImageConverter& converter,
+                     image_transport::CameraPublisher& pub,
+                     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
+                     dai::RawImgFrame::Type dataType);
+sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
+                                          dai::ros::ImageConverter& converter,
+                                          std::shared_ptr<dai::Device> device,
+                                          dai::CameraBoardSocket socket,
+                                          int width = 0,
+                                          int height = 0);
+std::shared_ptr<dai::node::VideoEncoder> createEncoder(std::shared_ptr<dai::Pipeline> pipeline,
+                                                       int quality,
+                                                       dai::VideoEncoderProperties::Profile profile = dai::VideoEncoderProperties::Profile::MJPEG);
 }  // namespace sensor_helpers
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

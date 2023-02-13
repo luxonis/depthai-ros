@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(depthai_ros_driver VERSION 2.6.2)
+project(depthai_ros_driver VERSION 2.6.3)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -19,6 +19,7 @@ ament_auto_add_library(
   src/dai_nodes/sensors/rgb.cpp
   src/dai_nodes/sensors/mono.cpp
   src/dai_nodes/sensors/camera_sensor.cpp
+  src/dai_nodes/sensors/sensor_helpers.cpp
   src/dai_nodes/stereo.cpp
   src/dai_nodes/nn/nn_wrapper.cpp
   src/dai_nodes/nn/spatial_nn_wrapper.cpp
