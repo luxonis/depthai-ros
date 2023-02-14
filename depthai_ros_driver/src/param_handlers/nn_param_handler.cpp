@@ -45,13 +45,13 @@ nn::NNFamily NNParamHandler::getNNFamily(ros::NodeHandle node) {
     return nnFamilyMap.at(nnFamily);
 }
 
-void NNParamHandler::setNNParams(ros::NodeHandle node, nlohmann::json data, std::shared_ptr<dai::node::NeuralNetwork> /*nn*/) {
+void NNParamHandler::setNNParams(nlohmann::json data, std::shared_ptr<dai::node::NeuralNetwork> /*nn*/) {
     if(data["mappings"].contains("labels")) {
         labels = data["mappings"]["labels"].get<std::vector<std::string>>();
     }
 }
 
-void NNParamHandler::setNNParams(ros::NodeHandle node, nlohmann::json data, std::shared_ptr<dai::node::MobileNetDetectionNetwork> nn) {
+void NNParamHandler::setNNParams(nlohmann::json data, std::shared_ptr<dai::node::MobileNetDetectionNetwork> nn) {
     if(data["nn_config"].contains("confidence_threshold")) {
         auto conf_threshold = data["nn_config"]["confidence_threshold"].get<float>();
         nn->setConfidenceThreshold(conf_threshold);
@@ -61,7 +61,7 @@ void NNParamHandler::setNNParams(ros::NodeHandle node, nlohmann::json data, std:
     }
 }
 
-void NNParamHandler::setNNParams(ros::NodeHandle node, nlohmann::json data, std::shared_ptr<dai::node::MobileNetSpatialDetectionNetwork> nn) {
+void NNParamHandler::setNNParams(nlohmann::json data, std::shared_ptr<dai::node::MobileNetSpatialDetectionNetwork> nn) {
     if(data["nn_config"].contains("confidence_threshold")) {
         auto conf_threshold = data["nn_config"]["confidence_threshold"].get<float>();
         nn->setConfidenceThreshold(conf_threshold);
@@ -69,9 +69,9 @@ void NNParamHandler::setNNParams(ros::NodeHandle node, nlohmann::json data, std:
     if(data["mappings"].contains("labels")) {
         labels = data["mappings"]["labels"].get<std::vector<std::string>>();
     }
-    setSpatialParams(node, data, nn);
+    setSpatialParams(nn);
 }
-void NNParamHandler::setNNParams(ros::NodeHandle node, nlohmann::json data, std::shared_ptr<dai::node::YoloSpatialDetectionNetwork> nn) {
+void NNParamHandler::setNNParams(nlohmann::json data, std::shared_ptr<dai::node::YoloSpatialDetectionNetwork> nn) {
     float conf_threshold = 0.5;
     if(data["nn_config"].contains("confidence_threshold")) {
         conf_threshold = data["nn_config"]["confidence_threshold"].get<float>();
@@ -80,13 +80,13 @@ void NNParamHandler::setNNParams(ros::NodeHandle node, nlohmann::json data, std:
     if(data["mappings"].contains("labels")) {
         labels = data["mappings"]["labels"].get<std::vector<std::string>>();
     }
-    setSpatialParams(node, data, nn);
+    setSpatialParams(nn);
     if(data["nn_config"].contains("NN_specific_metadata")) {
-        setYoloParams(node, data, nn);
+        setYoloParams(data, nn);
     }
 }
 
-void NNParamHandler::setNNParams(ros::NodeHandle node, nlohmann::json data, std::shared_ptr<dai::node::YoloDetectionNetwork> nn) {
+void NNParamHandler::setNNParams(nlohmann::json data, std::shared_ptr<dai::node::YoloDetectionNetwork> nn) {
     float conf_threshold = 0.5;
     if(data["nn_config"].contains("confidence_threshold")) {
         conf_threshold = data["nn_config"]["confidence_threshold"].get<float>();
@@ -96,11 +96,11 @@ void NNParamHandler::setNNParams(ros::NodeHandle node, nlohmann::json data, std:
         labels = data["mappings"]["labels"].get<std::vector<std::string>>();
     }
     if(data["nn_config"].contains("NN_specific_metadata")) {
-        setYoloParams(node, data, nn);
+        setYoloParams(data, nn);
     }
 }
 
-void NNParamHandler::setImageManip(ros::NodeHandle node, const std::string& model_path, std::shared_ptr<dai::node::ImageManip> imageManip) {
+void NNParamHandler::setImageManip(const std::string& model_path, std::shared_ptr<dai::node::ImageManip> imageManip) {
     auto blob = dai::OpenVINO::Blob(model_path);
     auto first_info = blob.networkInputs.begin();
     auto input_size = first_info->second.dims[0];
@@ -123,7 +123,7 @@ std::string NNParamHandler::getModelPath(const nlohmann::json& data) {
     return modelPath;
 }
 
-dai::CameraControl NNParamHandler::setRuntimeParams(ros::NodeHandle node, parametersConfig& config) {
+dai::CameraControl NNParamHandler::setRuntimeParams(ros::NodeHandle /*node*/, parametersConfig& /*config*/) {
     dai::CameraControl ctrl;
     return ctrl;
 }
