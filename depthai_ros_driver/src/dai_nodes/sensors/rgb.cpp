@@ -33,22 +33,20 @@ void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
         xoutColor = pipeline->create<dai::node::XLinkOut>();
         xoutColor->setStreamName(ispQName);
         if(ph->getParam<bool>(getROSNode(), "i_low_bandwidth")) {
-            RCLCPP_INFO(getROSNode()->get_logger(), "POE");
-
             videoEnc = sensor_helpers::createEncoder(pipeline, ph->getParam<int>(getROSNode(), "i_low_bandwidth_quality"));
             colorCamNode->video.link(videoEnc->input);
             videoEnc->bitstream.link(xoutColor->input);
         } else {
             colorCamNode->isp.link(xoutColor->input);
         }
-        if(ph->getParam<bool>(getROSNode(), "i_enable_preview")) {
+    }
+    if(ph->getParam<bool>(getROSNode(), "i_enable_preview")) {
             xoutPreview = pipeline->create<dai::node::XLinkOut>();
             xoutPreview->setStreamName(previewQName);
             xoutPreview->input.setQueueSize(2);
             xoutPreview->input.setBlocking(false);
             colorCamNode->preview.link(xoutPreview->input);
         }
-    }
     xinControl = pipeline->create<dai::node::XLinkIn>();
     xinControl->setStreamName(controlQName);
     xinControl->out.link(colorCamNode->inputControl);
