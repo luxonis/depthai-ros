@@ -99,24 +99,30 @@ void Camera::setupQueues() {
 }
 
 void Camera::startDevice() {
-    dai::DeviceInfo info;
-    auto mxid = ph->getParam<std::string>(pNH, "i_mx_id");
-    auto ip = ph->getParam<std::string>(pNH, "i_ip");
     ros::Rate r(1.0);
-
-    std::vector<dai::DeviceInfo> availableDevices = dai::Device::getAllAvailableDevices();
     while(!camRunning) {
         try {
-            dai::UsbSpeed speed = ph->getUSBSpeed(pNH);
-            if(mxid.empty() && ip.empty()) {
-                ROS_INFO("No ip/mxid specified, connecting to the next available device.");
+            auto mxid = ph->getParam<std::string>(pNH, "i_mx_id");
+            auto ip = ph->getParam<std::string>(pNH, "i_ip");
+            auto usb_id = ph->getParam<std::string>(pNH, "i_usb_port_id");
+            if(mxid.empty() && ip.empty() && usb_id.empty()) {
+                ROS_INFO("No ip/mxid/usb_id specified, connecting to the next available device.");
                 device = std::make_shared<dai::Device>();
+                camRunning = true;
             } else {
+                std::vector<dai::DeviceInfo> availableDevices = dai::Device::getAllAvailableDevices();
+                if(availableDevices.size() == 0) {
+                    throw std::runtime_error("No devices detected!");
+                }
+                dai::UsbSpeed speed = ph->getUSBSpeed(pNH);
+
                 for(const auto& info : availableDevices) {
+                    ROS_INFO("Device info: MXID: %s, Name: %s", info.getMxId().c_str(), info.name.c_str());
                     if(!mxid.empty() && info.getMxId() == mxid) {
                         ROS_INFO("Connecting to the camera using mxid: %s", mxid.c_str());
                         if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
                             device = std::make_shared<dai::Device>(info, speed);
+                            camRunning = true;
                         } else if(info.state == X_LINK_BOOTED) {
                             throw std::runtime_error("Device with mxid %s is already booted in different process.");
                         }
@@ -124,13 +130,23 @@ void Camera::startDevice() {
                         ROS_INFO("Connecting to the camera using ip: %s", ip.c_str());
                         if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
                             device = std::make_shared<dai::Device>(info);
+                            camRunning = true;
                         } else if(info.state == X_LINK_BOOTED) {
                             throw std::runtime_error("Device with ip %s is already booted in different process.");
                         }
+                    } else if(!usb_id.empty() && info.name == usb_id) {
+                        ROS_INFO("Connecting to the camera using USB ID: %s", usb_id.c_str());
+                        if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
+                            device = std::make_shared<dai::Device>(info);
+                            camRunning = true;
+                        } else if(info.state == X_LINK_BOOTED) {
+                            throw std::runtime_error("Device with USB ID %s is already booted in different process.");
+                        }
+                    } else {
+                        throw std::runtime_error("Unable to connect to the device, check if parameters match with given info.");
                     }
                 }
             }
-            camRunning = true;
         } catch(const std::runtime_error& e) {
             ROS_ERROR("%s", e.what());
         }
