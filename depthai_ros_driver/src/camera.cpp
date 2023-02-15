@@ -153,8 +153,7 @@ void Camera::startDevice() {
         r.sleep();
     }
 
-    auto devicename = device->getMxId();
-    ROS_INFO("Camera with MXID: %s and Name: %s connected!", devicename.c_str(), device->getDeviceInfo().name.c_str());
+    ROS_INFO("Camera with MXID: %s and Name: %s connected!", device->getMxId().c_str(), device->getDeviceInfo().name.c_str());
     auto protocol = device->getDeviceInfo().getXLinkDeviceDesc().protocol;
 
     if(protocol != XLinkProtocol_t::X_LINK_TCP_IP) {
