@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="name" default="oak"/>
+    <arg name="size" default="8x6"/>
+    <arg name="square" default="0.108"/>
+    <arg name="type" default="mono"/>
+    <node pkg="nodelet" type="nodelet" name="$(arg  name)_nodelet_manager" args="manager" output="screen">
+        <remap from="/nodelet_manager/load_nodelet" to="$(arg name)/nodelet_manager/load_nodelet"/>
+        <remap from="/nodelet_manager/unload_nodelet" to="$(arg name)/nodelet_manager/unload_nodelet"/>
+        <remap from="/nodelet_manager/list" to="$(arg name)/nodelet_manager/list"/>
+    </node>
+    <node name="$(arg name)" pkg="nodelet" type="nodelet" output="screen" required="true" args="load depthai_ros_driver/Camera $(arg  name)_nodelet_manager">
+        <rosparam param="camera_i_pipeline_type">RGBStereo</rosparam>
+        <rosparam param="camera_i_nn_type">none</rosparam>
+        <rosparam param="right_i_publish_topic">true</rosparam>
+        <rosparam param="left_i_publish_topic">true</rosparam>
+    </node>
+
+    <node if="$(eval type=='mono')" 
+          type="cameracalibrator.py" 
+          name="calibrator" 
+          pkg="camera_calibration" 
+          args="--size 8x6 \
+                --square 0.108 \
+                image:=$(arg name)/rgb/image_raw \
+                --camera_name /rgb \
+                --no-service-check"/>
+    <node unless="$(eval type=='mono')"
+          type="cameracalibrator.py"
+          name="calibrator" 
+          pkg="camera_calibration" 
+          args="--size 8x6 \
+          --square 0.108 \
+          --approximate 0.1 \
+          right:=$(arg name)/right/image_raw  \
+          left:=$(arg name)/left/image_raw \
+          left_camera left \
+          --camera_name \
+          right_camera right \
+          --no-service-check"/>
+</launch>

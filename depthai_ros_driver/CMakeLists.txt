@@ -12,6 +12,14 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+set(opencv_version 4)
+find_package(OpenCV ${opencv_version} QUIET COMPONENTS imgproc highgui)
+if(NOT OpenCV_FOUND)
+  message(STATUS "----------------Did not find OpenCV 4, trying OpenCV 3--------------")
+  set(opencv_version 3)
+  find_package(OpenCV ${opencv_version} REQUIRED COMPONENTS imgproc highgui)
+endif()
+
 # find dependencies
 find_package(catkin REQUIRED COMPONENTS
   camera_info_manager
@@ -56,6 +64,7 @@ add_library(
   src/dai_nodes/sensors/rgb.cpp
   src/dai_nodes/sensors/mono.cpp
   src/dai_nodes/sensors/camera_sensor.cpp
+  src/dai_nodes/sensors/sensor_helpers.cpp
   src/dai_nodes/stereo.cpp
   src/dai_nodes/nn/nn_wrapper.cpp
   src/dai_nodes/nn/spatial_nn_wrapper.cpp

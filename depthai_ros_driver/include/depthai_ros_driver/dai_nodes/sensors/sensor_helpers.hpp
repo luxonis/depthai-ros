@@ -3,6 +3,11 @@
 #include <string>
 #include <vector>
 
+#include "camera_info_manager/camera_info_manager.h"
+#include "depthai_bridge/ImageConverter.hpp"
+#include "image_transport/camera_publisher.h"
+#include "sensor_msgs/CameraInfo.h"
+
 namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace link_types {
@@ -70,22 +75,30 @@ struct ImageSensor {
                 width = 6000;
                 break;
             }
+            default: {
+                throw std::runtime_error("Resolution not supported!");
+            }
         }
     }
 };
-inline std::vector<ImageSensor> availableSensors{
-    {"IMX378", {"12mp", "4k"}, true},
-    {"OV9282", {"800P", "720p", "400p"}, false},
-    {"OV9782", {"800P", "720p", "400p"}, true},
-    {"OV9281", {"800P", "720p", "400p"}, true},
-    {"IMX214", {"13mp", "12mp", "4k", "1080p"}, true},
-    {"OV7750", {"480P", "400p"}, false},
-    {"OV7251", {"480P", "400p"}, false},
-    {"IMX477", {"12mp", "4k", "1080p"}, true},
-    {"IMX577", {"12mp", "4k", "1080p"}, true},
-    {"AR0234", {"1200P"}, true},
-    {"IMX582", {"48mp", "12mp", "4k"}, true},
-};
+extern std::vector<ImageSensor> availableSensors;
+
+void imgCB(const std::string& /*name*/,
+           const std::shared_ptr<dai::ADatatype>& data,
+           dai::ros::ImageConverter& converter,
+           image_transport::CameraPublisher& pub,
+           std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager);
+void compressedImgCB(const std::string& /*name*/,
+                     const std::shared_ptr<dai::ADatatype>& data,
+                     dai::ros::ImageConverter& converter,
+                     image_transport::CameraPublisher& pub,
+                     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
+                     dai::RawImgFrame::Type dataType);
+sensor_msgs::CameraInfo getCalibInfo(
+    dai::ros::ImageConverter& converter, std::shared_ptr<dai::Device> device, dai::CameraBoardSocket socket, int width = 0, int height = 0);
+std::shared_ptr<dai::node::VideoEncoder> createEncoder(std::shared_ptr<dai::Pipeline> pipeline,
+                                                       int quality,
+                                                       dai::VideoEncoderProperties::Profile profile = dai::VideoEncoderProperties::Profile::MJPEG);
 }  // namespace sensor_helpers
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

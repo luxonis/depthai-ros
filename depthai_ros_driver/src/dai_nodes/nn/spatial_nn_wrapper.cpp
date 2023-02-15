@@ -28,10 +28,10 @@ SpatialNNWrapper::SpatialNNWrapper(const std::string& daiNodeName, ros::NodeHand
     }
 
     ROS_DEBUG("Base node %s created", daiNodeName.c_str());
-};
+}
 void SpatialNNWrapper::setNames() {}
 
-void SpatialNNWrapper::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {}
+void SpatialNNWrapper::setXinXout(std::shared_ptr<dai::Pipeline> /*pipeline*/) {}
 
 void SpatialNNWrapper::setupQueues(std::shared_ptr<dai::Device> device) {
     nnNode->setupQueues(device);

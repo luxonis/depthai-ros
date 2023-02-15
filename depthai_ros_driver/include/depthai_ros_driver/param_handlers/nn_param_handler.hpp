@@ -24,24 +24,24 @@ class NNParamHandler : public BaseParamHandler {
         using json = nlohmann::json;
         std::ifstream f(nnPath);
         json data = json::parse(f);
-        parseConfigFile(node, nnPath, nn, imageManip);
+        parseConfigFile(nnPath, nn, imageManip);
     }
 
-    void setNNParams(ros::NodeHandle node, nlohmann::json data, std::shared_ptr<dai::node::NeuralNetwork> nn);
-    void setNNParams(ros::NodeHandle node, nlohmann::json data, std::shared_ptr<dai::node::MobileNetDetectionNetwork> nn);
-    void setNNParams(ros::NodeHandle node, nlohmann::json data, std::shared_ptr<dai::node::YoloDetectionNetwork> nn);
-    void setNNParams(ros::NodeHandle node, nlohmann::json data, std::shared_ptr<dai::node::MobileNetSpatialDetectionNetwork> nn);
-    void setNNParams(ros::NodeHandle node, nlohmann::json data, std::shared_ptr<dai::node::YoloSpatialDetectionNetwork> nn);
+    void setNNParams(nlohmann::json data, std::shared_ptr<dai::node::NeuralNetwork> nn);
+    void setNNParams(nlohmann::json data, std::shared_ptr<dai::node::MobileNetDetectionNetwork> nn);
+    void setNNParams(nlohmann::json data, std::shared_ptr<dai::node::YoloDetectionNetwork> nn);
+    void setNNParams(nlohmann::json data, std::shared_ptr<dai::node::MobileNetSpatialDetectionNetwork> nn);
+    void setNNParams(nlohmann::json data, std::shared_ptr<dai::node::YoloSpatialDetectionNetwork> nn);
 
     template <typename T>
-    void setSpatialParams(ros::NodeHandle node, nlohmann::json data, std::shared_ptr<T> nn) {
+    void setSpatialParams(std::shared_ptr<T> nn) {
         nn->setBoundingBoxScaleFactor(0.5);
         nn->setDepthLowerThreshold(100);
         nn->setDepthUpperThreshold(10000);
     }
 
     template <typename T>
-    void setYoloParams(ros::NodeHandle node, nlohmann::json data, std::shared_ptr<T> nn) {
+    void setYoloParams(nlohmann::json data, std::shared_ptr<T> nn) {
         auto metadata = data["nn_config"]["NN_specific_metadata"];
         int num_classes = 80;
         if(metadata.contains("classes")) {
@@ -73,21 +73,19 @@ class NNParamHandler : public BaseParamHandler {
         }
     }
 
-    void setMobilenetParams() {}
-
     template <typename T>
-    void parseConfigFile(ros::NodeHandle node, const std::string& path, std::shared_ptr<T> nn, std::shared_ptr<dai::node::ImageManip> imageManip) {
+    void parseConfigFile(const std::string& path, std::shared_ptr<T> nn, std::shared_ptr<dai::node::ImageManip> imageManip) {
         using json = nlohmann::json;
         std::ifstream f(path);
         json data = json::parse(f);
         if(data.contains("model") && data.contains("nn_config")) {
             auto modelPath = getModelPath(data);
-            setImageManip(node, modelPath, imageManip);
+            setImageManip(modelPath, imageManip);
             nn->setBlobPath(modelPath);
             nn->setNumPoolFrames(4);
             nn->setNumInferenceThreads(2);
             nn->input.setBlocking(false);
-            setNNParams(node, data, nn);
+            setNNParams(data, nn);
         }
     }
 
@@ -95,7 +93,7 @@ class NNParamHandler : public BaseParamHandler {
     std::vector<std::string> getLabels();
 
    private:
-    void setImageManip(ros::NodeHandle node, const std::string& model_path, std::shared_ptr<dai::node::ImageManip> imageManip);
+    void setImageManip(const std::string& model_path, std::shared_ptr<dai::node::ImageManip> imageManip);
     std::string getModelPath(const nlohmann::json& data);
     std::unordered_map<std::string, nn::NNFamily> nnFamilyMap;
     std::vector<std::string> labels;

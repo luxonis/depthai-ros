@@ -1,8 +1,10 @@
 #pragma once
 
+#include "camera_info_manager/camera_info_manager.h"
 #include "depthai/depthai.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/stereo_param_handler.hpp"
 #include "depthai_ros_driver/parametersConfig.h"
 #include "image_transport/camera_publisher.h"
@@ -30,9 +32,9 @@ class Stereo : public BaseNode {
    private:
     void stereoQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
     std::unique_ptr<dai::ros::ImageConverter> imageConverter;
+    std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
     image_transport::ImageTransport it;
     image_transport::CameraPublisher stereoPub;
-    sensor_msgs::CameraInfo stereoInfo;
     std::shared_ptr<dai::node::StereoDepth> stereoCamNode;
     std::shared_ptr<dai::node::VideoEncoder> videoEnc;
     std::shared_ptr<dai::node::ImageManip> imageManip;

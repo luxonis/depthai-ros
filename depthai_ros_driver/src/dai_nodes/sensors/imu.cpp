@@ -13,7 +13,7 @@ Imu::Imu(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<d
     ph->declareParams(node, imuNode);
     setXinXout(pipeline);
     ROS_DEBUG("Node %s created", daiNodeName.c_str());
-};
+}
 void Imu::setNames() {
     imuQName = getName() + "_imu";
 }

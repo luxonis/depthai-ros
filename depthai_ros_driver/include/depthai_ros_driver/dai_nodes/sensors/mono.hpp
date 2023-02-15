@@ -1,5 +1,6 @@
 #pragma once
 
+#include "camera_info_manager/camera_info_manager.h"
 #include "depthai/depthai.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
@@ -30,11 +31,10 @@ class Mono : public BaseNode {
     void closeQueues() override;
 
    private:
-    void monoQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
     std::unique_ptr<dai::ros::ImageConverter> imageConverter;
     image_transport::ImageTransport it;
     image_transport::CameraPublisher monoPub;
-    sensor_msgs::CameraInfo monoInfo;
+    std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
     std::shared_ptr<dai::node::MonoCamera> monoCamNode;
     std::shared_ptr<dai::node::VideoEncoder> videoEnc;
     std::unique_ptr<param_handlers::MonoParamHandler> ph;

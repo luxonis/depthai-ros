@@ -29,10 +29,10 @@ NNWrapper::NNWrapper(const std::string& daiNodeName, ros::NodeHandle node, std::
     }
 
     ROS_DEBUG("Base node %s created", daiNodeName.c_str());
-};
+}
 void NNWrapper::setNames() {}
 
-void NNWrapper::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {}
+void NNWrapper::setXinXout(std::shared_ptr<dai::Pipeline> /*pipeline*/) {}
 
 void NNWrapper::setupQueues(std::shared_ptr<dai::Device> device) {
     nnNode->setupQueues(device);

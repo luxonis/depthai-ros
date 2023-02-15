@@ -13,7 +13,7 @@ MonoParamHandler::MonoParamHandler(const std::string& name) : BaseParamHandler(n
         {"720", dai::MonoCameraProperties::SensorResolution::THE_720_P},
         {"800", dai::MonoCameraProperties::SensorResolution::THE_800_P},
     };
-};
+}
 MonoParamHandler::~MonoParamHandler() = default;
 void MonoParamHandler::declareParams(
     ros::NodeHandle node, std::shared_ptr<dai::node::MonoCamera> monoCam, dai::CameraBoardSocket socket, dai_nodes::sensor_helpers::ImageSensor, bool publish) {
@@ -34,7 +34,7 @@ void MonoParamHandler::declareParams(
         monoCam->initialControl.setManualExposure(exposure, iso);
     }
 }
-dai::CameraControl MonoParamHandler::setRuntimeParams(ros::NodeHandle node, parametersConfig& config) {
+dai::CameraControl MonoParamHandler::setRuntimeParams(ros::NodeHandle /*node*/, parametersConfig& config) {
     dai::CameraControl ctrl;
     if(getName() == "left") {
         if(config.left_r_set_man_exposure) {
@@ -49,6 +49,7 @@ dai::CameraControl MonoParamHandler::setRuntimeParams(ros::NodeHandle node, para
             ctrl.setAutoExposureEnable();
         }
     }
+    return ctrl;
 }
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver

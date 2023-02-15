@@ -37,6 +37,11 @@ class BaseNode {
     std::string getName() {
         return baseDAINodeName;
     };
+    std::string getTFPrefix(const std::string& frameName = "") {
+        auto prefix = std::string(getROSNode().getNamespace()) + "_" + frameName;
+        prefix.erase(0, 1);
+        return prefix;
+    }
 
    private:
     ros::NodeHandle baseNode;

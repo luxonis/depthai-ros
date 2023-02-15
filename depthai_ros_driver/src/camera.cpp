@@ -30,7 +30,11 @@ void Camera::parameterCB(parametersConfig& config, uint32_t /*level*/) {
     }
     if(!daiNodes.empty()) {
         for(const auto& node : daiNodes) {
-            node->updateParams(config);
+            try {
+                node->updateParams(config);
+            } catch(std::runtime_error& e) {
+                ROS_ERROR("%s", e.what());
+            }
         }
     }
 }

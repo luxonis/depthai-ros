@@ -17,7 +17,7 @@ RGBParamHandler::RGBParamHandler(const std::string& name) : BaseParamHandler(nam
                         {"4000x3000", dai::ColorCameraProperties::SensorResolution::THE_4000X3000},
                         {"5312X6000", dai::ColorCameraProperties::SensorResolution::THE_5312X6000},
                         {"48_MP", dai::ColorCameraProperties::SensorResolution::THE_48_MP}};
-};
+}
 RGBParamHandler::~RGBParamHandler() = default;
 void RGBParamHandler::declareParams(ros::NodeHandle node,
                                     std::shared_ptr<dai::node::ColorCamera> colorCam,
@@ -68,7 +68,7 @@ void RGBParamHandler::declareParams(ros::NodeHandle node,
         colorCam->initialControl.setManualWhiteBalance(whitebalance);
     }
 }
-dai::CameraControl RGBParamHandler::setRuntimeParams(ros::NodeHandle node, parametersConfig& config) {
+dai::CameraControl RGBParamHandler::setRuntimeParams(ros::NodeHandle /*node*/, parametersConfig& config) {
     dai::CameraControl ctrl;
 
     if(getName() == "rgb") {
