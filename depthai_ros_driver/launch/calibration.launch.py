@@ -14,23 +14,23 @@ def launch_setup(context, *args, **kwargs):
     size = LaunchConfiguration("size").perform(context)
     square = LaunchConfiguration("square").perform(context)
     mono_args = ["--size", size,
-                "--square", square,
-                "--camera_name", "oak/rgb",
-                "--no-service-check"]
+                 "--square", square,
+                 "--camera_name", "oak/rgb",
+                 "--no-service-check"]
     stereo_args = ["--size", size,
-                "--square", square,
-                "--camera_name", "/rgb",
-                "--approximate", "0.1",
-                "--camera_name", "oak",
-                "left_camera", "left",
-                "right_camera", "right",
-                "--no-service-check"]
+                   "--square", square,
+                   "--camera_name", "/rgb",
+                   "--approximate", "0.1",
+                   "--camera_name", "oak",
+                   "left_camera", "left",
+                   "right_camera", "right",
+                   "--no-service-check"]
     mono_remappings = [('/image', '{}/rgb/image_raw'.format(name))]
     stereo_remappings = [('/left', '{}/left/image_raw'.format(name)),
                          ('/right', '{}/right/image_raw'.format(name))]
     args = []
     remappings = []
-    if type=="mono":
+    if type == "mono":
         args = mono_args
         remappings = mono_remappings
     else:
@@ -68,7 +68,6 @@ def launch_setup(context, *args, **kwargs):
 
 
 def generate_launch_description():
-    depthai_prefix = get_package_share_directory("depthai_ros_driver")
     declared_arguments = [
         DeclareLaunchArgument("name", default_value="oak"),
         DeclareLaunchArgument("size", default_value="8x6"),

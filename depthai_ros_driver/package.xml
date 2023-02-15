@@ -6,7 +6,6 @@
   <description>Depthai ROS Monolithic node.</description>
   <maintainer email="adam.serafin@luxonis.com">Adam Serafin</maintainer>
   <maintainer email="sachin@luxonis.com">Sachin Guruswamy</maintainer>
-  <author>Adam Serafin</author>
 
   <license>MIT</license>
 
@@ -26,9 +25,6 @@
   <depend>image_pipeline</depend>
   <depend>depthai</depend>
   <depend>depthai_bridge</depend>
-  <test_depend>ament_lint_auto</test_depend>
-  <test_depend>ament_lint_common</test_depend>
-
   <export>
     <build_type>ament_cmake</build_type>
   </export>
