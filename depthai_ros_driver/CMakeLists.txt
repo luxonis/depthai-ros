@@ -12,6 +12,14 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+set(opencv_version 4)
+find_package(OpenCV ${opencv_version} QUIET COMPONENTS imgproc highgui)
+if(NOT OpenCV_FOUND)
+  message(STATUS "----------------Did not find OpenCV 4, trying OpenCV 3--------------")
+  set(opencv_version 3)
+  find_package(OpenCV ${opencv_version} REQUIRED COMPONENTS imgproc highgui)
+endif()
+
 # find dependencies
 find_package(catkin REQUIRED COMPONENTS
   camera_info_manager
@@ -21,7 +29,6 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   cv_bridge
-  OpenCV
   vision_msgs
   depthai_bridge
   message_filters
