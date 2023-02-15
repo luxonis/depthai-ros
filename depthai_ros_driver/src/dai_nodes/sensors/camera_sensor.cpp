@@ -31,10 +31,10 @@ CameraSensor::CameraSensor(const std::string& daiNodeName,
     }
 
     ROS_DEBUG("Base node %s created", daiNodeName.c_str());
-};
+}
 void CameraSensor::setNames() {}
 
-void CameraSensor::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {}
+void CameraSensor::setXinXout(std::shared_ptr<dai::Pipeline> /*pipeline*/) {}
 
 void CameraSensor::setupQueues(std::shared_ptr<dai::Device> device) {
     sensorNode->setupQueues(device);

@@ -75,7 +75,7 @@ void StereoParamHandler::declareParams(ros::NodeHandle node, std::shared_ptr<dai
     }
     stereo->initialConfig.set(config);
 }
-dai::CameraControl StereoParamHandler::setRuntimeParams(ros::NodeHandle node, parametersConfig& config) {
+dai::CameraControl StereoParamHandler::setRuntimeParams(ros::NodeHandle /*node*/, parametersConfig& /*config*/) {
     dai::CameraControl ctrl;
     return ctrl;
 }

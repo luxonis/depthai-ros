@@ -21,7 +21,7 @@ Stereo::Stereo(const std::string& daiNodeName, ros::NodeHandle node, std::shared
     left->link(stereoCamNode->left);
     right->link(stereoCamNode->right);
     ROS_DEBUG("Node %s created", daiNodeName.c_str());
-};
+}
 void Stereo::setNames() {
     stereoQName = getName() + "_stereo";
 }

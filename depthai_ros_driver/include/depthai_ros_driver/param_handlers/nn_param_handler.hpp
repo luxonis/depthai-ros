@@ -73,7 +73,6 @@ class NNParamHandler : public BaseParamHandler {
         }
     }
 
-
     template <typename T>
     void parseConfigFile(const std::string& path, std::shared_ptr<T> nn, std::shared_ptr<dai::node::ImageManip> imageManip) {
         using json = nlohmann::json;

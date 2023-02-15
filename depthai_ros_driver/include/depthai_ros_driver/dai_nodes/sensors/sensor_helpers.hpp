@@ -75,22 +75,13 @@ struct ImageSensor {
                 width = 6000;
                 break;
             }
+            default: {
+                throw std::runtime_error("Resolution not supported!");
+            }
         }
     }
 };
-inline std::vector<ImageSensor> availableSensors{
-    {"IMX378", {"12mp", "4k"}, true},
-    {"OV9282", {"800P", "720p", "400p"}, false},
-    {"OV9782", {"800P", "720p", "400p"}, true},
-    {"OV9281", {"800P", "720p", "400p"}, true},
-    {"IMX214", {"13mp", "12mp", "4k", "1080p"}, true},
-    {"OV7750", {"480P", "400p"}, false},
-    {"OV7251", {"480P", "400p"}, false},
-    {"IMX477", {"12mp", "4k", "1080p"}, true},
-    {"IMX577", {"12mp", "4k", "1080p"}, true},
-    {"AR0234", {"1200P"}, true},
-    {"IMX582", {"48mp", "12mp", "4k"}, true},
-};
+extern std::vector<ImageSensor> availableSensors;
 
 void imgCB(const std::string& /*name*/,
            const std::shared_ptr<dai::ADatatype>& data,

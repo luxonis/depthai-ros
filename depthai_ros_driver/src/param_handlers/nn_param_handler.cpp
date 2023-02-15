@@ -16,7 +16,7 @@ NNParamHandler::NNParamHandler(const std::string& name) : BaseParamHandler(name)
         {"mobilenet", nn::NNFamily::Mobilenet},
         {"YOLO", nn::NNFamily::Yolo},
     };
-};
+}
 NNParamHandler::~NNParamHandler() = default;
 std::string NNParamHandler::getConfigPath(ros::NodeHandle node) {
     std::string configPath = ros::package::getPath("depthai_ros_driver") + "/config/nn/";

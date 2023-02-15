@@ -22,7 +22,7 @@ RGB::RGB(const std::string& daiNodeName,
 
     setXinXout(pipeline);
     ROS_DEBUG("Node %s created", daiNodeName.c_str());
-};
+}
 void RGB::setNames() {
     ispQName = getName() + "_isp";
     previewQName = getName() + "_preview";

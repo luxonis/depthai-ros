@@ -34,6 +34,7 @@ class BaseParamHandler {
     T setParam(ros::NodeHandle node, const std::string& paramName, T value) {
         logParam(getFullParamName(node, paramName), value);
         node.setParam(getFullParamName(node, paramName), value);
+        return value;
     }
     std::string getFullParamName(ros::NodeHandle node, const std::string& paramName) {
         return std::string(node.getNamespace()) + "/" + baseName + "_" + paramName;
