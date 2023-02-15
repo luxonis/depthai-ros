@@ -32,5 +32,6 @@ class Camera : public rclcpp::Node {
     std::shared_ptr<dai::Pipeline> pipeline;
     std::shared_ptr<dai::Device> device;
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
+    bool camRunning = false;
 };
 }  // namespace depthai_ros_driver
