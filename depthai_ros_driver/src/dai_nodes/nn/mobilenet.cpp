@@ -59,11 +59,11 @@ void Mobilenet::mobilenetCB(const std::string& /*name*/, const std::shared_ptr<d
     }
 }
 
-void Mobilenet::link(const dai::Node::Input& in, int linkType) {
+void Mobilenet::link(const dai::Node::Input& in, int /*linkType*/) {
     mobileNode->out.link(in);
 }
 
-dai::Node::Input Mobilenet::getInput(int linkType) {
+dai::Node::Input Mobilenet::getInput(int /*linkType*/) {
     return imageManip->inputImage;
 }
 

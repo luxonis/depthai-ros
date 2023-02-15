@@ -29,10 +29,10 @@ NNWrapper::NNWrapper(const std::string& daiNodeName, rclcpp::Node* node, std::sh
     }
 
     RCLCPP_DEBUG(node->get_logger(), "Base node %s created", daiNodeName.c_str());
-};
+}
 void NNWrapper::setNames() {}
 
-void NNWrapper::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {}
+void NNWrapper::setXinXout(std::shared_ptr<dai::Pipeline> /*pipeline*/) {}
 
 void NNWrapper::setupQueues(std::shared_ptr<dai::Device> device) {
     nnNode->setupQueues(device);

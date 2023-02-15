@@ -21,7 +21,7 @@ Stereo::Stereo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_p
     left->link(stereoCamNode->left);
     right->link(stereoCamNode->right);
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
-};
+}
 void Stereo::setNames() {
     stereoQName = getName() + "_stereo";
 }

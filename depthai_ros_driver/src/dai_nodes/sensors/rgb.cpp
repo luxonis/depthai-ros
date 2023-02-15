@@ -21,7 +21,7 @@ RGB::RGB(const std::string& daiNodeName,
     ph->declareParams(node, colorCamNode, socket, sensor, publish);
     setXinXout(pipeline);
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
-};
+}
 void RGB::setNames() {
     ispQName = getName() + "_isp";
     previewQName = getName() + "_preview";

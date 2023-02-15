@@ -21,7 +21,7 @@ Mono::Mono(const std::string& daiNodeName,
     ph->declareParams(node, monoCamNode, socket, sensor, publish);
     setXinXout(pipeline);
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
-};
+}
 void Mono::setNames() {
     monoQName = getName() + "_mono";
     controlQName = getName() + "_control";

@@ -85,7 +85,7 @@ void StereoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::
     }
     stereo->initialConfig.set(config);
 }
-dai::CameraControl StereoParamHandler::setRuntimeParams(rclcpp::Node* node, const std::vector<rclcpp::Parameter>& params) {
+dai::CameraControl StereoParamHandler::setRuntimeParams(rclcpp::Node* /*node*/, const std::vector<rclcpp::Parameter>& /*params*/) {
     dai::CameraControl ctrl;
     return ctrl;
 }
