@@ -11,12 +11,14 @@ from launch_ros.descriptions import ComposableNode
 def launch_setup(context, *args, **kwargs):
     name = LaunchConfiguration("name").perform(context)
     type = LaunchConfiguration("type").perform(context)
-    mono_args = ["--size", "8x6",
-                "--square", "0.108 ",
+    size = LaunchConfiguration("size").perform(context)
+    square = LaunchConfiguration("square").perform(context)
+    mono_args = ["--size", size,
+                "--square", square,
                 "--camera_name", "oak/rgb",
                 "--no-service-check"]
-    stereo_args = ["--size", "8x6",
-                "--square", "0.108 ",
+    stereo_args = ["--size", size,
+                "--square", square,
                 "--camera_name", "/rgb",
                 "--approximate", "0.1",
                 "--camera_name", "oak",
