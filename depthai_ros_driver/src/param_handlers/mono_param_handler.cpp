@@ -13,7 +13,7 @@ MonoParamHandler::MonoParamHandler(const std::string& name) : BaseParamHandler(n
         {"720", dai::MonoCameraProperties::SensorResolution::THE_720_P},
         {"800", dai::MonoCameraProperties::SensorResolution::THE_800_P},
     };
-};
+}
 MonoParamHandler::~MonoParamHandler() = default;
 void MonoParamHandler::declareParams(
     rclcpp::Node* node, std::shared_ptr<dai::node::MonoCamera> monoCam, dai::CameraBoardSocket socket, dai_nodes::sensor_helpers::ImageSensor, bool publish) {
@@ -22,6 +22,7 @@ void MonoParamHandler::declareParams(
     declareAndLogParam<bool>(node, "i_low_bandwidth", false);
     declareAndLogParam<int>(node, "i_low_bandwidth_quality", 50);
     declareAndLogParam<int>(node, "i_board_socket_id", static_cast<int>(socket));
+    declareAndLogParam<std::string>(node, "i_calibration_file", "");
     monoCam->setBoardSocket(socket);
     monoCam->setFps(declareAndLogParam<double>(node, "i_fps", 30.0));
 

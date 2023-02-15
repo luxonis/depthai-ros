@@ -92,7 +92,7 @@ The following setup procedure assumes you have cmake version >= 3.10.2 and OpenC
 4. `cd ../..`
 5. `rosdep install --from-paths src --ignore-src -r -y`
 6. `source /opt/ros/<ros-distro>/setup.bash`
-7. `catkin_make` (For ROS1) `colcon build` (for ROS2)
+7. `catkin_make_isolated` (For ROS1) `MAKEFLAGS="-j1 -l1" colcon build` (for ROS2)
 8. `source devel/setup.bash` (For ROS1) & `source install/setup.bash` (for ROS2) 
 
 **Note** If you are using a lower end PC or RPi, standard building may take a lot of RAM and clog your PC. To avoid that, you can use `build.sh` command from your workspace (it just wraps colcon commands):
@@ -156,6 +156,17 @@ See `low_bandwidth.yaml` file for example parameters for all streams
 ##### **OAK D PRO W**
 To properly align with depth, you need to set `rgb.i_resolution` parameter to `720` (see `config/oak_d_w_pro.yaml`).
 
+#### Recalibration
+If you want to use other calibration values than the ones provided by the device, you can do it in following ways:
+* Use `set_camera_info` services available for each of the image streams
+* Use `i_calibration_file` parameter available to point to the calibration file. **Note** camera name must start with `/`, so for example `/rgb`. See `depthai_ros_driver/config/calibration` for example calibration files. `calibration.launch` file is provided to start up a ROS camera calibrator node in both monocular and stereo configurations.
+Calibration file syntax (from `camera_info_manager`):
+```
+    - file:///full/path/to/local/file.yaml
+    - file:///full/path/to/videre/file.ini
+    - package://camera_info_manager/tests/test_calibration.yaml
+    - package://ros_package_name/calibrations/camera3.yaml
+```
 ## Executing an example
 
 ### ROS1

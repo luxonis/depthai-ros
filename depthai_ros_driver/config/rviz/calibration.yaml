@@ -1,0 +1,8 @@
+/oak:
+  camera:
+    i_pipeline_type: RGBStereo
+    i_nn_type: none
+  left:
+    i_publish_topic: true
+  right:
+    i_publish_topic: true

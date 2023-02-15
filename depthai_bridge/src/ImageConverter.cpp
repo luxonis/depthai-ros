@@ -209,13 +209,13 @@ void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outD
      *ImageMsgs::Image& opMsg) to cross verify..
      **/
     /* #ifdef IS_ROS2
-        TimePoint ts(std::chrono::seconds((int)inMsg.header.stamp.seconds ()) + std::chrono::nanoseconds(inMsg.header.stamp.nanoseconds()));
-    #else
-        TimePoint ts(std::chrono::seconds((int)inMsg.header.stamp.toSec()) + std::chrono::nanoseconds(inMsg.header.stamp.toNSec()));
-    #endif
+          TimePoint ts(std::chrono::seconds((int)inMsg.header.stamp.seconds ()) + std::chrono::nanoseconds(inMsg.header.stamp.nanoseconds()));
+      #else
+          TimePoint ts(std::chrono::seconds((int)inMsg.header.stamp.toSec()) + std::chrono::nanoseconds(inMsg.header.stamp.toNSec()));
+      #endif
 
-    outData.setTimestamp(ts);
-    outData.setSequenceNum(inMsg.header.seq); */
+      outData.setTimestamp(ts);
+      outData.setSequenceNum(inMsg.header.seq); */
     outData.setWidth(inMsg.width);
     outData.setHeight(inMsg.height);
     outData.setType(revEncodingIter->first);

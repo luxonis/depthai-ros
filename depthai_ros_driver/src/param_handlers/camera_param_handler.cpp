@@ -13,7 +13,7 @@ CameraParamHandler::CameraParamHandler(const std::string& name) : BaseParamHandl
         {"SUPER", dai::UsbSpeed::SUPER},
         {"SUPER_PLUS", dai::UsbSpeed::SUPER_PLUS},
     };
-};
+}
 CameraParamHandler::~CameraParamHandler() = default;
 
 dai::UsbSpeed CameraParamHandler::getUSBSpeed(rclcpp::Node* node) {
@@ -30,7 +30,7 @@ void CameraParamHandler::declareParams(rclcpp::Node* node) {
     declareAndLogParam<int>(node, "i_laser_dot_brightness", 800, getRangedIntDescriptor(0, 1200));
     declareAndLogParam<int>(node, "i_floodlight_brightness", 0, getRangedIntDescriptor(0, 1500));
 }
-dai::CameraControl CameraParamHandler::setRuntimeParams(rclcpp::Node* node, const std::vector<rclcpp::Parameter>& params) {
+dai::CameraControl CameraParamHandler::setRuntimeParams(rclcpp::Node* /*node*/, const std::vector<rclcpp::Parameter>& /*params*/) {
     dai::CameraControl ctrl;
     return ctrl;
 }

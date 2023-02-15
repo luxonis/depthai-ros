@@ -32,14 +32,14 @@ class NNParamHandler : public BaseParamHandler {
     void setNNParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<dai::node::YoloSpatialDetectionNetwork> nn);
 
     template <typename T>
-    void setSpatialParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<T> nn) {
+    void setSpatialParams(std::shared_ptr<T> nn) {
         nn->setBoundingBoxScaleFactor(0.5);
         nn->setDepthLowerThreshold(100);
         nn->setDepthUpperThreshold(10000);
     }
 
     template <typename T>
-    void setYoloParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<T> nn) {
+    void setYoloParams(nlohmann::json data, std::shared_ptr<T> nn) {
         auto metadata = data["nn_config"]["NN_specific_metadata"];
         int num_classes = 80;
         if(metadata.contains("classes")) {
@@ -81,7 +81,7 @@ class NNParamHandler : public BaseParamHandler {
         if(data.contains("model") && data.contains("nn_config")) {
             auto modelPath = getModelPath(data);
             declareAndLogParam(node, "i_model_path", modelPath);
-            setImageManip(node, modelPath, imageManip);
+            setImageManip(modelPath, imageManip);
             nn->setBlobPath(modelPath);
             nn->setNumPoolFrames(declareAndLogParam<int>(node, "i_num_pool_frames", 4));
             nn->setNumInferenceThreads(declareAndLogParam<int>(node, "i_num_inference_threads", 2));
@@ -94,7 +94,7 @@ class NNParamHandler : public BaseParamHandler {
     dai::CameraControl setRuntimeParams(rclcpp::Node* node, const std::vector<rclcpp::Parameter>& params) override;
 
    private:
-    void setImageManip(rclcpp::Node* node, const std::string& model_path, std::shared_ptr<dai::node::ImageManip> imageManip);
+    void setImageManip(const std::string& model_path, std::shared_ptr<dai::node::ImageManip> imageManip);
     std::string getModelPath(const nlohmann::json& data);
     std::unordered_map<std::string, nn::NNFamily> nnFamilyMap;
 };
