@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   cv_bridge
+  OpenCV
   vision_msgs
   depthai_bridge
   message_filters
