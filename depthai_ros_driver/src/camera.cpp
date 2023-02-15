@@ -117,14 +117,13 @@ void Camera::startDevice() {
                 dai::UsbSpeed speed = ph->getUSBSpeed(pNH);
 
                 for(const auto& info : availableDevices) {
-                    ROS_INFO("Device info: MXID: %s, Name: %s", info.getMxId().c_str(), info.name.c_str());
                     if(!mxid.empty() && info.getMxId() == mxid) {
                         ROS_INFO("Connecting to the camera using mxid: %s", mxid.c_str());
                         if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
                             device = std::make_shared<dai::Device>(info, speed);
                             camRunning = true;
                         } else if(info.state == X_LINK_BOOTED) {
-                            throw std::runtime_error("Device with mxid %s is already booted in different process.");
+                            throw std::runtime_error("Device is already booted in different process.");
                         }
                     } else if(!ip.empty() && info.name == ip) {
                         ROS_INFO("Connecting to the camera using ip: %s", ip.c_str());
@@ -132,7 +131,7 @@ void Camera::startDevice() {
                             device = std::make_shared<dai::Device>(info);
                             camRunning = true;
                         } else if(info.state == X_LINK_BOOTED) {
-                            throw std::runtime_error("Device with ip %s is already booted in different process.");
+                            throw std::runtime_error("Device is already booted in different process.");
                         }
                     } else if(!usb_id.empty() && info.name == usb_id) {
                         ROS_INFO("Connecting to the camera using USB ID: %s", usb_id.c_str());
@@ -140,9 +139,10 @@ void Camera::startDevice() {
                             device = std::make_shared<dai::Device>(info);
                             camRunning = true;
                         } else if(info.state == X_LINK_BOOTED) {
-                            throw std::runtime_error("Device with USB ID %s is already booted in different process.");
+                            throw std::runtime_error("Device is already booted in different process.");
                         }
                     } else {
+                        ROS_ERROR("Device info: MXID: %s, Name: %s", info.getMxId().c_str(), info.name.c_str());
                         throw std::runtime_error("Unable to connect to the device, check if parameters match with given info.");
                     }
                 }
