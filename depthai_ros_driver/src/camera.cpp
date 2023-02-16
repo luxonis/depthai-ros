@@ -70,49 +70,60 @@ void Camera::setupQueues() {
 }
 
 void Camera::startDevice() {
-    dai::DeviceInfo info;
-    auto mxid = ph->getParam<std::string>(this, "i_mx_id");
-    auto ip = ph->getParam<std::string>(this, "i_ip");
-    if(!mxid.empty()) {
-    } else if(!ip.empty()) {
-    }
     rclcpp::Rate r(1.0);
-    bool cam_running = false;
-    std::vector<dai::DeviceInfo> availableDevices = dai::Device::getAllAvailableDevices();
-    while(!cam_running) {
+    while(!camRunning) {
+        auto mxid = ph->getParam<std::string>(this, "i_mx_id");
+        auto ip = ph->getParam<std::string>(this, "i_ip");
+        auto usb_id = ph->getParam<std::string>(this, "i_usb_port_id");
         try {
-            dai::UsbSpeed speed = ph->getUSBSpeed(this);
-            if(mxid.empty() && ip.empty()) {
+            if(mxid.empty() && ip.empty() && usb_id.empty()) {
                 RCLCPP_INFO(this->get_logger(), "No ip/mxid specified, connecting to the next available device.");
                 device = std::make_shared<dai::Device>();
+                camRunning = true;
             } else {
+                std::vector<dai::DeviceInfo> availableDevices = dai::Device::getAllAvailableDevices();
+                if(availableDevices.size() == 0) {
+                    throw std::runtime_error("No devices detected!");
+                }
+                dai::UsbSpeed speed = ph->getUSBSpeed(this);
                 for(const auto& info : availableDevices) {
                     if(!mxid.empty() && info.getMxId() == mxid) {
                         RCLCPP_INFO(this->get_logger(), "Connecting to the camera using mxid: %s", mxid.c_str());
                         if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
                             device = std::make_shared<dai::Device>(info, speed);
+                            camRunning = true;
                         } else if(info.state == X_LINK_BOOTED) {
-                            throw std::runtime_error("Device with mxid %s is already booted in different process.");
+                            throw std::runtime_error("Device is already booted in different process.");
                         }
                     } else if(!ip.empty() && info.name == ip) {
                         RCLCPP_INFO(this->get_logger(), "Connecting to the camera using ip: %s", ip.c_str());
                         if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
                             device = std::make_shared<dai::Device>(info);
+                            camRunning = true;
                         } else if(info.state == X_LINK_BOOTED) {
-                            throw std::runtime_error("Device with ip %s is already booted in different process.");
+                            throw std::runtime_error("Device is already booted in different process.");
                         }
+                    } else if(!usb_id.empty() && info.name == usb_id) {
+                        RCLCPP_INFO(this->get_logger(), "Connecting to the camera using USB ID: %s", usb_id.c_str());
+                        if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
+                            device = std::make_shared<dai::Device>(info);
+                            camRunning = true;
+                        } else if(info.state == X_LINK_BOOTED) {
+                            throw std::runtime_error("Device is already booted in different process.");
+                        }
+                    } else {
+                        RCLCPP_INFO(this->get_logger(), "Device info: MXID: %s, Name: %s", info.getMxId().c_str(), info.name.c_str());
+                        throw std::runtime_error("Unable to connect to the device, check if parameters match with given info.");
                     }
                 }
             }
-            cam_running = true;
         } catch(const std::runtime_error& e) {
             RCLCPP_ERROR(this->get_logger(), "%s", e.what());
         }
         r.sleep();
     }
 
-    auto deviceName = device->getMxId();
-    RCLCPP_INFO(this->get_logger(), "Camera %s connected!", deviceName.c_str());
+    RCLCPP_INFO(this->get_logger(), "Camera with MXID: %s and Name: %s connected!", device->getMxId().c_str(), device->getDeviceInfo().name.c_str());
     auto protocol = device->getDeviceInfo().getXLinkDeviceDesc().protocol;
 
     if(protocol != XLinkProtocol_t::X_LINK_TCP_IP) {
