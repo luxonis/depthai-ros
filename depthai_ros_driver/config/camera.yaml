@@ -7,6 +7,7 @@
   camera_i_mx_id: ''
   camera_i_nn_type: spatial
   camera_i_pipeline_type: RGBD
+  camera_i_usb_port_id: ''
   camera_i_usb_speed: SUPER_PLUS
   imu_i_max_q_size: 30
   left_i_board_socket_id: 1
