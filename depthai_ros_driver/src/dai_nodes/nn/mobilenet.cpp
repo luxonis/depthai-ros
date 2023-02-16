@@ -51,19 +51,19 @@ void Mobilenet::mobilenetCB(const std::string& /*name*/, const std::shared_ptr<d
     while(deq.size() > 0) {
         auto currMsg = deq.front();
         if(currMsg.detections.size() > 0) {
-            int class_id = stoi(currMsg.detections[0].results[0].id);
-            currMsg.detections[0].results[0].id = ph->getParam<std::vector<std::string>>(getROSNode(), "i_label_map")[class_id];
+            int class_id = stoi(currMsg.detections[0].results[0].hypothesis.class_id);
+            currMsg.detections[0].results[0].hypothesis.class_id = ph->getParam<std::vector<std::string>>(getROSNode(), "i_label_map")[class_id];
         }
         detPub->publish(currMsg);
         deq.pop_front();
     }
 }
 
-void Mobilenet::link(const dai::Node::Input& in, int linkType) {
+void Mobilenet::link(const dai::Node::Input& in, int /*linkType*/) {
     mobileNode->out.link(in);
 }
 
-dai::Node::Input Mobilenet::getInput(int linkType) {
+dai::Node::Input Mobilenet::getInput(int /*linkType*/) {
     return imageManip->inputImage;
 }
 

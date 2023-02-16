@@ -13,7 +13,7 @@ Imu::Imu(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai
     ph->declareParams(node, imuNode);
     setXinXout(pipeline);
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
-};
+}
 void Imu::setNames() {
     imuQName = getName() + "_imu";
 }

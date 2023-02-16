@@ -36,6 +36,9 @@ class BaseNode {
     std::string getName() {
         return baseDAINodeName;
     };
+    std::string getTFPrefix(const std::string& frameName = "") {
+        return std::string(getROSNode()->get_name()) + "_" + frameName;
+    }
 
    private:
     rclcpp::Node* baseNode;

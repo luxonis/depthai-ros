@@ -16,7 +16,7 @@ NNParamHandler::NNParamHandler(const std::string& name) : BaseParamHandler(name)
         {"mobilenet", nn::NNFamily::Mobilenet},
         {"YOLO", nn::NNFamily::Yolo},
     };
-};
+}
 NNParamHandler::~NNParamHandler() = default;
 nn::NNFamily NNParamHandler::getNNFamily(rclcpp::Node* node) {
     std::string config_path = ament_index_cpp::get_package_share_directory("depthai_ros_driver") + "/config/nn/";
@@ -71,7 +71,7 @@ void NNParamHandler::setNNParams(rclcpp::Node* node, nlohmann::json data, std::s
     if(!labels.empty()) {
         declareAndLogParam<std::vector<std::string>>(node, "i_label_map", labels);
     }
-    setSpatialParams(node, data, nn);
+    setSpatialParams(nn);
 }
 void NNParamHandler::setNNParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<dai::node::YoloSpatialDetectionNetwork> nn) {
     float conf_threshold = 0.5;
@@ -83,9 +83,9 @@ void NNParamHandler::setNNParams(rclcpp::Node* node, nlohmann::json data, std::s
     if(!labels.empty()) {
         declareAndLogParam<std::vector<std::string>>(node, "i_label_map", labels);
     }
-    setSpatialParams(node, data, nn);
+    setSpatialParams(nn);
     if(data["nn_config"].contains("NN_specific_metadata")) {
-        setYoloParams(node, data, nn);
+        setYoloParams(data, nn);
     }
 }
 
@@ -100,11 +100,11 @@ void NNParamHandler::setNNParams(rclcpp::Node* node, nlohmann::json data, std::s
         declareAndLogParam<std::vector<std::string>>(node, "i_label_map", labels);
     }
     if(data["nn_config"].contains("NN_specific_metadata")) {
-        setYoloParams(node, data, nn);
+        setYoloParams(data, nn);
     }
 }
 
-void NNParamHandler::setImageManip(rclcpp::Node* node, const std::string& model_path, std::shared_ptr<dai::node::ImageManip> imageManip) {
+void NNParamHandler::setImageManip(const std::string& model_path, std::shared_ptr<dai::node::ImageManip> imageManip) {
     auto blob = dai::OpenVINO::Blob(model_path);
     auto first_info = blob.networkInputs.begin();
     auto input_size = first_info->second.dims[0];

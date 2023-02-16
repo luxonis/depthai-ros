@@ -17,7 +17,7 @@ RGBParamHandler::RGBParamHandler(const std::string& name) : BaseParamHandler(nam
                         {"4000x3000", dai::ColorCameraProperties::SensorResolution::THE_4000X3000},
                         {"5312X6000", dai::ColorCameraProperties::SensorResolution::THE_5312X6000},
                         {"48_MP", dai::ColorCameraProperties::SensorResolution::THE_48_MP}};
-};
+}
 RGBParamHandler::~RGBParamHandler() = default;
 void RGBParamHandler::declareParams(rclcpp::Node* node,
                                     std::shared_ptr<dai::node::ColorCamera> colorCam,
@@ -30,6 +30,7 @@ void RGBParamHandler::declareParams(rclcpp::Node* node,
     declareAndLogParam<bool>(node, "i_low_bandwidth", false);
     declareAndLogParam<int>(node, "i_low_bandwidth_quality", 50);
     declareAndLogParam<int>(node, "i_board_socket_id", static_cast<int>(socket));
+    declareAndLogParam<std::string>(node, "i_calibration_file", "");
     colorCam->setBoardSocket(socket);
     colorCam->setFps(declareAndLogParam<double>(node, "i_fps", 30.0));
     size_t preview_size = declareAndLogParam<int>(node, "i_preview_size", 416);

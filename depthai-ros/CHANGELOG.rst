@@ -2,6 +2,11 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.6.3 (2023-02-10)
+___________
+* Camera calibration updates
+* Option to connect to the device via USB port id
+
 2.6.2 (2023-02-01)
 ___________
 * Fixed timestamp in SpatialDetector
