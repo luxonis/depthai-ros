@@ -26,15 +26,15 @@ class PipelineGenerator {
    private:
     std::unordered_map<std::string, PipelineType> pipelineTypeMap{{"RGB", PipelineType::RGB},
                                                                   {"RGBD", PipelineType::RGBD},
-                                                                  {"RGBStereo", PipelineType::RGBStereo},
-                                                                  {"Stereo", PipelineType::Stereo},
-                                                                  {"Depth", PipelineType::Depth},
-                                                                  {"CamArray", PipelineType::CamArray}};
+                                                                  {"RGBDSTEREO", PipelineType::RGBStereo},
+                                                                  {"STEREO", PipelineType::Stereo},
+                                                                  {"DEPTH", PipelineType::Depth},
+                                                                  {"CAMARRAY", PipelineType::CamArray}};
     std::unordered_map<std::string, NNType> nnTypeMap = {
         {"", NNType::None},
-        {"none", NNType::None},
-        {"rgb", NNType::RGB},
-        {"spatial", NNType::Spatial},
+        {"NONE", NNType::None},
+        {"RGB", NNType::RGB},
+        {"SPATIAL", NNType::Spatial},
     };
     const std::string alphabet = "abcdefghijklmnopqrstuvwxyz";
 };

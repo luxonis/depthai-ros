@@ -52,7 +52,7 @@ void StereoParamHandler::declareParams(rclcpp::Node* node, std::shared_ptr<dai::
     stereo->initialConfig.setLeftRightCheckThreshold(declareAndLogParam<int>(node, "i_lrc_threshold", 10));
     stereo->initialConfig.setMedianFilter(static_cast<dai::MedianFilter>(declareAndLogParam<int>(node, "i_depth_filter_size", 5)));
     stereo->initialConfig.setConfidenceThreshold(declareAndLogParam<int>(node, "i_stereo_conf_threshold", 255));
-    // stereo->initialConfig.setSubpixel(declareAndLogParam<bool>(node, "i_subpixel", true));
+    stereo->initialConfig.setSubpixel(declareAndLogParam<bool>(node, "i_subpixel", false));
     stereo->setExtendedDisparity(declareAndLogParam<bool>(node, "i_extended_disp", false));
     stereo->setRectifyEdgeFillColor(declareAndLogParam<int>(node, "i_rectify_edge_fill_color", 0));
     auto config = stereo->initialConfig.get();
