@@ -71,6 +71,7 @@ void Camera::setupQueues() {
 
 void Camera::startDevice() {
     rclcpp::Rate r(1.0);
+    camRunning = false;
     while(!camRunning) {
         auto mxid = ph->getParam<std::string>(this, "i_mx_id");
         auto ip = ph->getParam<std::string>(this, "i_ip");
