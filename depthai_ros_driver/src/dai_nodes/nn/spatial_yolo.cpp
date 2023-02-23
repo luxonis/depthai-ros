@@ -57,7 +57,8 @@ void SpatialYolo::yoloCB(const std::string& /*name*/, const std::shared_ptr<dai:
 }
 
 void SpatialYolo::link(const dai::Node::Input& in, int /*linkType*/) {
-    yoloNode->out.link(in);
+    dai::Node::Input& input = const_cast<dai::Node::Input&>(in);
+    yoloNode->out.link(input);
 }
 
 dai::Node::Input SpatialYolo::getInput(int linkType) {

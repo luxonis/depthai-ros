@@ -94,7 +94,8 @@ void Stereo::closeQueues() {
 }
 
 void Stereo::link(const dai::Node::Input& in, int /*linkType*/) {
-    stereoCamNode->depth.link(in);
+    dai::Node::Input& input = const_cast<dai::Node::Input&>(in);
+    stereoCamNode->depth.link(input);
 }
 
 dai::Node::Input Stereo::getInput(int linkType) {

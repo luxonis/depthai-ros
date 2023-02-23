@@ -60,7 +60,8 @@ void Yolo::yoloCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatat
 }
 
 void Yolo::link(const dai::Node::Input& in, int /*linkType*/) {
-    yoloNode->out.link(in);
+    dai::Node::Input& input = const_cast<dai::Node::Input&>(in);
+    yoloNode->out.link(input);
 }
 
 dai::Node::Input Yolo::getInput(int /*linkType*/) {

@@ -116,12 +116,13 @@ void RGB::closeQueues() {
 }
 
 void RGB::link(const dai::Node::Input& in, int linkType) {
+    dai::Node::Input& input = const_cast<dai::Node::Input&>(in);
     if(linkType == static_cast<int>(link_types::RGBLinkType::video)) {
-        colorCamNode->video.link(in);
+        colorCamNode->video.link(input);
     } else if(linkType == static_cast<int>(link_types::RGBLinkType::isp)) {
-        colorCamNode->isp.link(in);
+        colorCamNode->isp.link(input);
     } else if(linkType == static_cast<int>(link_types::RGBLinkType::preview)) {
-        colorCamNode->preview.link(in);
+        colorCamNode->preview.link(input);
     } else {
         throw std::runtime_error("Link type not supported");
     }

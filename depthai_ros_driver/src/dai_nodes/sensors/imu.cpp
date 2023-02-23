@@ -49,7 +49,8 @@ void Imu::imuQCB(const std::string& /*name*/, const std::shared_ptr<dai::ADataty
 }
 
 void Imu::link(const dai::Node::Input& in, int /*linkType*/) {
-    imuNode->out.link(in);
+    dai::Node::Input& input = const_cast<dai::Node::Input&>(in);
+    imuNode->out.link(input);
 }
 
 void Imu::updateParams(const std::vector<rclcpp::Parameter>& params) {

@@ -60,7 +60,8 @@ void Mobilenet::mobilenetCB(const std::string& /*name*/, const std::shared_ptr<d
 }
 
 void Mobilenet::link(const dai::Node::Input& in, int /*linkType*/) {
-    mobileNode->out.link(in);
+    dai::Node::Input& input = const_cast<dai::Node::Input&>(in);
+    mobileNode->out.link(input);
 }
 
 dai::Node::Input Mobilenet::getInput(int /*linkType*/) {

@@ -84,7 +84,8 @@ void Mono::closeQueues() {
 }
 
 void Mono::link(const dai::Node::Input& in, int /*linkType*/) {
-    monoCamNode->out.link(in);
+    dai::Node::Input& input = const_cast<dai::Node::Input&>(in);
+    monoCamNode->out.link(input);
 }
 
 void Mono::updateParams(const std::vector<rclcpp::Parameter>& params) {

@@ -58,7 +58,8 @@ void SpatialMobilenet::mobilenetCB(const std::string& /*name*/, const std::share
 }
 
 void SpatialMobilenet::link(const dai::Node::Input& in, int /*linkType*/) {
-    mobileNode->out.link(in);
+    dai::Node::Input& input = const_cast<dai::Node::Input&>(in);
+    mobileNode->out.link(input);
 }
 
 dai::Node::Input SpatialMobilenet::getInput(int linkType) {

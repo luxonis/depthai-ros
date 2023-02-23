@@ -45,7 +45,8 @@ void CameraSensor::closeQueues() {
 }
 
 void CameraSensor::link(const dai::Node::Input& in, int linkType) {
-    sensorNode->link(in, linkType);
+    dai::Node::Input& input = const_cast<dai::Node::Input&>(in);
+    sensorNode->link(input, linkType);
 }
 
 void CameraSensor::updateParams(const std::vector<rclcpp::Parameter>& params) {
