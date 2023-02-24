@@ -24,17 +24,26 @@ void Camera::onConfigure() {
 
 void Camera::startCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res) {
     RCLCPP_INFO(this->get_logger(), "Starting camera.");
-    onConfigure();
+    if(!camRunning) {
+        onConfigure();
+    } else {
+        RCLCPP_INFO(this->get_logger(), "Camera already running!.");
+    }
     res->success = true;
 }
 void Camera::stopCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res) {
     RCLCPP_INFO(this->get_logger(), "Stopping camera.");
-    for(const auto& node : daiNodes) {
-        node->closeQueues();
+    if(camRunning) {
+        for(const auto& node : daiNodes) {
+            node->closeQueues();
+        }
+        daiNodes.clear();
+        device.reset();
+        pipeline.reset();
+        camRunning = false;
+    } else {
+        RCLCPP_INFO(this->get_logger(), "Camera already stopped!");
     }
-    daiNodes.clear();
-    device.reset();
-    pipeline.reset();
     res->success = true;
 }
 void Camera::getDeviceType() {
