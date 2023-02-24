@@ -6,6 +6,7 @@ Changelog for package depthai-ros
 ___________
 * Fix sensor name detection
 * Enable subpixel mode
+* Update camera start/stop services
 
 2.6.3 (2023-02-10)
 ___________

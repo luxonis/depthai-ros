@@ -19,8 +19,8 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
     RCLCPP_INFO(node->get_logger(), "Pipeline type: %s", pipelineType.c_str());
     std::string pTypeUpCase = pipelineType;
     std::string nTypeUpCase = nnType;
-    for (auto & c: pTypeUpCase) c = toupper(c);
-    for (auto & c: nTypeUpCase) c = toupper(c);
+    for(auto& c : pTypeUpCase) c = toupper(c);
+    for(auto& c : nTypeUpCase) c = toupper(c);
     auto pType = pipelineTypeMap.at(pTypeUpCase);
     pType = validatePipeline(node, pType, device->getCameraSensorNames().size());
     auto nType = nnTypeMap.at(nTypeUpCase);

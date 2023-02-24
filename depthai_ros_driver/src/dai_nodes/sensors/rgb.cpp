@@ -41,12 +41,12 @@ void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
         }
     }
     if(ph->getParam<bool>(getROSNode(), "i_enable_preview")) {
-            xoutPreview = pipeline->create<dai::node::XLinkOut>();
-            xoutPreview->setStreamName(previewQName);
-            xoutPreview->input.setQueueSize(2);
-            xoutPreview->input.setBlocking(false);
-            colorCamNode->preview.link(xoutPreview->input);
-        }
+        xoutPreview = pipeline->create<dai::node::XLinkOut>();
+        xoutPreview->setStreamName(previewQName);
+        xoutPreview->input.setQueueSize(2);
+        xoutPreview->input.setBlocking(false);
+        colorCamNode->preview.link(xoutPreview->input);
+    }
     xinControl = pipeline->create<dai::node::XLinkIn>();
     xinControl->setStreamName(controlQName);
     xinControl->out.link(colorCamNode->inputControl);

@@ -19,12 +19,12 @@ CameraSensor::CameraSensor(const std::string& daiNodeName,
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s base", daiNodeName.c_str());
 
     auto sensorName = device->getCameraSensorNames().at(socket);
-    for (auto & c: sensorName) c = toupper(c);
+    for(auto& c : sensorName) c = toupper(c);
     std::vector<sensor_helpers::ImageSensor>::iterator sensorIt =
         std::find_if(sensor_helpers::availableSensors.begin(), sensor_helpers::availableSensors.end(), [&sensorName](const sensor_helpers::ImageSensor& s) {
             return s.name == sensorName;
         });
-    if (sensorIt==sensor_helpers::availableSensors.end()){
+    if(sensorIt == sensor_helpers::availableSensors.end()) {
         RCLCPP_ERROR(node->get_logger(), "Sensor %s not supported!", sensorName.c_str());
         throw std::runtime_error("Sensor not supported!");
     }
