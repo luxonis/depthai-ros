@@ -56,6 +56,7 @@ bool Camera::startCB(Trigger::Request& /*req*/, Trigger::Response& res) {
         ROS_INFO("Camera already running!.");
     }
     res.success = true;
+    return true;
 }
 bool Camera::stopCB(Trigger::Request& /*req*/, Trigger::Response& res) {
     ROS_INFO("Stopping camera!");
@@ -71,6 +72,7 @@ bool Camera::stopCB(Trigger::Request& /*req*/, Trigger::Response& res) {
         ROS_INFO("Camera already stopped!");
     }
     res.success = true;
+    return true;
 }
 void Camera::getDeviceType() {
     pipeline = std::make_shared<dai::Pipeline>();
