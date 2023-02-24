@@ -44,8 +44,7 @@ void StereoParamHandler::declareParams(ros::NodeHandle node, std::shared_ptr<dai
     stereo->initialConfig.setLeftRightCheckThreshold(getParam<int>(node, "i_lrc_threshold"));
     stereo->initialConfig.setMedianFilter(static_cast<dai::MedianFilter>(getParam<int>(node, "i_depth_filter_size")));
     stereo->initialConfig.setConfidenceThreshold(getParam<int>(node, "i_stereo_conf_threshold"));
-    // stereo->initialConfig.setSubpixel(getParam<bool>(node, "i_subpixel", true));
-    stereo->setExtendedDisparity(getParam<bool>(node, "i_extended_disp"));
+    stereo->initialConfig.setSubpixel(getParam<bool>(node, "i_subpixel"));
     stereo->setRectifyEdgeFillColor(getParam<int>(node, "i_rectify_edge_fill_color"));
     auto config = stereo->initialConfig.get();
     config.postProcessing.temporalFilter.enable = getParam<bool>(node, "i_enable_temporal_filter");

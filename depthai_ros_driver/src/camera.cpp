@@ -50,21 +50,27 @@ void Camera::onConfigure() {
 
 bool Camera::startCB(Trigger::Request& /*req*/, Trigger::Response& res) {
     ROS_INFO("Starting camera!");
-    onConfigure();
+    if(!camRunning) {
+        onConfigure();
+    } else {
+        ROS_INFO("Camera already running!.");
+    }
     res.success = true;
-    return true;
 }
 bool Camera::stopCB(Trigger::Request& /*req*/, Trigger::Response& res) {
     ROS_INFO("Stopping camera!");
-    for(const auto& node : daiNodes) {
-        node->closeQueues();
+    if(camRunning) {
+        for(const auto& node : daiNodes) {
+            node->closeQueues();
+        }
+        daiNodes.clear();
+        device.reset();
+        pipeline.reset();
+        camRunning = false;
+    } else {
+        ROS_INFO("Camera already stopped!");
     }
-    daiNodes.clear();
-    device.reset();
-    pipeline.reset();
-    camRunning = false;
     res.success = true;
-    return true;
 }
 void Camera::getDeviceType() {
     pipeline = std::make_shared<dai::Pipeline>();
