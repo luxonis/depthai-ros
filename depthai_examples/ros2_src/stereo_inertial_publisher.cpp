@@ -430,7 +430,7 @@ int main(int argc, char** argv) {
                 }
                 break;
             } else if(deviceInfo.state == X_LINK_BOOTED) {
-                throw std::runtime_error("ros::NodeHandle() from Node \"" + pnh.getNamespace() + "\" DepthAI Device with MxId  \"" + mxId
+                throw std::runtime_error("\" DepthAI Device with MxId  \"" + mxId
                                          + "\" is already booted on different process.  \"");
             }
         } else if(mxId.empty() && ipAddress.empty()) {
@@ -440,7 +440,7 @@ int main(int argc, char** argv) {
     }
 
     if(!isDeviceFound) {
-        throw std::runtime_error("ros::NodeHandle() from Node \"" + pnh.getNamespace() + "\" DepthAI Device with MxId  \"" + mxId + "\" not found.  \"");
+        throw std::runtime_error("\" DepthAI Device with MxId  \"" + mxId + "\" not found.  \"");
     }
 
     if(!poeMode) {
