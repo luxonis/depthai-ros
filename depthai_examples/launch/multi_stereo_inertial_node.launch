@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Multiple camera args -->
+    <arg name="enable_camera1"            default="true"/>
+    <arg name="enable_camera2"            default="false"/>
+    <arg name="useWithIP_camera1"         default="false"/>
+    <arg name="useWithIP_camera2"         default="false"/>
+    <arg name="ip_address_camera1"    	  default=""/>
+    <arg name="ip_address_camera2"    	  default=""/>
+    <arg name="useWithMxId_camera1"       default="false"/>
+    <arg name="useWithMxId_camera2"       default="false"/>
+    <arg name="mxId_camera1"    	      default=""/>
+    <arg name="mxId_camera2"    	      default=""/>
+    <arg name="tf_prefix_camera1"         default="oak_front"/>
+    <arg name="tf_prefix_camera2"         default="oak_back"/>
+
+    <!-- First Camera -->
+    <include if="$(eval arg('enable_camera1') == true)" file="$(find depthai_examples)/launch/stereo_inertial_node.launch">
+        <arg name="tf_prefix"       value="$(arg tf_prefix_camera1)" />
+        <arg name="useWithIP"       value="$(arg useWithIP_camera1)"/>
+        <arg name="ipAddress"       value="$(arg ip_address_camera1)"/>
+        <arg name="useWithMxId"     value="$(arg useWithMxId_camera1)"/>
+        <arg name="mxId"            value="$(arg mxId_camera1)"/>
+    </include>
+
+    <!-- Second Camera -->
+    <include if="$(eval arg('enable_camera2') == true)" file="$(find depthai_examples)/launch/stereo_inertial_node.launch">
+        <arg name="tf_prefix"       value="$(arg tf_prefix_camera2)" />
+        <arg name="useWithIP"       value="$(arg useWithIP_camera2)"/>
+        <arg name="ipAddress"       value="$(arg ip_address_camera2)"/>
+        <arg name="useWithMxId"     value="$(arg useWithMxId_camera2)"/>
+        <arg name="mxId"            value="$(arg mxId_camera2)"/>
+    </include>
+
+    <!-- More cameras can be added in the same fashion -->
+ 
+</launch>

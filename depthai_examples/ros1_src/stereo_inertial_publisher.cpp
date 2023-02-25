@@ -275,7 +275,7 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "stereo_inertial_node");
     ros::NodeHandle pnh("~");
 
-    std::string tfPrefix, mode, mxId, resourceBaseFolder, nnPath;
+    std::string tfPrefix, mode, mxId, resourceBaseFolder, nnPath, ipAddress;
     std::string monoResolution = "720p", rgbResolution = "1080p";
     int badParams = 0, stereo_fps, confidence, LRchecktresh, imuModeParam, detectionClassesCount, expTime, sensIso;
     int rgbScaleNumerator, rgbScaleDinominator, previewWidth, previewHeight;
@@ -286,6 +286,7 @@ int main(int argc, char** argv) {
     double dotProjectormA, floodLightmA;
     std::string nnName(BLOB_NAME);  // Set your blob name for the model here
 
+    badParams += !pnh.getParam("ipAddress", ipAddress);
     badParams += !pnh.getParam("mxId", mxId);
     badParams += !pnh.getParam("usb2Mode", usb2Mode);
     badParams += !pnh.getParam("poeMode", poeMode);
@@ -379,7 +380,7 @@ int main(int argc, char** argv) {
     std::cout << "Listing available devices..." << std::endl;
     for(auto deviceInfo : availableDevices) {
         std::cout << "Device Mx ID: " << deviceInfo.getMxId() << std::endl;
-        if(deviceInfo.getMxId() == mxId) {
+        if(deviceInfo.getMxId() == mxId || deviceInfo.name == ipAddress) {
             if(deviceInfo.state == X_LINK_UNBOOTED || deviceInfo.state == X_LINK_BOOTLOADER) {
                 isDeviceFound = true;
                 if(poeMode) {
@@ -392,7 +393,7 @@ int main(int argc, char** argv) {
                 throw std::runtime_error("ros::NodeHandle() from Node \"" + pnh.getNamespace() + "\" DepthAI Device with MxId  \"" + mxId
                                          + "\" is already booted on different process.  \"");
             }
-        } else if(mxId.empty()) {
+        } else if(mxId.empty() && ipAddress.empty()) {
             isDeviceFound = true;
             device = std::make_shared<dai::Device>(pipeline);
         }
