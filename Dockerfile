@@ -23,8 +23,9 @@ RUN if [ "$USE_RVIZ" = "1" ] ; then echo "RVIZ ENABLED" && sudo apt install -y r
 RUN echo "if [ -f ${WS}/install/setup.zsh ]; then source ${WS}/install/setup.zsh; fi" >> $HOME/.zshrc
 RUN echo 'eval "$(register-python-argcomplete3 ros2)"' >> $HOME/.zshrc
 RUN echo 'eval "$(register-python-argcomplete3 colcon)"' >> $HOME/.zshrc
-RUN echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> $HOME/.zshrc
+RUN echo "export RMW_IMPLEMENTATION=rmw_fastrtps_cpp" >> $HOME/.zshrc
 RUN echo "if [ -f ${WS}/install/setup.bash ]; then source ${WS}/install/setup.bash; fi" >> $HOME/.bashrc
-RUN echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> $HOME/.bashrc
+RUN echo "export RMW_IMPLEMENTATION=rmw_fastrtps_cpp" >> $HOME/.bashrc
+RUN apt install valgrind nano -y
 ENTRYPOINT [ "/ws/src/depthai-ros/entrypoint.sh" ]
 CMD ["zsh"]
