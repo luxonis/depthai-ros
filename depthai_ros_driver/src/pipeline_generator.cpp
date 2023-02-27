@@ -17,9 +17,13 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
                                                                                     const std::string& nnType,
                                                                                     bool enableImu) {
     ROS_INFO("Pipeline type: %s", pipelineType.c_str());
-    auto pType = pipelineTypeMap.at(pipelineType);
+    std::string pTypeUpCase = pipelineType;
+    std::string nTypeUpCase = nnType;
+    for(auto& c : pTypeUpCase) c = toupper(c);
+    for(auto& c : nTypeUpCase) c = toupper(c);
+    auto pType = pipelineTypeMap.at(pTypeUpCase);
     pType = validatePipeline(pType, device->getCameraSensorNames().size());
-    auto nType = nnTypeMap.at(nnType);
+    auto nType = nnTypeMap.at(nTypeUpCase);
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
     switch(pType) {
         case PipelineType::RGB: {

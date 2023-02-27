@@ -1,2 +1,3 @@
 /oak:
     camera_i_nn_type: none
+    stereo_i_subpixel: true
