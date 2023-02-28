@@ -24,6 +24,15 @@
       <xacro:property name="imu_y" value="0" />
     </xacro:if>
 
+    <xacro:if value="${model == 'OAK-D-PRO'}">
+      <xacro:property name="has_imu" value="true" />
+      <xacro:property name="imu_offset_x" value="0.0" />
+      <xacro:property name="imu_offset_y" value="-0.015" />
+      <xacro:property name="imu_offset_z" value="-0.013662" />
+      <xacro:property name="imu_r" value="3.14159" />
+      <xacro:property name="imu_p" value="1.5708" />
+      <xacro:property name="imu_y" value="0" />
+    </xacro:if>
 
     <!-- base_link of the sensor-->
     <link name="${base_frame}"/>
