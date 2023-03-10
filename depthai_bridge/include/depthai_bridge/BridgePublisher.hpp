@@ -1,14 +1,13 @@
 #pragma once
-
-#include <camera_info_manager/camera_info_manager.hpp>
 #include <deque>
-#include <image_transport/image_transport.hpp>
 #include <thread>
 #include <type_traits>
 #include <typeinfo>
 
-#include "depthai/depthai.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include "camera_info_manager/camera_info_manager.hpp"
+#include "depthai/device/DataQueue.hpp"
+#include "image_transport/image_transport.hpp"
+#include "rclcpp/node.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "std_msgs/msg/header.hpp"

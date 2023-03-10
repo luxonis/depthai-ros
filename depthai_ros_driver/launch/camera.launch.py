@@ -53,6 +53,7 @@ def launch_setup(context, *args, **kwargs):
                         parameters=[params_file],
                     ),
             ],
+            arguments=['--ros-args', '--log-level', 'debug'],
             output="screen",
         ),
 

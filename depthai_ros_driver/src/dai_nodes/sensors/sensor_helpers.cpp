@@ -1,5 +1,10 @@
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 
+#include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/node/VideoEncoder.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
+#include "rclcpp/logger.hpp"
+
 namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace sensor_helpers {

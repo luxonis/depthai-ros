@@ -1,19 +1,35 @@
 #pragma once
 
-#include "depthai/depthai.hpp"
 #include "depthai_bridge/ImuConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
-#include "depthai_ros_driver/param_handlers/imu_param_handler.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include "rclcpp/publisher.hpp"
 #include "sensor_msgs/msg/imu.hpp"
 
+namespace dai {
+class Pipeline;
+class Device;
+class DataOutputQueue;
+namespace node {
+class IMU;
+class XLinkOut;
+}  // namespace node
+}  // namespace dai
+
+namespace rclcpp {
+class Node;
+class Parameter;
+}  // namespace rclcpp
+
 namespace depthai_ros_driver {
+namespace param_handlers {
+class ImuParamHandler;
+}
 namespace dai_nodes {
 
 class Imu : public BaseNode {
    public:
     explicit Imu(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
-    virtual ~Imu() = default;
+    ~Imu();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(const dai::Node::Input& in, int linkType = 0) override;

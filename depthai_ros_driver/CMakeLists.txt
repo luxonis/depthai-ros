@@ -1,12 +1,22 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.22)
 project(depthai_ros_driver VERSION 2.6.4)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# Default to C99
+if(NOT CMAKE_C_STANDARD)
+  set(CMAKE_C_STANDARD 99)
+endif()
+
+# Default to C++17
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
 
 # find dependencies
+
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 include_directories(include)
@@ -15,6 +25,7 @@ ament_auto_add_library(
   ${PROJECT_NAME} SHARED
   src/camera.cpp
   src/pipeline_generator.cpp
+  src/dai_nodes/base_node.cpp
   src/dai_nodes/sensors/imu.cpp
   src/dai_nodes/sensors/rgb.cpp
   src/dai_nodes/sensors/mono.cpp

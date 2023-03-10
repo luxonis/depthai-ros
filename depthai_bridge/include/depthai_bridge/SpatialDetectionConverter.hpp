@@ -1,11 +1,12 @@
 #pragma once
 
-#include <depthai_bridge/ImageConverter.hpp>
-#include <depthai_bridge/depthaiUtility.hpp>
-#include <depthai_ros_msgs/msg/spatial_detection_array.hpp>
+#include <deque>
+#include <memory>
+#include <string>
 
-#include "depthai/depthai.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include "depthai/pipeline/datatype/SpatialImgDetections.hpp"
+#include "depthai_ros_msgs/msg/spatial_detection_array.hpp"
+#include "rclcpp/time.hpp"
 #include "vision_msgs/msg/detection3_d_array.hpp"
 
 namespace dai {

@@ -1,6 +1,20 @@
 #pragma once
 
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
+
+namespace dai {
+class Pipeline;
+class Device;
+}  // namespace dai
+
+namespace rclcpp {
+class Node;
+}
 
 namespace depthai_ros_driver {
 namespace pipeline_gen {

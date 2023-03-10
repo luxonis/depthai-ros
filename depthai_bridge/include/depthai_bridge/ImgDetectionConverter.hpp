@@ -1,11 +1,10 @@
 #pragma once
 
-#include <depthai/depthai.hpp>
-#include <depthai_bridge/depthaiUtility.hpp>
 #include <deque>
 #include <vision_msgs/msg/detection2_d_array.hpp>
 
-#include "rclcpp/rclcpp.hpp"
+#include "depthai/pipeline/datatype/ImgDetections.hpp"
+#include "rclcpp/time.hpp"
 
 namespace dai {
 

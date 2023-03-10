@@ -1,11 +1,12 @@
 #include "depthai_ros_driver/dai_nodes/nn/nn_wrapper.hpp"
 
-#include "cv_bridge/cv_bridge.h"
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/mobilenet.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/segmentation.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/yolo.hpp"
-#include "image_transport/camera_publisher.hpp"
-#include "image_transport/image_transport.hpp"
+#include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
+#include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {

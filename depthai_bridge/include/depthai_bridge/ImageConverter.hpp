@@ -1,18 +1,17 @@
 #pragma once
 
-#include <cv_bridge/cv_bridge.h>
-
-#include <depthai-shared/common/CameraBoardSocket.hpp>
-#include <depthai-shared/common/Point2f.hpp>
-#include <depthai/depthai.hpp>
-#include <depthai_bridge/depthaiUtility.hpp>
-#include <iostream>
-#include <opencv2/opencv.hpp>
-#include <sstream>
+#include <deque>
+#include <memory>
+#include <string>
 #include <tuple>
 #include <unordered_map>
 
-#include "rclcpp/rclcpp.hpp"
+#include "cv_bridge/cv_bridge.h"
+#include "depthai-shared/common/CameraBoardSocket.hpp"
+#include "depthai-shared/common/Point2f.hpp"
+#include "depthai/device/CalibrationHandler.hpp"
+#include "depthai/pipeline/datatype/ImgFrame.hpp"
+#include "rclcpp/time.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "std_msgs/msg/header.hpp"
@@ -36,6 +35,7 @@ class ImageConverter {
    public:
     // ImageConverter() = default;
     ImageConverter(const std::string frameName, bool interleaved);
+    virtual ~ImageConverter() = default;
     ImageConverter(bool interleaved);
     void toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData,
                                std::deque<ImageMsgs::Image>& outImageMsgs,

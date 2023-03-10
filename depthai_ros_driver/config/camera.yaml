@@ -26,33 +26,7 @@
       r_iso: 800
       r_set_man_exposure: false
     nn:
-      i_label_map:
-      - background
-      - aeroplane
-      - bicycle
-      - bird
-      - boat
-      - bottle
-      - bus
-      - car
-      - cat
-      - chair
-      - cow
-      - diningtable
-      - dog
-      - horse
-      - motorbike
-      - person
-      - pottedplant
-      - sheep
-      - sofa
-      - train
-      - tvmonitor
-      i_max_q_size: 30
-      i_model_path: /workspaces/ros_2/install/depthai_examples/share/depthai_examples/resources/mobilenet-ssd_openvino_2021.2_6shave.blob
-      i_nn_config_path: /workspaces/ros_2/install/depthai_ros_driver/share/depthai_ros_driver/config/nn/mobilenet.json
-      i_num_inference_threads: 2
-      i_num_pool_frames: 4
+      i_nn_config_path: depthai_ros_driver/mobilenet
     oak:
       rgb:
         image_raw:

@@ -1,9 +1,18 @@
 #include "depthai_ros_driver/dai_nodes/sensors/rgb.hpp"
 
-#include "cv_bridge/cv_bridge.h"
+#include "camera_info_manager/camera_info_manager.hpp"
+#include "depthai/device/DataQueue.hpp"
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/node/ColorCamera.hpp"
+#include "depthai/pipeline/node/VideoEncoder.hpp"
+#include "depthai/pipeline/node/XLinkIn.hpp"
+#include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_ros_driver/param_handlers/rgb_param_handler.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
+#include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -22,6 +31,7 @@ RGB::RGB(const std::string& daiNodeName,
     setXinXout(pipeline);
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
 }
+RGB::~RGB() = default;
 void RGB::setNames() {
     ispQName = getName() + "_isp";
     previewQName = getName() + "_preview";
