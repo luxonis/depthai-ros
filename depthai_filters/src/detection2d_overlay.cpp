@@ -8,7 +8,7 @@ Detection2DOverlay::Detection2DOverlay(const rclcpp::NodeOptions& options) : rcl
     onInit();
 }
 void Detection2DOverlay::onInit() {
-    previewSub.subscribe(this, "/oak/rgb/preview/image_raw");
+    previewSub.subscribe(this, "/oak/nn/passthrough/image_raw");
     detSub.subscribe(this, "/oak/nn/detections");
     sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), previewSub, detSub);
     sync->registerCallback(std::bind(&Detection2DOverlay::overlayCB, this, std::placeholders::_1, std::placeholders::_2));

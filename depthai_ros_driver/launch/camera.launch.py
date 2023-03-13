@@ -52,6 +52,10 @@ def launch_setup(context, *args, **kwargs):
                         name=name,
                         parameters=[params_file],
                     ),
+                    ComposableNode(
+                        package="depthai_filters",
+                        plugin="depthai_filters::Detection2DOverlay",
+                    ),
             ],
             output="screen",
         ),

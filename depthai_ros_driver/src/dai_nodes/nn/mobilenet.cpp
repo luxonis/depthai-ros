@@ -1,6 +1,7 @@
 #include "depthai_ros_driver/dai_nodes/nn/mobilenet.hpp"
 
 #include "cv_bridge/cv_bridge.h"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
@@ -29,16 +30,36 @@ void Mobilenet::setNames() {
 void Mobilenet::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     xoutNN = pipeline->create<dai::node::XLinkOut>();
     xoutNN->setStreamName(nnQName);
+    xoutPrevNN = pipeline->create<dai::node::XLinkOut>();
+    xoutPrevNN->setStreamName("prev_q_nn");
     mobileNode->out.link(xoutNN->input);
+    mobileNode->passthrough.link(xoutPrevNN->input);
 }
 
 void Mobilenet::setupQueues(std::shared_ptr<dai::Device> device) {
     nnQ = device->getOutputQueue(nnQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
+    prevNNQ = device->getOutputQueue("prev_q_nn", 4, false);
     auto tfPrefix = std::string(getROSNode()->get_name());
     detConverter = std::make_unique<dai::ros::ImgDetectionConverter>(
         tfPrefix + "_rgb_camera_optical_frame", imageManip->initialConfig.getResizeConfig().width, imageManip->initialConfig.getResizeConfig().height, false);
     nnQ->addCallback(std::bind(&Mobilenet::mobilenetCB, this, std::placeholders::_1, std::placeholders::_2));
     detPub = getROSNode()->create_publisher<vision_msgs::msg::Detection2DArray>("~/" + getName() + "/detections", 10);
+    imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
+    nnPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
+    infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
+        getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
+    infoManager->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
+                                                                    *imageConverter,
+                                                                    device,
+                                                                    dai::CameraBoardSocket::RGB,
+                                                                    640,
+                                                                    640));
+    prevNNQ->addCallback(std::bind(sensor_helpers::imgCB,
+                                   std::placeholders::_1,
+                                   std::placeholders::_2,
+                                   *imageConverter,
+                                   nnPub,
+                                   infoManager));
 }
 void Mobilenet::closeQueues() {
     nnQ->close();

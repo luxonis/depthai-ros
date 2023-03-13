@@ -10,12 +10,12 @@
 namespace depthai_filters {
 class SegmentationOverlay : public rclcpp::Node {
    public:
-    explicit Detection2DOverlay(const rclcpp::NodeOptions& options);
+    explicit SegmentationOverlay(const rclcpp::NodeOptions& options);
     void onInit();
 
     void overlayCB(const sensor_msgs::msg::Image::ConstSharedPtr& preview, const sensor_msgs::msg::Image::ConstSharedPtr& segmentation);
 
-    message_filters::Subscriber<sensor_msgs::msg::Image> previewSub segSub;
+    message_filters::Subscriber<sensor_msgs::msg::Image> previewSub, segSub;
 
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Image, sensor_msgs::msg::Image> syncPolicy;
     std::unique_ptr<message_filters::Synchronizer<syncPolicy>> sync;

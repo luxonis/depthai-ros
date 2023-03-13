@@ -112,6 +112,7 @@ void NNParamHandler::setImageManip(const std::string& model_path, std::shared_pt
     imageManip->initialConfig.setFrameType(dai::ImgFrame::Type::BGR888p);
     imageManip->inputImage.setBlocking(false);
     imageManip->inputImage.setQueueSize(8);
+    imageManip->setKeepAspectRatio(false);
     imageManip->initialConfig.setResize(input_size, input_size);
 }
 std::string NNParamHandler::getModelPath(const nlohmann::json& data) {
