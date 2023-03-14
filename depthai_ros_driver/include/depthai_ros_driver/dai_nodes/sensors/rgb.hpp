@@ -18,8 +18,8 @@ class XLinkIn;
 class XLinkOut;
 class VideoEncoder;
 }  // namespace node
-namespace ros{
-    class ImageConverter;
+namespace ros {
+class ImageConverter;
 }
 }  // namespace dai
 
@@ -38,8 +38,8 @@ class RGBParamHandler;
 }
 namespace dai_nodes {
 
-namespace sensor_helpers{
-    struct ImageSensor;
+namespace sensor_helpers {
+struct ImageSensor;
 }
 
 class RGB : public BaseNode {

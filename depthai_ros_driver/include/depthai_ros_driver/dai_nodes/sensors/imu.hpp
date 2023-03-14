@@ -13,8 +13,8 @@ namespace node {
 class IMU;
 class XLinkOut;
 }  // namespace node
-namespace ros{
-    class ImuConverter;
+namespace ros {
+class ImuConverter;
 }
 }  // namespace dai
 

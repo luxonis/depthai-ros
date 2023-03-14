@@ -17,8 +17,8 @@ class StereoDepth;
 class XLinkOut;
 class VideoEncoder;
 }  // namespace node
-namespace ros{
-    class ImageConverter;
+namespace ros {
+class ImageConverter;
 }
 }  // namespace dai
 

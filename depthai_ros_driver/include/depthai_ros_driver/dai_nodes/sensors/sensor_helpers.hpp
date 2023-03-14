@@ -26,8 +26,8 @@ namespace rclcpp {
 class Logger;
 }
 
-namespace camera_info_manager{
-    class CameraInfoManager;
+namespace camera_info_manager {
+class CameraInfoManager;
 }
 
 namespace depthai_ros_driver {

@@ -17,8 +17,8 @@ class MobileNetSpatialDetectionNetwork;
 class ImageManip;
 class XLinkOut;
 }  // namespace node
-namespace ros{
-    class SpatialDetectionConverter;
+namespace ros {
+class SpatialDetectionConverter;
 }
 }  // namespace dai
 

@@ -18,8 +18,8 @@ class MobileNetDetectionNetwork;
 class ImageManip;
 class XLinkOut;
 }  // namespace node
-namespace ros{
-    class ImgDetectionConverter;
+namespace ros {
+class ImgDetectionConverter;
 }
 
 }  // namespace dai

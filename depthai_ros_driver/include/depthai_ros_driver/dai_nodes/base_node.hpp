@@ -29,7 +29,6 @@ class BaseNode {
     virtual void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) = 0;
     virtual void closeQueues() = 0;
 
-
     void setNodeName(const std::string& daiNodeName);
     void setROSNodePointer(rclcpp::Node* node);
     rclcpp::Node* getROSNode();
