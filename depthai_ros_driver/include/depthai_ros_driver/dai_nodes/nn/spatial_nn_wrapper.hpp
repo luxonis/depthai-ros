@@ -5,12 +5,12 @@
 #include <vector>
 
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
-#include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
 
 namespace dai {
 class Pipeline;
 class Device;
 class DataOutputQueue;
+class ADatatype;
 }  // namespace dai
 
 namespace rclcpp {
@@ -27,7 +27,7 @@ namespace dai_nodes {
 class SpatialNNWrapper : public BaseNode {
    public:
     explicit SpatialNNWrapper(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
-    virtual ~SpatialNNWrapper() = default;
+    ~SpatialNNWrapper();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(const dai::Node::Input& in, int linkType = 0) override;

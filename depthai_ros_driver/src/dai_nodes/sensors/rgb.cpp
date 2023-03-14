@@ -10,6 +10,7 @@
 #include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/param_handlers/rgb_param_handler.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/node.hpp"

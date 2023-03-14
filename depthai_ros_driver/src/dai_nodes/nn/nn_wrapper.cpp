@@ -31,6 +31,8 @@ NNWrapper::NNWrapper(const std::string& daiNodeName, rclcpp::Node* node, std::sh
 
     RCLCPP_DEBUG(node->get_logger(), "Base node %s created", daiNodeName.c_str());
 }
+NNWrapper::~NNWrapper() = default;
+
 void NNWrapper::setNames() {}
 
 void NNWrapper::setXinXout(std::shared_ptr<dai::Pipeline> /*pipeline*/) {}

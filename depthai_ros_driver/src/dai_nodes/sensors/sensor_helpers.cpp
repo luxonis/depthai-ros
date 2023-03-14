@@ -4,6 +4,7 @@
 #include "depthai/pipeline/node/VideoEncoder.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "rclcpp/logger.hpp"
+#include "camera_info_manager/camera_info_manager.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {

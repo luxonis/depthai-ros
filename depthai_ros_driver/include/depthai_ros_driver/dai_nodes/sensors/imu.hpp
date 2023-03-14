@@ -1,6 +1,5 @@
 #pragma once
 
-#include "depthai_bridge/ImuConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "rclcpp/publisher.hpp"
 #include "sensor_msgs/msg/imu.hpp"
@@ -9,10 +8,14 @@ namespace dai {
 class Pipeline;
 class Device;
 class DataOutputQueue;
+class ADatatype;
 namespace node {
 class IMU;
 class XLinkOut;
 }  // namespace node
+namespace ros{
+    class ImuConverter;
+}
 }  // namespace dai
 
 namespace rclcpp {

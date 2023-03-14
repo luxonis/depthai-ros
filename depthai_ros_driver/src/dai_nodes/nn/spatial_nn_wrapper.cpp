@@ -30,6 +30,7 @@ SpatialNNWrapper::SpatialNNWrapper(const std::string& daiNodeName, rclcpp::Node*
 
     RCLCPP_DEBUG(node->get_logger(), "Base node %s created", daiNodeName.c_str());
 }
+SpatialNNWrapper::~SpatialNNWrapper() = default;
 void SpatialNNWrapper::setNames() {}
 
 void SpatialNNWrapper::setXinXout(std::shared_ptr<dai::Pipeline> /*pipeline*/) {}

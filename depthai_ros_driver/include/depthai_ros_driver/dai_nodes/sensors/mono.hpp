@@ -1,7 +1,5 @@
 #pragma once
 
-#include "camera_info_manager/camera_info_manager.hpp"
-#include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "image_transport/camera_publisher.hpp"
@@ -12,12 +10,16 @@ class Pipeline;
 class Device;
 class DataOutputQueue;
 class DataInputQueue;
+class ADatatype;
 namespace node {
 class MonoCamera;
 class XLinkIn;
 class XLinkOut;
 class VideoEncoder;
 }  // namespace node
+namespace ros{
+    class ImageConverter;
+}
 }  // namespace dai
 
 namespace rclcpp {

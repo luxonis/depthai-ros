@@ -6,6 +6,7 @@
 #include "depthai/pipeline/node/DetectionNetwork.hpp"
 #include "depthai/pipeline/node/ImageManip.hpp"
 #include "depthai/pipeline/node/XLinkOut.hpp"
+#include "depthai_bridge/ImgDetectionConverter.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
 #include "rclcpp/node.hpp"
 
@@ -24,7 +25,7 @@ Mobilenet::Mobilenet(const std::string& daiNodeName, rclcpp::Node* node, std::sh
     imageManip->out.link(mobileNode->input);
     setXinXout(pipeline);
 }
-
+Mobilenet::~Mobilenet() = default;
 void Mobilenet::setNames() {
     nnQName = getName() + "_nn";
 }

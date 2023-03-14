@@ -3,7 +3,6 @@
 #include <memory>
 #include <string>
 
-#include "depthai_bridge/SpatialDetectionConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "rclcpp/publisher.hpp"
 #include "vision_msgs/msg/detection3_d_array.hpp"
@@ -12,11 +11,15 @@ namespace dai {
 class Pipeline;
 class Device;
 class DataOutputQueue;
+class ADatatype;
 namespace node {
 class MobileNetSpatialDetectionNetwork;
 class ImageManip;
 class XLinkOut;
 }  // namespace node
+namespace ros{
+    class SpatialDetectionConverter;
+}
 }  // namespace dai
 
 namespace rclcpp {
@@ -34,6 +37,7 @@ namespace nn {
 class SpatialMobilenet : public BaseNode {
    public:
     SpatialMobilenet(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
+    ~SpatialMobilenet();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(const dai::Node::Input& in, int linkType = 0) override;

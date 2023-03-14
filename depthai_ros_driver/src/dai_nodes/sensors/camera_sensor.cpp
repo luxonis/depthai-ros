@@ -37,6 +37,7 @@ CameraSensor::CameraSensor(const std::string& daiNodeName,
 
     RCLCPP_DEBUG(node->get_logger(), "Base node %s created", daiNodeName.c_str());
 }
+CameraSensor::~CameraSensor() = default;
 void CameraSensor::setNames() {}
 
 void CameraSensor::setXinXout(std::shared_ptr<dai::Pipeline> /*pipeline*/) {}

@@ -1,11 +1,8 @@
 #pragma once
 
-#include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
-#include "rclcpp/node.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
 
 namespace dai {
@@ -13,12 +10,17 @@ class Pipeline;
 class Device;
 class DataOutputQueue;
 class DataInputQueue;
+enum class CameraBoardSocket;
+class ADatatype;
 namespace node {
 class ColorCamera;
 class XLinkIn;
 class XLinkOut;
 class VideoEncoder;
 }  // namespace node
+namespace ros{
+    class ImageConverter;
+}
 }  // namespace dai
 
 namespace rclcpp {
@@ -35,6 +37,10 @@ namespace param_handlers {
 class RGBParamHandler;
 }
 namespace dai_nodes {
+
+namespace sensor_helpers{
+    struct ImageSensor;
+}
 
 class RGB : public BaseNode {
    public:

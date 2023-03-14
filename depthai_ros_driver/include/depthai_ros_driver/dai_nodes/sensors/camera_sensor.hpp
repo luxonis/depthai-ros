@@ -29,7 +29,7 @@ class CameraSensor : public BaseNode {
                           std::shared_ptr<dai::Device> device,
                           dai::CameraBoardSocket socket,
                           bool publish = true);
-    virtual ~CameraSensor() = default;
+    ~CameraSensor();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(const dai::Node::Input& in, int linkType = 0) override;

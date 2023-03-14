@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 
-#include "camera_info_manager/camera_info_manager.hpp"
 #include "depthai-shared/datatype/RawImgFrame.hpp"
 #include "depthai-shared/properties/ColorCameraProperties.hpp"
 #include "depthai-shared/properties/VideoEncoderProperties.hpp"
@@ -25,6 +24,10 @@ class ImageConverter;
 
 namespace rclcpp {
 class Logger;
+}
+
+namespace camera_info_manager{
+    class CameraInfoManager;
 }
 
 namespace depthai_ros_driver {

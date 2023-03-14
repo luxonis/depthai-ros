@@ -26,7 +26,7 @@ namespace dai_nodes {
 class NNWrapper : public BaseNode {
    public:
     explicit NNWrapper(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
-    virtual ~NNWrapper() = default;
+    ~NNWrapper();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(const dai::Node::Input& in, int linkType = 0) override;
