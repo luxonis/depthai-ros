@@ -14,12 +14,12 @@ endif()
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
-add_compile_options(-fPIC)
+
 # find dependencies
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-set(PH_DEPS
+set(COMMON_DEPS
 camera_info_manager
 cv_bridge
 depthai
@@ -56,8 +56,10 @@ std_srvs
 
 include_directories(include)
 
+set(COMMON_LIB_NAME ${PROJECT_NAME}_common)
 add_library(
-  param_handlers
+  ${COMMON_LIB_NAME} SHARED
+  src/dai_nodes/base_node.cpp
   src/dai_nodes/sensors/sensor_helpers.cpp # TODO: Figure out different place for this 
   src/param_handlers/camera_param_handler.cpp
   src/param_handlers/imu_param_handler.cpp
@@ -67,11 +69,11 @@ add_library(
   src/param_handlers/stereo_param_handler.cpp
 )
 
-ament_target_dependencies(param_handlers ${PH_DEPS})
+ament_target_dependencies(${COMMON_LIB_NAME} ${COMMON_DEPS})
 
+set(SENSOR_LIB_NAME ${PROJECT_NAME}_sensor_nodes)
 add_library(
-  sensor_nodes
-  src/dai_nodes/base_node.cpp
+  ${SENSOR_LIB_NAME} SHARED
   src/dai_nodes/sensors/imu.cpp
   src/dai_nodes/sensors/rgb.cpp
   src/dai_nodes/sensors/mono.cpp
@@ -79,14 +81,14 @@ add_library(
   src/dai_nodes/stereo.cpp
 )
 
-ament_target_dependencies(sensor_nodes ${SENSOR_DEPS})
+ament_target_dependencies(${SENSOR_LIB_NAME} ${SENSOR_DEPS})
 target_link_libraries(
-  sensor_nodes
-  param_handlers
+  ${SENSOR_LIB_NAME}
+  ${COMMON_LIB_NAME}
 )
-
+set(NN_LIB_NAME ${PROJECT_NAME}_nn_nodes)
 add_library(
-  nn_nodes
+  ${NN_LIB_NAME} SHARED
   src/dai_nodes/nn/nn_wrapper.cpp
   src/dai_nodes/nn/spatial_nn_wrapper.cpp
   src/dai_nodes/nn/segmentation.cpp
@@ -95,10 +97,10 @@ add_library(
   src/dai_nodes/nn/spatial_mobilenet.cpp
   src/dai_nodes/nn/spatial_yolo.cpp
 )
-ament_target_dependencies(nn_nodes ${NN_DEPS})
+ament_target_dependencies(${NN_LIB_NAME} ${NN_DEPS})
 target_link_libraries(
-  nn_nodes
-  param_handlers
+  ${NN_LIB_NAME}
+  ${COMMON_LIB_NAME}
 )
 
 add_library(
@@ -110,8 +112,9 @@ add_library(
 ament_target_dependencies(${PROJECT_NAME} ${CAM_DEPS})
 target_link_libraries(
   ${PROJECT_NAME}
-  sensor_nodes
-  nn_nodes
+  ${SENSOR_LIB_NAME}
+  ${NN_LIB_NAME}
+  ${COMMON_LIB_NAME}
 )
 
 
@@ -122,7 +125,7 @@ install(DIRECTORY launch config DESTINATION share/${PROJECT_NAME})
 
 install(
   TARGETS
-  ${PROJECT_NAME} param_handlers sensor_nodes nn_nodes
+  ${PROJECT_NAME} ${COMMON_LIB_NAME} ${SENSOR_LIB_NAME} ${NN_LIB_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
