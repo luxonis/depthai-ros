@@ -1,7 +1,7 @@
 #pragma once
 #include "depthai/pipeline/datatype/CameraControl.hpp"
 #include "rcl_interfaces/msg/parameter_descriptor.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include "rclcpp/node.hpp"
 namespace depthai_ros_driver {
 namespace param_handlers {
 inline rcl_interfaces::msg::ParameterDescriptor getRangedIntDescriptor(uint16_t min, uint16_t max) {
@@ -18,7 +18,7 @@ class BaseParamHandler {
     BaseParamHandler(const std::string& name) {
         baseName = name;
     };
-    virtual ~BaseParamHandler(){};
+    virtual ~BaseParamHandler() = default;
     virtual dai::CameraControl setRuntimeParams(rclcpp::Node* node, const std::vector<rclcpp::Parameter>& params) = 0;
     std::string getName() {
         return baseName;

@@ -1,5 +1,7 @@
 #include "depthai_ros_driver/pipeline_generator.hpp"
 
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/nn_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/nn_wrapper.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/spatial_nn_wrapper.hpp"
@@ -7,6 +9,7 @@
 #include "depthai_ros_driver/dai_nodes/sensors/imu.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/stereo.hpp"
+#include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {
 namespace pipeline_gen {
@@ -154,7 +157,7 @@ PipelineType PipelineGenerator::validatePipeline(rclcpp::Node* node, PipelineTyp
             return PipelineType::RGB;
         }
     } else if(sensorNum == 2) {
-        if(type != PipelineType::Stereo || type != PipelineType::Depth) {
+        if(type != PipelineType::Stereo && type != PipelineType::Depth) {
             RCLCPP_ERROR(node->get_logger(), "Wrong pipeline chosen for camera as it has only stereo pair. Switching to Stereo.");
             return PipelineType::Stereo;
         }

@@ -1,10 +1,21 @@
 #include "depthai_ros_driver/dai_nodes/stereo.hpp"
 
+#include "camera_info_manager/camera_info_manager.hpp"
 #include "cv_bridge/cv_bridge.h"
+#include "depthai/device/DataQueue.hpp"
+#include "depthai/device/DeviceBase.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/node/StereoDepth.hpp"
+#include "depthai/pipeline/node/VideoEncoder.hpp"
+#include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/camera_sensor.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
+#include "depthai_ros_driver/param_handlers/stereo_param_handler.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
+#include "rclcpp/node.hpp"
+
 namespace depthai_ros_driver {
 namespace dai_nodes {
 Stereo::Stereo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device)
@@ -22,6 +33,7 @@ Stereo::Stereo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_p
     right->link(stereoCamNode->right);
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
 }
+Stereo::~Stereo() = default;
 void Stereo::setNames() {
     stereoQName = getName() + "_stereo";
 }
@@ -30,7 +42,6 @@ void Stereo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     xoutStereo = pipeline->create<dai::node::XLinkOut>();
     xoutStereo->setStreamName(stereoQName);
     if(ph->getParam<bool>(getROSNode(), "i_low_bandwidth")) {
-        RCLCPP_INFO(getROSNode()->get_logger(), "POE");
         videoEnc = sensor_helpers::createEncoder(pipeline, ph->getParam<int>(getROSNode(), "i_low_bandwidth_quality"));
         stereoCamNode->disparity.link(videoEnc->input);
         videoEnc->bitstream.link(xoutStereo->input);

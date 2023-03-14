@@ -1,10 +1,9 @@
 #pragma once
 
-#include <depthai_bridge/depthaiUtility.hpp>
 #include <deque>
 
-#include "depthai/depthai.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include "depthai/pipeline/datatype/ImgFrame.hpp"
+#include "rclcpp/time.hpp"
 #include "sensor_msgs/image_encodings.hpp"
 #include "stereo_msgs/msg/disparity_image.hpp"
 

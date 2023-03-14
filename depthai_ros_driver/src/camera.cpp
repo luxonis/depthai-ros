@@ -1,11 +1,13 @@
 #include "depthai_ros_driver/camera.hpp"
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
 #include "depthai_ros_driver/pipeline_generator.hpp"
 
 namespace depthai_ros_driver {
 
-Camera::Camera(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : rclcpp::Node("camera", options) {
+Camera::Camera(const rclcpp::NodeOptions& options) : rclcpp::Node("camera", options) {
     ph = std::make_unique<param_handlers::CameraParamHandler>("camera");
     ph->declareParams(this);
     onConfigure();

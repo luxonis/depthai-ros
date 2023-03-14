@@ -1,7 +1,11 @@
 #include "depthai_ros_driver/param_handlers/rgb_param_handler.hpp"
 
-#include "depthai/depthai.hpp"
-#include "depthai/pipeline/nodes.hpp"
+#include "depthai-shared/common/CameraBoardSocket.hpp"
+#include "depthai-shared/properties/ColorCameraProperties.hpp"
+#include "depthai/pipeline/node/ColorCamera.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
+#include "rclcpp/logger.hpp"
+#include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {
 namespace param_handlers {

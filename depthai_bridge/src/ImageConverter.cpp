@@ -1,5 +1,8 @@
 
-#include <depthai_bridge/ImageConverter.hpp>
+#include "depthai_bridge/ImageConverter.hpp"
+
+#include "depthai_bridge/depthaiUtility.hpp"
+#include "opencv2/imgcodecs.hpp"
 
 namespace dai {
 

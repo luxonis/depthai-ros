@@ -1,11 +1,22 @@
 #pragma once
 
-#include "depthai/depthai.hpp"
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "depthai-shared/common/CameraBoardSocket.hpp"
+#include "depthai/pipeline/Node.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
-#include "image_transport/camera_publisher.hpp"
-#include "image_transport/image_transport.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "sensor_msgs/msg/camera_info.hpp"
+
+namespace dai {
+class Pipeline;
+class Device;
+}  // namespace dai
+
+namespace rclcpp {
+class Node;
+class Parameter;
+}  // namespace rclcpp
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -18,7 +29,7 @@ class CameraSensor : public BaseNode {
                           std::shared_ptr<dai::Device> device,
                           dai::CameraBoardSocket socket,
                           bool publish = true);
-    virtual ~CameraSensor() = default;
+    ~CameraSensor();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(const dai::Node::Input& in, int linkType = 0) override;

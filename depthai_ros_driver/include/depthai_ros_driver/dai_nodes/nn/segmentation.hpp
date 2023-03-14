@@ -1,16 +1,36 @@
 #pragma once
 
+#include <memory>
 #include <string>
+#include <vector>
 
-#include "depthai/depthai.hpp"
+#include "cv_bridge/cv_bridge.h"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
-#include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
-#include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
 
+namespace dai {
+class Pipeline;
+class Device;
+class DataOutputQueue;
+class ADatatype;
+namespace node {
+class NeuralNetwork;
+class ImageManip;
+class XLinkOut;
+}  // namespace node
+}  // namespace dai
+
+namespace rclcpp {
+class Node;
+class Parameter;
+}  // namespace rclcpp
+
 namespace depthai_ros_driver {
+namespace param_handlers {
+class NNParamHandler;
+}
 namespace dai_nodes {
 namespace nn {
 class Segmentation : public BaseNode {
@@ -20,7 +40,7 @@ class Segmentation : public BaseNode {
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(const dai::Node::Input& in, int linkType = 0) override;
-    dai::Node::Input getInput(int linkType = 0);
+    dai::Node::Input getInput(int linkType = 0) override;
     void setNames() override;
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;

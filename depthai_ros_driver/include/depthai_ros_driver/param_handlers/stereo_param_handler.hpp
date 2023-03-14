@@ -2,9 +2,17 @@
 
 #include <string>
 #include <unordered_map>
+#include <vector>
 
-#include "depthai/depthai.hpp"
+#include "depthai/pipeline/datatype/CameraControl.hpp"
+#include "depthai/pipeline/datatype/StereoDepthConfig.hpp"
+#include "depthai/pipeline/node/StereoDepth.hpp"
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
+
+namespace rclcpp {
+class Node;
+class Parameter;
+}  // namespace rclcpp
 
 namespace depthai_ros_driver {
 namespace param_handlers {

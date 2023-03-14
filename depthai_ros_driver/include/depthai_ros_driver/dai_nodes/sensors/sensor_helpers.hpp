@@ -4,10 +4,31 @@
 #include <string>
 #include <vector>
 
-#include "camera_info_manager/camera_info_manager.hpp"
-#include "depthai_bridge/ImageConverter.hpp"
+#include "depthai-shared/datatype/RawImgFrame.hpp"
+#include "depthai-shared/properties/ColorCameraProperties.hpp"
+#include "depthai-shared/properties/VideoEncoderProperties.hpp"
+#include "depthai/pipeline/datatype/ADatatype.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
+
+namespace dai {
+class Device;
+class Pipeline;
+namespace node {
+class VideoEncoder;
+}
+namespace ros {
+class ImageConverter;
+}
+}  // namespace dai
+
+namespace rclcpp {
+class Logger;
+}
+
+namespace camera_info_manager {
+class CameraInfoManager;
+}
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -28,12 +49,14 @@ void imgCB(const std::string& /*name*/,
            dai::ros::ImageConverter& converter,
            image_transport::CameraPublisher& pub,
            std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager);
+
 void compressedImgCB(const std::string& /*name*/,
                      const std::shared_ptr<dai::ADatatype>& data,
                      dai::ros::ImageConverter& converter,
                      image_transport::CameraPublisher& pub,
                      std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
                      dai::RawImgFrame::Type dataType);
+
 sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
                                           dai::ros::ImageConverter& converter,
                                           std::shared_ptr<dai::Device> device,
