@@ -67,6 +67,9 @@ void SpatialMobilenet::link(const dai::Node::Input& in, int /*linkType*/) {
 
 dai::Node::Input SpatialMobilenet::getInput(int linkType) {
     if(linkType == static_cast<int>(nn_helpers::link_types::SpatialNNLinkType::input)) {
+        if(ph->getParam<bool>("i_disable_resize")) {
+            return mobileNode->input;
+        }
         return imageManip->inputImage;
     } else {
         return mobileNode->inputDepth;

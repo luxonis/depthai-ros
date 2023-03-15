@@ -68,6 +68,9 @@ void Yolo::link(const dai::Node::Input& in, int /*linkType*/) {
 }
 
 dai::Node::Input Yolo::getInput(int /*linkType*/) {
+    if(ph->getParam<bool>("i_disable_resize")) {
+        return yoloNode->input;
+    }
     return imageManip->inputImage;
 }
 

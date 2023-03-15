@@ -26,7 +26,7 @@ SpatialYolo::SpatialYolo(const std::string& daiNodeName, rclcpp::Node* node, std
     imageManip->out.link(yoloNode->input);
     setXinXout(pipeline);
 }
-SpatialYolo::~SpatialYolo() =default;
+SpatialYolo::~SpatialYolo() = default;
 void SpatialYolo::setNames() {
     nnQName = getName() + "_nn";
 }
@@ -66,6 +66,9 @@ void SpatialYolo::link(const dai::Node::Input& in, int /*linkType*/) {
 
 dai::Node::Input SpatialYolo::getInput(int linkType) {
     if(linkType == static_cast<int>(nn_helpers::link_types::SpatialNNLinkType::input)) {
+        if(ph->getParam<bool>("i_disable_resize")) {
+            return yoloNode->input;
+        }
         return imageManip->inputImage;
     } else {
         return yoloNode->inputDepth;

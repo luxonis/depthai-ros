@@ -91,6 +91,9 @@ void Segmentation::link(const dai::Node::Input& in, int /*linkType*/) {
 }
 
 dai::Node::Input Segmentation::getInput(int /*linkType*/) {
+    if(ph->getParam<bool>("i_disable_resize")) {
+        return segNode->input;
+    }
     return imageManip->inputImage;
 }
 

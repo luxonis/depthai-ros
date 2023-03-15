@@ -110,13 +110,20 @@ void NNParamHandler::setNNParams(nlohmann::json data, std::shared_ptr<dai::node:
 
 void NNParamHandler::setImageManip(const std::string& model_path, std::shared_ptr<dai::node::ImageManip> imageManip) {
     auto blob = dai::OpenVINO::Blob(model_path);
-    auto first_info = blob.networkInputs.begin();
-    auto input_size = first_info->second.dims[0];
+    auto firstInfo = blob.networkInputs.begin();
+    auto inputSize = firstInfo->second.dims[0];
+    if(inputSize > 590) {
+        std::ostringstream stream;
+
+        stream << "Current network input size is too large to resize. Please set following parameters: rgb.i_preview_size: " << inputSize;
+        stream << " and nn.i_disable_resize to true";
+        throw std::runtime_error(stream.str());
+    }
     imageManip->initialConfig.setFrameType(dai::ImgFrame::Type::BGR888p);
     imageManip->inputImage.setBlocking(false);
     imageManip->inputImage.setQueueSize(8);
     imageManip->setKeepAspectRatio(false);
-    imageManip->initialConfig.setResize(input_size, input_size);
+    imageManip->initialConfig.setResize(inputSize, inputSize);
 }
 std::string NNParamHandler::getModelPath(const nlohmann::json& data) {
     std::string modelPath;

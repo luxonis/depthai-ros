@@ -38,8 +38,6 @@ class NNParamHandler : public BaseParamHandler {
     nn::NNFamily getNNFamily();
     template <typename T>
     void declareParams(std::shared_ptr<T> nn, std::shared_ptr<dai::node::ImageManip> imageManip) {
-        declareAndLogParam<bool>("i_publish_passthrough_preview", false);
-        declareAndLogParam<bool>("i_publish_passthrough_depth", false);
         declareAndLogParam<bool>("i_disable_resize", false);
         auto nn_path = getParam<std::string>("i_nn_config_path");
         using json = nlohmann::json;
