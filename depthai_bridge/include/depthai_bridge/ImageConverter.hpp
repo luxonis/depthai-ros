@@ -35,7 +35,7 @@ class ImageConverter {
    public:
     // ImageConverter() = default;
     ImageConverter(const std::string frameName, bool interleaved);
-    virtual ~ImageConverter() = default;
+    ~ImageConverter();
     ImageConverter(bool interleaved);
     void toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData,
                                std::deque<ImageMsgs::Image>& outImageMsgs,

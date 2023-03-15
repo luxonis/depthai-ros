@@ -7,7 +7,7 @@
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_bridge/ImgDetectionConverter.hpp"
 #include "rclcpp/node.hpp"
-#include "rclcpp/rclcpp/executors.hpp"
+#include "rclcpp/executors.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "vision_msgs/msg/detection2_d_array.hpp"
 

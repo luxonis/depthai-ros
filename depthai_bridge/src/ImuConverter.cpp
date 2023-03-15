@@ -16,6 +16,8 @@ ImuConverter::ImuConverter(const std::string& frameName, ImuSyncMethod syncMode,
     _rosBaseTime = rclcpp::Clock().now();
 }
 
+ImuConverter::~ImuConverter() = default;
+
 void ImuConverter::FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPackets, std::deque<ImuMsgs::Imu>& imuMsgs) {
     static std::deque<dai::IMUReportAccelerometer> accelHist;
     static std::deque<dai::IMUReportGyroscope> gyroHist;

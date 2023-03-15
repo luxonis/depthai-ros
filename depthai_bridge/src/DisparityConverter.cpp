@@ -16,6 +16,8 @@ DisparityConverter::DisparityConverter(const std::string frameName, float focalL
     _rosBaseTime = rclcpp::Clock().now();
 }
 
+DisparityConverter::~DisparityConverter() = default;
+
 void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<DisparityMsgs::DisparityImage>& outDispImageMsgs) {
     auto tstamp = inData->getTimestamp();
     DisparityMsgs::DisparityImage outDispImageMsg;
