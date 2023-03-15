@@ -112,7 +112,6 @@ void NNParamHandler::setImageManip(const std::string& model_path, std::shared_pt
     auto blob = dai::OpenVINO::Blob(model_path);
     auto first_info = blob.networkInputs.begin();
     auto input_size = first_info->second.dims[0];
-
     imageManip->initialConfig.setFrameType(dai::ImgFrame::Type::BGR888p);
     imageManip->inputImage.setBlocking(false);
     imageManip->inputImage.setQueueSize(8);
