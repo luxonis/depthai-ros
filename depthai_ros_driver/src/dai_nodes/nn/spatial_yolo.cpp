@@ -20,8 +20,8 @@ SpatialYolo::SpatialYolo(const std::string& daiNodeName, rclcpp::Node* node, std
     setNames();
     yoloNode = pipeline->create<dai::node::YoloSpatialDetectionNetwork>();
     imageManip = pipeline->create<dai::node::ImageManip>();
-    ph = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
-    ph->declareParams(node, yoloNode, imageManip);
+    ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName);
+    ph->declareParams(yoloNode, imageManip);
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
     imageManip->out.link(yoloNode->input);
     setXinXout(pipeline);
@@ -38,7 +38,7 @@ void SpatialYolo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 }
 
 void SpatialYolo::setupQueues(std::shared_ptr<dai::Device> device) {
-    nnQ = device->getOutputQueue(nnQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
+    nnQ = device->getOutputQueue(nnQName, ph->getParam<int>("i_max_q_size"), false);
     auto tfPrefix = std::string(getROSNode()->get_name());
     detConverter = std::make_unique<dai::ros::SpatialDetectionConverter>(
         tfPrefix + "_rgb_camera_optical_frame", imageManip->initialConfig.getResizeConfig().width, imageManip->initialConfig.getResizeConfig().height, false);
@@ -73,7 +73,7 @@ dai::Node::Input SpatialYolo::getInput(int linkType) {
 }
 
 void SpatialYolo::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    ph->setRuntimeParams(getROSNode(), params);
+    ph->setRuntimeParams(params);
 }
 }  // namespace nn
 }  // namespace dai_nodes

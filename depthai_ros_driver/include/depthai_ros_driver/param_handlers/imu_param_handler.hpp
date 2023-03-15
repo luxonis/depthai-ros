@@ -22,10 +22,10 @@ namespace depthai_ros_driver {
 namespace param_handlers {
 class ImuParamHandler : public BaseParamHandler {
    public:
-    explicit ImuParamHandler(const std::string& name);
+    explicit ImuParamHandler(rclcpp::Node* node, const std::string& name);
     ~ImuParamHandler();
-    void declareParams(rclcpp::Node* node, std::shared_ptr<dai::node::IMU> imu);
-    dai::CameraControl setRuntimeParams(rclcpp::Node* node, const std::vector<rclcpp::Parameter>& params) override;
+    void declareParams(std::shared_ptr<dai::node::IMU> imu);
+    dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;
 };
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver

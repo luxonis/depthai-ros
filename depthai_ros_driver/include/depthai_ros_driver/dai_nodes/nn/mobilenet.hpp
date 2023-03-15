@@ -7,6 +7,7 @@
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "rclcpp/publisher.hpp"
 #include "vision_msgs/msg/detection2_d_array.hpp"
+#include "image_transport/image_transport.hpp"
 
 namespace dai {
 class Pipeline;
@@ -20,6 +21,7 @@ class XLinkOut;
 }  // namespace node
 namespace ros {
 class ImgDetectionConverter;
+class ImageConverter;
 }
 
 }  // namespace dai
@@ -28,7 +30,9 @@ namespace rclcpp {
 class Node;
 class Parameter;
 }  // namespace rclcpp
-
+namespace camera_info_manager{
+    class CameraInfoManager;
+}
 namespace depthai_ros_driver {
 namespace param_handlers {
 class NNParamHandler;

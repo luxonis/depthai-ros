@@ -24,14 +24,14 @@ namespace depthai_ros_driver {
 namespace param_handlers {
 class MonoParamHandler : public BaseParamHandler {
    public:
-    explicit MonoParamHandler(const std::string& name);
+    explicit MonoParamHandler(rclcpp::Node* node, const std::string& name);
     ~MonoParamHandler();
-    void declareParams(rclcpp::Node* node,
+    void declareParams(
                        std::shared_ptr<dai::node::MonoCamera> monoCam,
                        dai::CameraBoardSocket socket,
                        dai_nodes::sensor_helpers::ImageSensor sensor,
                        bool publish);
-    dai::CameraControl setRuntimeParams(rclcpp::Node* node, const std::vector<rclcpp::Parameter>& params) override;
+    dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;
 
    private:
     std::unordered_map<std::string, dai::MonoCameraProperties::SensorResolution> monoResolutionMap;

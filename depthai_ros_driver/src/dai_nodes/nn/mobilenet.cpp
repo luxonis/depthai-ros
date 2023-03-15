@@ -7,7 +7,10 @@
 #include "depthai/pipeline/node/ImageManip.hpp"
 #include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_bridge/ImgDetectionConverter.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
+#include "camera_info_manager/camera_info_manager.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {
@@ -19,8 +22,8 @@ Mobilenet::Mobilenet(const std::string& daiNodeName, rclcpp::Node* node, std::sh
     setNames();
     mobileNode = pipeline->create<dai::node::MobileNetDetectionNetwork>();
     imageManip = pipeline->create<dai::node::ImageManip>();
-    ph = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
-    ph->declareParams(node, mobileNode, imageManip);
+    ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName);
+    ph->declareParams(mobileNode, imageManip);
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
     imageManip->out.link(mobileNode->input);
     setXinXout(pipeline);
@@ -40,7 +43,7 @@ void Mobilenet::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 }
 
 void Mobilenet::setupQueues(std::shared_ptr<dai::Device> device) {
-    nnQ = device->getOutputQueue(nnQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
+    nnQ = device->getOutputQueue(nnQName, ph->getParam<int>("i_max_q_size"), false);
     prevNNQ = device->getOutputQueue("prev_q_nn", 4, false);
     auto tfPrefix = std::string(getROSNode()->get_name());
     detConverter = std::make_unique<dai::ros::ImgDetectionConverter>(
@@ -76,7 +79,7 @@ void Mobilenet::mobilenetCB(const std::string& /*name*/, const std::shared_ptr<d
         auto currMsg = deq.front();
         if(currMsg.detections.size() > 0) {
             int class_id = stoi(currMsg.detections[0].results[0].hypothesis.class_id);
-            currMsg.detections[0].results[0].hypothesis.class_id = ph->getParam<std::vector<std::string>>(getROSNode(), "i_label_map")[class_id];
+            currMsg.detections[0].results[0].hypothesis.class_id = ph->getParam<std::vector<std::string>>("i_label_map")[class_id];
         }
         detPub->publish(currMsg);
         deq.pop_front();
@@ -92,7 +95,7 @@ dai::Node::Input Mobilenet::getInput(int /*linkType*/) {
 }
 
 void Mobilenet::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    ph->setRuntimeParams(getROSNode(), params);
+    ph->setRuntimeParams(params);
 }
 
 }  // namespace nn

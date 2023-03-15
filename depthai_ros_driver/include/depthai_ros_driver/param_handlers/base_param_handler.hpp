@@ -35,6 +35,9 @@ class BaseParamHandler {
     }
 
    protected:
+   rclcpp::Node* getROSNode(){
+    return baseNode;
+   }
     template <typename T>
     T declareAndLogParam(const std::string& paramName, const std::vector<T>& value, bool override = false) {
         std::string fullName = baseName + "." + paramName;
@@ -43,10 +46,10 @@ class BaseParamHandler {
                 auto param = rclcpp::Parameter(fullName, value);
                 baseNode->set_parameter(param);
             }
-            return getParam<T>(node, paramName);
+            return getParam<T>(paramName);
         } else {
             auto val = baseNode->declare_parameter<T>(fullName, value);
-            logParam(baseNode->get_logger(), fullName, val);
+            logParam(fullName, val);
             return val;
         }
     }
@@ -59,10 +62,10 @@ class BaseParamHandler {
                 auto param = rclcpp::Parameter(fullName, value);
                 baseNode->set_parameter(param);
             }
-            return getParam<T>(node, paramName);
+            return getParam<T>(paramName);
         } else {
             auto val = baseNode->declare_parameter<T>(fullName, value);
-            logParam(baseNode->get_logger(), fullName, val);
+            logParam(fullName, val);
             return val;
         }
     }
@@ -74,10 +77,10 @@ class BaseParamHandler {
                 auto param = rclcpp::Parameter(fullName, value);
                 baseNode->set_parameter(param);
             }
-            return getParam<T>(node, fullName);
+            return getParam<T>(fullName);
         } else {
             auto val = baseNode->declare_parameter<T>(fullName, value, int_range);
-            logParam(baseNode->get_logger(), fullName, val);
+            logParam(fullName, val);
             return val;
         }
     }

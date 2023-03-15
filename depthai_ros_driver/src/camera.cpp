@@ -8,8 +8,8 @@
 namespace depthai_ros_driver {
 
 Camera::Camera(const rclcpp::NodeOptions& options) : rclcpp::Node("camera", options) {
-    ph = std::make_unique<param_handlers::CameraParamHandler>("camera");
-    ph->declareParams(this);
+    ph = std::make_unique<param_handlers::CameraParamHandler>(this, "camera");
+    ph->declareParams();
     onConfigure();
 }
 void Camera::onConfigure() {
@@ -69,9 +69,9 @@ void Camera::createPipeline() {
     daiNodes = generator->createPipeline(this,
                                          device,
                                          pipeline,
-                                         ph->getParam<std::string>(this, "i_pipeline_type"),
-                                         ph->getParam<std::string>(this, "i_nn_type"),
-                                         ph->getParam<bool>(this, "i_enable_imu"));
+                                         ph->getParam<std::string>("i_pipeline_type"),
+                                         ph->getParam<std::string>("i_nn_type"),
+                                         ph->getParam<bool>("i_enable_imu"));
 }
 
 void Camera::setupQueues() {
@@ -83,9 +83,9 @@ void Camera::setupQueues() {
 void Camera::startDevice() {
     rclcpp::Rate r(1.0);
     while(!camRunning) {
-        auto mxid = ph->getParam<std::string>(this, "i_mx_id");
-        auto ip = ph->getParam<std::string>(this, "i_ip");
-        auto usb_id = ph->getParam<std::string>(this, "i_usb_port_id");
+        auto mxid = ph->getParam<std::string>("i_mx_id");
+        auto ip = ph->getParam<std::string>("i_ip");
+        auto usb_id = ph->getParam<std::string>("i_usb_port_id");
         try {
             if(mxid.empty() && ip.empty() && usb_id.empty()) {
                 RCLCPP_INFO(this->get_logger(), "No ip/mxid specified, connecting to the next available device.");
@@ -96,7 +96,7 @@ void Camera::startDevice() {
                 if(availableDevices.size() == 0) {
                     throw std::runtime_error("No devices detected!");
                 }
-                dai::UsbSpeed speed = ph->getUSBSpeed(this);
+                dai::UsbSpeed speed = ph->getUSBSpeed();
                 for(const auto& info : availableDevices) {
                     if(!mxid.empty() && info.getMxId() == mxid) {
                         RCLCPP_INFO(this->get_logger(), "Connecting to the camera using mxid: %s", mxid.c_str());
@@ -148,15 +148,15 @@ void Camera::startDevice() {
 }
 
 void Camera::setIR() {
-    if(ph->getParam<bool>(this, "i_enable_ir") && !device->getIrDrivers().empty()) {
-        device->setIrLaserDotProjectorBrightness(ph->getParam<int>(this, "i_laser_dot_brightness"));
-        device->setIrFloodLightBrightness(ph->getParam<int>(this, "i_floodlight_brightness"));
+    if(ph->getParam<bool>("i_enable_ir") && !device->getIrDrivers().empty()) {
+        device->setIrLaserDotProjectorBrightness(ph->getParam<int>("i_laser_dot_brightness"));
+        device->setIrFloodLightBrightness(ph->getParam<int>("i_floodlight_brightness"));
     }
 }
 
 rcl_interfaces::msg::SetParametersResult Camera::parameterCB(const std::vector<rclcpp::Parameter>& params) {
     for(const auto& p : params) {
-        if(ph->getParam<bool>(this, "i_enable_ir") && !device->getIrDrivers().empty()) {
+        if(ph->getParam<bool>("i_enable_ir") && !device->getIrDrivers().empty()) {
             if(p.get_name() == ph->getFullParamName("i_laser_dot_brightness")) {
                 device->setIrLaserDotProjectorBrightness(p.get_value<int>());
             } else if(p.get_name() == ph->getFullParamName("i_floodlight_brightness")) {
