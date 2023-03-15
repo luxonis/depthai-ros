@@ -27,7 +27,7 @@ class ImuConverter {
                  ImuSyncMethod syncMode = ImuSyncMethod::LINEAR_INTERPOLATE_ACCEL,
                  double linear_accel_cov = 0.0,
                  double angular_velocity_cov = 0.0);
-    virtual ~ImuConverter() = default;
+    ~ImuConverter();
     void toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<ImuMsgs::Imu>& outImuMsg);
 
    private:

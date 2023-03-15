@@ -8,7 +8,7 @@
 #include "depthai_bridge/SpatialDetectionConverter.hpp"
 #include "depthai_ros_msgs/msg/spatial_detection_array.hpp"
 #include "rclcpp/node.hpp"
-#include "rclcpp/rclcpp/executors.hpp"
+#include "rclcpp/executors.hpp"
 #include "sensor_msgs/msg/image.hpp"
 
 // Inludes common necessary includes for development using depthai library

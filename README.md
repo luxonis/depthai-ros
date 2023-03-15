@@ -9,14 +9,13 @@ Main features:
 You can develop your ROS applications in following ways:
 
   * Use classes provided in `depthai_bridge` to construct your own driver (see `stereo_inertial_node` example on how to do that)
-  * Use `depthai_ros_driver` class (currently available on ROS2 Humble) to get default experience (see details below on how) 
+  * Use `depthai_ros_driver` package (currently available on ROS2 Humble and ROS Noetic) to get default experience (see details below on how) 
 
 ![](docs/multicam.gif)
 
 
 Supported ROS versions:
 - Noetic
-- Galactic
 - Humble
 
 For usage check out respective git branches.
@@ -88,8 +87,8 @@ The following setup procedure assumes you have cmake version >= 3.10.2 and OpenC
 
 1. `mkdir -p dai_ws/src`
 2. `cd dai_ws/src`
-3. `git clone https://github.com/luxonis/depthai-ros.git`
-4. `cd ../..`
+3. `git clone --branch <ros-distro> https://github.com/luxonis/depthai-ros.git`
+4. `cd ..`
 5. `rosdep install --from-paths src --ignore-src -r -y`
 6. `source /opt/ros/<ros-distro>/setup.bash`
 7. `catkin_make_isolated` (For ROS1) `MAKEFLAGS="-j1 -l1" colcon build` (for ROS2)

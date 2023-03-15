@@ -9,6 +9,8 @@ SpatialDetectionConverter::SpatialDetectionConverter(std::string frameName, int 
     _rosBaseTime = rclcpp::Clock().now();
 }
 
+SpatialDetectionConverter::~SpatialDetectionConverter() = default;
+
 void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData,
                                          std::deque<SpatialMessages::SpatialDetectionArray>& opDetectionMsgs) {
     auto tstamp = inNetData->getTimestamp();

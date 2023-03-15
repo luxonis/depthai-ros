@@ -5,7 +5,7 @@
 
 #include "camera_info_manager/camera_info_manager.hpp"
 #include "rclcpp/node.hpp"
-#include "rclcpp/rclcpp/executors.hpp"
+#include "rclcpp/executors.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "stereo_msgs/msg/disparity_image.hpp"
 

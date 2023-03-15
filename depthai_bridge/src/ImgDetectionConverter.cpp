@@ -10,6 +10,8 @@ ImgDetectionConverter::ImgDetectionConverter(std::string frameName, int width, i
     _rosBaseTime = rclcpp::Clock().now();
 }
 
+ImgDetectionConverter::~ImgDetectionConverter() = default;
+
 void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, std::deque<VisionMsgs::Detection2DArray>& opDetectionMsgs) {
     // setting the header
     auto tstamp = inNetData->getTimestamp();
