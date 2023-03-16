@@ -35,6 +35,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<int>("i_max_q_size", 30);
     declareAndLogParam<bool>("i_low_bandwidth", false);
     declareAndLogParam<int>("i_low_bandwidth_quality", 50);
+    declareAndLogParam<bool>("i_output_disparity", false);
     stereo->setLeftRightCheck(declareAndLogParam<bool>("i_lr_check", true));
     if(declareAndLogParam<bool>("i_align_depth", true)) {
         declareAndLogParam<int>("i_board_socket_id", static_cast<int>(dai::CameraBoardSocket::RGB));

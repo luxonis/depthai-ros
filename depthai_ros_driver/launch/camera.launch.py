@@ -51,11 +51,7 @@ def launch_setup(context, *args, **kwargs):
                         plugin="depthai_ros_driver::Camera",
                         name=name,
                         parameters=[params_file],
-                    ),
-                    ComposableNode(
-                        package="depthai_filters",
-                        plugin="depthai_filters::Detection2DOverlay",
-                    ),
+                    )
             ],
             output="screen",
         ),

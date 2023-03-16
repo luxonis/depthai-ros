@@ -36,7 +36,7 @@ void RGBParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> colo
     declareAndLogParam<std::string>("i_calibration_file", "");
     colorCam->setBoardSocket(socket);
     colorCam->setFps(declareAndLogParam<double>("i_fps", 30.0));
-    size_t preview_size = declareAndLogParam<int>("i_preview_size", 416);
+    size_t preview_size = declareAndLogParam<int>("i_preview_size", 300);
     colorCam->setPreviewSize(preview_size, preview_size);
     auto resolution = rgbResolutionMap.at(declareAndLogParam<std::string>("i_resolution", "1080"));
     int width, height;

@@ -46,7 +46,11 @@ void Stereo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
         stereoCamNode->disparity.link(videoEnc->input);
         videoEnc->bitstream.link(xoutStereo->input);
     } else {
-        stereoCamNode->depth.link(xoutStereo->input);
+        if(ph->getParam<bool>("i_output_disparity")) {
+            stereoCamNode->disparity.link(xoutStereo->input);
+        } else {
+            stereoCamNode->depth.link(xoutStereo->input);
+        }
     }
 }
 
@@ -95,6 +99,9 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
                                            dai::RawImgFrame::Type::RAW8));
         }
     } else {
+        if(ph->getParam<bool>("i_output_disparity")) {
+            stereoQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, stereoPub, infoManager));
+        }
         stereoQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, stereoPub, infoManager));
     }
 }

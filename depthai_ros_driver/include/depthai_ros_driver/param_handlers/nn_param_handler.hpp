@@ -100,7 +100,9 @@ class NNParamHandler : public BaseParamHandler {
         if(data.contains("model") && data.contains("nn_config")) {
             auto modelPath = getModelPath(data);
             declareAndLogParam("i_model_path", modelPath);
-            setImageManip(modelPath, imageManip);
+            if(!getParam<bool>("i_disable_resize")) {
+                setImageManip(modelPath, imageManip);
+            }
             nn->setBlobPath(modelPath);
             nn->setNumPoolFrames(declareAndLogParam<int>("i_num_pool_frames", 4));
             nn->setNumInferenceThreads(declareAndLogParam<int>("i_num_inference_threads", 2));
