@@ -1,0 +1,7 @@
+/oak:
+  ros__parameters:
+    camera:
+      i_nn_type: none
+      i_pipeline_type: CamArray
+      i_enable_ir: false
+      i_enable_imu: false
