@@ -26,7 +26,7 @@ SpatialYolo::SpatialYolo(const std::string& daiNodeName, rclcpp::Node* node, std
     imageManip->out.link(yoloNode->input);
     setXinXout(pipeline);
 }
-SpatialYolo::~SpatialYolo() =default;
+SpatialYolo::~SpatialYolo() = default;
 void SpatialYolo::setNames() {
     nnQName = getName() + "_nn";
 }
