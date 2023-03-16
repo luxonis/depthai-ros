@@ -18,7 +18,10 @@ MonoParamHandler::MonoParamHandler(rclcpp::Node* node, const std::string& name) 
     };
 }
 MonoParamHandler::~MonoParamHandler() = default;
-void MonoParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> monoCam, dai::CameraBoardSocket socket, dai_nodes::sensor_helpers::ImageSensor, bool publish) {
+void MonoParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> monoCam,
+                                     dai::CameraBoardSocket socket,
+                                     dai_nodes::sensor_helpers::ImageSensor,
+                                     bool publish) {
     declareAndLogParam<int>("i_max_q_size", 30);
     declareAndLogParam<bool>("i_publish_topic", publish);
     declareAndLogParam<bool>("i_low_bandwidth", false);

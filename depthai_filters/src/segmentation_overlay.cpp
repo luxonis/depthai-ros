@@ -19,11 +19,11 @@ void SegmentationOverlay::onInit() {
 void SegmentationOverlay::overlayCB(const sensor_msgs::msg::Image::ConstSharedPtr& preview, const sensor_msgs::msg::Image::ConstSharedPtr& segmentation) {
     cv::Mat previewMat = utils::msgToMat(this->get_logger(), preview, sensor_msgs::image_encodings::BGR8);
     cv::Mat segMat = utils::msgToMat(this->get_logger(), segmentation, sensor_msgs::image_encodings::BGR8);
-    
+
     cv::resize(segMat, segMat, cv::Size(previewMat.cols, previewMat.rows), cv::INTER_LINEAR);
     double alpha = 0.5;
     cv::Mat outImg;
-    cv::addWeighted( previewMat, alpha, segMat, alpha, 0.0, outImg);
+    cv::addWeighted(previewMat, alpha, segMat, alpha, 0.0, outImg);
 
     sensor_msgs::msg::Image outMsg;
     cv_bridge::CvImage(preview->header, sensor_msgs::image_encodings::BGR8, outImg).toImageMsg(outMsg);

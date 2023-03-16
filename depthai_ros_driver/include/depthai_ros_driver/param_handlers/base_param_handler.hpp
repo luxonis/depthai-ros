@@ -35,9 +35,9 @@ class BaseParamHandler {
     }
 
    protected:
-   rclcpp::Node* getROSNode(){
-    return baseNode;
-   }
+    rclcpp::Node* getROSNode() {
+        return baseNode;
+    }
     template <typename T>
     T declareAndLogParam(const std::string& paramName, const std::vector<T>& value, bool override = false) {
         std::string fullName = baseName + "." + paramName;

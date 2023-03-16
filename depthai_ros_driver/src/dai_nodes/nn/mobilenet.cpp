@@ -1,16 +1,16 @@
 #include "depthai_ros_driver/dai_nodes/nn/mobilenet.hpp"
 
+#include "camera_info_manager/camera_info_manager.hpp"
 #include "depthai/device/DataQueue.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/DetectionNetwork.hpp"
 #include "depthai/pipeline/node/ImageManip.hpp"
 #include "depthai/pipeline/node/XLinkOut.hpp"
-#include "depthai_bridge/ImgDetectionConverter.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
-#include "camera_info_manager/camera_info_manager.hpp"
-#include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
+#include "depthai_bridge/ImgDetectionConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
+#include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
 #include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {
@@ -46,7 +46,6 @@ void Mobilenet::setupQueues(std::shared_ptr<dai::Device> device) {
         tfPrefix + "_rgb_camera_optical_frame", imageManip->initialConfig.getResizeConfig().width, imageManip->initialConfig.getResizeConfig().height, false);
     detPub = getROSNode()->create_publisher<vision_msgs::msg::Detection2DArray>("~/" + getName() + "/detections", 10);
     nnQ->addCallback(std::bind(&Mobilenet::mobilenetCB, this, std::placeholders::_1, std::placeholders::_2));
-
 }
 void Mobilenet::closeQueues() {
     nnQ->close();
@@ -72,7 +71,7 @@ void Mobilenet::link(const dai::Node::Input& in, int /*linkType*/) {
 }
 
 dai::Node::Input Mobilenet::getInput(int /*linkType*/) {
-    if(ph->getParam<bool>("i_disable_resize")){
+    if(ph->getParam<bool>("i_disable_resize")) {
         return mobileNode->input;
     }
     return imageManip->inputImage;

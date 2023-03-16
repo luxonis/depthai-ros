@@ -1,7 +1,7 @@
 #pragma once
 
-#include "sensor_msgs/msg/image.hpp"
 #include "opencv2/core/mat.hpp"
+#include "sensor_msgs/msg/image.hpp"
 
 namespace rclcpp {
 class Logger;
