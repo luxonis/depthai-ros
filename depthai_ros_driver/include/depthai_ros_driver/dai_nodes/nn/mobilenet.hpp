@@ -28,6 +28,27 @@ namespace rclcpp {
 class Node;
 class Parameter;
 }  // namespace rclcpp
+
+namespace dai {
+class Pipeline;
+class Device;
+class DataOutputQueue;
+class ADatatype;
+namespace node {
+class MobileNetDetectionNetwork;
+class ImageManip;
+class XLinkOut;
+}  // namespace node
+namespace ros {
+class ImgDetectionConverter;
+}
+
+}  // namespace dai
+
+namespace rclcpp {
+class Node;
+class Parameter;
+}  // namespace rclcpp
 namespace depthai_ros_driver {
 namespace param_handlers {
 class NNParamHandler;

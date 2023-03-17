@@ -1,15 +1,12 @@
 #include "depthai_ros_driver/dai_nodes/nn/mobilenet.hpp"
 
-#include "camera_info_manager/camera_info_manager.hpp"
 #include "depthai/device/DataQueue.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/DetectionNetwork.hpp"
 #include "depthai/pipeline/node/ImageManip.hpp"
 #include "depthai/pipeline/node/XLinkOut.hpp"
-#include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_bridge/ImgDetectionConverter.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
 #include "rclcpp/node.hpp"
 
