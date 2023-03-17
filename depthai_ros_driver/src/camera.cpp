@@ -1,5 +1,7 @@
 #include "depthai_ros_driver/camera.hpp"
 
+#include <fstream>
+
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
@@ -21,7 +23,21 @@ void Camera::onConfigure() {
     paramCBHandle = this->add_on_set_parameters_callback(std::bind(&Camera::parameterCB, this, std::placeholders::_1));
     startSrv = this->create_service<Trigger>("~/start_camera", std::bind(&Camera::startCB, this, std::placeholders::_1, std::placeholders::_2));
     stopSrv = this->create_service<Trigger>("~/stop_camera", std::bind(&Camera::stopCB, this, std::placeholders::_1, std::placeholders::_2));
+    savePipelineSrv = this->create_service<Trigger>("~/save_pipeline", std::bind(&Camera::savePipelineCB, this, std::placeholders::_1, std::placeholders::_2));
     RCLCPP_INFO(this->get_logger(), "Camera ready!");
+}
+
+void Camera::savePipeline() {
+    std::string savePath = "/tmp/pipeline.json";
+    RCLCPP_INFO(this->get_logger(), "Saving pipeline schema to: %s", savePath.c_str());
+    std::ofstream file(savePath);
+    file << pipeline->serializeToJson()["pipeline"];
+    file.close();
+}
+
+void Camera::savePipelineCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res) {
+    savePipeline();
+    res->success = true;
 }
 
 void Camera::startCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res) {
@@ -68,6 +84,9 @@ void Camera::createPipeline() {
     auto generator = std::make_unique<pipeline_gen::PipelineGenerator>();
     daiNodes = generator->createPipeline(
         this, device, pipeline, ph->getParam<std::string>("i_pipeline_type"), ph->getParam<std::string>("i_nn_type"), ph->getParam<bool>("i_enable_imu"));
+    if(ph->getParam<bool>("i_pipeline_dump")) {
+        savePipeline();
+    }
 }
 
 void Camera::setupQueues() {

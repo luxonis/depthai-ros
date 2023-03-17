@@ -10,14 +10,11 @@ from launch.actions import (
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 
-from launch.conditions import IfCondition
-from launch.substitutions import LaunchConfiguration
 
 
 def launch_setup(context, *args, **kwargs):
 
     depthai_prefix = get_package_share_directory("depthai_ros_driver")
-    rviz_config = os.path.join(depthai_prefix, "config", "rviz", "multicam.rviz")
     params_file = os.path.join(depthai_prefix, "config", "multicam_example.yaml")
     # put mx_ids here
     cams = ["oak_d_w", "oak_d_lite"]
@@ -42,14 +39,6 @@ def launch_setup(context, *args, **kwargs):
                           "parent_frame": "map",
                           "params_file": params_file,
                           "cam_pos_y": str(-0.1)}.items())
-    rviz = Node(
-        condition=IfCondition(LaunchConfiguration("use_rviz")),
-        package="rviz2",
-        executable="rviz2",
-        name="rviz2",
-        output="log",
-        arguments=["-d", rviz_config],
-    )
 
     obj_det = Node(
         package="depthai_ros_driver",
@@ -58,19 +47,15 @@ def launch_setup(context, *args, **kwargs):
         ("/oak/nn/detection_markers", "/oak_d_pro/nn/detection_markers")]
     )
 
-    nodes.append(rviz)
     nodes.append(spatial_rgbd)
     nodes.append(obj_det)
     return nodes
 
 
 def generate_launch_description():
-    declared_arguments = [DeclareLaunchArgument(
-        "use_rviz", default_value="False")]
 
     return LaunchDescription(
-        declared_arguments
-        + [
+        [
             OpaqueFunction(function=launch_setup),
         ]
     )

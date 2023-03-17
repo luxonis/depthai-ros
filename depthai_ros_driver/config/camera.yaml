@@ -11,6 +11,7 @@
       i_pipeline_type: RGBD
       i_usb_port_id: ''
       i_usb_speed: SUPER_PLUS
+      i_pipeline_dump: false
     left:
       i_board_socket_id: 1
       i_calibration_file: ''
