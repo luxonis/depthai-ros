@@ -1,10 +1,30 @@
 #pragma once
 
+#include <fstream>
+#include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
-#include "depthai/depthai.hpp"
+#include "depthai/pipeline/datatype/CameraControl.hpp"
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
+#include "nlohmann/json.hpp"
+
+namespace dai {
+namespace node {
+class NeuralNetwork;
+class MobileNetDetectionNetwork;
+class MobileNetSpatialDetectionNetwork;
+class YoloDetectionNetwork;
+class YoloSpatialDetectionNetwork;
+class ImageManip;
+}  // namespace node
+}  // namespace dai
+
+namespace rclcpp {
+class Node;
+class Parameter;
+}  // namespace rclcpp
 
 namespace depthai_ros_driver {
 namespace param_handlers {
@@ -70,8 +90,6 @@ class NNParamHandler : public BaseParamHandler {
             nn->setIouThreshold(iou_threshold);
         }
     }
-
-    void setMobilenetParams() {}
 
     template <typename T>
     void parseConfigFile(rclcpp::Node* node, const std::string& path, std::shared_ptr<T> nn, std::shared_ptr<dai::node::ImageManip> imageManip) {

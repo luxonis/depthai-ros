@@ -1,7 +1,9 @@
 #include "depthai_ros_driver/param_handlers/stereo_param_handler.hpp"
 
-#include "depthai/depthai.hpp"
-#include "depthai/pipeline/nodes.hpp"
+#include "depthai/pipeline/datatype/StereoDepthConfig.hpp"
+#include "depthai/pipeline/node/StereoDepth.hpp"
+#include "rclcpp/logger.hpp"
+#include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {
 namespace param_handlers {

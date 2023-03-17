@@ -1,10 +1,14 @@
 #include "depthai_ros_driver/dai_nodes/nn/yolo.hpp"
 
-#include "cv_bridge/cv_bridge.h"
-#include "image_transport/camera_publisher.hpp"
-#include "image_transport/image_transport.hpp"
-#include "sensor_msgs/msg/camera_info.hpp"
-#include "sensor_msgs/msg/image.hpp"
+#include "depthai/device/DataQueue.hpp"
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/node/ImageManip.hpp"
+#include "depthai/pipeline/node/SpatialDetectionNetwork.hpp"
+#include "depthai/pipeline/node/XLinkOut.hpp"
+#include "depthai_bridge/ImgDetectionConverter.hpp"
+#include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
+#include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -21,7 +25,7 @@ Yolo::Yolo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<d
     imageManip->out.link(yoloNode->input);
     setXinXout(pipeline);
 }
-
+Yolo::~Yolo() = default;
 void Yolo::setNames() {
     nnQName = getName() + "_nn";
 }

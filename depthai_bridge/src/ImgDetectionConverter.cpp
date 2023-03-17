@@ -1,4 +1,5 @@
 #include <depthai_bridge/ImgDetectionConverter.hpp>
+#include <depthai_bridge/depthaiUtility.hpp>
 
 namespace dai {
 
@@ -8,6 +9,8 @@ ImgDetectionConverter::ImgDetectionConverter(std::string frameName, int width, i
     : _frameName(frameName), _width(width), _height(height), _normalized(normalized), _steadyBaseTime(std::chrono::steady_clock::now()) {
     _rosBaseTime = rclcpp::Clock().now();
 }
+
+ImgDetectionConverter::~ImgDetectionConverter() = default;
 
 void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, std::deque<VisionMsgs::Detection2DArray>& opDetectionMsgs) {
     // setting the header

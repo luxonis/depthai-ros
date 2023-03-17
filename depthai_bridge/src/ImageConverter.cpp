@@ -1,5 +1,8 @@
 
-#include <depthai_bridge/ImageConverter.hpp>
+#include "depthai_bridge/ImageConverter.hpp"
+
+#include "depthai_bridge/depthaiUtility.hpp"
+#include "opencv2/imgcodecs.hpp"
 
 namespace dai {
 
@@ -29,6 +32,9 @@ ImageConverter::ImageConverter(const std::string frameName, bool interleaved)
     : _frameName(frameName), _daiInterleaved(interleaved), _steadyBaseTime(std::chrono::steady_clock::now()) {
     _rosBaseTime = rclcpp::Clock().now();
 }
+
+ImageConverter::~ImageConverter() = default;
+
 void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData,
                                            std::deque<ImageMsgs::Image>& outImageMsgs,
                                            dai::RawImgFrame::Type type,

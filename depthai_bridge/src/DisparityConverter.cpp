@@ -1,5 +1,6 @@
 
 #include <depthai_bridge/DisparityConverter.hpp>
+#include <depthai_bridge/depthaiUtility.hpp>
 
 namespace dai {
 
@@ -14,6 +15,8 @@ DisparityConverter::DisparityConverter(const std::string frameName, float focalL
       _steadyBaseTime(std::chrono::steady_clock::now()) {
     _rosBaseTime = rclcpp::Clock().now();
 }
+
+DisparityConverter::~DisparityConverter() = default;
 
 void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<DisparityMsgs::DisparityImage>& outDispImageMsgs) {
     auto tstamp = inData->getTimestamp();

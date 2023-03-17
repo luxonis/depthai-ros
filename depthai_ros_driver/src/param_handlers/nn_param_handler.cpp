@@ -1,11 +1,15 @@
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
 
 #include <fstream>
-#include <nlohmann/json.hpp>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
-#include "depthai/depthai.hpp"
-#include "depthai/pipeline/nodes.hpp"
+#include "depthai/pipeline/node/DetectionNetwork.hpp"
+#include "depthai/pipeline/node/ImageManip.hpp"
+#include "depthai/pipeline/node/NeuralNetwork.hpp"
+#include "depthai/pipeline/node/SpatialDetectionNetwork.hpp"
+#include "nlohmann/json.hpp"
+#include "rclcpp/logger.hpp"
+#include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {
 namespace param_handlers {
@@ -112,6 +116,7 @@ void NNParamHandler::setImageManip(const std::string& model_path, std::shared_pt
     imageManip->initialConfig.setFrameType(dai::ImgFrame::Type::BGR888p);
     imageManip->inputImage.setBlocking(false);
     imageManip->inputImage.setQueueSize(8);
+    imageManip->setKeepAspectRatio(false);
     imageManip->initialConfig.setResize(input_size, input_size);
 }
 std::string NNParamHandler::getModelPath(const nlohmann::json& data) {

@@ -1,16 +1,24 @@
 #pragma once
 
-#include "depthai/depthai.hpp"
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/param_handlers/camera_param_handler.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include "rclcpp/node.hpp"
 #include "std_srvs/srv/trigger.hpp"
+
+namespace dai {
+class Pipeline;
+class Device;
+}  // namespace dai
 
 namespace depthai_ros_driver {
 using Trigger = std_srvs::srv::Trigger;
 class Camera : public rclcpp::Node {
    public:
-    explicit Camera(const rclcpp::NodeOptions& options);
+    explicit Camera(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
     void onConfigure();
 
    private:

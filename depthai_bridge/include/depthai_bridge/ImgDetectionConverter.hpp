@@ -1,11 +1,10 @@
 #pragma once
 
-#include <depthai/depthai.hpp>
-#include <depthai_bridge/depthaiUtility.hpp>
 #include <deque>
 #include <vision_msgs/msg/detection2_d_array.hpp>
 
-#include "rclcpp/rclcpp.hpp"
+#include "depthai/pipeline/datatype/ImgDetections.hpp"
+#include "rclcpp/time.hpp"
 
 namespace dai {
 
@@ -18,7 +17,7 @@ class ImgDetectionConverter {
    public:
     // DetectionConverter() = default;
     ImgDetectionConverter(std::string frameName, int width, int height, bool normalized = false);
-
+    ~ImgDetectionConverter();
     void toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, std::deque<VisionMsgs::Detection2DArray>& opDetectionMsgs);
 
     Detection2DArrayPtr toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData);

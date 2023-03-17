@@ -1,10 +1,22 @@
 #pragma once
 
+#include <memory>
 #include <string>
-#include <unordered_map>
+#include <vector>
 
-#include "depthai/depthai.hpp"
+#include "depthai/pipeline/datatype/CameraControl.hpp"
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
+
+namespace dai {
+namespace node {
+class IMU;
+}
+}  // namespace dai
+
+namespace rclcpp {
+class Node;
+class Parameter;
+}  // namespace rclcpp
 
 namespace depthai_ros_driver {
 namespace param_handlers {
