@@ -25,18 +25,15 @@ void WLSFilter::onInit() {
 void WLSFilter::wlsCB(const sensor_msgs::msg::Image::ConstSharedPtr& disp,
                       const sensor_msgs::msg::CameraInfo::ConstSharedPtr& disp_info,
                       const sensor_msgs::msg::Image::ConstSharedPtr& leftImg) {
-    cv::Mat dispFrame;
     cv::Mat leftFrame = utils::msgToMat(this->get_logger(), leftImg, sensor_msgs::image_encodings::MONO8);
-    cv::Mat dispFiltered;
-    int dispMultiplier = 1;
-
+    cv::Mat dispFrame;
     if(disp->encoding == sensor_msgs::image_encodings::TYPE_16UC1) {
         dispFrame = utils::msgToMat(this->get_logger(), disp, sensor_msgs::image_encodings::TYPE_16UC1);
-        dispMultiplier = 1;
     } else {
         dispFrame = utils::msgToMat(this->get_logger(), disp, sensor_msgs::image_encodings::MONO8);
     }
 
+    cv::Mat dispFiltered;
     sensor_msgs::msg::CameraInfo depthInfo = *disp_info;
     filter->filter(dispFrame, leftFrame, dispFiltered);
     sensor_msgs::msg::Image depth;
