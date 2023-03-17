@@ -37,7 +37,7 @@ void WLSFilter::wlsCB(const sensor_msgs::msg::Image::ConstSharedPtr& disp,
     sensor_msgs::msg::CameraInfo depthInfo = *disp_info;
     filter->filter(dispFrame, leftFrame, dispFiltered);
     sensor_msgs::msg::Image depth;
-    auto factor = dispMultiplier * (disp_info->k[0] * disp_info->p[3]);
+    auto factor = (disp_info->k[0] * disp_info->p[3]);
     cv::Mat depthOut = cv::Mat(cv::Size(dispFiltered.cols, dispFiltered.rows), CV_16UC1);
     depthOut.forEach<short>([&dispFiltered, &factor, &disp](short& pixel, const int* position) -> void {
         if(disp->encoding == sensor_msgs::image_encodings::TYPE_16UC1) {
