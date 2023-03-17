@@ -103,9 +103,7 @@ install(EXPORT depthai_bridgeTargets
       DESTINATION share/${PROJECT_NAME}/cmake)
 
 
-install(DIRECTORY launch/ DESTINATION share/${PROJECT_NAME}/launch
-        FILES_MATCHING PATTERN "*.py")
-install(DIRECTORY urdf DESTINATION share/${PROJECT_NAME})
+
 install(DIRECTORY rviz DESTINATION share/${PROJECT_NAME})
 
 ament_export_include_directories(include)

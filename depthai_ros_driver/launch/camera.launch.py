@@ -15,7 +15,7 @@ def launch_setup(context, *args, **kwargs):
     if(context.environment.get('DEPTHAI_DEBUG')):
         log_level='debug'
 
-    urdf_launch_dir = os.path.join(get_package_share_directory('depthai_bridge'), 'launch')
+    urdf_launch_dir = os.path.join(get_package_share_directory('depthai_descriptions'), 'launch')
     
     params_file = LaunchConfiguration("params_file")
     camera_model = LaunchConfiguration('camera_model',  default = 'OAK-D')

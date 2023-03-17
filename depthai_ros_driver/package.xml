@@ -25,6 +25,7 @@
   <depend>image_pipeline</depend>
   <depend>depthai</depend>
   <depend>depthai_bridge</depend>
+  <depend>depthai_descriptions</depend>
   <export>
     <build_type>ament_cmake</build_type>
   </export>

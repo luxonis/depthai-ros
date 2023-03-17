@@ -23,6 +23,7 @@
   <depend>depthai</depend>
   <depend>depthai_ros_msgs</depend>
   <depend>depthai_bridge</depend>
+  <depend>depthai_descriptions</depend>
   <depend>image_transport</depend>
   <depend>libopencv-dev</depend>
   <depend>ros_environment</depend>

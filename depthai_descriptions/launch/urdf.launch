@@ -16,7 +16,7 @@
 
 
     <param name="robot_description"
-               command="$(find xacro)/xacro '$(find depthai_bridge)/urdf/depthai_descr.urdf.xacro'
+               command="$(find xacro)/xacro '$(find depthai_descriptions)/urdf/depthai_descr.urdf.xacro'
                         camera_name:=$(arg tf_prefix)
                         camera_model:=$(arg camera_model)
                         base_frame:=$(arg base_frame)

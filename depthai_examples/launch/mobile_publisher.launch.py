@@ -16,7 +16,7 @@ def generate_launch_description():
     default_resources_path = os.path.join(depthai_examples_path,
                                 'resources')
                                 
-    urdf_launch_dir = os.path.join(get_package_share_directory('depthai_bridge'), 'launch')
+    urdf_launch_dir = os.path.join(get_package_share_directory('depthai_descriptions'), 'launch')
     
     camera_model     = LaunchConfiguration('camera_model',  default = 'OAK-D')
     tf_prefix        = LaunchConfiguration('tf_prefix',   default = 'oak')
