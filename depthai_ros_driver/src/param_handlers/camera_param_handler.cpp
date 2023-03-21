@@ -3,6 +3,7 @@
 #include "depthai-shared/common/UsbSpeed.hpp"
 #include "rclcpp/logger.hpp"
 #include "rclcpp/node.hpp"
+#include "depthai_ros_driver/utils.hpp"
 
 namespace depthai_ros_driver {
 namespace param_handlers {
@@ -18,7 +19,7 @@ CameraParamHandler::CameraParamHandler(rclcpp::Node* node, const std::string& na
 CameraParamHandler::~CameraParamHandler() = default;
 
 dai::UsbSpeed CameraParamHandler::getUSBSpeed() {
-    return usbSpeedMap.at(getParam<std::string>("i_usb_speed"));
+    return utils::getValFromMap(getParam<std::string>("i_usb_speed"), usbSpeedMap);
 }
 void CameraParamHandler::declareParams() {
     declareAndLogParam<std::string>("i_pipeline_type", "RGBD");
@@ -30,6 +31,8 @@ void CameraParamHandler::declareParams() {
     declareAndLogParam<std::string>("i_ip", "");
     declareAndLogParam<std::string>("i_usb_port_id", "");
     declareAndLogParam<bool>("i_pipeline_dump", false);
+    declareAndLogParam<bool>("i_calibration_dump", false);
+    declareAndLogParam<std::string>("i_external_calibration_path", "");
     declareAndLogParam<int>("i_laser_dot_brightness", 800, getRangedIntDescriptor(0, 1200));
     declareAndLogParam<int>("i_floodlight_brightness", 0, getRangedIntDescriptor(0, 1500));
 }

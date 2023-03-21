@@ -30,12 +30,15 @@ class Camera : public rclcpp::Node {
     void setupQueues();
     void setIR();
     void savePipeline();
+    void saveCalib();
+    void loadCalib(const std::string& path);
     rcl_interfaces::msg::SetParametersResult parameterCB(const std::vector<rclcpp::Parameter>& params);
     OnSetParametersCallbackHandle::SharedPtr paramCBHandle;
     std::unique_ptr<param_handlers::CameraParamHandler> ph;
-    rclcpp::Service<Trigger>::SharedPtr startSrv, stopSrv, savePipelineSrv;
+    rclcpp::Service<Trigger>::SharedPtr startSrv, stopSrv, savePipelineSrv, saveCalibSrv;
     void startCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res);
     void stopCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res);
+    void saveCalibCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res);
     void savePipelineCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res);
 
     std::vector<std::string> usbStrings = {"UNKNOWN", "LOW", "FULL", "HIGH", "SUPER", "SUPER_PLUS"};
