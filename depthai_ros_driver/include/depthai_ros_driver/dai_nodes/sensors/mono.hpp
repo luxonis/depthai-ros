@@ -33,7 +33,7 @@ class CameraInfoManager;
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-class MonoParamHandler;
+class SensorParamHandler;
 }
 namespace dai_nodes {
 
@@ -59,7 +59,7 @@ class Mono : public BaseNode {
     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
     std::shared_ptr<dai::node::MonoCamera> monoCamNode;
     std::shared_ptr<dai::node::VideoEncoder> videoEnc;
-    std::unique_ptr<param_handlers::MonoParamHandler> ph;
+    std::unique_ptr<param_handlers::SensorParamHandler> ph;
     std::shared_ptr<dai::DataOutputQueue> monoQ;
     std::shared_ptr<dai::DataInputQueue> controlQ;
     std::shared_ptr<dai::node::XLinkOut> xoutMono;

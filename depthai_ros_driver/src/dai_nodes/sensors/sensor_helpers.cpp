@@ -125,7 +125,6 @@ sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
                                           int height) {
     sensor_msgs::msg::CameraInfo info;
     auto calibHandler = device->readCalibration();
-
     try {
         info = converter.calibrationToCameraInfo(calibHandler, socket, width, height);
     } catch(std::runtime_error& e) {

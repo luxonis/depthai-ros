@@ -59,13 +59,13 @@ include_directories(include)
 set(COMMON_LIB_NAME ${PROJECT_NAME}_common)
 add_library(
   ${COMMON_LIB_NAME} SHARED
+  src/utils.cpp
   src/dai_nodes/base_node.cpp
   src/dai_nodes/sensors/sensor_helpers.cpp # TODO: Figure out different place for this 
   src/param_handlers/camera_param_handler.cpp
   src/param_handlers/imu_param_handler.cpp
   src/param_handlers/nn_param_handler.cpp
-  src/param_handlers/rgb_param_handler.cpp
-  src/param_handlers/mono_param_handler.cpp
+  src/param_handlers/sensor_param_handler.cpp
   src/param_handlers/stereo_param_handler.cpp
 )
 
@@ -77,7 +77,7 @@ add_library(
   src/dai_nodes/sensors/imu.cpp
   src/dai_nodes/sensors/rgb.cpp
   src/dai_nodes/sensors/mono.cpp
-  src/dai_nodes/sensors/camera_sensor.cpp
+  src/dai_nodes/sensors/sensor_wrapper.cpp
   src/dai_nodes/stereo.cpp
 )
 
@@ -90,12 +90,10 @@ set(NN_LIB_NAME ${PROJECT_NAME}_nn_nodes)
 add_library(
   ${NN_LIB_NAME} SHARED
   src/dai_nodes/nn/nn_wrapper.cpp
+  src/dai_nodes/nn/detection.cpp
   src/dai_nodes/nn/spatial_nn_wrapper.cpp
   src/dai_nodes/nn/segmentation.cpp
-  src/dai_nodes/nn/mobilenet.cpp
-  src/dai_nodes/nn/yolo.cpp
-  src/dai_nodes/nn/spatial_mobilenet.cpp
-  src/dai_nodes/nn/spatial_yolo.cpp
+  src/dai_nodes/nn/spatial_detection.cpp
 )
 ament_target_dependencies(${NN_LIB_NAME} ${NN_DEPS})
 target_link_libraries(

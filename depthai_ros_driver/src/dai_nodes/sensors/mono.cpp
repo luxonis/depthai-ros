@@ -9,7 +9,7 @@
 #include "depthai/pipeline/node/XLinkIn.hpp"
 #include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
-#include "depthai_ros_driver/param_handlers/mono_param_handler.hpp"
+#include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/node.hpp"
@@ -26,7 +26,7 @@ Mono::Mono(const std::string& daiNodeName,
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     monoCamNode = pipeline->create<dai::node::MonoCamera>();
-    ph = std::make_unique<param_handlers::MonoParamHandler>(node, daiNodeName);
+    ph = std::make_unique<param_handlers::SensorParamHandler>(node, daiNodeName);
     ph->declareParams(monoCamNode, socket, sensor, publish);
     setXinXout(pipeline);
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());

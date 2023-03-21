@@ -1,15 +1,58 @@
-#include "depthai_ros_driver/param_handlers/rgb_param_handler.hpp"
+#include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
 
 #include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai-shared/properties/ColorCameraProperties.hpp"
 #include "depthai/pipeline/node/ColorCamera.hpp"
+#include "depthai/pipeline/node/MonoCamera.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
+#include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/logger.hpp"
 #include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-RGBParamHandler::RGBParamHandler(rclcpp::Node* node, const std::string& name) : BaseParamHandler(node, name) {
+SensorParamHandler::SensorParamHandler(rclcpp::Node* node, const std::string& name) : BaseParamHandler(node, name){
+    declareCommonParams();
+};
+SensorParamHandler::~SensorParamHandler() = default;
+
+void SensorParamHandler::declareCommonParams() {
+    declareAndLogParam<int>("i_max_q_size", 30);
+    declareAndLogParam<bool>("i_low_bandwidth", false);
+    declareAndLogParam<int>("i_low_bandwidth_quality", 50);
+    declareAndLogParam<std::string>("i_calibration_file", "");
+    declareAndLogParam<bool>("i_simulate_from_topic", false);
+    declareAndLogParam<bool>("i_disable_node", false);
+}
+
+void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> monoCam,
+                                       dai::CameraBoardSocket socket,
+                                       dai_nodes::sensor_helpers::ImageSensor,
+                                       bool publish) {
+    monoResolutionMap = {
+        {"400", dai::MonoCameraProperties::SensorResolution::THE_400_P},
+        {"480", dai::MonoCameraProperties::SensorResolution::THE_480_P},
+        {"720", dai::MonoCameraProperties::SensorResolution::THE_720_P},
+        {"800", dai::MonoCameraProperties::SensorResolution::THE_800_P},
+    };
+    declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket));
+    monoCam->setBoardSocket(socket);
+    monoCam->setFps(declareAndLogParam<double>("i_fps", 30.0));
+    declareAndLogParam<bool>("i_publish_topic", publish);
+    monoCam->setResolution(utils::getValFromMap(declareAndLogParam<std::string>("i_resolution", "720"), monoResolutionMap));
+    declareAndLogParam<int>("i_width", monoCam->getResolutionWidth());
+    declareAndLogParam<int>("i_height", monoCam->getResolutionHeight());
+    size_t iso = declareAndLogParam("r_iso", 800, getRangedIntDescriptor(100, 1600));
+    size_t exposure = declareAndLogParam("r_exposure", 1000, getRangedIntDescriptor(1, 33000));
+
+    if(declareAndLogParam("r_set_man_exposure", false)) {
+        monoCam->initialControl.setManualExposure(exposure, iso);
+    }
+}
+void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> colorCam,
+                                       dai::CameraBoardSocket socket,
+                                       dai_nodes::sensor_helpers::ImageSensor sensor,
+                                       bool publish) {
     rgbResolutionMap = {{"720", dai::ColorCameraProperties::SensorResolution::THE_720_P},
                         {"1080", dai::ColorCameraProperties::SensorResolution::THE_1080_P},
                         {"4K", dai::ColorCameraProperties::SensorResolution::THE_4_K},
@@ -21,24 +64,14 @@ RGBParamHandler::RGBParamHandler(rclcpp::Node* node, const std::string& name) : 
                         {"4000x3000", dai::ColorCameraProperties::SensorResolution::THE_4000X3000},
                         {"5312X6000", dai::ColorCameraProperties::SensorResolution::THE_5312X6000},
                         {"48_MP", dai::ColorCameraProperties::SensorResolution::THE_48_MP}};
-}
-RGBParamHandler::~RGBParamHandler() = default;
-void RGBParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> colorCam,
-                                    dai::CameraBoardSocket socket,
-                                    dai_nodes::sensor_helpers::ImageSensor sensor,
-                                    bool publish) {
-    declareAndLogParam<int>("i_max_q_size", 30);
     declareAndLogParam<bool>("i_publish_topic", publish);
-    declareAndLogParam<bool>("i_enable_preview", false);
-    declareAndLogParam<bool>("i_low_bandwidth", false);
-    declareAndLogParam<int>("i_low_bandwidth_quality", 50);
     declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket));
-    declareAndLogParam<std::string>("i_calibration_file", "");
+    declareAndLogParam<bool>("i_enable_preview", false);
     colorCam->setBoardSocket(socket);
     colorCam->setFps(declareAndLogParam<double>("i_fps", 30.0));
     size_t preview_size = declareAndLogParam<int>("i_preview_size", 300);
     colorCam->setPreviewSize(preview_size, preview_size);
-    auto resolution = rgbResolutionMap.at(declareAndLogParam<std::string>("i_resolution", "1080"));
+    auto resolution = utils::getValFromMap(declareAndLogParam<std::string>("i_resolution", "1080"), rgbResolutionMap);
     int width, height;
     colorCam->setResolution(resolution);
     sensor.getSizeFromResolution(colorCam->getResolution(), width, height);
@@ -71,7 +104,7 @@ void RGBParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> colo
         colorCam->initialControl.setManualWhiteBalance(whitebalance);
     }
 }
-dai::CameraControl RGBParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& params) {
+dai::CameraControl SensorParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& params) {
     dai::CameraControl ctrl;
     for(const auto& p : params) {
         if(p.get_name() == getFullParamName("r_set_man_exposure")) {

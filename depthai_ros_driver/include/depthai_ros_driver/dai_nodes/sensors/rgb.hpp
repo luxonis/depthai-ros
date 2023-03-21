@@ -34,7 +34,7 @@ class CameraInfoManager;
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-class RGBParamHandler;
+class SensorParamHandler;
 }
 namespace dai_nodes {
 
@@ -64,7 +64,7 @@ class RGB : public BaseNode {
     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager, previewInfoManager;
     std::shared_ptr<dai::node::ColorCamera> colorCamNode;
     std::shared_ptr<dai::node::VideoEncoder> videoEnc;
-    std::unique_ptr<param_handlers::RGBParamHandler> ph;
+    std::unique_ptr<param_handlers::SensorParamHandler> ph;
     std::shared_ptr<dai::DataOutputQueue> colorQ, previewQ;
     std::shared_ptr<dai::DataInputQueue> controlQ;
     std::shared_ptr<dai::node::XLinkOut> xoutColor, xoutPreview;
