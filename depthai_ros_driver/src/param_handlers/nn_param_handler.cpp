@@ -7,10 +7,10 @@
 #include "depthai/pipeline/node/ImageManip.hpp"
 #include "depthai/pipeline/node/NeuralNetwork.hpp"
 #include "depthai/pipeline/node/SpatialDetectionNetwork.hpp"
+#include "depthai_ros_driver/utils.hpp"
 #include "nlohmann/json.hpp"
 #include "rclcpp/logger.hpp"
 #include "rclcpp/node.hpp"
-#include "depthai_ros_driver/utils.hpp"
 
 namespace depthai_ros_driver {
 namespace param_handlers {

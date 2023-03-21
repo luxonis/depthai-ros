@@ -27,7 +27,7 @@ def launch_setup(context, *args, **kwargs):
                     ComposableNode(
                         package="depthai_filters",
                         plugin="depthai_filters::SegmentationOverlay",
-                        remappings=[('rgb/preview/image_raw', name+'/rgb/preview/image_raw'),
+                        remappings=[('rgb/preview/image_raw', name+'/nn/passthrough/image_raw'),
                                     ('nn/image_raw', name+'/nn/image_raw')]
                     ),
             ],

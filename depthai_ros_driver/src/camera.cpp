@@ -28,14 +28,14 @@ void Camera::onConfigure() {
     RCLCPP_INFO(this->get_logger(), "Camera ready!");
 }
 
-void Camera::saveCalib(){
+void Camera::saveCalib() {
     auto calibHandler = device->readCalibration();
     std::string savePath = "/tmp/calibration.json";
     RCLCPP_INFO(this->get_logger(), "Saving calibration to: %s", savePath.c_str());
-    calibHandler.eepromToJsonFile("/tmp/calibration.json");
+    calibHandler.eepromToJsonFile(savePath);
 }
 
-void Camera::loadCalib(const std::string& path){
+void Camera::loadCalib(const std::string& path) {
     RCLCPP_INFO(this->get_logger(), "Reading calibration from: %s", path.c_str());
     dai::CalibrationHandler cH(path);
     pipeline->setCalibrationData(cH);
@@ -101,6 +101,9 @@ void Camera::getDeviceType() {
 
 void Camera::createPipeline() {
     auto generator = std::make_unique<pipeline_gen::PipelineGenerator>();
+    if(!ph->getParam<std::string>("i_external_calibration_path").empty()) {
+        loadCalib(ph->getParam<std::string>("i_external_calibration_path"));
+    }
     daiNodes = generator->createPipeline(
         this, device, pipeline, ph->getParam<std::string>("i_pipeline_type"), ph->getParam<std::string>("i_nn_type"), ph->getParam<bool>("i_enable_imu"));
     if(ph->getParam<bool>("i_pipeline_dump")) {
@@ -108,9 +111,6 @@ void Camera::createPipeline() {
     }
     if(ph->getParam<bool>("i_calibration_dump")) {
         saveCalib();
-    }
-    if(!ph->getParam<std::string>("i_external_calibration_path").empty()) {
-        loadCalib(ph->getParam<std::string>("i_external_calibration_path"));
     }
 }
 

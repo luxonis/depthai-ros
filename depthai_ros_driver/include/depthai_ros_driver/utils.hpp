@@ -1,7 +1,7 @@
 #pragma once
 
-#include <sstream>
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -17,7 +17,7 @@ T getValFromMap(const std::string& name, const std::unordered_map<std::string, T
         stream << "Unable to find name " << name.c_str() << " in map.\n";
         stream << "Map values:\n";
         for(auto it = map.cbegin(); it != map.cend(); ++it) {
-            stream << it->first <<  "\n";
+            stream << it->first << "\n";
         }
         throw std::runtime_error(stream.str());
     }

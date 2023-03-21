@@ -5,9 +5,9 @@
 #include <vector>
 
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
+#include "image_transport/camera_publisher.hpp"
 #include "rclcpp/publisher.hpp"
 #include "vision_msgs/msg/detection2_d_array.hpp"
-#include "image_transport/camera_publisher.hpp"
 
 namespace dai {
 class Pipeline;
@@ -43,7 +43,7 @@ class XLinkOut;
 namespace ros {
 class ImgDetectionConverter;
 class ImageConverter;
-}
+}  // namespace ros
 }  // namespace dai
 namespace camera_info_manager {
 class CameraInfoManager;
@@ -78,7 +78,6 @@ class Detection : public BaseNode {
     rclcpp::Publisher<vision_msgs::msg::Detection2DArray>::SharedPtr detPub;
     std::unique_ptr<dai::ros::ImageConverter> imageConverter;
     image_transport::CameraPublisher ptPub;
-    sensor_msgs::msg::CameraInfo ptInfo;
     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
     std::shared_ptr<dai::node::DetectionNetwork> detectionNode;
     std::shared_ptr<dai::node::ImageManip> imageManip;

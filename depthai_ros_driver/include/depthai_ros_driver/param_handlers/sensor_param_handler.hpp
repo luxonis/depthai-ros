@@ -4,8 +4,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "depthai-shared/properties/MonoCameraProperties.hpp"
 #include "depthai-shared/properties/ColorCameraProperties.hpp"
+#include "depthai-shared/properties/MonoCameraProperties.hpp"
 #include "depthai/pipeline/datatype/CameraControl.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
@@ -14,7 +14,7 @@ namespace dai {
 namespace node {
 class MonoCamera;
 class ColorCamera;
-}
+}  // namespace node
 }  // namespace dai
 
 namespace rclcpp {

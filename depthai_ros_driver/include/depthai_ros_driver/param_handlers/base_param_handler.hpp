@@ -19,7 +19,7 @@ class BaseParamHandler {
         baseName = name;
         baseNode = node;
     };
-    virtual ~BaseParamHandler() = default;
+    ~BaseParamHandler() = default;
     virtual dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) = 0;
     std::string getName() {
         return baseName;

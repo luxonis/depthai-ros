@@ -17,8 +17,8 @@ class DataInputQueue;
 namespace node {
 class XLinkIn;
 }
-namespace ros{
-    class ImageConverter;
+namespace ros {
+class ImageConverter;
 }
 }  // namespace dai
 

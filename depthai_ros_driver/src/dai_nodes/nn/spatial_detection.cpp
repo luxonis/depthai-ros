@@ -1,5 +1,6 @@
 #include "depthai_ros_driver/dai_nodes/nn/spatial_detection.hpp"
 
+#include "camera_info_manager/camera_info_manager.hpp"
 #include "depthai/device/DataQueue.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
@@ -11,10 +12,9 @@
 #include "depthai_ros_driver/dai_nodes/nn/nn_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
-#include "rclcpp/node.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
-#include "camera_info_manager/camera_info_manager.hpp"
+#include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -78,7 +78,7 @@ void SpatialDetection::setupQueues(std::shared_ptr<dai::Device> device) {
                                                               imageManip->initialConfig.getResizeWidth(),
                                                               imageManip->initialConfig.getResizeWidth()));
 
-        ptPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/passthrough");
+        ptPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/passthrough/image_raw");
         ptQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *ptImageConverter, ptPub, ptInfoMan));
     }
 
@@ -99,8 +99,9 @@ void SpatialDetection::setupQueues(std::shared_ptr<dai::Device> device) {
                                                                    getROSNode()->get_parameter("stereo.i_width").as_int(),
                                                                    getROSNode()->get_parameter("stereo.i_height").as_int()));
 
-        ptDepthPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/passthrough_depth");
-        ptDepthQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *ptDepthImageConverter, ptDepthPub, ptDepthInfoMan));
+        ptDepthPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/passthrough_depth/image_raw");
+        ptDepthQ->addCallback(
+            std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *ptDepthImageConverter, ptDepthPub, ptDepthInfoMan));
     }
 }
 void SpatialDetection::closeQueues() {

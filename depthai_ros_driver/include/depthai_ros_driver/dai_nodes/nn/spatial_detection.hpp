@@ -21,7 +21,7 @@ class XLinkOut;
 namespace ros {
 class SpatialDetectionConverter;
 class ImageConverter;
-}
+}  // namespace ros
 }  // namespace dai
 namespace camera_info_manager {
 class CameraInfoManager;

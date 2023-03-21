@@ -23,8 +23,11 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
     ph = std::make_unique<param_handlers::SensorParamHandler>(node, daiNodeName);
 
     if(ph->getParam<bool>("i_simulate_from_topic")) {
-        sub =
-            node->create_subscription<sensor_msgs::msg::Image>("~/" + getName() + "/input", 10, std::bind(&SensorWrapper::subCB, this, std::placeholders::_1));
+        std::string topicName = ph->getParam<std::string>("i_simulated_topic_name");
+        if(topicName.empty()) {
+            topicName = "~/" + getName() + "/input";
+        }
+        sub = node->create_subscription<sensor_msgs::msg::Image>(topicName, 10, std::bind(&SensorWrapper::subCB, this, std::placeholders::_1));
         converter = std::make_unique<dai::ros::ImageConverter>(true);
         setNames();
         setXinXout(pipeline);
@@ -33,7 +36,7 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
     if(ph->getParam<bool>("i_disable_node") && ph->getParam<bool>("i_simulate_from_topic")) {
         RCLCPP_INFO(getROSNode()->get_logger(), "Disabling node %s, pipeline data taken from topic.", getName().c_str());
     } else {
-        if(ph->getParam<bool>("i_disable_node")){
+        if(ph->getParam<bool>("i_disable_node")) {
             RCLCPP_WARN(getROSNode()->get_logger(), "For node to be disabled, %s.i_simulate_from_topic must be set to true.", getName().c_str());
         }
         auto sensorName = device->getCameraSensorNames().at(socket);
@@ -90,7 +93,7 @@ void SensorWrapper::closeQueues() {
 }
 
 void SensorWrapper::link(const dai::Node::Input& in, int linkType) {
-    if(ph->getParam<bool>("i_simulate_from_topic") && !ph->getParam<bool>("i_disable_node")) {
+    if(ph->getParam<bool>("i_simulate_from_topic")) {
         xIn->out.link(in);
     } else {
         sensorNode->link(in, linkType);

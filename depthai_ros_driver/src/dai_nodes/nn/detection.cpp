@@ -58,7 +58,7 @@ void Detection::setupQueues(std::shared_ptr<dai::Device> device) {
         tfPrefix + "_camera_optical_frame", imageManip->initialConfig.getResizeConfig().width, imageManip->initialConfig.getResizeConfig().height, false);
     detPub = getROSNode()->create_publisher<vision_msgs::msg::Detection2DArray>("~/" + getName() + "/detections", 10);
     nnQ->addCallback(std::bind(&Detection::detectionCB, this, std::placeholders::_1, std::placeholders::_2));
-    
+
     if(ph->getParam<bool>("i_enable_passthrough")) {
         ptQ = device->getOutputQueue(ptQName, ph->getParam<int>("i_max_q_size"), false);
         imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
@@ -71,14 +71,14 @@ void Detection::setupQueues(std::shared_ptr<dai::Device> device) {
                                                                 imageManip->initialConfig.getResizeWidth(),
                                                                 imageManip->initialConfig.getResizeWidth()));
 
-        ptPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/passthrough");
+        ptPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/passthrough/image_raw");
         ptQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager));
     }
 }
 void Detection::closeQueues() {
     nnQ->close();
     if(ph->getParam<bool>("i_enable_passthrough")) {
-    ptQ->close();
+        ptQ->close();
     }
 }
 
