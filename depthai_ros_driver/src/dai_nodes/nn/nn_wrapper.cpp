@@ -2,9 +2,9 @@
 
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
-#include "depthai_ros_driver/dai_nodes/nn/mobilenet.hpp"
+#include "depthai/pipeline/node/DetectionNetwork.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/detection.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/segmentation.hpp"
-#include "depthai_ros_driver/dai_nodes/nn/yolo.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
 #include "rclcpp/node.hpp"
 
@@ -16,11 +16,11 @@ NNWrapper::NNWrapper(const std::string& daiNodeName, rclcpp::Node* node, std::sh
     auto family = ph->getNNFamily();
     switch(family) {
         case param_handlers::nn::NNFamily::Yolo: {
-            nnNode = std::make_unique<dai_nodes::nn::Yolo>(getName(), getROSNode(), pipeline);
+            nnNode = std::make_unique<dai_nodes::nn::Detection>(getName(), getROSNode(), pipeline, pipeline->create<dai::node::YoloDetectionNetwork>());
             break;
         }
         case param_handlers::nn::NNFamily::Mobilenet: {
-            nnNode = std::make_unique<dai_nodes::nn::Mobilenet>(getName(), getROSNode(), pipeline);
+            nnNode = std::make_unique<dai_nodes::nn::Detection>(getName(), getROSNode(), pipeline, pipeline->create<dai::node::MobileNetDetectionNetwork>());
             break;
         }
         case param_handlers::nn::NNFamily::Segmentation: {

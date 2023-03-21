@@ -7,6 +7,7 @@
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "rclcpp/publisher.hpp"
 #include "vision_msgs/msg/detection2_d_array.hpp"
+#include "image_transport/camera_publisher.hpp"
 
 namespace dai {
 class Pipeline;
@@ -14,7 +15,7 @@ class Device;
 class DataOutputQueue;
 class ADatatype;
 namespace node {
-class MobileNetDetectionNetwork;
+class DetectionDetectionNetwork;
 class ImageManip;
 class XLinkOut;
 }  // namespace node
@@ -35,16 +36,18 @@ class Device;
 class DataOutputQueue;
 class ADatatype;
 namespace node {
-class MobileNetDetectionNetwork;
+class DetectionNetwork;
 class ImageManip;
 class XLinkOut;
 }  // namespace node
 namespace ros {
 class ImgDetectionConverter;
+class ImageConverter;
 }
-
 }  // namespace dai
-
+namespace camera_info_manager {
+class CameraInfoManager;
+}
 namespace rclcpp {
 class Node;
 class Parameter;
@@ -56,10 +59,10 @@ class NNParamHandler;
 
 namespace dai_nodes {
 namespace nn {
-class Mobilenet : public BaseNode {
+class Detection : public BaseNode {
    public:
-    Mobilenet(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
-    ~Mobilenet();
+    Detection(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::node::DetectionNetwork> nn);
+    ~Detection();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(const dai::Node::Input& in, int linkType = 0) override;
@@ -69,16 +72,20 @@ class Mobilenet : public BaseNode {
     void closeQueues() override;
 
    private:
-    void mobilenetCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
+    void detectionCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
     std::unique_ptr<dai::ros::ImgDetectionConverter> detConverter;
     std::vector<std::string> labelNames;
     rclcpp::Publisher<vision_msgs::msg::Detection2DArray>::SharedPtr detPub;
-    std::shared_ptr<dai::node::MobileNetDetectionNetwork> mobileNode;
+    std::unique_ptr<dai::ros::ImageConverter> imageConverter;
+    image_transport::CameraPublisher ptPub;
+    sensor_msgs::msg::CameraInfo ptInfo;
+    std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
+    std::shared_ptr<dai::node::DetectionNetwork> detectionNode;
     std::shared_ptr<dai::node::ImageManip> imageManip;
     std::unique_ptr<param_handlers::NNParamHandler> ph;
-    std::shared_ptr<dai::DataOutputQueue> nnQ;
-    std::shared_ptr<dai::node::XLinkOut> xoutNN;
-    std::string nnQName;
+    std::shared_ptr<dai::DataOutputQueue> nnQ, ptQ;
+    std::shared_ptr<dai::node::XLinkOut> xoutNN, xoutPT;
+    std::string nnQName, ptQName;
 };
 
 }  // namespace nn
