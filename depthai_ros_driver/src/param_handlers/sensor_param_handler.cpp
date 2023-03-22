@@ -24,6 +24,7 @@ void SensorParamHandler::declareCommonParams() {
     declareAndLogParam<bool>("i_simulate_from_topic", false);
     declareAndLogParam<std::string>("i_simulated_topic_name", "");
     declareAndLogParam<bool>("i_disable_node", false);
+    declareAndLogParam<int>("i_board_socket_id", 0);
 }
 
 void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> monoCam,
@@ -36,7 +37,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> mo
         {"720", dai::MonoCameraProperties::SensorResolution::THE_720_P},
         {"800", dai::MonoCameraProperties::SensorResolution::THE_800_P},
     };
-    declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket));
+    declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket), true);
     monoCam->setBoardSocket(socket);
     monoCam->setFps(declareAndLogParam<double>("i_fps", 30.0));
     declareAndLogParam<bool>("i_publish_topic", publish);

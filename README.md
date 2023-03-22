@@ -189,7 +189,12 @@ Example scenarios:
 This can be achieved by setting `rgb.i_simulate_from_topic` parameter to `true`. This creates `sensor_msgs/Image` subscriber listening by default on `/<node_name>/rgb/input` topic that passes data into the pipeline on each callback. Topic names can be changed either by classic ROS topic remapping or setting `rgb.i_simulated_topic_name` to a desired name.
 By default, original sensor node still runs and publishes data. Setting `rgb.i_disable_node` to true will prevent it from spawning. Check `det2d_usb_cam_overlay.launch.py` in `depthai_filters to see it in action.
 
-2. Calculating depth - both `left` and `right` sensor nodes can be setup as in the example above to calculate calculate depth/disparity from external topics. Note that for this to work you need to specify external calibration file path using `camera.i_external_calibration_path` parameter. To get calibration from the device you can either set `camera.i_calibration_dump` to true or call `save_calibration` service. Calibration will be saved to `/tmp/calibration.json`
+2. Calculating depth - both `left` and `right` sensor nodes can be setup as in the example above to calculate calculate depth/disparity from external topics. Note that for this to work properly you need specify:
+- `left.i_board_socket_id: 1`
+- `right.i_board_socket_id: 2` 
+- Default stereo input size is set to 1280x720, in case of different image size, adjust `stereo.i_input_width` and `stereo.i_input_height` accordingly.
+- external calibration file path using `camera.i_external_calibration_path` parameter. To get calibration from the device you can either set `camera.i_calibration_dump` to true or call `save_calibration` service. Calibration will be saved to `/tmp/<mx_id>_calibration.json`.
+An example can be seen in `stereo_from_rosbag.launch.py` in `depthai_ros_driver`
 
 ## Executing an example
 

@@ -30,9 +30,10 @@ void Camera::onConfigure() {
 
 void Camera::saveCalib() {
     auto calibHandler = device->readCalibration();
-    std::string savePath = "/tmp/calibration.json";
-    RCLCPP_INFO(this->get_logger(), "Saving calibration to: %s", savePath.c_str());
-    calibHandler.eepromToJsonFile(savePath);
+    std::stringstream savePath;
+    savePath << "/tmp/" << device->getMxId().c_str() << "_calibration.json";
+    RCLCPP_INFO(this->get_logger(), "Saving calibration to: %s", savePath.str().c_str());
+    calibHandler.eepromToJsonFile(savePath.str());
 }
 
 void Camera::loadCalib(const std::string& path) {
@@ -47,9 +48,10 @@ void Camera::saveCalibCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Res
 }
 
 void Camera::savePipeline() {
-    std::string savePath = "/tmp/pipeline.json";
-    RCLCPP_INFO(this->get_logger(), "Saving pipeline schema to: %s", savePath.c_str());
-    std::ofstream file(savePath);
+    std::stringstream savePath;
+    savePath << "/tmp/" << device->getMxId().c_str() << "_pipeline.json";
+    RCLCPP_INFO(this->get_logger(), "Saving pipeline schema to: %s", savePath.str().c_str());
+    std::ofstream file(savePath.str());
     file << pipeline->serializeToJson()["pipeline"];
     file.close();
 }

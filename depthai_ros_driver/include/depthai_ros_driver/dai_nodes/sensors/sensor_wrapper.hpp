@@ -58,6 +58,7 @@ class SensorWrapper : public BaseNode {
     std::shared_ptr<dai::node::XLinkIn> xIn;
     std::shared_ptr<dai::DataInputQueue> inQ;
     std::string inQName;
+    int socketID;
 };
 
 }  // namespace dai_nodes

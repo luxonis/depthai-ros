@@ -31,6 +31,7 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
         converter = std::make_unique<dai::ros::ImageConverter>(true);
         setNames();
         setXinXout(pipeline);
+        socketID = ph->getParam<int>("i_board_socket_id");
     }
 
     if(ph->getParam<bool>("i_disable_node") && ph->getParam<bool>("i_simulate_from_topic")) {
@@ -64,6 +65,7 @@ SensorWrapper::~SensorWrapper() = default;
 void SensorWrapper::subCB(const sensor_msgs::msg::Image& img) {
     dai::ImgFrame data;
     converter->toDaiMsg(img, data);
+    data.setInstanceNum(socketID);
     inQ->send(data);
 }
 void SensorWrapper::setNames() {
