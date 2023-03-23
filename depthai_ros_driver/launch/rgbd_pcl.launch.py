@@ -7,7 +7,6 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import LoadComposableNodes, Node
 from launch_ros.descriptions import ComposableNode
-from launch.conditions import IfCondition
 
 
 def launch_setup(context, *args, **kwargs):
@@ -16,7 +15,6 @@ def launch_setup(context, *args, **kwargs):
 
     name = LaunchConfiguration('name').perform(context)
 
-    
     return [
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(

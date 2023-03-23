@@ -5,8 +5,6 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import Node
-from launch.conditions import IfCondition
 
 
 def launch_setup(context, *args, **kwargs):
@@ -14,7 +12,7 @@ def launch_setup(context, *args, **kwargs):
     depthai_prefix = get_package_share_directory("depthai_ros_driver")
     rviz_config = os.path.join(depthai_prefix, "config", "rviz", "segmentation.rviz")
 
-    params_file= LaunchConfiguration("params_file")
+    params_file = LaunchConfiguration("params_file")
 
     return [
         IncludeLaunchDescription(
