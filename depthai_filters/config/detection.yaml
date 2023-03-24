@@ -1,0 +1,6 @@
+/oak:
+  ros__parameters:
+    camera:
+      i_nn_type: rgb
+    rgb:
+      i_enable_preview: true

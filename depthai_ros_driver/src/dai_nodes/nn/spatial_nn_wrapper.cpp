@@ -12,8 +12,8 @@ namespace dai_nodes {
 SpatialNNWrapper::SpatialNNWrapper(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline)
     : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s base", daiNodeName.c_str());
-    ph = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
-    auto family = ph->getNNFamily(getROSNode());
+    ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName);
+    auto family = ph->getNNFamily();
     switch(family) {
         case param_handlers::nn::NNFamily::Yolo: {
             nnNode = std::make_unique<dai_nodes::nn::SpatialYolo>(getName(), getROSNode(), pipeline);
@@ -51,7 +51,7 @@ dai::Node::Input SpatialNNWrapper::getInput(int linkType) {
 }
 
 void SpatialNNWrapper::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    ph->setRuntimeParams(getROSNode(), params);
+    ph->setRuntimeParams(params);
     nnNode->updateParams(params);
 }
 

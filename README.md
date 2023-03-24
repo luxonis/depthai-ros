@@ -166,6 +166,18 @@ Calibration file syntax (from `camera_info_manager`):
     - package://camera_info_manager/tests/test_calibration.yaml
     - package://ros_package_name/calibrations/camera3.yaml
 ```
+
+### Depthai filters
+
+`depthai_filters` contains small composable node examples that show how to work with data from multiple topics.
+Available filters:
+- Detection2DOverlay - subscribes to `/nn/detections` and `rgb/preview/image_raw` topics. To see it in action, run
+`ros2 launch depthai_filters example_det2d_overla.launch.py`. Note here - If you see that detections misalign in the overlay, adjust `rgb.i_preview_size` parameter.
+- SegmentationOverlay, overlays semantic segmentation from `/nn/image_raw` on top of image from `rgb/preview/image_raw`, to see it in action, run
+`ros2 launch depthai_filters example_seg_overlay.launch.py`
+- WLS filter - stereo depth filter that smooths out overall depth image based on disparity data. It subscribes to `stereo/image_raw` and `left/image raw` topics. Parameters needed to enable it - `left.i_publish_topic`, `stereo.i_output_disparity`
+an example can be seen by running  `ros2 launch depthai_filters example_wls_filter.launch.py`
+
 ## Executing an example
 
 ### ROS1

@@ -51,7 +51,7 @@ def launch_setup(context, *args, **kwargs):
                         plugin="depthai_ros_driver::Camera",
                         name=name,
                         parameters=[params_file],
-                    ),
+                    )
             ],
             output="screen",
         ),

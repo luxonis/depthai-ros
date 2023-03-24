@@ -27,6 +27,7 @@
       r_set_man_exposure: false
     nn:
       i_nn_config_path: depthai_ros_driver/mobilenet
+      i_disable_resize: false
     oak:
       rgb:
         image_raw:
@@ -64,7 +65,7 @@
       i_low_bandwidth: false
       i_low_bandwidth_quality: 50
       i_max_q_size: 30
-      i_preview_size: 416
+      i_preview_size: 300
       i_publish_topic: true
       i_resolution: '1080'
       i_set_isp_scale: true
@@ -92,6 +93,7 @@
       r_set_man_exposure: false
     stereo:
       i_align_depth: true
+      i_output_disparity: false
       i_bilateral_sigma: 0
       i_board_socket_id: 0
       i_depth_filter_size: 5

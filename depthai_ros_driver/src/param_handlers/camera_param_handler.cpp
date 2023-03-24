@@ -6,7 +6,7 @@
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-CameraParamHandler::CameraParamHandler(const std::string& name) : BaseParamHandler(name) {
+CameraParamHandler::CameraParamHandler(rclcpp::Node* node, const std::string& name) : BaseParamHandler(node, name) {
     usbSpeedMap = {
         {"LOW", dai::UsbSpeed::LOW},
         {"FULL", dai::UsbSpeed::FULL},
@@ -17,22 +17,22 @@ CameraParamHandler::CameraParamHandler(const std::string& name) : BaseParamHandl
 }
 CameraParamHandler::~CameraParamHandler() = default;
 
-dai::UsbSpeed CameraParamHandler::getUSBSpeed(rclcpp::Node* node) {
-    return usbSpeedMap.at(getParam<std::string>(node, "i_usb_speed"));
+dai::UsbSpeed CameraParamHandler::getUSBSpeed() {
+    return usbSpeedMap.at(getParam<std::string>("i_usb_speed"));
 }
-void CameraParamHandler::declareParams(rclcpp::Node* node) {
-    declareAndLogParam<std::string>(node, "i_pipeline_type", "RGBD");
-    declareAndLogParam<std::string>(node, "i_nn_type", "spatial");
-    declareAndLogParam<bool>(node, "i_enable_imu", true);
-    declareAndLogParam<bool>(node, "i_enable_ir", true);
-    declareAndLogParam<std::string>(node, "i_usb_speed", "SUPER_PLUS");
-    declareAndLogParam<std::string>(node, "i_mx_id", "");
-    declareAndLogParam<std::string>(node, "i_ip", "");
-    declareAndLogParam<std::string>(node, "i_usb_port_id", "");
-    declareAndLogParam<int>(node, "i_laser_dot_brightness", 800, getRangedIntDescriptor(0, 1200));
-    declareAndLogParam<int>(node, "i_floodlight_brightness", 0, getRangedIntDescriptor(0, 1500));
+void CameraParamHandler::declareParams() {
+    declareAndLogParam<std::string>("i_pipeline_type", "RGBD");
+    declareAndLogParam<std::string>("i_nn_type", "spatial");
+    declareAndLogParam<bool>("i_enable_imu", true);
+    declareAndLogParam<bool>("i_enable_ir", true);
+    declareAndLogParam<std::string>("i_usb_speed", "SUPER_PLUS");
+    declareAndLogParam<std::string>("i_mx_id", "");
+    declareAndLogParam<std::string>("i_ip", "");
+    declareAndLogParam<std::string>("i_usb_port_id", "");
+    declareAndLogParam<int>("i_laser_dot_brightness", 800, getRangedIntDescriptor(0, 1200));
+    declareAndLogParam<int>("i_floodlight_brightness", 0, getRangedIntDescriptor(0, 1500));
 }
-dai::CameraControl CameraParamHandler::setRuntimeParams(rclcpp::Node* /*node*/, const std::vector<rclcpp::Parameter>& /*params*/) {
+dai::CameraControl CameraParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& /*params*/) {
     dai::CameraControl ctrl;
     return ctrl;
 }

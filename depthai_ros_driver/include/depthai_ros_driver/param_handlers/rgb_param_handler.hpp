@@ -25,14 +25,13 @@ namespace depthai_ros_driver {
 namespace param_handlers {
 class RGBParamHandler : public BaseParamHandler {
    public:
-    explicit RGBParamHandler(const std::string& name);
+    explicit RGBParamHandler(rclcpp::Node* node, const std::string& name);
     ~RGBParamHandler();
-    void declareParams(rclcpp::Node* node,
-                       std::shared_ptr<dai::node::ColorCamera> colorCam,
+    void declareParams(std::shared_ptr<dai::node::ColorCamera> colorCam,
                        dai::CameraBoardSocket socket,
                        dai_nodes::sensor_helpers::ImageSensor sensor,
                        bool publish);
-    dai::CameraControl setRuntimeParams(rclcpp::Node* node, const std::vector<rclcpp::Parameter>& params) override;
+    dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;
 
    private:
     std::unordered_map<std::string, dai::ColorCameraProperties::SensorResolution> rgbResolutionMap;

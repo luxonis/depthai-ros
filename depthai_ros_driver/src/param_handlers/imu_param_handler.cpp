@@ -6,16 +6,16 @@
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-ImuParamHandler::ImuParamHandler(const std::string& name) : BaseParamHandler(name) {}
+ImuParamHandler::ImuParamHandler(rclcpp::Node* node, const std::string& name) : BaseParamHandler(node, name) {}
 ImuParamHandler::~ImuParamHandler() = default;
-void ImuParamHandler::declareParams(rclcpp::Node* /*node*/, std::shared_ptr<dai::node::IMU> imu) {
+void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu) {
     imu->enableIMUSensor(dai::IMUSensor::ACCELEROMETER_RAW, 400);
     imu->enableIMUSensor(dai::IMUSensor::GYROSCOPE_RAW, 400);
     //   imu->enableIMUSensor(dai::IMUSensor::ROTATION_VECTOR, 400);
     imu->setBatchReportThreshold(1);
     imu->setMaxBatchReports(10);
 }
-dai::CameraControl ImuParamHandler::setRuntimeParams(rclcpp::Node* /*node*/, const std::vector<rclcpp::Parameter>& /*params*/) {
+dai::CameraControl ImuParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& /*params*/) {
     dai::CameraControl ctrl;
     return ctrl;
 }

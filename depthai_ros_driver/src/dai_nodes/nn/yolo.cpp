@@ -19,8 +19,8 @@ Yolo::Yolo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<d
     setNames();
     yoloNode = pipeline->create<dai::node::YoloDetectionNetwork>();
     imageManip = pipeline->create<dai::node::ImageManip>();
-    ph = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
-    ph->declareParams(node, yoloNode, imageManip);
+    ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName);
+    ph->declareParams(yoloNode, imageManip);
     RCLCPP_INFO(node->get_logger(), "Node %s created", daiNodeName.c_str());
     imageManip->out.link(yoloNode->input);
     setXinXout(pipeline);
@@ -37,7 +37,7 @@ void Yolo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 }
 
 void Yolo::setupQueues(std::shared_ptr<dai::Device> device) {
-    nnQ = device->getOutputQueue(nnQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
+    nnQ = device->getOutputQueue(nnQName, ph->getParam<int>("i_max_q_size"), false);
     auto tfPrefix = std::string(getROSNode()->get_name());
     detConverter = std::make_unique<dai::ros::ImgDetectionConverter>(
         tfPrefix + "_rgb_camera_optical_frame", imageManip->initialConfig.getResizeConfig().width, imageManip->initialConfig.getResizeConfig().height, false);
@@ -54,10 +54,6 @@ void Yolo::yoloCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatat
     detConverter->toRosMsg(inDet, deq);
     while(deq.size() > 0) {
         auto currMsg = deq.front();
-        if(currMsg.detections.size() > 0) {
-            int class_id = stoi(currMsg.detections[0].results[0].hypothesis.class_id);
-            currMsg.detections[0].results[0].hypothesis.class_id = ph->getParam<std::vector<std::string>>(getROSNode(), "i_label_map")[class_id];
-        }
         detPub->publish(currMsg);
         deq.pop_front();
     }
@@ -68,11 +64,14 @@ void Yolo::link(const dai::Node::Input& in, int /*linkType*/) {
 }
 
 dai::Node::Input Yolo::getInput(int /*linkType*/) {
+    if(ph->getParam<bool>("i_disable_resize")) {
+        return yoloNode->input;
+    }
     return imageManip->inputImage;
 }
 
 void Yolo::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    ph->setRuntimeParams(getROSNode(), params);
+    ph->setRuntimeParams(params);
 }
 }  // namespace nn
 }  // namespace dai_nodes
