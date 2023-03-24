@@ -16,11 +16,11 @@ NNWrapper::NNWrapper(const std::string& daiNodeName, rclcpp::Node* node, std::sh
     auto family = ph->getNNFamily();
     switch(family) {
         case param_handlers::nn::NNFamily::Yolo: {
-            nnNode = std::make_unique<dai_nodes::nn::Detection>(getName(), getROSNode(), pipeline, pipeline->create<dai::node::YoloDetectionNetwork>());
+            nnNode = std::make_unique<dai_nodes::nn::Detection<dai::node::YoloDetectionNetwork>>(getName(), getROSNode(), pipeline);
             break;
         }
         case param_handlers::nn::NNFamily::Mobilenet: {
-            nnNode = std::make_unique<dai_nodes::nn::Detection>(getName(), getROSNode(), pipeline, pipeline->create<dai::node::MobileNetDetectionNetwork>());
+            nnNode = std::make_unique<dai_nodes::nn::Detection<dai::node::MobileNetDetectionNetwork>>(getName(), getROSNode(), pipeline);
             break;
         }
         case param_handlers::nn::NNFamily::Segmentation: {
@@ -44,7 +44,7 @@ void NNWrapper::closeQueues() {
     nnNode->closeQueues();
 }
 
-void NNWrapper::link(const dai::Node::Input& in, int linkType) {
+void NNWrapper::link(dai::Node::Input in, int linkType) {
     nnNode->link(in, linkType);
 }
 

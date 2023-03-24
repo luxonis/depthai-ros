@@ -93,7 +93,7 @@ void Mono::closeQueues() {
     controlQ->close();
 }
 
-void Mono::link(const dai::Node::Input& in, int /*linkType*/) {
+void Mono::link(dai::Node::Input in, int /*linkType*/) {
     monoCamNode->out.link(in);
 }
 

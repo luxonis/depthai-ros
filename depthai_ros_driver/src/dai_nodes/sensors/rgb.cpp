@@ -125,7 +125,7 @@ void RGB::closeQueues() {
     controlQ->close();
 }
 
-void RGB::link(const dai::Node::Input& in, int linkType) {
+void RGB::link(dai::Node::Input in, int linkType) {
     if(linkType == static_cast<int>(link_types::RGBLinkType::video)) {
         colorCamNode->video.link(in);
     } else if(linkType == static_cast<int>(link_types::RGBLinkType::isp)) {

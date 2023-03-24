@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 3.22)
 project(depthai_ros_driver VERSION 2.6.4)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
   set(CMAKE_C_STANDARD 99)
 endif()
-
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
@@ -90,10 +90,8 @@ set(NN_LIB_NAME ${PROJECT_NAME}_nn_nodes)
 add_library(
   ${NN_LIB_NAME} SHARED
   src/dai_nodes/nn/nn_wrapper.cpp
-  src/dai_nodes/nn/detection.cpp
   src/dai_nodes/nn/spatial_nn_wrapper.cpp
   src/dai_nodes/nn/segmentation.cpp
-  src/dai_nodes/nn/spatial_detection.cpp
 )
 ament_target_dependencies(${NN_LIB_NAME} ${NN_DEPS})
 target_link_libraries(

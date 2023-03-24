@@ -7,3 +7,5 @@
       i_publish_topic: true
     left:
       i_publish_topic: true
+    rgb: 
+      i_set_isp_scale: false

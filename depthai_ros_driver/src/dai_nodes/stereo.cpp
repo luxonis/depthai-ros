@@ -111,7 +111,7 @@ void Stereo::closeQueues() {
     stereoQ->close();
 }
 
-void Stereo::link(const dai::Node::Input& in, int /*linkType*/) {
+void Stereo::link(dai::Node::Input in, int /*linkType*/) {
     stereoCamNode->depth.link(in);
 }
 

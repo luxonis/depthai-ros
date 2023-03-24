@@ -36,6 +36,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> mo
         {"480", dai::MonoCameraProperties::SensorResolution::THE_480_P},
         {"720", dai::MonoCameraProperties::SensorResolution::THE_720_P},
         {"800", dai::MonoCameraProperties::SensorResolution::THE_800_P},
+        {"1200", dai::MonoCameraProperties::SensorResolution::THE_1200_P},
     };
     declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket), true);
     monoCam->setBoardSocket(socket);
