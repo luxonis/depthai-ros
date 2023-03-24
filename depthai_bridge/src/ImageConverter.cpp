@@ -68,7 +68,7 @@ void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData
         }
     }
 
-    output = cv::imdecode(cv::Mat(inData->getData()), decodeFlags);
+    output = cv::imdecode(cv::Mat(1, inData->getData().size(), CV_8UC1, inData->getData().data()), decodeFlags);
 
     // converting disparity
     if(type == dai::RawImgFrame::Type::RAW8) {
