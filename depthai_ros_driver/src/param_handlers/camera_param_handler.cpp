@@ -29,7 +29,6 @@ void CameraParamHandler::declareParams() {
     declareAndLogParam<std::string>("i_mx_id", "");
     declareAndLogParam<std::string>("i_ip", "");
     declareAndLogParam<std::string>("i_usb_port_id", "");
-    declareAndLogParam<bool>("i_pipeline_dump", false);
     declareAndLogParam<int>("i_laser_dot_brightness", 800, getRangedIntDescriptor(0, 1200));
     declareAndLogParam<int>("i_floodlight_brightness", 0, getRangedIntDescriptor(0, 1500));
 }

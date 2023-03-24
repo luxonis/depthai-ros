@@ -54,10 +54,6 @@ void Yolo::yoloCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatat
     detConverter->toRosMsg(inDet, deq);
     while(deq.size() > 0) {
         auto currMsg = deq.front();
-        if(currMsg.detections.size() > 0) {
-            int class_id = stoi(currMsg.detections[0].results[0].hypothesis.class_id);
-            currMsg.detections[0].results[0].hypothesis.class_id = ph->getParam<std::vector<std::string>>("i_label_map")[class_id];
-        }
         detPub->publish(currMsg);
         deq.pop_front();
     }

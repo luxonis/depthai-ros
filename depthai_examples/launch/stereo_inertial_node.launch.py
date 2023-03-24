@@ -352,6 +352,7 @@ def generate_launch_description():
                         {'enableSpatialDetection':  enableSpatialDetection},
                         {'detectionClassesCount':   detectionClassesCount},
                         {'syncNN':                  syncNN},
+                        {'nnName':                  nnName},
                         
                         {'enableDotProjector':      enableDotProjector},
                         {'enableFloodLight':        enableFloodLight},
