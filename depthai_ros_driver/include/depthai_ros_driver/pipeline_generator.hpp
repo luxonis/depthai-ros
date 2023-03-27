@@ -18,7 +18,7 @@ class Node;
 
 namespace depthai_ros_driver {
 namespace pipeline_gen {
-enum class PipelineType { RGB, RGBD, RGBStereo, Stereo, Depth, CamArray };
+enum class PipelineType { RGB, RGBD, RGBStereo, Stereo, Depth, CamArray, Rae };
 enum class NNType { None, RGB, Spatial };
 class PipelineGenerator {
    public:
@@ -43,7 +43,8 @@ class PipelineGenerator {
                                                                   {"RGBSTEREO", PipelineType::RGBStereo},
                                                                   {"STEREO", PipelineType::Stereo},
                                                                   {"DEPTH", PipelineType::Depth},
-                                                                  {"CAMARRAY", PipelineType::CamArray}};
+                                                                  {"CAMARRAY", PipelineType::CamArray},
+                                                                  {"RAE", PipelineType::Rae}};
     std::unordered_map<std::string, NNType> nnTypeMap = {
         {"", NNType::None},
         {"NONE", NNType::None},

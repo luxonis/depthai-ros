@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
@@ -42,7 +43,14 @@ enum class StereoLinkType { left, right };
 };
 class Stereo : public BaseNode {
    public:
-    explicit Stereo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device);
+    explicit Stereo(const std::string& daiNodeName,
+                    rclcpp::Node* node,
+                    std::shared_ptr<dai::Pipeline> pipeline,
+                    std::shared_ptr<dai::Device> device,
+                    const std::string& leftName = "left",
+                    const std::string& rightName = "right",
+                    dai::CameraBoardSocket leftSocket = dai::CameraBoardSocket::LEFT,
+                    dai::CameraBoardSocket rightSocket = dai::CameraBoardSocket::RIGHT);
     ~Stereo();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;

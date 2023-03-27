@@ -18,13 +18,20 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-Stereo::Stereo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device)
+Stereo::Stereo(const std::string& daiNodeName,
+               rclcpp::Node* node,
+               std::shared_ptr<dai::Pipeline> pipeline,
+               std::shared_ptr<dai::Device> device,
+               const std::string& leftName,
+               const std::string& rightName,
+               dai::CameraBoardSocket leftSocket,
+               dai::CameraBoardSocket rightSocket)
     : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     stereoCamNode = pipeline->create<dai::node::StereoDepth>();
-    left = std::make_unique<SensorWrapper>("left", node, pipeline, device, dai::CameraBoardSocket::LEFT, false);
-    right = std::make_unique<SensorWrapper>("right", node, pipeline, device, dai::CameraBoardSocket::RIGHT, false);
+    left = std::make_unique<SensorWrapper>(leftName, node, pipeline, device, leftSocket, false);
+    right = std::make_unique<SensorWrapper>(rightName, node, pipeline, device, rightSocket, false);
 
     ph = std::make_unique<param_handlers::StereoParamHandler>(node, daiNodeName);
     ph->declareParams(stereoCamNode);
