@@ -64,7 +64,7 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
     } else {
         tfPrefix = getTFPrefix("right");
     }
-    imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
+    imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
 
     stereoPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
     infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(

@@ -58,7 +58,8 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_publish_topic")) {
         monoQ = device->getOutputQueue(monoQName, ph->getParam<int>("i_max_q_size"), false);
         auto tfPrefix = getTFPrefix(getName());
-        imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
+        imageConverter =
+            std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
         monoPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
             getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());

@@ -34,9 +34,9 @@ ImageMsgs::CameraInfo calibrationToCameraInfo(dai::CalibrationHandler calibHandl
 class ImageConverter {
    public:
     // ImageConverter() = default;
-    ImageConverter(const std::string frameName, bool interleaved);
+    ImageConverter(const std::string frameName, bool interleaved, bool getBaseDeviceTimestamp = false);
     ~ImageConverter();
-    ImageConverter(bool interleaved);
+    ImageConverter(bool interleaved, bool getBaseDeviceTimestamp = false);
     void toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData,
                                std::deque<ImageMsgs::Image>& outImageMsgs,
                                dai::RawImgFrame::Type type,
@@ -72,6 +72,7 @@ class ImageConverter {
     std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
 
     rclcpp::Time _rosBaseTime;
+    bool _getBaseDeviceTimestamp;
 };
 
 }  // namespace ros

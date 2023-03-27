@@ -24,6 +24,7 @@ void SensorParamHandler::declareCommonParams() {
     declareAndLogParam<bool>("i_simulate_from_topic", false);
     declareAndLogParam<std::string>("i_simulated_topic_name", "");
     declareAndLogParam<bool>("i_disable_node", false);
+    declareAndLogParam<bool>("i_get_base_device_timestamp", false);
     declareAndLogParam<int>("i_board_socket_id", 0);
 }
 

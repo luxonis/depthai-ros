@@ -43,8 +43,11 @@ class Detection : public BaseNode {
     void setupQueues(std::shared_ptr<dai::Device> device) override {
         nnQ = device->getOutputQueue(nnQName, ph->getParam<int>("i_max_q_size"), false);
         auto tfPrefix = getTFPrefix("rgb");
-        detConverter = std::make_unique<dai::ros::ImgDetectionConverter>(
-            tfPrefix + "_camera_optical_frame", imageManip->initialConfig.getResizeConfig().width, imageManip->initialConfig.getResizeConfig().height, false);
+        detConverter = std::make_unique<dai::ros::ImgDetectionConverter>(tfPrefix + "_camera_optical_frame",
+                                                                         imageManip->initialConfig.getResizeConfig().width,
+                                                                         imageManip->initialConfig.getResizeConfig().height,
+                                                                         false,
+                                                                         ph->getParam<bool>("i_get_base_device_timestamp"));
         detPub = getROSNode()->template create_publisher<vision_msgs::msg::Detection2DArray>("~/" + getName() + "/detections", 10);
         nnQ->addCallback(std::bind(&Detection::detectionCB, this, std::placeholders::_1, std::placeholders::_2));
 

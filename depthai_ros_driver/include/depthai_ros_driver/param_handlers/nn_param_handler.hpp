@@ -41,6 +41,7 @@ class NNParamHandler : public BaseParamHandler {
         declareAndLogParam<bool>("i_disable_resize", false);
         declareAndLogParam<bool>("i_enable_passthrough", false);
         declareAndLogParam<bool>("i_enable_passthrough_depth", false);
+        declareAndLogParam<bool>("i_get_base_device_timestamp", false);
         auto nn_path = getParam<std::string>("i_nn_config_path");
         using json = nlohmann::json;
         std::ifstream f(nn_path);
