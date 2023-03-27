@@ -171,9 +171,11 @@ PipelineType PipelineGenerator::validatePipeline(rclcpp::Node* node, PipelineTyp
             RCLCPP_ERROR(node->get_logger(), "Wrong pipeline chosen for camera as it has only stereo pair. Switching to Stereo.");
             return PipelineType::Stereo;
         }
-    } else if(sensorNum > 3 && type != PipelineType::CamArray) {
-        RCLCPP_ERROR(node->get_logger(), "For cameras with more than three sensors you can only use CamArray. Switching to CamArray.");
-        return PipelineType::CamArray;
+    } else if(sensorNum > 3) {
+        if(type != PipelineType::Rae && type != PipelineType::CamArray) {
+            RCLCPP_ERROR(node->get_logger(), "For cameras with more than three sensors you can only use CamArray. Switching to CamArray.");
+            return PipelineType::CamArray;
+        }
     }
     return type;
 }
