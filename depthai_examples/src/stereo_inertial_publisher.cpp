@@ -332,6 +332,7 @@ int main(int argc, char** argv) {
     node->declare_parameter("enableSpatialDetection", true);
     node->declare_parameter("detectionClassesCount", 80);
     node->declare_parameter("syncNN", true);
+    node->declare_parameter("nnName", "x");
 
     node->declare_parameter("enableDotProjector", false);
     node->declare_parameter("enableFloodLight", false);

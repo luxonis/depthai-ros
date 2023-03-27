@@ -84,6 +84,7 @@ std::vector<ImageSensor> availableSensors{
     {"IMX577", {"12mp", "4k", "1080p"}, true},
     {"AR0234", {"1200P"}, true},
     {"IMX582", {"48mp", "12mp", "4k"}, true},
+    {"LCM48", {"48mp", "12mp", "4k"}, true},
 };
 void compressedImgCB(const std::string& /*name*/,
                      const std::shared_ptr<dai::ADatatype>& data,
