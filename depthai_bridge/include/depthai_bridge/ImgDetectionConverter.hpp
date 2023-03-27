@@ -16,7 +16,7 @@ using Detection2DArrayPtr = VisionMsgs::Detection2DArray::SharedPtr;
 class ImgDetectionConverter {
    public:
     // DetectionConverter() = default;
-    ImgDetectionConverter(std::string frameName, int width, int height, bool normalized = false);
+    ImgDetectionConverter(std::string frameName, int width, int height, bool normalized = false, bool getBaseDeviceTimestamp = false);
     ~ImgDetectionConverter();
     void toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, std::deque<VisionMsgs::Detection2DArray>& opDetectionMsgs);
 
@@ -28,6 +28,7 @@ class ImgDetectionConverter {
     bool _normalized;
     std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
     rclcpp::Time _rosBaseTime;
+    bool _getBaseDeviceTimestamp;
 };
 
 /** TODO(sachin): Do we need to have ros msg -> dai bounding box ?

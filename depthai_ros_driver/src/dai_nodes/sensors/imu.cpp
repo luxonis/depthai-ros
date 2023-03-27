@@ -55,7 +55,7 @@ void Imu::imuQCB(const std::string& /*name*/, const std::shared_ptr<dai::ADataty
     }
 }
 
-void Imu::link(const dai::Node::Input& in, int /*linkType*/) {
+void Imu::link(dai::Node::Input in, int /*linkType*/) {
     imuNode->out.link(in);
 }
 

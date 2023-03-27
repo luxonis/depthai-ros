@@ -2,8 +2,8 @@
 
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
-#include "depthai_ros_driver/dai_nodes/nn/spatial_mobilenet.hpp"
-#include "depthai_ros_driver/dai_nodes/nn/spatial_yolo.hpp"
+#include "depthai/pipeline/node/SpatialDetectionNetwork.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/spatial_detection.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
 #include "rclcpp/node.hpp"
 
@@ -16,11 +16,11 @@ SpatialNNWrapper::SpatialNNWrapper(const std::string& daiNodeName, rclcpp::Node*
     auto family = ph->getNNFamily();
     switch(family) {
         case param_handlers::nn::NNFamily::Yolo: {
-            nnNode = std::make_unique<dai_nodes::nn::SpatialYolo>(getName(), getROSNode(), pipeline);
+            nnNode = std::make_unique<dai_nodes::nn::SpatialDetection<dai::node::YoloSpatialDetectionNetwork>>(getName(), getROSNode(), pipeline);
             break;
         }
         case param_handlers::nn::NNFamily::Mobilenet: {
-            nnNode = std::make_unique<dai_nodes::nn::SpatialMobilenet>(getName(), getROSNode(), pipeline);
+            nnNode = std::make_unique<dai_nodes::nn::SpatialDetection<dai::node::MobileNetSpatialDetectionNetwork>>(getName(), getROSNode(), pipeline);
             break;
         }
         case param_handlers::nn::NNFamily::Segmentation: {
@@ -42,7 +42,7 @@ void SpatialNNWrapper::closeQueues() {
     nnNode->closeQueues();
 }
 
-void SpatialNNWrapper::link(const dai::Node::Input& in, int linkType) {
+void SpatialNNWrapper::link(dai::Node::Input in, int linkType) {
     nnNode->link(in, linkType);
 }
 

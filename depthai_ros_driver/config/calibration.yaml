@@ -1,0 +1,11 @@
+/oak:
+  ros__parameters:
+    camera:
+      i_nn_type: none
+      i_pipeline_type: RGBStereo
+    right:
+      i_publish_topic: true
+    left:
+      i_publish_topic: true
+    rgb: 
+      i_set_isp_scale: false

@@ -33,7 +33,7 @@ class CameraInfoManager;
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-class MonoParamHandler;
+class SensorParamHandler;
 }
 namespace dai_nodes {
 
@@ -48,7 +48,7 @@ class Mono : public BaseNode {
     ~Mono();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
-    void link(const dai::Node::Input& in, int linkType = 0) override;
+    void link(dai::Node::Input in, int linkType = 0) override;
     void setNames() override;
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
@@ -59,7 +59,7 @@ class Mono : public BaseNode {
     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
     std::shared_ptr<dai::node::MonoCamera> monoCamNode;
     std::shared_ptr<dai::node::VideoEncoder> videoEnc;
-    std::unique_ptr<param_handlers::MonoParamHandler> ph;
+    std::unique_ptr<param_handlers::SensorParamHandler> ph;
     std::shared_ptr<dai::DataOutputQueue> monoQ;
     std::shared_ptr<dai::DataInputQueue> controlQ;
     std::shared_ptr<dai::node::XLinkOut> xoutMono;

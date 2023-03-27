@@ -7,6 +7,7 @@
 #include "depthai/pipeline/node/ImageManip.hpp"
 #include "depthai/pipeline/node/NeuralNetwork.hpp"
 #include "depthai/pipeline/node/SpatialDetectionNetwork.hpp"
+#include "depthai_ros_driver/utils.hpp"
 #include "nlohmann/json.hpp"
 #include "rclcpp/logger.hpp"
 #include "rclcpp/node.hpp"
@@ -45,7 +46,7 @@ nn::NNFamily NNParamHandler::getNNFamily() {
     } else {
         throw std::runtime_error("No required fields");
     }
-    return nnFamilyMap.at(nnFamily);
+    return utils::getValFromMap(nnFamily, nnFamilyMap);
 }
 
 void NNParamHandler::setNNParams(nlohmann::json data, std::shared_ptr<dai::node::NeuralNetwork> /*nn*/) {
@@ -114,7 +115,6 @@ void NNParamHandler::setImageManip(const std::string& model_path, std::shared_pt
     auto inputSize = firstInfo->second.dims[0];
     if(inputSize > 590) {
         std::ostringstream stream;
-
         stream << "Current network input size is too large to resize. Please set following parameters: rgb.i_preview_size: " << inputSize;
         stream << " and nn.i_disable_resize to true";
         throw std::runtime_error(stream.str());
@@ -123,6 +123,7 @@ void NNParamHandler::setImageManip(const std::string& model_path, std::shared_pt
     imageManip->inputImage.setBlocking(false);
     imageManip->inputImage.setQueueSize(8);
     imageManip->setKeepAspectRatio(false);
+    RCLCPP_INFO(getROSNode()->get_logger(), "NN input size: %d x %d. Resizing input image in case of different dimensions.", inputSize, inputSize);
     imageManip->initialConfig.setResize(inputSize, inputSize);
 }
 std::string NNParamHandler::getModelPath(const nlohmann::json& data) {

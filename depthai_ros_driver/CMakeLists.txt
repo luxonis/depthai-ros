@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 3.22)
 project(depthai_ros_driver VERSION 2.6.4)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
   set(CMAKE_C_STANDARD 99)
 endif()
-
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
@@ -59,13 +59,13 @@ include_directories(include)
 set(COMMON_LIB_NAME ${PROJECT_NAME}_common)
 add_library(
   ${COMMON_LIB_NAME} SHARED
+  src/utils.cpp
   src/dai_nodes/base_node.cpp
   src/dai_nodes/sensors/sensor_helpers.cpp # TODO: Figure out different place for this 
   src/param_handlers/camera_param_handler.cpp
   src/param_handlers/imu_param_handler.cpp
   src/param_handlers/nn_param_handler.cpp
-  src/param_handlers/rgb_param_handler.cpp
-  src/param_handlers/mono_param_handler.cpp
+  src/param_handlers/sensor_param_handler.cpp
   src/param_handlers/stereo_param_handler.cpp
 )
 
@@ -77,7 +77,7 @@ add_library(
   src/dai_nodes/sensors/imu.cpp
   src/dai_nodes/sensors/rgb.cpp
   src/dai_nodes/sensors/mono.cpp
-  src/dai_nodes/sensors/camera_sensor.cpp
+  src/dai_nodes/sensors/sensor_wrapper.cpp
   src/dai_nodes/stereo.cpp
 )
 
@@ -92,10 +92,6 @@ add_library(
   src/dai_nodes/nn/nn_wrapper.cpp
   src/dai_nodes/nn/spatial_nn_wrapper.cpp
   src/dai_nodes/nn/segmentation.cpp
-  src/dai_nodes/nn/mobilenet.cpp
-  src/dai_nodes/nn/yolo.cpp
-  src/dai_nodes/nn/spatial_mobilenet.cpp
-  src/dai_nodes/nn/spatial_yolo.cpp
 )
 ament_target_dependencies(${NN_LIB_NAME} ${NN_DEPS})
 target_link_libraries(

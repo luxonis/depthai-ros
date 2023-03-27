@@ -18,8 +18,7 @@ using SpatialDetectionArrayPtr = SpatialMessages::SpatialDetectionArray::SharedP
 
 class SpatialDetectionConverter {
    public:
-    // DetectionConverter() = default;
-    SpatialDetectionConverter(std::string frameName, int width, int height, bool normalized = false);
+    SpatialDetectionConverter(std::string frameName, int width, int height, bool normalized = false, bool getBaseDeviceTimestamp = false);
     ~SpatialDetectionConverter();
     void toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData, std::deque<SpatialMessages::SpatialDetectionArray>& opDetectionMsg);
     void toRosVisionMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData, std::deque<vision_msgs::msg::Detection3DArray>& opDetectionMsg);
@@ -33,6 +32,7 @@ class SpatialDetectionConverter {
     std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
 
     rclcpp::Time _rosBaseTime;
+    bool _getBaseDeviceTimestamp;
 };
 
 /** TODO(sachin): Do we need to have ros msg -> dai bounding box ?

@@ -10,7 +10,7 @@
 #include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
-#include "depthai_ros_driver/param_handlers/rgb_param_handler.hpp"
+#include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/node.hpp"
@@ -27,7 +27,7 @@ RGB::RGB(const std::string& daiNodeName,
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     colorCamNode = pipeline->create<dai::node::ColorCamera>();
-    ph = std::make_unique<param_handlers::RGBParamHandler>(node, daiNodeName);
+    ph = std::make_unique<param_handlers::SensorParamHandler>(node, daiNodeName);
     ph->declareParams(colorCamNode, socket, sensor, publish);
     setXinXout(pipeline);
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
@@ -68,7 +68,8 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         auto tfPrefix = getTFPrefix(getName());
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
             getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
-        imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
+        imageConverter =
+            std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
         if(ph->getParam<std::string>("i_calibration_file").empty()) {
             infoManager->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
                                                                     *imageConverter,
@@ -125,7 +126,7 @@ void RGB::closeQueues() {
     controlQ->close();
 }
 
-void RGB::link(const dai::Node::Input& in, int linkType) {
+void RGB::link(dai::Node::Input in, int linkType) {
     if(linkType == static_cast<int>(link_types::RGBLinkType::video)) {
         colorCamNode->video.link(in);
     } else if(linkType == static_cast<int>(link_types::RGBLinkType::isp)) {

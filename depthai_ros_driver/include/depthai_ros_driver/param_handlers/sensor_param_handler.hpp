@@ -4,16 +4,17 @@
 #include <unordered_map>
 #include <vector>
 
-#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai-shared/properties/ColorCameraProperties.hpp"
+#include "depthai-shared/properties/MonoCameraProperties.hpp"
 #include "depthai/pipeline/datatype/CameraControl.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
 
 namespace dai {
 namespace node {
+class MonoCamera;
 class ColorCamera;
-}
+}  // namespace node
 }  // namespace dai
 
 namespace rclcpp {
@@ -23,10 +24,15 @@ class Parameter;
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-class RGBParamHandler : public BaseParamHandler {
+class SensorParamHandler : public BaseParamHandler {
    public:
-    explicit RGBParamHandler(rclcpp::Node* node, const std::string& name);
-    ~RGBParamHandler();
+    explicit SensorParamHandler(rclcpp::Node* node, const std::string& name);
+    ~SensorParamHandler();
+    void declareCommonParams();
+    void declareParams(std::shared_ptr<dai::node::MonoCamera> monoCam,
+                       dai::CameraBoardSocket socket,
+                       dai_nodes::sensor_helpers::ImageSensor sensor,
+                       bool publish);
     void declareParams(std::shared_ptr<dai::node::ColorCamera> colorCam,
                        dai::CameraBoardSocket socket,
                        dai_nodes::sensor_helpers::ImageSensor sensor,
@@ -34,6 +40,7 @@ class RGBParamHandler : public BaseParamHandler {
     dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;
 
    private:
+    std::unordered_map<std::string, dai::MonoCameraProperties::SensorResolution> monoResolutionMap;
     std::unordered_map<std::string, dai::ColorCameraProperties::SensorResolution> rgbResolutionMap;
 };
 }  // namespace param_handlers

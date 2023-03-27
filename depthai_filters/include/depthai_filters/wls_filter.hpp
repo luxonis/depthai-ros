@@ -13,7 +13,7 @@
 namespace depthai_filters {
 class WLSFilter : public rclcpp::Node {
    public:
-    explicit WLSFilter(const rclcpp::NodeOptions& options);
+    explicit WLSFilter(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
     void onInit();
 
     void wlsCB(const sensor_msgs::msg::Image::ConstSharedPtr& disp,

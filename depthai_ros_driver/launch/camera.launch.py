@@ -12,7 +12,7 @@ from launch_ros.descriptions import ComposableNode
 
 def launch_setup(context, *args, **kwargs):
     log_level = 'info'
-    if(context.environment.get('DEPTHAI_DEBUG')):
+    if(context.environment.get('DEPTHAI_DEBUG')=='1'):
         log_level='debug'
 
     urdf_launch_dir = os.path.join(get_package_share_directory('depthai_descriptions'), 'launch')

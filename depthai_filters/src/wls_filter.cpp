@@ -7,7 +7,7 @@
 
 namespace depthai_filters {
 
-WLSFilter::WLSFilter(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : rclcpp::Node("wls_filter", options) {
+WLSFilter::WLSFilter(const rclcpp::NodeOptions& options) : rclcpp::Node("wls_filter", options) {
     onInit();
 }
 void WLSFilter::onInit() {

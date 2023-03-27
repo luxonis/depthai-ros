@@ -2,6 +2,7 @@
 
 #include "depthai/pipeline/datatype/StereoDepthConfig.hpp"
 #include "depthai/pipeline/node/StereoDepth.hpp"
+#include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/logger.hpp"
 #include "rclcpp/node.hpp"
 
@@ -36,18 +37,33 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<bool>("i_low_bandwidth", false);
     declareAndLogParam<int>("i_low_bandwidth_quality", 50);
     declareAndLogParam<bool>("i_output_disparity", false);
+    declareAndLogParam<bool>("i_get_base_device_timestamp", false);
     stereo->setLeftRightCheck(declareAndLogParam<bool>("i_lr_check", true));
+    int width = 1280;
+    int height = 720;
     if(declareAndLogParam<bool>("i_align_depth", true)) {
         declareAndLogParam<int>("i_board_socket_id", static_cast<int>(dai::CameraBoardSocket::RGB));
         stereo->setDepthAlign(dai::CameraBoardSocket::RGB);
-        declareAndLogParam<int>("i_width", getROSNode()->get_parameter("rgb.i_width").as_int());
-        declareAndLogParam<int>("i_height", getROSNode()->get_parameter("rgb.i_height").as_int());
+        try {
+            width = getROSNode()->get_parameter("rgb.i_width").as_int();
+            height = getROSNode()->get_parameter("rgb.i_height").as_int();
+        } catch(rclcpp::exceptions::ParameterNotDeclaredException& e) {
+            RCLCPP_ERROR(getROSNode()->get_logger(), "RGB parameters not set, defaulting to 1280x720 unless specified otherwise.");
+        }
+
     } else {
         declareAndLogParam<int>("i_board_socket_id", static_cast<int>(dai::CameraBoardSocket::RIGHT));
-        declareAndLogParam<int>("i_width", getROSNode()->get_parameter("right.i_width").as_int());
-        declareAndLogParam<int>("i_height", getROSNode()->get_parameter("right.i_height").as_int());
+        try {
+            width = getROSNode()->get_parameter("right.i_width").as_int();
+            height = getROSNode()->get_parameter("right.i_height").as_int();
+        } catch(rclcpp::exceptions::ParameterNotDeclaredException& e) {
+            RCLCPP_ERROR(getROSNode()->get_logger(), "Right parameters not set, defaulting to 1280x720 unless specified otherwise.");
+        }
         stereo->setDepthAlign(dai::CameraBoardSocket::RIGHT);
     }
+    stereo->setInputResolution(declareAndLogParam<int>("i_input_width", 1280), declareAndLogParam<int>("i_input_height", 720));
+    declareAndLogParam<int>("i_width", width);
+    declareAndLogParam<int>("i_height", height);
     stereo->setDefaultProfilePreset(depthPresetMap.at(declareAndLogParam<std::string>("i_depth_preset", "HIGH_ACCURACY")));
     stereo->enableDistortionCorrection(declareAndLogParam<bool>("i_enable_distortion_correction", false));
 
@@ -64,7 +80,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
         config.postProcessing.temporalFilter.alpha = declareAndLogParam<float>("i_temporal_filter_alpha", 0.4);
         config.postProcessing.temporalFilter.delta = declareAndLogParam<int>("i_temporal_filter_delta", 20);
         config.postProcessing.temporalFilter.persistencyMode =
-            temporalPersistencyMap.at(declareAndLogParam<std::string>("i_temporal_filter_persistency", "VALID_2_IN_LAST_4"));
+            utils::getValFromMap(declareAndLogParam<std::string>("i_temporal_filter_persistency", "VALID_2_IN_LAST_4"), temporalPersistencyMap);
     }
     config.postProcessing.speckleFilter.enable = declareAndLogParam<bool>("i_enable_speckle_filter", false);
     if(config.postProcessing.speckleFilter.enable) {
@@ -83,7 +99,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     }
     if(declareAndLogParam<bool>("i_enable_decimation_filter", false)) {
         config.postProcessing.decimationFilter.decimationMode =
-            decimationModeMap.at(declareAndLogParam<std::string>("i_decimation_filter_decimation_mode", "PIXEL_SKIPPING"));
+            utils::getValFromMap(declareAndLogParam<std::string>("i_decimation_filter_decimation_mode", "PIXEL_SKIPPING"), decimationModeMap);
         config.postProcessing.decimationFilter.decimationFactor = declareAndLogParam<int>("i_decimation_filter_decimation_factor", 1);
     }
     stereo->initialConfig.set(config);

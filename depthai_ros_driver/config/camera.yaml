@@ -12,15 +12,20 @@
       i_usb_port_id: ''
       i_usb_speed: SUPER_PLUS
       i_pipeline_dump: false
+      i_calibration_dump: false
+      i_external_calibration_path: ''
     left:
       i_board_socket_id: 1
       i_calibration_file: ''
+      i_get_base_device_timestamp: true
       i_fps: 30.0
       i_height: 720
       i_low_bandwidth: false
       i_low_bandwidth_quality: 50
       i_max_q_size: 30
       i_publish_topic: false
+      i_simulate_from_topic: false
+      i_disable_node: false
       i_resolution: '720'
       i_width: 1280
       r_exposure: 1000
@@ -29,34 +34,13 @@
     nn:
       i_nn_config_path: depthai_ros_driver/mobilenet
       i_disable_resize: false
-    oak:
-      rgb:
-        image_raw:
-          format: jpeg
-          jpeg_quality: 95
-          png_level: 3
-          tiff:
-            res_unit: inch
-            xdpi: -1
-            ydpi: -1
-      stereo:
-        image_raw:
-          format: jpeg
-          jpeg_quality: 95
-          png_level: 3
-          tiff:
-            res_unit: inch
-            xdpi: -1
-            ydpi: -1
-    qos_overrides:
-      /parameter_events:
-        publisher:
-          depth: 1000
-          durability: volatile
-          history: keep_last
-          reliability: reliable
+      i_enable_passthrough: false
+      i_enable_passthrough_depth: false
     rgb:
       i_board_socket_id: 0
+      i_simulate_from_topic: false
+      i_get_base_device_timestamp: true
+      i_disable_node: false
       i_calibration_file: ''
       i_enable_preview: false
       i_fps: 30.0
@@ -81,12 +65,15 @@
     right:
       i_board_socket_id: 2
       i_calibration_file: ''
+      i_get_base_device_timestamp: true
       i_fps: 30.0
       i_height: 720
       i_low_bandwidth: false
       i_low_bandwidth_quality: 50
       i_max_q_size: 30
       i_publish_topic: false
+      i_simulate_from_topic: false
+      i_disable_node: false
       i_resolution: '720'
       i_width: 1280
       r_exposure: 1000
@@ -94,6 +81,7 @@
       r_set_man_exposure: false
     stereo:
       i_align_depth: true
+      i_get_base_device_timestamp: true
       i_output_disparity: false
       i_bilateral_sigma: 0
       i_board_socket_id: 0

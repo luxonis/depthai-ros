@@ -40,7 +40,7 @@ class PipelineGenerator {
    private:
     std::unordered_map<std::string, PipelineType> pipelineTypeMap{{"RGB", PipelineType::RGB},
                                                                   {"RGBD", PipelineType::RGBD},
-                                                                  {"RGBDSTEREO", PipelineType::RGBStereo},
+                                                                  {"RGBSTEREO", PipelineType::RGBStereo},
                                                                   {"STEREO", PipelineType::Stereo},
                                                                   {"DEPTH", PipelineType::Depth},
                                                                   {"CAMARRAY", PipelineType::CamArray}};
