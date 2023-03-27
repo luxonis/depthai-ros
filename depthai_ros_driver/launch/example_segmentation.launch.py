@@ -17,19 +17,13 @@ def launch_setup(context, *args, **kwargs):
     params_file= LaunchConfiguration("params_file")
 
     return [
-        Node(
-                condition=IfCondition(LaunchConfiguration("use_rviz")),
-                package="rviz2",
-                executable="rviz2",
-                name="rviz2",
-                output="log",
-                arguments=["-d", rviz_config],
-            ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 os.path.join(depthai_prefix, 'launch', 'camera.launch.py')),
             launch_arguments={"name": name,
-                              "params_file": params_file}.items())
+                              "params_file": params_file,
+                              "use_rviz": LaunchConfiguration("use_rviz"),
+                              "rviz_config": rviz_config}.items())
     ]
 
 
@@ -38,8 +32,7 @@ def generate_launch_description():
     declared_arguments = [
         DeclareLaunchArgument("name", default_value="oak"),
         DeclareLaunchArgument("params_file", default_value=os.path.join(depthai_prefix, 'config', 'segmentation.yaml')),
-        DeclareLaunchArgument("use_rviz", default_value="False"),
-
+        DeclareLaunchArgument("use_rviz", default_value="True"),
     ]
 
     return LaunchDescription(

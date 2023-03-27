@@ -6,3 +6,4 @@
       i_publish_topic: true
     stereo:
       i_align_depth: false
+      i_subpixel: true

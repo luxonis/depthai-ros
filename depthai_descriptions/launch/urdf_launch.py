@@ -13,7 +13,7 @@ from ament_index_python.packages import get_package_share_directory
 import os
 
 def launch_setup(context, *args, **kwargs):
-    bringup_dir = get_package_share_directory('depthai_bridge')
+    bringup_dir = get_package_share_directory('depthai_descriptions')
     xacro_path = os.path.join(bringup_dir, 'urdf', 'depthai_descr.urdf.xacro')
 
     camera_model = LaunchConfiguration('camera_model',  default = 'OAK-D')
