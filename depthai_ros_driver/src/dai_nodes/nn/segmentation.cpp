@@ -1,8 +1,20 @@
 #include "depthai_ros_driver/dai_nodes/nn/segmentation.hpp"
 
+#include "camera_info_manager/camera_info_manager.hpp"
 #include "cv_bridge/cv_bridge.h"
+#include "depthai/device/DataQueue.hpp"
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/datatype/NNData.hpp"
+#include "depthai/pipeline/node/ImageManip.hpp"
+#include "depthai/pipeline/node/NeuralNetwork.hpp"
+#include "depthai/pipeline/node/XLinkOut.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
+#include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
+#include "rclcpp/node.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
 #include "sensor_msgs/msg/image.hpp"
 
@@ -16,31 +28,58 @@ Segmentation::Segmentation(const std::string& daiNodeName, rclcpp::Node* node, s
     setNames();
     segNode = pipeline->create<dai::node::NeuralNetwork>();
     imageManip = pipeline->create<dai::node::ImageManip>();
-    ph = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
-    ph->declareParams(node, segNode, imageManip);
+    ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName);
+    ph->declareParams(segNode, imageManip);
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
     imageManip->out.link(segNode->input);
     setXinXout(pipeline);
 }
 
+Segmentation::~Segmentation() = default;
+
 void Segmentation::setNames() {
     nnQName = getName() + "_nn";
+    ptQName = getName() + "_pt";
 }
 
 void Segmentation::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     xoutNN = pipeline->create<dai::node::XLinkOut>();
     xoutNN->setStreamName(nnQName);
     segNode->out.link(xoutNN->input);
+    if(ph->getParam<bool>("i_enable_passthrough")) {
+        xoutPT = pipeline->create<dai::node::XLinkOut>();
+        xoutPT->setStreamName(ptQName);
+        segNode->passthrough.link(xoutPT->input);
+    }
 }
 
 void Segmentation::setupQueues(std::shared_ptr<dai::Device> device) {
-    nnQ = device->getOutputQueue(nnQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
+    nnQ = device->getOutputQueue(nnQName, ph->getParam<int>("i_max_q_size"), false);
     nnPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
     nnQ->addCallback(std::bind(&Segmentation::segmentationCB, this, std::placeholders::_1, std::placeholders::_2));
+    if(ph->getParam<bool>("i_enable_passthrough")) {
+        auto tfPrefix = getTFPrefix("rgb");
+        ptQ = device->getOutputQueue(ptQName, ph->getParam<int>("i_max_q_size"), false);
+        imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
+        infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
+            getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
+        infoManager->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
+                                                                *imageConverter,
+                                                                device,
+                                                                dai::CameraBoardSocket::RGB,
+                                                                imageManip->initialConfig.getResizeWidth(),
+                                                                imageManip->initialConfig.getResizeWidth()));
+
+        ptPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/passthrough/image_raw");
+        ptQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager));
+    }
 }
 
 void Segmentation::closeQueues() {
     nnQ->close();
+    if(ph->getParam<bool>("i_enable_passthrough")) {
+        ptQ->close();
+    }
 }
 
 void Segmentation::segmentationCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
@@ -77,16 +116,19 @@ cv::Mat Segmentation::decodeDeeplab(cv::Mat mat) {
     }
     return colors;
 }
-void Segmentation::link(const dai::Node::Input& in, int /*linkType*/) {
+void Segmentation::link(dai::Node::Input in, int /*linkType*/) {
     segNode->out.link(in);
 }
 
 dai::Node::Input Segmentation::getInput(int /*linkType*/) {
+    if(ph->getParam<bool>("i_disable_resize")) {
+        return segNode->input;
+    }
     return imageManip->inputImage;
 }
 
 void Segmentation::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    ph->setRuntimeParams(getROSNode(), params);
+    ph->setRuntimeParams(params);
 }
 }  // namespace nn
 }  // namespace dai_nodes

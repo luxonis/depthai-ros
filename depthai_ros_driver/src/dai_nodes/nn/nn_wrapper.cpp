@@ -1,25 +1,26 @@
 #include "depthai_ros_driver/dai_nodes/nn/nn_wrapper.hpp"
 
-#include "cv_bridge/cv_bridge.h"
-#include "depthai_ros_driver/dai_nodes/nn/mobilenet.hpp"
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/node/DetectionNetwork.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/detection.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/segmentation.hpp"
-#include "depthai_ros_driver/dai_nodes/nn/yolo.hpp"
-#include "image_transport/camera_publisher.hpp"
-#include "image_transport/image_transport.hpp"
+#include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
+#include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
 NNWrapper::NNWrapper(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s base", daiNodeName.c_str());
-    ph = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
-    auto family = ph->getNNFamily(getROSNode());
+    ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName);
+    auto family = ph->getNNFamily();
     switch(family) {
         case param_handlers::nn::NNFamily::Yolo: {
-            nnNode = std::make_unique<dai_nodes::nn::Yolo>(getName(), getROSNode(), pipeline);
+            nnNode = std::make_unique<dai_nodes::nn::Detection<dai::node::YoloDetectionNetwork>>(getName(), getROSNode(), pipeline);
             break;
         }
         case param_handlers::nn::NNFamily::Mobilenet: {
-            nnNode = std::make_unique<dai_nodes::nn::Mobilenet>(getName(), getROSNode(), pipeline);
+            nnNode = std::make_unique<dai_nodes::nn::Detection<dai::node::MobileNetDetectionNetwork>>(getName(), getROSNode(), pipeline);
             break;
         }
         case param_handlers::nn::NNFamily::Segmentation: {
@@ -30,6 +31,8 @@ NNWrapper::NNWrapper(const std::string& daiNodeName, rclcpp::Node* node, std::sh
 
     RCLCPP_DEBUG(node->get_logger(), "Base node %s created", daiNodeName.c_str());
 }
+NNWrapper::~NNWrapper() = default;
+
 void NNWrapper::setNames() {}
 
 void NNWrapper::setXinXout(std::shared_ptr<dai::Pipeline> /*pipeline*/) {}
@@ -41,7 +44,7 @@ void NNWrapper::closeQueues() {
     nnNode->closeQueues();
 }
 
-void NNWrapper::link(const dai::Node::Input& in, int linkType) {
+void NNWrapper::link(dai::Node::Input in, int linkType) {
     nnNode->link(in, linkType);
 }
 
@@ -50,7 +53,7 @@ dai::Node::Input NNWrapper::getInput(int linkType) {
 }
 
 void NNWrapper::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    ph->setRuntimeParams(getROSNode(), params);
+    ph->setRuntimeParams(params);
     nnNode->updateParams(params);
 }
 

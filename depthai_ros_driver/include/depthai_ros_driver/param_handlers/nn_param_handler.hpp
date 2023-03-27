@@ -1,10 +1,30 @@
 #pragma once
 
+#include <fstream>
+#include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
-#include "depthai/depthai.hpp"
+#include "depthai/pipeline/datatype/CameraControl.hpp"
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
+#include "nlohmann/json.hpp"
+
+namespace dai {
+namespace node {
+class NeuralNetwork;
+class MobileNetDetectionNetwork;
+class MobileNetSpatialDetectionNetwork;
+class YoloDetectionNetwork;
+class YoloSpatialDetectionNetwork;
+class ImageManip;
+}  // namespace node
+}  // namespace dai
+
+namespace rclcpp {
+class Node;
+class Parameter;
+}  // namespace rclcpp
 
 namespace depthai_ros_driver {
 namespace param_handlers {
@@ -13,23 +33,27 @@ enum class NNFamily { Segmentation, Mobilenet, Yolo };
 }
 class NNParamHandler : public BaseParamHandler {
    public:
-    explicit NNParamHandler(const std::string& name);
+    explicit NNParamHandler(rclcpp::Node* node, const std::string& name);
     ~NNParamHandler();
-    nn::NNFamily getNNFamily(rclcpp::Node* node);
+    nn::NNFamily getNNFamily();
     template <typename T>
-    void declareParams(rclcpp::Node* node, std::shared_ptr<T> nn, std::shared_ptr<dai::node::ImageManip> imageManip) {
-        auto nn_path = getParam<std::string>(node, "i_nn_config_path");
+    void declareParams(std::shared_ptr<T> nn, std::shared_ptr<dai::node::ImageManip> imageManip) {
+        declareAndLogParam<bool>("i_disable_resize", false);
+        declareAndLogParam<bool>("i_enable_passthrough", false);
+        declareAndLogParam<bool>("i_enable_passthrough_depth", false);
+        declareAndLogParam<bool>("i_get_base_device_timestamp", false);
+        auto nn_path = getParam<std::string>("i_nn_config_path");
         using json = nlohmann::json;
         std::ifstream f(nn_path);
         json data = json::parse(f);
-        parseConfigFile(node, nn_path, nn, imageManip);
+        parseConfigFile(nn_path, nn, imageManip);
     }
 
-    void setNNParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<dai::node::NeuralNetwork> nn);
-    void setNNParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<dai::node::MobileNetDetectionNetwork> nn);
-    void setNNParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<dai::node::YoloDetectionNetwork> nn);
-    void setNNParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<dai::node::MobileNetSpatialDetectionNetwork> nn);
-    void setNNParams(rclcpp::Node* node, nlohmann::json data, std::shared_ptr<dai::node::YoloSpatialDetectionNetwork> nn);
+    void setNNParams(nlohmann::json data, std::shared_ptr<dai::node::NeuralNetwork> nn);
+    void setNNParams(nlohmann::json data, std::shared_ptr<dai::node::MobileNetDetectionNetwork> nn);
+    void setNNParams(nlohmann::json data, std::shared_ptr<dai::node::YoloDetectionNetwork> nn);
+    void setNNParams(nlohmann::json data, std::shared_ptr<dai::node::MobileNetSpatialDetectionNetwork> nn);
+    void setNNParams(nlohmann::json data, std::shared_ptr<dai::node::YoloSpatialDetectionNetwork> nn);
 
     template <typename T>
     void setSpatialParams(std::shared_ptr<T> nn) {
@@ -71,27 +95,27 @@ class NNParamHandler : public BaseParamHandler {
         }
     }
 
-    void setMobilenetParams() {}
-
     template <typename T>
-    void parseConfigFile(rclcpp::Node* node, const std::string& path, std::shared_ptr<T> nn, std::shared_ptr<dai::node::ImageManip> imageManip) {
+    void parseConfigFile(const std::string& path, std::shared_ptr<T> nn, std::shared_ptr<dai::node::ImageManip> imageManip) {
         using json = nlohmann::json;
         std::ifstream f(path);
         json data = json::parse(f);
         if(data.contains("model") && data.contains("nn_config")) {
             auto modelPath = getModelPath(data);
-            declareAndLogParam(node, "i_model_path", modelPath);
-            setImageManip(modelPath, imageManip);
+            declareAndLogParam("i_model_path", modelPath);
+            if(!getParam<bool>("i_disable_resize")) {
+                setImageManip(modelPath, imageManip);
+            }
             nn->setBlobPath(modelPath);
-            nn->setNumPoolFrames(declareAndLogParam<int>(node, "i_num_pool_frames", 4));
-            nn->setNumInferenceThreads(declareAndLogParam<int>(node, "i_num_inference_threads", 2));
+            nn->setNumPoolFrames(declareAndLogParam<int>("i_num_pool_frames", 4));
+            nn->setNumInferenceThreads(declareAndLogParam<int>("i_num_inference_threads", 2));
             nn->input.setBlocking(false);
-            declareAndLogParam<int>(node, "i_max_q_size", 30);
-            setNNParams(node, data, nn);
+            declareAndLogParam<int>("i_max_q_size", 30);
+            setNNParams(data, nn);
         }
     }
 
-    dai::CameraControl setRuntimeParams(rclcpp::Node* node, const std::vector<rclcpp::Parameter>& params) override;
+    dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;
 
    private:
     void setImageManip(const std::string& model_path, std::shared_ptr<dai::node::ImageManip> imageManip);

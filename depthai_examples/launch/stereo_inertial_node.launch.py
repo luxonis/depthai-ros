@@ -12,7 +12,7 @@ import launch_ros.descriptions
 
 def generate_launch_description():
     depthai_examples_path = get_package_share_directory('depthai_examples')
-    urdf_launch_dir = os.path.join(get_package_share_directory('depthai_bridge'), 'launch')
+    urdf_launch_dir = os.path.join(get_package_share_directory('depthai_descriptions'), 'launch')
 
     aligned_rviz = os.path.join(depthai_examples_path,
                                 'rviz', 'stereoInertialDepthAlignROS2.rviz')
@@ -352,6 +352,7 @@ def generate_launch_description():
                         {'enableSpatialDetection':  enableSpatialDetection},
                         {'detectionClassesCount':   detectionClassesCount},
                         {'syncNN':                  syncNN},
+                        {'nnName':                  nnName},
                         
                         {'enableDotProjector':      enableDotProjector},
                         {'enableFloodLight':        enableFloodLight},

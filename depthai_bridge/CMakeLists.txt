@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-project(depthai_bridge VERSION 2.6.3 LANGUAGES CXX C)
+project(depthai_bridge VERSION 2.6.4 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -104,9 +104,7 @@ install(EXPORT depthai_bridgeTargets
       DESTINATION share/${PROJECT_NAME}/cmake)
 
 
-install(DIRECTORY launch/ DESTINATION share/${PROJECT_NAME}/launch
-        FILES_MATCHING PATTERN "*.py")
-install(DIRECTORY urdf DESTINATION share/${PROJECT_NAME})
+
 install(DIRECTORY rviz DESTINATION share/${PROJECT_NAME})
 
 ament_export_include_directories(include)

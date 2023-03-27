@@ -4,10 +4,31 @@
 #include <string>
 #include <vector>
 
-#include "camera_info_manager/camera_info_manager.hpp"
-#include "depthai_bridge/ImageConverter.hpp"
+#include "depthai-shared/datatype/RawImgFrame.hpp"
+#include "depthai-shared/properties/ColorCameraProperties.hpp"
+#include "depthai-shared/properties/VideoEncoderProperties.hpp"
+#include "depthai/pipeline/datatype/ADatatype.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
+
+namespace dai {
+class Device;
+class Pipeline;
+namespace node {
+class VideoEncoder;
+}
+namespace ros {
+class ImageConverter;
+}
+}  // namespace dai
+
+namespace rclcpp {
+class Logger;
+}
+
+namespace camera_info_manager {
+class CameraInfoManager;
+}
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -19,68 +40,7 @@ struct ImageSensor {
     std::string name;
     std::vector<std::string> allowedResolutions;
     bool color;
-    void getSizeFromResolution(const dai::ColorCameraProperties::SensorResolution& res, int& width, int& height) {
-        switch(res) {
-            case dai::ColorCameraProperties::SensorResolution::THE_720_P: {
-                width = 1280;
-                height = 720;
-                break;
-            }
-            case dai::ColorCameraProperties::SensorResolution::THE_800_P: {
-                width = 1280;
-                height = 800;
-                break;
-            }
-            case dai::ColorCameraProperties::SensorResolution::THE_1080_P: {
-                width = 1920;
-                height = 1080;
-                break;
-            }
-            case dai::ColorCameraProperties::SensorResolution::THE_4_K: {
-                width = 3840;
-                height = 2160;
-                break;
-            }
-            case dai::ColorCameraProperties::SensorResolution::THE_12_MP: {
-                height = 4056;
-                width = 3040;
-                break;
-            }
-            case dai::ColorCameraProperties::SensorResolution::THE_1200_P: {
-                height = 1920;
-                width = 1200;
-                break;
-            }
-            case dai::ColorCameraProperties::SensorResolution::THE_5_MP: {
-                height = 2592;
-                width = 1944;
-                break;
-            }
-            case dai::ColorCameraProperties::SensorResolution::THE_13_MP: {
-                height = 4208;
-                width = 3120;
-                break;
-            }
-            case dai::ColorCameraProperties::SensorResolution::THE_4000X3000: {
-                height = 4000;
-                width = 3000;
-                break;
-            }
-            case dai::ColorCameraProperties::SensorResolution::THE_5312X6000: {
-                height = 5312;
-                width = 6000;
-                break;
-            }
-            case dai::ColorCameraProperties::SensorResolution::THE_48_MP: {
-                height = 8000;
-                width = 6000;
-                break;
-            }
-            default: {
-                throw std::runtime_error("Resolution not supported!");
-            }
-        }
-    }
+    void getSizeFromResolution(const dai::ColorCameraProperties::SensorResolution& res, int& width, int& height);
 };
 extern std::vector<ImageSensor> availableSensors;
 
@@ -89,12 +49,14 @@ void imgCB(const std::string& /*name*/,
            dai::ros::ImageConverter& converter,
            image_transport::CameraPublisher& pub,
            std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager);
+
 void compressedImgCB(const std::string& /*name*/,
                      const std::shared_ptr<dai::ADatatype>& data,
                      dai::ros::ImageConverter& converter,
                      image_transport::CameraPublisher& pub,
                      std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
                      dai::RawImgFrame::Type dataType);
+
 sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
                                           dai::ros::ImageConverter& converter,
                                           std::shared_ptr<dai::Device> device,

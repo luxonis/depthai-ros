@@ -1,0 +1,12 @@
+/oak:
+  ros__parameters:
+    camera:
+      i_nn_type: rgb
+      i_pipeline_type: rgb
+    rgb:
+      i_enable_preview: true
+      i_simulate_from_topic: true
+      i_simulated_topic_name: /image_raw
+      i_low_bandwidth: true
+    nn:
+      i_enable_passthrough: true

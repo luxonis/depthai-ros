@@ -1,17 +1,41 @@
 #pragma once
 
-#include "camera_info_manager/camera_info_manager.hpp"
-#include "depthai/depthai.hpp"
-#include "depthai_bridge/ImageConverter.hpp"
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
-#include "depthai_ros_driver/param_handlers/stereo_param_handler.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "sensor_msgs/msg/camera_info.hpp"
+namespace dai {
+class Pipeline;
+class Device;
+class DataOutputQueue;
+class ADatatype;
+namespace node {
+class StereoDepth;
+class XLinkOut;
+class VideoEncoder;
+}  // namespace node
+namespace ros {
+class ImageConverter;
+}
+}  // namespace dai
+
+namespace rclcpp {
+class Node;
+class Parameter;
+}  // namespace rclcpp
+
+namespace camera_info_manager {
+class CameraInfoManager;
+}
 
 namespace depthai_ros_driver {
+namespace param_handlers {
+class StereoParamHandler;
+}
+
 namespace dai_nodes {
 namespace link_types {
 enum class StereoLinkType { left, right };
@@ -19,11 +43,11 @@ enum class StereoLinkType { left, right };
 class Stereo : public BaseNode {
    public:
     explicit Stereo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device);
-    virtual ~Stereo() = default;
+    ~Stereo();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
-    void link(const dai::Node::Input& in, int linkType = 0) override;
-    dai::Node::Input getInput(int linkType = 0);
+    void link(dai::Node::Input in, int linkType = 0) override;
+    dai::Node::Input getInput(int linkType = 0) override;
     void setNames() override;
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
@@ -38,9 +62,7 @@ class Stereo : public BaseNode {
     std::unique_ptr<BaseNode> right;
     std::unique_ptr<param_handlers::StereoParamHandler> ph;
     std::shared_ptr<dai::DataOutputQueue> stereoQ;
-    std::shared_ptr<dai::DataInputQueue> controlQ;
     std::shared_ptr<dai::node::XLinkOut> xoutStereo;
-    std::shared_ptr<dai::node::XLinkIn> xinControl;
     std::string stereoQName;
 };
 

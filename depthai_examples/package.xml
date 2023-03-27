@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>depthai_examples</name>
-  <version>2.6.3</version>
+  <version>2.6.4</version>
   <description>The depthai_examples package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
@@ -14,15 +14,13 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   
-
-  
   <depend>rclcpp</depend>
-  
   <depend>cv_bridge</depend>
   <depend>camera_info_manager</depend>
   <depend>depthai</depend>
   <depend>depthai_ros_msgs</depend>
   <depend>depthai_bridge</depend>
+  <depend>depthai_descriptions</depend>
   <depend>image_transport</depend>
   <depend>libopencv-dev</depend>
   <depend>ros_environment</depend>

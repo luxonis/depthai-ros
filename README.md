@@ -9,14 +9,13 @@ Main features:
 You can develop your ROS applications in following ways:
 
   * Use classes provided in `depthai_bridge` to construct your own driver (see `stereo_inertial_node` example on how to do that)
-  * Use `depthai_ros_driver` class (currently available on ROS2 Humble) to get default experience (see details below on how) 
+  * Use `depthai_ros_driver` package (currently available on ROS2 Humble and ROS Noetic) to get default experience (see details below on how) 
 
 ![](docs/multicam.gif)
 
 
 Supported ROS versions:
 - Noetic
-- Galactic
 - Humble
 
 For usage check out respective git branches.
@@ -88,8 +87,8 @@ The following setup procedure assumes you have cmake version >= 3.10.2 and OpenC
 
 1. `mkdir -p dai_ws/src`
 2. `cd dai_ws/src`
-3. `git clone https://github.com/luxonis/depthai-ros.git`
-4. `cd ../..`
+3. `git clone --branch <ros-distro> https://github.com/luxonis/depthai-ros.git`
+4. `cd ..`
 5. `rosdep install --from-paths src --ignore-src -r -y`
 6. `source /opt/ros/<ros-distro>/setup.bash`
 7. `catkin_make_isolated` (For ROS1) `MAKEFLAGS="-j1 -l1" colcon build` (for ROS2)
@@ -167,6 +166,36 @@ Calibration file syntax (from `camera_info_manager`):
     - package://camera_info_manager/tests/test_calibration.yaml
     - package://ros_package_name/calibrations/camera3.yaml
 ```
+
+### Depthai filters
+
+`depthai_filters` contains small composable node examples that show how to work with data from multiple topics.
+Available filters:
+- Detection2DOverlay - subscribes to `/nn/detections` and `rgb/preview/image_raw` topics. To see it in action, run
+`ros2 launch depthai_filters example_det2d_overla.launch.py`. Note here - If you see that detections misalign in the overlay, adjust `rgb.i_preview_size` parameter.
+- SegmentationOverlay, overlays semantic segmentation from `/nn/image_raw` on top of image from `rgb/preview/image_raw`, to see it in action, run
+`ros2 launch depthai_filters example_seg_overlay.launch.py`
+- WLS filter - stereo depth filter that smooths out overall depth image based on disparity data. It subscribes to `stereo/image_raw` and `left/image raw` topics. Parameters needed to enable it - `left.i_publish_topic`, `stereo.i_output_disparity`
+an example can be seen by running  `ros2 launch depthai_filters example_wls_filter.launch.py`
+
+
+### Using external sources for NN inference
+
+There is a possibility of using external image topics as input for NNs or Depth calculation.
+
+Example scenarios:
+
+1. We want to get segmentation or 2D detection output based on images published by usb camera node.
+This can be achieved by setting `rgb.i_simulate_from_topic` parameter to `true`. This creates `sensor_msgs/Image` subscriber listening by default on `/<node_name>/rgb/input` topic that passes data into the pipeline on each callback. Topic names can be changed either by classic ROS topic remapping or setting `rgb.i_simulated_topic_name` to a desired name.
+By default, original sensor node still runs and publishes data. Setting `rgb.i_disable_node` to true will prevent it from spawning. Check `det2d_usb_cam_overlay.launch.py` in `depthai_filters to see it in action.
+
+2. Calculating depth - both `left` and `right` sensor nodes can be setup as in the example above to calculate calculate depth/disparity from external topics. Note that for this to work properly you need specify:
+- `left.i_board_socket_id: 1`
+- `right.i_board_socket_id: 2` 
+- Default stereo input size is set to 1280x720, in case of different image size, adjust `stereo.i_input_width` and `stereo.i_input_height` accordingly.
+- external calibration file path using `camera.i_external_calibration_path` parameter. To get calibration from the device you can either set `camera.i_calibration_dump` to true or call `save_calibration` service. Calibration will be saved to `/tmp/<mx_id>_calibration.json`.
+An example can be seen in `stereo_from_rosbag.launch.py` in `depthai_ros_driver`
+
 ## Executing an example
 
 ### ROS1

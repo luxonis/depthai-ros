@@ -1,5 +1,8 @@
 
-#include <depthai_bridge/ImageConverter.hpp>
+#include "depthai_bridge/ImageConverter.hpp"
+
+#include "depthai_bridge/depthaiUtility.hpp"
+#include "opencv2/imgcodecs.hpp"
 
 namespace dai {
 
@@ -21,19 +24,28 @@ std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::planarEn
     {dai::RawImgFrame::Type::NV12, "rgb8"},
     {dai::RawImgFrame::Type::YUV420p, "rgb8"}};
 
-ImageConverter::ImageConverter(bool interleaved) : _daiInterleaved(interleaved), _steadyBaseTime(std::chrono::steady_clock::now()) {
+ImageConverter::ImageConverter(bool interleaved, bool getBaseDeviceTimestamp)
+    : _daiInterleaved(interleaved), _steadyBaseTime(std::chrono::steady_clock::now()), _getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
     _rosBaseTime = rclcpp::Clock().now();
 }
 
-ImageConverter::ImageConverter(const std::string frameName, bool interleaved)
-    : _frameName(frameName), _daiInterleaved(interleaved), _steadyBaseTime(std::chrono::steady_clock::now()) {
+ImageConverter::ImageConverter(const std::string frameName, bool interleaved, bool getBaseDeviceTimestamp)
+    : _frameName(frameName), _daiInterleaved(interleaved), _steadyBaseTime(std::chrono::steady_clock::now()), _getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
     _rosBaseTime = rclcpp::Clock().now();
 }
+
+ImageConverter::~ImageConverter() = default;
+
 void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData,
                                            std::deque<ImageMsgs::Image>& outImageMsgs,
                                            dai::RawImgFrame::Type type,
                                            const sensor_msgs::msg::CameraInfo& info) {
-    auto tstamp = inData->getTimestamp();
+    std::chrono::_V2::steady_clock::time_point tstamp;
+    if(_getBaseDeviceTimestamp)
+        tstamp = inData->getTimestampDevice();
+    else
+        tstamp = inData->getTimestamp();
+
     ImageMsgs::Image outImageMsg;
     StdMsgs::Header header;
     header.frame_id = _frameName;
@@ -62,7 +74,7 @@ void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData
         }
     }
 
-    output = cv::imdecode(cv::Mat(inData->getData()), decodeFlags);
+    output = cv::imdecode(cv::Mat(1, inData->getData().size(), CV_8UC1, inData->getData().data()), decodeFlags);
 
     // converting disparity
     if(type == dai::RawImgFrame::Type::RAW8) {
@@ -83,7 +95,7 @@ void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData
 }
 
 void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs) {
-    auto tstamp = inData->getTimestamp();
+    auto tstamp = inData->getTimestampDevice();
     ImageMsgs::Image outImageMsg;
     StdMsgs::Header header;
     header.frame_id = _frameName;

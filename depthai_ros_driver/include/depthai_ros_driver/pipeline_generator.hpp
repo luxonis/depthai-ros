@@ -1,6 +1,20 @@
 #pragma once
 
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
+
+namespace dai {
+class Pipeline;
+class Device;
+}  // namespace dai
+
+namespace rclcpp {
+class Node;
+}
 
 namespace depthai_ros_driver {
 namespace pipeline_gen {
@@ -26,15 +40,15 @@ class PipelineGenerator {
    private:
     std::unordered_map<std::string, PipelineType> pipelineTypeMap{{"RGB", PipelineType::RGB},
                                                                   {"RGBD", PipelineType::RGBD},
-                                                                  {"RGBStereo", PipelineType::RGBStereo},
-                                                                  {"Stereo", PipelineType::Stereo},
-                                                                  {"Depth", PipelineType::Depth},
-                                                                  {"CamArray", PipelineType::CamArray}};
+                                                                  {"RGBSTEREO", PipelineType::RGBStereo},
+                                                                  {"STEREO", PipelineType::Stereo},
+                                                                  {"DEPTH", PipelineType::Depth},
+                                                                  {"CAMARRAY", PipelineType::CamArray}};
     std::unordered_map<std::string, NNType> nnTypeMap = {
         {"", NNType::None},
-        {"none", NNType::None},
-        {"rgb", NNType::RGB},
-        {"spatial", NNType::Spatial},
+        {"NONE", NNType::None},
+        {"RGB", NNType::RGB},
+        {"SPATIAL", NNType::Spatial},
     };
     const std::string alphabet = "abcdefghijklmnopqrstuvwxyz";
 };

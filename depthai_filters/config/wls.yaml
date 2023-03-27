@@ -1,0 +1,9 @@
+/oak:
+  ros__parameters:
+    camera:
+      i_nn_type: none
+    left:
+      i_publish_topic: true
+    stereo:
+      i_output_disparity: true
+      i_subpixel: true

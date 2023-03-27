@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
-project(depthai_examples VERSION 2.6.3 LANGUAGES CXX C)
+project(depthai_examples VERSION 2.6.4 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -17,6 +17,7 @@ if(NOT OpenCV_FOUND)
   set(_opencv_version 3)
   find_package(OpenCV 3 REQUIRED COMPONENTS imgproc highgui)
 endif()
+
 # find_package(depthai CONFIG REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake/depthai")
 set(tiny_yolo_v4_blob_name "yolov4_tiny_coco_416x416_openvino_2021.4_6shave_bgr.blob")
 set(mobilenet_blob_name "mobilenet-ssd_openvino_2021.2_6shave.blob")
@@ -95,9 +96,7 @@ endmacro()
 
 dai_add_node_ros2(crop_control_service src/crop_control_service.cpp)
 dai_add_node_ros2(mobilenet_node src/mobilenet_publisher.cpp)
-dai_add_node_ros2(rgb_node src/rgb_publisher.cpp)
 dai_add_node_ros2(rgb_stereo_node src/rgb_stereo_node.cpp)
-# dai_add_node_ros2(rgb_subscriber_node src/rgb_video_subscriber.cpp)
 dai_add_node_ros2(stereo_inertial_node src/stereo_inertial_publisher.cpp)
 dai_add_node_ros2(stereo_node src/stereo_publisher.cpp)
 dai_add_node_ros2(yolov4_spatial_node src/yolov4_spatial_publisher.cpp)
@@ -120,7 +119,6 @@ FILES_MATCHING PATTERN "*.py")
 install(TARGETS
         crop_control_service
         mobilenet_node
-        rgb_node
         rgb_stereo_node
         stereo_inertial_node
         stereo_node

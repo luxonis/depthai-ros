@@ -1,8 +1,8 @@
-#include <depthai_bridge/ImageConverter.hpp>
-#include <opencv2/opencv.hpp>
-#include <sensor_msgs/msg/image.hpp>
-
-#include "rclcpp/rclcpp.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
+#include "opencv2/core/mat.hpp"
+#include "opencv2/highgui.hpp"
+#include "rclcpp/node.hpp"
+#include "sensor_msgs/msg/image.hpp"
 
 // Inludes common necessary includes for development using depthai library
 
