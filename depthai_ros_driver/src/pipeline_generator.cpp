@@ -124,9 +124,9 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
         case PipelineType::Rae: {
             auto rgb = std::make_unique<dai_nodes::SensorWrapper>("rgb", node, pipeline, device, dai::CameraBoardSocket::RGB);
             auto stereo_front = std::make_unique<dai_nodes::Stereo>(
-                "stereo", node, pipeline, device, "left_front", "right_front", dai::CameraBoardSocket::CAM_B, dai::CameraBoardSocket::CAM_C);
+                "stereo_front", node, pipeline, device, "left_front", "right_front", dai::CameraBoardSocket::CAM_B, dai::CameraBoardSocket::CAM_C);
             auto stereo_back = std::make_unique<dai_nodes::Stereo>(
-                "stereo", node, pipeline, device, "left_front", "right_front", dai::CameraBoardSocket::CAM_D, dai::CameraBoardSocket::CAM_E);
+                "stereo_back", node, pipeline, device, "left_back", "right_back", dai::CameraBoardSocket::CAM_D, dai::CameraBoardSocket::CAM_E);
             daiNodes.push_back(std::move(rgb));
             daiNodes.push_back(std::move(stereo_front));
             daiNodes.push_back(std::move(stereo_back));
