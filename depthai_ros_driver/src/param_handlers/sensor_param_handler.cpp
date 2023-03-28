@@ -13,7 +13,7 @@ namespace depthai_ros_driver {
 namespace param_handlers {
 SensorParamHandler::SensorParamHandler(rclcpp::Node* node, const std::string& name) : BaseParamHandler(node, name) {
     declareCommonParams();
-};
+}
 SensorParamHandler::~SensorParamHandler() = default;
 
 void SensorParamHandler::declareCommonParams() {
