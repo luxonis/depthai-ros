@@ -2,7 +2,7 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.7.0
+2.7.0 (2023-03-28)
 
 * Added depthai_descriptions package
 * Added depthai_filters package
