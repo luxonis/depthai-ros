@@ -216,4 +216,4 @@ rcl_interfaces::msg::SetParametersResult Camera::parameterCB(const std::vector<r
 
 }  // namespace depthai_ros_driver
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(depthai_ros_driver::Camera);
+RCLCPP_COMPONENTS_REGISTER_NODE(depthai_ros_driver::Camera)

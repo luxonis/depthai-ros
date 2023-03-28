@@ -5,7 +5,7 @@
 
 namespace depthai_filters {
 
-SegmentationOverlay::SegmentationOverlay(const rclcpp::NodeOptions& options) : rclcpp::Node("detection_overlay", options) {
+SegmentationOverlay::SegmentationOverlay(const rclcpp::NodeOptions& options) : rclcpp::Node("segmentation_overlay", options) {
     onInit();
 }
 void SegmentationOverlay::onInit() {
@@ -27,10 +27,9 @@ void SegmentationOverlay::overlayCB(const sensor_msgs::msg::Image::ConstSharedPt
 
     sensor_msgs::msg::Image outMsg;
     cv_bridge::CvImage(preview->header, sensor_msgs::image_encodings::BGR8, outImg).toImageMsg(outMsg);
-
     overlayPub->publish(outMsg);
 }
 
 }  // namespace depthai_filters
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(depthai_filters::SegmentationOverlay);
+RCLCPP_COMPONENTS_REGISTER_NODE(depthai_filters::SegmentationOverlay)

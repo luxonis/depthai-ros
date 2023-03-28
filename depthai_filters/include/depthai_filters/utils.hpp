@@ -1,6 +1,6 @@
 #pragma once
 
-#include "opencv2/core/mat.hpp"
+#include "cv_bridge/cv_bridge.h"
 #include "sensor_msgs/msg/image.hpp"
 
 namespace rclcpp {

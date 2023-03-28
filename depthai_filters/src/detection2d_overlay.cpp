@@ -1,5 +1,6 @@
 #include "depthai_filters/detection2d_overlay.hpp"
 
+#include <iomanip>
 #include "cv_bridge/cv_bridge.h"
 #include "depthai_filters/utils.hpp"
 
@@ -47,4 +48,4 @@ void Detection2DOverlay::overlayCB(const sensor_msgs::msg::Image::ConstSharedPtr
 
 }  // namespace depthai_filters
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(depthai_filters::Detection2DOverlay);
+RCLCPP_COMPONENTS_REGISTER_NODE(depthai_filters::Detection2DOverlay)

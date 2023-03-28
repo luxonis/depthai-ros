@@ -50,7 +50,7 @@ class SensorWrapper : public BaseNode {
     void closeQueues() override;
 
    private:
-    void subCB(const sensor_msgs::msg::Image& img);
+    void subCB(const sensor_msgs::msg::Image::SharedPtr img) const;
     std::unique_ptr<BaseNode> sensorNode;
     std::unique_ptr<param_handlers::SensorParamHandler> ph;
     std::unique_ptr<dai::ros::ImageConverter> converter;

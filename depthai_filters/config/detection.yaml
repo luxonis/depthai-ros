@@ -1,8 +1,4 @@
-/oak:
-  ros__parameters:
-    camera:
-      i_nn_type: rgb
-    rgb:
-      i_enable_preview: true
-    nn:
-      i_enable_passthrough: true
+camera:
+  i_nn_type: rgb
+nn:
+  i_enable_passthrough: true

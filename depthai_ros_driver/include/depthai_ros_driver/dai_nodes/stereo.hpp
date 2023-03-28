@@ -39,7 +39,7 @@ class StereoParamHandler;
 namespace dai_nodes {
 namespace link_types {
 enum class StereoLinkType { left, right };
-};
+}
 class Stereo : public BaseNode {
    public:
     explicit Stereo(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device);

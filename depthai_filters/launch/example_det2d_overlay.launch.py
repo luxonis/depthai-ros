@@ -22,7 +22,7 @@ def launch_setup(context, *args, **kwargs):
                               "params_file": params_file}.items()),
 
         LoadComposableNodes(
-            target_container=name+"_container",
+            target_container=f"/{name}_container",
             composable_node_descriptions=[
                     ComposableNode(
                         package="depthai_filters",
