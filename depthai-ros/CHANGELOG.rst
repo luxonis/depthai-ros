@@ -2,6 +2,14 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.7.0
+
+* Added depthai_descriptions package
+* Added depthai_filters package
+* XLinkIn option for image subscription
+* Additional debugging options
+* Bugfixes
+
 2.6.4 (2023-02-23)
 ___________
 * Fix sensor name detection
