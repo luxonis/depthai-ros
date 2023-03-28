@@ -5,7 +5,7 @@
 
 namespace depthai_filters {
 
-SegmentationOverlay::SegmentationOverlay(const rclcpp::NodeOptions& options) : rclcpp::Node("detection_overlay", options) {
+SegmentationOverlay::SegmentationOverlay(const rclcpp::NodeOptions& options) : rclcpp::Node("segmentation_overlay", options) {
     onInit();
 }
 void SegmentationOverlay::onInit() {
