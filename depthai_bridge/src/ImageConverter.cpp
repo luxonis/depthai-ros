@@ -95,7 +95,11 @@ void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData
 }
 
 void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs) {
-    auto tstamp = inData->getTimestampDevice();
+    std::chrono::_V2::steady_clock::time_point tstamp;
+    if(_getBaseDeviceTimestamp)
+        tstamp = inData->getTimestampDevice();
+    else
+        tstamp = inData->getTimestamp();
     ImageMsgs::Image outImageMsg;
     StdMsgs::Header header;
     header.frame_id = _frameName;
