@@ -30,7 +30,7 @@ void Detection2DOverlay::overlayCB(const sensor_msgs::msg::Image::ConstSharedPtr
         auto x2 = detection.bbox.center.x + detections->detections[0].bbox.size_x / 2.0;
         auto y1 = detection.bbox.center.y - detections->detections[0].bbox.size_y / 2.0;
         auto y2 = detection.bbox.center.y + detections->detections[0].bbox.size_y / 2.0;
-        auto labelStr = detection.results[0].id;
+        auto labelStr =  labelMap[stoi(detection.results[0].id)];
         auto confidence = detection.results[0].score;
         cv::putText(previewMat, labelStr, cv::Point(x1 + 10, y1 + 20), cv::FONT_HERSHEY_TRIPLEX, 0.5, white, 3);
         cv::putText(previewMat, labelStr, cv::Point(x1 + 10, y1 + 20), cv::FONT_HERSHEY_TRIPLEX, 0.5, black);
