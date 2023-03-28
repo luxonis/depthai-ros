@@ -130,6 +130,22 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
             daiNodes.push_back(std::move(rgb));
             daiNodes.push_back(std::move(stereo_front));
             daiNodes.push_back(std::move(stereo_back));
+            switch(nType) {
+                case NNType::None:
+                    break;
+                case NNType::RGB: {
+                    auto nn = createNN(node, pipeline, *rgb);
+                    daiNodes.push_back(std::move(nn));
+                    break;
+                }
+                case NNType::Spatial: {
+                    auto nn = createSpatialNN(node, pipeline, *rgb, *stereo_front);
+                    daiNodes.push_back(std::move(nn));
+                    break;
+                }
+                default:
+                    break;
+            }
             break;
         }
         default: {
