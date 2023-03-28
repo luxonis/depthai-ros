@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai/pipeline/datatype/CameraControl.hpp"
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
 #include "nlohmann/json.hpp"
@@ -42,6 +43,14 @@ class NNParamHandler : public BaseParamHandler {
         declareAndLogParam<bool>("i_enable_passthrough", false);
         declareAndLogParam<bool>("i_enable_passthrough_depth", false);
         declareAndLogParam<bool>("i_get_base_device_timestamp", false);
+        dai::CameraBoardSocket socket = dai::CameraBoardSocket::RGB;
+        try {
+            socket = static_cast<dai::CameraBoardSocket>(getROSNode()->get_parameter("rgb.i_board_socket_id").as_int());
+        } catch(rclcpp::exceptions::ParameterNotDeclaredException& e) {
+            RCLCPP_ERROR(getROSNode()->get_logger(), "Unable to get correct socket for RGB node, defaulting to RGB.");
+        }
+        declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket));
+    
         auto nn_path = getParam<std::string>("i_nn_config_path");
         using json = nlohmann::json;
         std::ifstream f(nn_path);

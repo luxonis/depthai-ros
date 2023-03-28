@@ -61,7 +61,7 @@ class SpatialDetection : public BaseNode {
             ptInfoMan->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
                                                                   *ptImageConverter,
                                                                   device,
-                                                                  dai::CameraBoardSocket::RGB,
+                                                                  static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")),
                                                                   imageManip->initialConfig.getResizeWidth(),
                                                                   imageManip->initialConfig.getResizeWidth()));
 
@@ -70,10 +70,9 @@ class SpatialDetection : public BaseNode {
         }
 
         if(ph->getParam<bool>("i_enable_passthrough_depth")) {
-            dai::CameraBoardSocket socket = dai::CameraBoardSocket::RGB;
+            dai::CameraBoardSocket socket = static_cast<dai::CameraBoardSocket>(getROSNode()->get_parameter("stereo.i_board_socket_id").as_int());
             if(!getROSNode()->get_parameter("stereo.i_align_depth").as_bool()) {
                 tfPrefix = getTFPrefix("right");
-                socket = dai::CameraBoardSocket::RIGHT;
             };
             ptDepthQ = device->getOutputQueue(ptDepthQName, ph->getParam<int>("i_max_q_size"), false);
             ptDepthImageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);

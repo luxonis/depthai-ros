@@ -54,8 +54,8 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     } else {
         try {
             width = getROSNode()->get_parameter(rightName + ".i_width").as_int();
-            height = getROSNode()->get_parameter(rightName + "right.i_height").as_int();
-            socket = static_cast<dai::CameraBoardSocket>(getROSNode()->get_parameter("rgb.i_board_socket_id").as_int());
+            height = getROSNode()->get_parameter(rightName + ".i_height").as_int();
+            socket = static_cast<dai::CameraBoardSocket>(getROSNode()->get_parameter(rightName + ".i_board_socket_id").as_int());
         } catch(rclcpp::exceptions::ParameterNotDeclaredException& e) {
             RCLCPP_ERROR(getROSNode()->get_logger(), "Right parameters not set, defaulting to 1280x720 unless specified otherwise.");
         }
