@@ -70,6 +70,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
                         {"48_MP", dai::ColorCameraProperties::SensorResolution::THE_48_MP}};
     declareAndLogParam<bool>("i_publish_topic", publish);
     declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket));
+    declareAndLogParam<bool>("i_output_isp", true);
     declareAndLogParam<bool>("i_enable_preview", false);
     colorCam->setBoardSocket(socket);
     colorCam->setFps(declareAndLogParam<double>("i_fps", 30.0));

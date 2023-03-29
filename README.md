@@ -106,6 +106,8 @@ Paramerers that begin with `r_` can be freely modified during runtime, for examp
 Parameters that begin with `i_` are set when camera is initializing, to change them you have to call `stop` and `start` services. This can be used to hot swap NNs during runtime, changing resolutions, etc. Below you can see some examples:
 
 #### Setting RGB parameters
+
+By default RGB camera outputs `ISP` frame which is the whole sensor resolution, though it can be scaled to 2/3 of the original resolution with `i_set_isp_scale: true` to better match with the stereo. To set custom width and height of output image, set `i.output_isp: false` and set custom size using `i_width` and `i_height` parameters.
 ![](docs/param_rgb.gif)
 #### Setting Stereo parameters
 ![](docs/param_stereo.gif)
