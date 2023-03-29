@@ -63,6 +63,14 @@ sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
                                           dai::CameraBoardSocket socket,
                                           int width = 0,
                                           int height = 0);
+sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
+                                          dai::ros::ImageConverter& converter,
+                                          std::shared_ptr<dai::Device> device,
+                                          dai::CameraBoardSocket socket,
+                                          int width,
+                                          int height,
+                                          dai::CameraBoardSocket leftSocket,
+                                          dai::CameraBoardSocket rightSocket);
 std::shared_ptr<dai::node::VideoEncoder> createEncoder(std::shared_ptr<dai::Pipeline> pipeline,
                                                        int quality,
                                                        dai::VideoEncoderProperties::Profile profile = dai::VideoEncoderProperties::Profile::MJPEG);

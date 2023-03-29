@@ -41,16 +41,20 @@ namespace dai_nodes {
 namespace link_types {
 enum class StereoLinkType { left, right };
 };
+
+struct StereoSensorInfo{
+    std::string name;
+    dai::CameraBoardSocket socket;
+};
+
 class Stereo : public BaseNode {
    public:
     explicit Stereo(const std::string& daiNodeName,
                     rclcpp::Node* node,
                     std::shared_ptr<dai::Pipeline> pipeline,
                     std::shared_ptr<dai::Device> device,
-                    const std::string& leftName = "left",
-                    const std::string& rightName = "right",
-                    dai::CameraBoardSocket leftSocket = dai::CameraBoardSocket::LEFT,
-                    dai::CameraBoardSocket rightSocket = dai::CameraBoardSocket::RIGHT);
+                    StereoSensorInfo leftInfo = StereoSensorInfo{"left", dai::CameraBoardSocket::LEFT},
+                    StereoSensorInfo rightInfo = StereoSensorInfo{"right", dai::CameraBoardSocket::RIGHT});
     ~Stereo();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
@@ -72,6 +76,7 @@ class Stereo : public BaseNode {
     std::shared_ptr<dai::DataOutputQueue> stereoQ;
     std::shared_ptr<dai::node::XLinkOut> xoutStereo;
     std::string stereoQName;
+    StereoSensorInfo leftSensInfo, rightSensInfo;
 };
 
 }  // namespace dai_nodes

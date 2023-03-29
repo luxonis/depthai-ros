@@ -22,19 +22,17 @@ Stereo::Stereo(const std::string& daiNodeName,
                rclcpp::Node* node,
                std::shared_ptr<dai::Pipeline> pipeline,
                std::shared_ptr<dai::Device> device,
-               const std::string& leftName,
-               const std::string& rightName,
-               dai::CameraBoardSocket leftSocket,
-               dai::CameraBoardSocket rightSocket)
-    : BaseNode(daiNodeName, node, pipeline) {
+               StereoSensorInfo leftInfo,
+               StereoSensorInfo rightInfo)
+    : BaseNode(daiNodeName, node, pipeline), leftSensInfo(leftInfo), rightSensInfo(rightInfo) {
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     stereoCamNode = pipeline->create<dai::node::StereoDepth>();
-    left = std::make_unique<SensorWrapper>(leftName, node, pipeline, device, leftSocket, false);
-    right = std::make_unique<SensorWrapper>(rightName, node, pipeline, device, rightSocket, false);
+    left = std::make_unique<SensorWrapper>(leftInfo.name, node, pipeline, device, leftInfo.socket, false);
+    right = std::make_unique<SensorWrapper>(rightSensInfo.name, node, pipeline, device, rightSensInfo.socket, false);
 
     ph = std::make_unique<param_handlers::StereoParamHandler>(node, daiNodeName);
-    ph->declareParams(stereoCamNode, rightName);
+    ph->declareParams(stereoCamNode, rightSensInfo.name);
     setXinXout(pipeline);
     left->link(stereoCamNode->left);
     right->link(stereoCamNode->right);
@@ -81,9 +79,10 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
                                              device,
                                              static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")),
                                              ph->getParam<int>("i_width"),
-                                             ph->getParam<int>("i_height"));
-    auto calibHandler = device->readCalibration();
-    info.p[3] = calibHandler.getBaselineDistance() * 10.0;  // baseline in mm
+                                             ph->getParam<int>("i_height"),
+                                             leftSensInfo.socket,
+                                             rightSensInfo.socket);
+    infoManager->setCameraInfo(info);
     infoManager->setCameraInfo(info);
 
     if(ph->getParam<bool>("i_low_bandwidth")) {

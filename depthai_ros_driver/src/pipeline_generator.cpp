@@ -123,10 +123,18 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
         }
         case PipelineType::Rae: {
             auto rgb = std::make_unique<dai_nodes::SensorWrapper>("rgb", node, pipeline, device, dai::CameraBoardSocket::CAM_E);
-            auto stereo_front = std::make_unique<dai_nodes::Stereo>(
-                "stereo_front", node, pipeline, device, "left_front", "right_front", dai::CameraBoardSocket::CAM_A, dai::CameraBoardSocket::CAM_B);
-            auto stereo_back = std::make_unique<dai_nodes::Stereo>(
-                "stereo_back", node, pipeline, device, "left_back", "right_back", dai::CameraBoardSocket::CAM_C, dai::CameraBoardSocket::CAM_D);
+            auto stereo_front = std::make_unique<dai_nodes::Stereo>("stereo_front",
+                                                                    node,
+                                                                    pipeline,
+                                                                    device,
+                                                                    dai_nodes::StereoSensorInfo{"left_front", dai::CameraBoardSocket::CAM_A},
+                                                                    dai_nodes::StereoSensorInfo{"right_front", dai::CameraBoardSocket::CAM_B});
+            auto stereo_back = std::make_unique<dai_nodes::Stereo>("stereo_back",
+                                                                   node,
+                                                                   pipeline,
+                                                                   device,
+                                                                   dai_nodes::StereoSensorInfo{"left_back", dai::CameraBoardSocket::CAM_C},
+                                                                   dai_nodes::StereoSensorInfo{"right_back", dai::CameraBoardSocket::CAM_D});
             daiNodes.push_back(std::move(rgb));
             daiNodes.push_back(std::move(stereo_front));
             daiNodes.push_back(std::move(stereo_back));
