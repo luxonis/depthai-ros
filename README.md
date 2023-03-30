@@ -20,44 +20,11 @@ Supported ROS versions:
 
 For usage check out respective git branches.
 
-## Docker
-You can additionally build and run docker images on your local machine. To do that, **add USB rules as in above step**, clone the repository and inside it run (it matters on which branch you are on):
-```
-docker build --build-arg USE_RVIZ=1 -t depthai-ros .
-```
-If you find out that you run out of RAM during building, you can also set `BUILD_SEQUENTIAL=1` to build packages one at a time, it should take longer, but use less RAM.
-
-`RUN_RVIZ` arg means rviz will be installed inside docker. If you want to run it you need to also execute following command (you'll have to do it again after restarting your PC):
-```
-xhost +local:docker
-```
-
-Then you can run your image in following way:
-```
-docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai-ros
-```
-will run an interactive docker session. You can also try:
-
-```
-docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai-ros roslaunch depthai_examples stereo_inertial_node.launch.py
-```
-to run a launch file of your choice.
-
-**NOTE** ROS2 Humble docker image uses Cyclone as RMW implementation.
-### Running docker iamge on ROS1
-```
-docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai_ros roslaunch depthai_examples stereo_inertial_node.launch
-```
-Will only start `stereo_inertial_node` launch file (you can try different commands).
-### Running docker iamge on ROS2
-```
-docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai_ros roslaunch depthai_examples stereo_inertial_node.launch.py
-```
 
 ### Install from ros binaries
 
 Add USB rules to your system
-```
+``` bash
 echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="03e7", MODE="0666"' | sudo tee /etc/udev/rules.d/80-movidius.rules
 sudo udevadm control --reload-rules && sudo udevadm trigger
 ```
@@ -71,7 +38,7 @@ Install depthai-ros. (Available for Noetic, foxy, galactic and humble)
 
 The following script will install depthai-core and update usb rules and install depthai devices
 
-```
+``` bash
 sudo wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/main/install_dependencies.sh | sudo bash
 ```
 if you don't have opencv installed then try `sudo apt install libopencv-dev`
@@ -96,6 +63,74 @@ The following setup procedure assumes you have cmake version >= 3.10.2 and OpenC
 
 **Note** If you are using a lower end PC or RPi, standard building may take a lot of RAM and clog your PC. To avoid that, you can use `build.sh` command from your workspace (it just wraps colcon commands):
 `./src/depthai-ros/build.sh`
+
+## Docker
+You can additionally build and run docker images on your local machine. To do that, **add USB rules as in above step**.
+
+### Running prebuilt images
+
+Each tagged version has it's own prebuilt docker image. To download and run it:
+
+```
+xhost +local:docker
+```
+to enable GUI tools such as rviz or rqt.
+
+Then
+``` bash
+docker run -it -v /dev/:/dev/  --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix luxonis/depthai-ros:noetic-latest [CMD]
+```
+
+Where [CMD] is what's going to be executed when container is initially run and could be for example:
+- bash (it will allow you to browse files and make modifications to the code and rebuild it)
+- zsh (other shell that is installed that has some advantages over bash)
+- roslaunch depthai_ros_driver camera.launch (this is just an example, any launch file will work here)
+A side note here, launch files in depthai_ros_driver have some default parameters set by .yaml files inside the driver. You can either edit them inside the container itself, or you can make a .yaml file on your host (let's say `/home/YOUR_USERNAME_HERE/params/example_config.yaml`) and pass it as an argument to the executable, as follows:
+``` bash
+docker run -it -v /dev/:/dev/ -v /home/YOUR_USERNAME_HERE/params:/params --network host --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix luxonis/depthai-ros:noetic-latest roslaunch depthai_ros_driver camera.launch params_file:=/params/example_config.yaml
+```
+Note, to make images more compact only some external dependencies are installed, for example if you want to try out RTABMap example in docker, you have to:
+- Install it by running the container in bash/zsh mode
+- Modify the Dockerfile so that it's installed during building - you'll have to rebuild the container after that.
+- Run base camera node in our container and RTABMap separately on host/ in a separate container (see the launch file on what parameters/topic names need to be changed when running separately).
+
+
+### Building
+
+Clone the repository and inside it run (it matters on which branch you are on):
+``` bash
+docker build --build-arg USE_RVIZ=1 -t depthai-ros .
+```
+If you find out that you run out of RAM during building, you can also set `BUILD_SEQUENTIAL=1` to build packages one at a time, it should take longer, but use less RAM.
+
+`RUN_RVIZ` arg means rviz will be installed inside docker. If you want to run it you need to also execute following command (you'll have to do it again after restarting your PC):
+``` bash
+xhost +local:docker
+```
+
+Then you can run your image in following way:
+``` bash
+docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai-ros
+```
+will run an interactive docker session. You can also try:
+
+``` bash
+docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai-ros roslaunch depthai_examples stereo_inertial_node.launch.py
+```
+to run a launch file of your choice.
+
+**NOTE** ROS2 Humble docker image uses Cyclone as RMW implementation.
+### Running docker image on ROS1
+
+``` bash
+docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai_ros roslaunch depthai_examples stereo_inertial_node.launch
+```
+Will only start `stereo_inertial_node` launch file (you can try different commands).
+### Running docker image on ROS2
+``` bash
+docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai_ros roslaunch depthai_examples stereo_inertial_node.launch.py
+```
+
 
 ### Depthai ROS Driver
 

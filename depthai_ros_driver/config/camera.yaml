@@ -54,6 +54,8 @@
       i_publish_topic: true
       i_resolution: '1080'
       i_set_isp_scale: true
+      i_isp_num: 2
+      i_isp_den: 3
       i_output_isp: true
       i_width: 1280
       r_exposure: 20000

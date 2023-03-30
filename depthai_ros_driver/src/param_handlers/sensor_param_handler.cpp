@@ -83,14 +83,18 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
 
     colorCam->setInterleaved(declareAndLogParam<bool>("i_interleaved", false));
     if(declareAndLogParam<bool>("i_set_isp_scale", true)) {
-        int new_width = width * 2 / 3;
-        int new_height = height * 2 / 3;
-        if(new_width % 16 == 0 && new_height % 16 == 0) {
-            width = new_width;
-            height = new_height;
-            colorCam->setIspScale(2, 3);
-        } else {
-            RCLCPP_ERROR(getROSNode()->get_logger(), "ISP scaling not supported for given width & height");
+        int num = declareAndLogParam<int>("i_isp_num", 2);
+        int den = declareAndLogParam<int>("i_isp_den", 3);
+        width = (width * num + den - 1) / den;
+        height = (height * num + den - 1) / den;
+        colorCam->setIspScale(num, den);
+        if(width % 16 != 0 && height % 16 != 0) {
+            std::stringstream err_stream;
+            err_stream << "ISP scaling with num: " << num << " and den: " << den << " results in width: " << width << " and height: " << height;
+            err_stream << " which are not divisible by 16.\n";
+            err_stream << "This will result in errors when aligning stereo to RGB. To fix that, either adjust i_num and i_den values";
+            err_stream << " or set i_output_isp parameter to false and set i_width and i_height parameters accordingly.";
+            RCLCPP_ERROR(getROSNode()->get_logger(), err_stream.str().c_str());
         }
     }
     colorCam->setVideoSize(declareAndLogParam<int>("i_width", width), declareAndLogParam<int>("i_height", height));
