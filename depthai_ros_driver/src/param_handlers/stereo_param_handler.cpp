@@ -62,7 +62,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
         stereo->setDepthAlign(dai::CameraBoardSocket::RIGHT);
     }
     stereo->setInputResolution(declareAndLogParam<int>("i_input_width", 1280), declareAndLogParam<int>("i_input_height", 720));
-    
+
     stereo->setOutputSize(declareAndLogParam<int>("i_width", width), declareAndLogParam<int>("i_height", height));
     stereo->setDefaultProfilePreset(depthPresetMap.at(declareAndLogParam<std::string>("i_depth_preset", "HIGH_ACCURACY")));
     stereo->enableDistortionCorrection(declareAndLogParam<bool>("i_enable_distortion_correction", false));

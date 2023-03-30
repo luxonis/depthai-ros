@@ -4,7 +4,6 @@
 #include <memory>
 #include <string>
 
-
 #include "depthai/pipeline/datatype/ImgFrame.hpp"
 #include "rclcpp/time.hpp"
 #include "sensor_msgs/image_encodings.hpp"

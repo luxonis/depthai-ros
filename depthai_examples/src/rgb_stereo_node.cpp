@@ -13,9 +13,6 @@
 #include "sensor_msgs/msg/image.hpp"
 
 // Inludes common necessary includes for development using depthai library
-#include "depthai_bridge/BridgePublisher.hpp"
-#include "depthai_bridge/ImageConverter.hpp"
-
 #include "depthai/device/DataQueue.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
@@ -23,6 +20,8 @@
 #include "depthai/pipeline/node/MonoCamera.hpp"
 #include "depthai/pipeline/node/StereoDepth.hpp"
 #include "depthai/pipeline/node/XLinkOut.hpp"
+#include "depthai_bridge/BridgePublisher.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
 
 using namespace std::chrono_literals;
 

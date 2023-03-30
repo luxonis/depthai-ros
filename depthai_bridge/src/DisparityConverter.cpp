@@ -1,5 +1,6 @@
 
 #include "depthai_bridge/DisparityConverter.hpp"
+
 #include "depthai_bridge/depthaiUtility.hpp"
 
 namespace dai {
