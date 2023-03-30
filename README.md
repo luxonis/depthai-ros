@@ -142,7 +142,9 @@ Parameters that begin with `i_` are set when camera is initializing, to change t
 
 #### Setting RGB parameters
 
-By default RGB camera outputs `ISP` frame which is the whole sensor resolution, though it can be scaled to 2/3 of the original resolution with `i_set_isp_scale: true` to better match with the stereo. To set custom width and height of output image, set `i.output_isp: false` and set custom size using `i_width` and `i_height` parameters.
+By default RGB camera outputs `ISP` frame. To set custom width and height of output image, you can set `i_isp_num` and `i_isp_den` which scale image dimensions (2 and 3 by default, so from 1920x1080 to 1280x720), note for RGBD alignment to work resulting width and height must be divisible by 16. 
+
+Additionally you can set `i.output_isp: false` to use `video` output and set custom size using `i_width` and `i_height` parameters.
 ![](docs/param_rgb.gif)
 #### Setting Stereo parameters
 ![](docs/param_stereo.gif)

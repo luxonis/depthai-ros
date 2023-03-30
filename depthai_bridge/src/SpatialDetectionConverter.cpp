@@ -1,5 +1,5 @@
-#include <depthai_bridge/SpatialDetectionConverter.hpp>
-#include <depthai_bridge/depthaiUtility.hpp>
+#include "depthai_bridge/SpatialDetectionConverter.hpp"
+#include "depthai_bridge/depthaiUtility.hpp"
 
 namespace dai {
 namespace ros {
