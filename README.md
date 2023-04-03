@@ -218,7 +218,7 @@ Available filters:
 an example can be seen by running  `ros2 launch depthai_filters example_wls_filter.launch.py`
 
 
-### Using external sources for NN inference
+### Using external sources for NN inference or Stereo Depth
 
 There is a possibility of using external image topics as input for NNs or Depth calculation.
 
@@ -231,7 +231,7 @@ By default, original sensor node still runs and publishes data. Setting `rgb.i_d
 2. Calculating depth - both `left` and `right` sensor nodes can be setup as in the example above to calculate calculate depth/disparity from external topics. Note that for this to work properly you need specify:
 - `left.i_board_socket_id: 1`
 - `right.i_board_socket_id: 2` 
-- Default stereo input size is set to 1280x720, in case of different image size, adjust `stereo.i_input_width` and `stereo.i_input_height` accordingly.
+- Default stereo input size is set to 1280x720, in case of different image size, To set custom ones, set `stereo.i_set_input_size: true` and adjust `stereo.i_input_width` and `stereo.i_input_height` accordingly.
 - external calibration file path using `camera.i_external_calibration_path` parameter. To get calibration from the device you can either set `camera.i_calibration_dump` to true or call `save_calibration` service. Calibration will be saved to `/tmp/<mx_id>_calibration.json`.
 An example can be seen in `stereo_from_rosbag.launch.py` in `depthai_ros_driver`
 
