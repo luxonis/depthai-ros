@@ -3,5 +3,4 @@
     camera:
       i_nn_type: none
     stereo:
-      i_enable_distortion_correction: true
       i_subpixel: true

@@ -5,8 +5,9 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import LoadComposableNodes, Node
+from launch_ros.actions import LoadComposableNodes
 from launch_ros.descriptions import ComposableNode
+from launch.conditions import IfCondition
 
 
 def launch_setup(context, *args, **kwargs):
@@ -32,6 +33,7 @@ def launch_setup(context, *args, **kwargs):
                                }.items()),
 
         LoadComposableNodes(
+            condition=IfCondition(LaunchConfiguration("rectify_rgb")),
             target_container=name+"_container",
             composable_node_descriptions=[
                     ComposableNode(
@@ -44,7 +46,11 @@ def launch_setup(context, *args, **kwargs):
                                     ('image_rect/compressed', name+'/rgb/image_rect/compressed'),
                                     ('image_rect/compressedDepth', name+'/rgb/image_rect/compressedDepth'),
                                     ('image_rect/theora', name+'/rgb/image_rect/theora')]
-                    ),
+                    )
+            ]),
+        LoadComposableNodes(
+            target_container=name+"_container",
+            composable_node_descriptions=[
                     ComposableNode(
                     package='depth_image_proc',
                     plugin='depth_image_proc::PointCloudXyzrgbNode',
@@ -72,6 +78,7 @@ def generate_launch_description():
         DeclareLaunchArgument("cam_yaw", default_value="0.0"),
         DeclareLaunchArgument("params_file", default_value=os.path.join(depthai_prefix, 'config', 'rgbd.yaml')),
         DeclareLaunchArgument("use_rviz", default_value="False"),
+        DeclareLaunchArgument("rectify_rgb", default_value="False"),
     ]
 
     return LaunchDescription(
