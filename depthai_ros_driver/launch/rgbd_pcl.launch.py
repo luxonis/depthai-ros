@@ -35,19 +35,22 @@ def launch_setup(context, *args, **kwargs):
             target_container=name+"_container",
             composable_node_descriptions=[
                     ComposableNode(
-                        package="depth_image_proc",
-                        plugin="depth_image_proc::ConvertMetricNode",
-                        name="convert_metric_node",
-                        remappings=[('image_raw', name+'/stereo/image_raw'),
-                                            ('camera_info', name+'/stereo/camera_info'),
-                                            ('image', name+'/stereo/converted_depth')]
+                        package="image_proc",
+                        plugin="image_proc::RectifyNode",
+                        name="rectify_color_node",
+                        remappings=[('image', name+'/rgb/image_raw'),
+                                    ('camera_info', name+'/rgb/camera_info'),
+                                    ('image_rect', name+'/rgb/image_rect'),
+                                    ('image_rect/compressed', name+'/rgb/image_rect/compressed'),
+                                    ('image_rect/compressedDepth', name+'/rgb/image_rect/compressedDepth'),
+                                    ('image_rect/theora', name+'/rgb/image_rect/theora')]
                     ),
                     ComposableNode(
                     package='depth_image_proc',
                     plugin='depth_image_proc::PointCloudXyzrgbNode',
                     name='point_cloud_xyzrgb_node',
-                    remappings=[('depth_registered/image_rect', name+'/stereo/converted_depth'),
-                                ('rgb/image_rect_color', name+'/rgb/image_raw'),
+                    remappings=[('depth_registered/image_rect', name+'/stereo/image_raw'),
+                                ('rgb/image_rect_color', name+'/rgb/image_rect'),
                                 ('rgb/camera_info', name+'/rgb/camera_info'),
                                 ('points', name+'/points')]
                     ),
