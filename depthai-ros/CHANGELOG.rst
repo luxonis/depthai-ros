@@ -2,6 +2,10 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.7.1 (2023-03-29)
+
+* Add custom output size option
+
 2.7.0 (2023-03-28)
 
 * Added depthai_descriptions package

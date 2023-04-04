@@ -1,6 +1,7 @@
 
-#include <depthai_bridge/ImuConverter.hpp>
-#include <depthai_bridge/depthaiUtility.hpp>
+#include "depthai_bridge/ImuConverter.hpp"
+
+#include "depthai_bridge/depthaiUtility.hpp"
 
 namespace dai {
 
