@@ -2,7 +2,5 @@
   ros__parameters:
     camera:
       i_nn_type: none
-      i_laser_dot_brightness: 0
-      i_floodlight_brightness: 200
     stereo:
       i_subpixel: true

@@ -61,13 +61,12 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
         }
         stereo->setDepthAlign(dai::CameraBoardSocket::RIGHT);
     }
-    stereo->setInputResolution(declareAndLogParam<int>("i_input_width", 1280), declareAndLogParam<int>("i_input_height", 720));
-    declareAndLogParam<int>("i_width", width);
-    declareAndLogParam<int>("i_height", height);
-    declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket));
-    stereo->setDepthAlign(socket);
+    if(declareAndLogParam<bool>("i_set_input_size", false)) {
+        stereo->setInputResolution(declareAndLogParam<int>("i_input_width", 1280), declareAndLogParam<int>("i_input_height", 720));
+    }
+    stereo->setOutputSize(declareAndLogParam<int>("i_width", width), declareAndLogParam<int>("i_height", height));
     stereo->setDefaultProfilePreset(depthPresetMap.at(declareAndLogParam<std::string>("i_depth_preset", "HIGH_ACCURACY")));
-    stereo->enableDistortionCorrection(declareAndLogParam<bool>("i_enable_distortion_correction", false));
+    stereo->enableDistortionCorrection(declareAndLogParam<bool>("i_enable_distortion_correction", true));
 
     stereo->initialConfig.setBilateralFilterSigma(declareAndLogParam<int>("i_bilateral_sigma", 0));
     stereo->initialConfig.setLeftRightCheckThreshold(declareAndLogParam<int>("i_lrc_threshold", 10));

@@ -36,19 +36,11 @@ def launch_setup(context, *args, **kwargs):
             target_container=name+"_container",
             composable_node_descriptions=[
                     ComposableNode(
-                        package="depth_image_proc",
-                        plugin="depth_image_proc::ConvertMetricNode",
-                        name="convert_metric_node",
-                        remappings=[('image_raw', name+'/stereo/image_raw'),
-                                            ('camera_info', name+'/stereo/camera_info'),
-                                            ('image', name+'/stereo/converted_depth')]
-                    ),
-                    ComposableNode(
                     package='depth_image_proc',
                     plugin='depth_image_proc::PointCloudXyziNode',
                     name='point_cloud_xyzi',
 
-                    remappings=[('depth/image_rect', name+'/stereo/converted_depth'),
+                    remappings=[('depth/image_rect', name+'/stereo/image_raw'),
                                 ('intensity/image_rect', name+'/right/image_raw'),
                                 ('intensity/camera_info', name+'/right/camera_info'),
                                 ('points', name+'/points')

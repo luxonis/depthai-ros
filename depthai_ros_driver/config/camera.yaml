@@ -54,6 +54,9 @@
       i_publish_topic: true
       i_resolution: '1080'
       i_set_isp_scale: true
+      i_isp_num: 2
+      i_isp_den: 3
+      i_output_isp: true
       i_width: 1280
       r_exposure: 20000
       r_focus: 1
@@ -88,7 +91,7 @@
       i_depth_filter_size: 5
       i_depth_preset: HIGH_ACCURACY
       i_enable_decimation_filter: false
-      i_enable_distortion_correction: false
+      i_enable_distortion_correction: true
       i_enable_spatial_filter: false
       i_enable_speckle_filter: false
       i_enable_temporal_filter: false
@@ -102,5 +105,8 @@
       i_max_q_size: 30
       i_rectify_edge_fill_color: 0
       i_stereo_conf_threshold: 255
+      i_set_input_size: false
+      i_input_width: 1280
+      i_input_height: 720
       i_width: 1280
     use_sim_time: false
