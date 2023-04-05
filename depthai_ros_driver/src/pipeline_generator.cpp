@@ -1,5 +1,7 @@
 #include "depthai_ros_driver/pipeline_generator.hpp"
 
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/nn_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/nn_wrapper.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/spatial_nn_wrapper.hpp"
@@ -7,6 +9,8 @@
 #include "depthai_ros_driver/dai_nodes/sensors/imu.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/stereo.hpp"
+#include "ros/node_handle.h"
+#include "depthai_ros_driver/utils.hpp"
 
 namespace depthai_ros_driver {
 namespace pipeline_gen {
@@ -17,13 +21,11 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
                                                                                     const std::string& nnType,
                                                                                     bool enableImu) {
     ROS_INFO("Pipeline type: %s", pipelineType.c_str());
-    std::string pTypeUpCase = pipelineType;
-    std::string nTypeUpCase = nnType;
-    for(auto& c : pTypeUpCase) c = toupper(c);
-    for(auto& c : nTypeUpCase) c = toupper(c);
-    auto pType = pipelineTypeMap.at(pTypeUpCase);
+    std::string pTypeUpCase = utils::getUpperCaseStr(pipelineType);
+    std::string nTypeUpCase = utils::getUpperCaseStr(nnType);
+    auto pType = utils::getValFromMap(pTypeUpCase, pipelineTypeMap);
     pType = validatePipeline(pType, device->getCameraSensorNames().size());
-    auto nType = nnTypeMap.at(nTypeUpCase);
+    auto nType = utils::getValFromMap(nTypeUpCase, nnTypeMap);
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
     switch(pType) {
         case PipelineType::RGB: {

@@ -26,9 +26,6 @@
   <depend>stereo_msgs</depend>
   <depend>vision_msgs</depend>
 
-  <exec_depend>robot_state_publisher</exec_depend>
-  <exec_depend>xacro</exec_depend>
-
   <export>
       <build_type>catkin</build_type>
   </export>

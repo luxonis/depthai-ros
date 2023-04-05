@@ -1,11 +1,29 @@
 #pragma once
 
+#include <fstream>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-#include "depthai/depthai.hpp"
+#include "depthai/pipeline/datatype/CameraControl.hpp"
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
+#include "nlohmann/json.hpp"
+
+namespace dai {
+namespace node {
+class NeuralNetwork;
+class MobileNetDetectionNetwork;
+class MobileNetSpatialDetectionNetwork;
+class YoloDetectionNetwork;
+class YoloSpatialDetectionNetwork;
+class ImageManip;
+}  // namespace node
+}  // namespace dai
+
+namespace ros {
+class NodeHandle;
+}  // namespace ros
 
 namespace depthai_ros_driver {
 namespace param_handlers {
@@ -14,13 +32,13 @@ enum class NNFamily { Segmentation, Mobilenet, Yolo };
 }
 class NNParamHandler : public BaseParamHandler {
    public:
-    explicit NNParamHandler(const std::string& name);
+    explicit NNParamHandler(ros::NodeHandle node, const std::string& name);
     ~NNParamHandler();
-    nn::NNFamily getNNFamily(ros::NodeHandle node);
-    std::string getConfigPath(ros::NodeHandle node);
+    nn::NNFamily getNNFamily();
+    std::string getConfigPath();
     template <typename T>
-    void declareParams(ros::NodeHandle node, std::shared_ptr<T> nn, std::shared_ptr<dai::node::ImageManip> imageManip) {
-        auto nnPath = getConfigPath(node);
+    void declareParams(std::shared_ptr<T> nn, std::shared_ptr<dai::node::ImageManip> imageManip) {
+        auto nnPath = getConfigPath();
         using json = nlohmann::json;
         std::ifstream f(nnPath);
         json data = json::parse(f);
@@ -89,8 +107,7 @@ class NNParamHandler : public BaseParamHandler {
         }
     }
 
-    dai::CameraControl setRuntimeParams(ros::NodeHandle node, parametersConfig& config) override;
-    std::vector<std::string> getLabels();
+    dai::CameraControl setRuntimeParams(parametersConfig& config) override;
 
    private:
     void setImageManip(const std::string& model_path, std::shared_ptr<dai::node::ImageManip> imageManip);

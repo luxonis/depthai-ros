@@ -1,12 +1,9 @@
 #pragma once
 
-#include <ros/ros.h>
-
-#include <boost/make_shared.hpp>
-#include <depthai_bridge/depthaiUtility.hpp>
 #include <deque>
 
-#include "depthai/depthai.hpp"
+#include "depthai/pipeline/datatype/ImgFrame.hpp"
+#include "ros/time.h"
 #include "sensor_msgs/image_encodings.h"
 #include "stereo_msgs/DisparityImage.h"
 

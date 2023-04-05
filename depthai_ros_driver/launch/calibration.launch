@@ -11,7 +11,7 @@
         <remap from="/nodelet_manager/list" to="$(arg name)/nodelet_manager/list"/>
     </node>
     <node name="$(arg name)" pkg="nodelet" type="nodelet" output="screen" required="true" args="load depthai_ros_driver/Camera $(arg  name)_nodelet_manager">
-        <rosparam param="camera_i_pipeline_type">RGBStereo</rosparam>
+        <rosparam param="camera_i_pipeline_type">RGBDStereo</rosparam>
         <rosparam param="camera_i_nn_type">none</rosparam>
         <rosparam param="right_i_publish_topic">true</rosparam>
         <rosparam param="left_i_publish_topic">true</rosparam>

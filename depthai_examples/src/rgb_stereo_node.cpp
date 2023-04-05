@@ -1,12 +1,15 @@
 
+#include <chrono>
 #include <cstdio>
-#include <iostream>
-
-#include "ros/ros.h"
-// #include "utility.hpp"
-#include <camera_info_manager/camera_info_manager.h>
-
 #include <functional>
+#include <iostream>
+#include <tuple>
+
+
+#include "ros/node_handle.h"
+// #include "utility.hpp"
+#include "camera_info_manager/camera_info_manager.h"
+
 
 #include "sensor_msgs/Image.h"
 
@@ -14,7 +17,13 @@
 #include <depthai_bridge/BridgePublisher.hpp>
 #include <depthai_bridge/ImageConverter.hpp>
 
-#include "depthai/depthai.hpp"
+#include "depthai/device/DataQueue.hpp"
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/node/ColorCamera.hpp"
+#include "depthai/pipeline/node/MonoCamera.hpp"
+#include "depthai/pipeline/node/StereoDepth.hpp"
+#include "depthai/pipeline/node/XLinkOut.hpp"
 
 dai::Pipeline createPipeline(bool lrcheck, bool extended, bool subpixel, int confidence, int LRchecktresh, std::string resolution) {
     dai::Pipeline pipeline;

@@ -1,14 +1,14 @@
 #pragma once
 
-#include <depthai_ros_msgs/SpatialDetectionArray.h>
-#include <ros/ros.h>
+#include <deque>
+#include <memory>
+#include <string>
 
-#include <boost/make_shared.hpp>
-#include <boost/shared_ptr.hpp>
-#include <depthai_bridge/ImageConverter.hpp>
-#include <depthai_bridge/depthaiUtility.hpp>
+#include "depthai_ros_msgs/SpatialDetectionArray.h"
+#include "ros/ros.h"
 
-#include "depthai/depthai.hpp"
+#include "depthai/pipeline/datatype/SpatialImgDetections.hpp"
+
 #include "vision_msgs/Detection3DArray.h"
 
 namespace dai {
@@ -19,7 +19,7 @@ using SpatialDetectionArrayPtr = SpatialMessages::SpatialDetectionArray::Ptr;
 class SpatialDetectionConverter {
    public:
     // DetectionConverter() = default;
-    SpatialDetectionConverter(std::string frameName, int width, int height, bool normalized = false);
+    SpatialDetectionConverter(std::string frameName, int width, int height, bool normalized = false, bool getBaseDeviceTimestamp=false);
 
     void toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData, std::deque<SpatialMessages::SpatialDetectionArray>& opDetectionMsg);
 
@@ -33,6 +33,7 @@ class SpatialDetectionConverter {
     bool _normalized;
     std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
     ::ros::Time _rosBaseTime;
+    bool _getBaseDeviceTimestamp;
 };
 
 /** TODO(sachin): Do we need to have ros msg -> dai bounding box ?

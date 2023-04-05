@@ -1,6 +1,20 @@
 #pragma once
 
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
+
+namespace dai {
+class Pipeline;
+class Device;
+}  // namespace dai
+
+namespace ros {
+class NodeHandle;
+}
 
 namespace depthai_ros_driver {
 namespace pipeline_gen {
@@ -27,7 +41,7 @@ class PipelineGenerator {
    private:
     std::unordered_map<std::string, PipelineType> pipelineTypeMap{{"RGB", PipelineType::RGB},
                                                                   {"RGBD", PipelineType::RGBD},
-                                                                  {"RGBDSTEREO", PipelineType::RGBStereo},
+                                                                  {"RGBSTEREO", PipelineType::RGBStereo},
                                                                   {"STEREO", PipelineType::Stereo},
                                                                   {"DEPTH", PipelineType::Depth},
                                                                   {"CAMARRAY", PipelineType::CamArray}};

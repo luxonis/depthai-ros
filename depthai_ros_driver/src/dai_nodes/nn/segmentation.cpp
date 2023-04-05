@@ -1,10 +1,22 @@
 #include "depthai_ros_driver/dai_nodes/nn/segmentation.hpp"
 
+#include "camera_info_manager/camera_info_manager.h"
 #include "cv_bridge/cv_bridge.h"
+#include "depthai/device/DataQueue.hpp"
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/datatype/NNData.hpp"
+#include "depthai/pipeline/node/ImageManip.hpp"
+#include "depthai/pipeline/node/NeuralNetwork.hpp"
+#include "depthai/pipeline/node/XLinkOut.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
+#include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
 #include "image_transport/camera_publisher.h"
 #include "image_transport/image_transport.h"
 #include "sensor_msgs/CameraInfo.h"
 #include "sensor_msgs/Image.h"
+#include "ros/node_handle.h"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -16,12 +28,13 @@ Segmentation::Segmentation(const std::string& daiNodeName, ros::NodeHandle node,
     setNames();
     segNode = pipeline->create<dai::node::NeuralNetwork>();
     imageManip = pipeline->create<dai::node::ImageManip>();
-    ph = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
-    ph->declareParams(node, segNode, imageManip);
+    ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName);
+    ph->declareParams(segNode, imageManip);
     imageManip->out.link(segNode->input);
     setXinXout(pipeline);
     ROS_DEBUG("Node %s created", daiNodeName.c_str());
 }
+Segmentation::~Segmentation() = default;
 
 void Segmentation::setNames() {
     nnQName = getName() + "_nn";
@@ -34,7 +47,7 @@ void Segmentation::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 }
 
 void Segmentation::setupQueues(std::shared_ptr<dai::Device> device) {
-    nnQ = device->getOutputQueue(nnQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
+    nnQ = device->getOutputQueue(nnQName, ph->getParam<int>("i_max_q_size"), false);
     nnPub = it.advertiseCamera(getName() + "/image_raw", 1);
     nnQ->addCallback(std::bind(&Segmentation::segmentationCB, this, std::placeholders::_1, std::placeholders::_2));
 }
@@ -77,7 +90,7 @@ cv::Mat Segmentation::decodeDeeplab(cv::Mat mat) {
     }
     return colors;
 }
-void Segmentation::link(const dai::Node::Input& in, int /*linkType*/) {
+void Segmentation::link(dai::Node::Input in, int /*linkType*/) {
     segNode->out.link(in);
 }
 
@@ -86,7 +99,7 @@ dai::Node::Input Segmentation::getInput(int /*linkType*/) {
 }
 
 void Segmentation::updateParams(parametersConfig& config) {
-    ph->setRuntimeParams(getROSNode(), config);
+    ph->setRuntimeParams(config);
 }
 
 }  // namespace nn

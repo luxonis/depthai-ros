@@ -60,24 +60,20 @@ add_library(
   ${PROJECT_NAME} SHARED
   src/camera.cpp
   src/pipeline_generator.cpp
+  src/utils.cpp
   src/dai_nodes/sensors/imu.cpp
   src/dai_nodes/sensors/rgb.cpp
   src/dai_nodes/sensors/mono.cpp
-  src/dai_nodes/sensors/camera_sensor.cpp
+  src/dai_nodes/sensors/sensor_wrapper.cpp
   src/dai_nodes/sensors/sensor_helpers.cpp
   src/dai_nodes/stereo.cpp
   src/dai_nodes/nn/nn_wrapper.cpp
   src/dai_nodes/nn/spatial_nn_wrapper.cpp
   src/dai_nodes/nn/segmentation.cpp
-  src/dai_nodes/nn/mobilenet.cpp
-  src/dai_nodes/nn/yolo.cpp
-  src/dai_nodes/nn/spatial_mobilenet.cpp
-  src/dai_nodes/nn/spatial_yolo.cpp
   src/param_handlers/camera_param_handler.cpp
   src/param_handlers/imu_param_handler.cpp
   src/param_handlers/nn_param_handler.cpp
-  src/param_handlers/rgb_param_handler.cpp
-  src/param_handlers/mono_param_handler.cpp
+  src/param_handlers/sensor_param_handler.cpp
   src/param_handlers/stereo_param_handler.cpp
 )
 

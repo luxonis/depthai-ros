@@ -1,7 +1,7 @@
 #include <ctype.h>
-#include <depthai_ros_msgs/NormalizedImageCrop.h>
 #include <stdio.h>
 
+#include "depthai_ros_msgs/NormalizedImageCrop.h"
 #include "ros/ros.h"
 
 static constexpr float stepSize = 0.02;

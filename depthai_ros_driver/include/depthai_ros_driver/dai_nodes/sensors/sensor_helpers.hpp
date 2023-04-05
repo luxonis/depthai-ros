@@ -1,12 +1,30 @@
 #pragma once
 
+#include <deque>
 #include <string>
 #include <vector>
 
-#include "camera_info_manager/camera_info_manager.h"
-#include "depthai_bridge/ImageConverter.hpp"
+#include "depthai-shared/datatype/RawImgFrame.hpp"
+#include "depthai-shared/properties/ColorCameraProperties.hpp"
+#include "depthai-shared/properties/VideoEncoderProperties.hpp"
+#include "depthai/pipeline/datatype/ADatatype.hpp"
 #include "image_transport/camera_publisher.h"
 #include "sensor_msgs/CameraInfo.h"
+
+namespace dai {
+class Device;
+class Pipeline;
+namespace node {
+class VideoEncoder;
+}
+namespace ros {
+class ImageConverter;
+}
+}  // namespace dai
+
+namespace camera_info_manager {
+class CameraInfoManager;
+}
 
 namespace depthai_ros_driver {
 namespace dai_nodes {

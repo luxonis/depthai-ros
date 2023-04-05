@@ -1,9 +1,10 @@
-#include <depthai_bridge/SpatialDetectionConverter.hpp>
+#include "depthai_bridge/SpatialDetectionConverter.hpp"
+#include "depthai_bridge/depthaiUtility.hpp"
 
 namespace dai {
 namespace ros {
 
-SpatialDetectionConverter::SpatialDetectionConverter(std::string frameName, int width, int height, bool normalized)
+SpatialDetectionConverter::SpatialDetectionConverter(std::string frameName, int width, int height, bool normalized, bool getBaseDeviceTimestamp)
     : _frameName(frameName), _width(width), _height(height), _normalized(normalized), _steadyBaseTime(std::chrono::steady_clock::now()) {
     _rosBaseTime = ::ros::Time::now();
 }
