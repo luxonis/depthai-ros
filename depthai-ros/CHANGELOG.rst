@@ -4,7 +4,7 @@ Changelog for package depthai-ros
 
 2.7.1 (2023-03-29)
 -------------------
-* Add custom output size option
+* Add custom output size option for streams
 
 2.7.0 (2023-03-28)
 -------------------
