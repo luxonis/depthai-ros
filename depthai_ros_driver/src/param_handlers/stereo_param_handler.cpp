@@ -72,7 +72,10 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     stereo->initialConfig.setLeftRightCheckThreshold(declareAndLogParam<int>("i_lrc_threshold", 10));
     stereo->initialConfig.setMedianFilter(static_cast<dai::MedianFilter>(declareAndLogParam<int>("i_depth_filter_size", 5)));
     stereo->initialConfig.setConfidenceThreshold(declareAndLogParam<int>("i_stereo_conf_threshold", 255));
-    stereo->initialConfig.setSubpixel(declareAndLogParam<bool>("i_subpixel", false));
+    if(declareAndLogParam<bool>("i_subpixel", false)) {
+        stereo->initialConfig.setSubpixel(true);
+        stereo->initialConfig.setSubpixelFractionalBits(declareAndLogParam<int>("i_subpixel_fractional_bits", 3));
+    }
     stereo->setExtendedDisparity(declareAndLogParam<bool>("i_extended_disp", false));
     stereo->setRectifyEdgeFillColor(declareAndLogParam<int>("i_rectify_edge_fill_color", 0));
     auto config = stereo->initialConfig.get();
