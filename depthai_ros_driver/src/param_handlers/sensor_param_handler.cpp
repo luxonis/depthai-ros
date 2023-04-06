@@ -67,7 +67,8 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
                         {"5MP", dai::ColorCameraProperties::SensorResolution::THE_5_MP},
                         {"4000x3000", dai::ColorCameraProperties::SensorResolution::THE_4000X3000},
                         {"5312X6000", dai::ColorCameraProperties::SensorResolution::THE_5312X6000},
-                        {"48_MP", dai::ColorCameraProperties::SensorResolution::THE_48_MP}};
+                        {"48_MP", dai::ColorCameraProperties::SensorResolution::THE_48_MP},
+                        {"1440X1080", dai::ColorCameraProperties::SensorResolution::THE_1440X1080}};
     declareAndLogParam<bool>("i_publish_topic", publish);
     declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket));
     declareAndLogParam<bool>("i_output_isp", true);
