@@ -86,6 +86,9 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     auto config = stereo->initialConfig.get();
     config.costMatching.disparityWidth =
         utils::getValFromMap(declareAndLogParam<std::string>("i_disparity_width", "DISPARITY_96"), disparityWidthMap);
+    if(!config.algorithmControl.enableExtended) {
+        config.costMatching.enableCompanding = declareAndLogParam<bool>("i_enable_companding", false);
+    }
     config.postProcessing.temporalFilter.enable = declareAndLogParam<bool>("i_enable_temporal_filter", false);
     if(config.postProcessing.temporalFilter.enable) {
         config.postProcessing.temporalFilter.alpha = declareAndLogParam<float>("i_temporal_filter_alpha", 0.4);
