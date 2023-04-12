@@ -45,7 +45,7 @@ def generate_launch_description():
     declare_camera_model_cmd = DeclareLaunchArgument(
         'camera_model',
         default_value=camera_model,
-        description='The model of the camera. Using a wrong camera model can disable camera features. Set spatial_camera:=False for `OAK-1, OAK-1-MAX`.')
+        description='The model of the camera. Using a wrong camera model can disable camera features. Set spatial_camera:=False for `OAK-1, OAK-1-LITE, OAK-1-MAX`.')
 
     declare_tf_prefix_cmd = DeclareLaunchArgument(
         'tf_prefix',
