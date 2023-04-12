@@ -54,7 +54,7 @@ dai::Pipeline createPipeline(bool spatial_camera, bool syncNN, bool subpixel, st
 
     xoutRgb->setStreamName("preview");
     xoutNN->setStreamName("detections");
-    if(spatial_camera == True) {
+    if(spatial_camera == true) {
         xoutDepth->setStreamName("depth");
 
         colorCam->setPreviewSize(416, 416);
