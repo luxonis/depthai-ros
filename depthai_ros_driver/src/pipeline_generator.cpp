@@ -122,38 +122,38 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
             break;
         }
         case PipelineType::Rae: {
-            auto rgb = std::make_unique<dai_nodes::SensorWrapper>("rgb", node, pipeline, device, dai::CameraBoardSocket::CAM_E);
+            // auto rgb = std::make_unique<dai_nodes::SensorWrapper>("rgb", node, pipeline, device, dai::CameraBoardSocket::CAM_A);
             auto stereo_front = std::make_unique<dai_nodes::Stereo>("stereo_front",
                                                                     node,
                                                                     pipeline,
                                                                     device,
-                                                                    dai_nodes::StereoSensorInfo{"left_front", dai::CameraBoardSocket::CAM_A},
-                                                                    dai_nodes::StereoSensorInfo{"right_front", dai::CameraBoardSocket::CAM_B});
+                                                                    dai_nodes::StereoSensorInfo{"left_front", dai::CameraBoardSocket::CAM_B},
+                                                                    dai_nodes::StereoSensorInfo{"right_front", dai::CameraBoardSocket::CAM_C});
             // auto stereo_back = std::make_unique<dai_nodes::Stereo>("stereo_back",
             //                                                        node,
             //                                                        pipeline,
             //                                                        device,
             //                                                        dai_nodes::StereoSensorInfo{"left_back", dai::CameraBoardSocket::CAM_C},
             //                                                        dai_nodes::StereoSensorInfo{"right_back", dai::CameraBoardSocket::CAM_D});
-            daiNodes.push_back(std::move(rgb));
+            // daiNodes.push_back(std::move(rgb));
             daiNodes.push_back(std::move(stereo_front));
             // daiNodes.push_back(std::move(stereo_back));
-            switch(nType) {
-                case NNType::None:
-                    break;
-                case NNType::RGB: {
-                    auto nn = createNN(node, pipeline, *rgb);
-                    daiNodes.push_back(std::move(nn));
-                    break;
-                }
-                case NNType::Spatial: {
-                    auto nn = createSpatialNN(node, pipeline, *rgb, *stereo_front);
-                    daiNodes.push_back(std::move(nn));
-                    break;
-                }
-                default:
-                    break;
-            }
+            // switch(nType) {
+            //     case NNType::None:
+            //         break;
+            //     case NNType::RGB: {
+            //         auto nn = createNN(node, pipeline, *rgb);
+            //         daiNodes.push_back(std::move(nn));
+            //         break;
+            //     }
+            //     case NNType::Spatial: {
+            //         auto nn = createSpatialNN(node, pipeline, *rgb, *stereo_front);
+            //         daiNodes.push_back(std::move(nn));
+            //         break;
+            //     }
+            //     default:
+            //         break;
+            // }
             break;
         }
         default: {

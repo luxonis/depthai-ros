@@ -49,7 +49,8 @@ void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData
     ImageMsgs::Image outImageMsg;
     StdMsgs::Header header;
     header.frame_id = _frameName;
-    header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
+    // header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp); RAE doesn't output correct time
+    header.stamp = rclcpp::Clock().now();
     std::string encoding;
     int decodeFlags;
     cv::Mat output;
