@@ -96,6 +96,9 @@
       i_enable_speckle_filter: false
       i_enable_temporal_filter: false
       i_enable_threshold_filter: false
+      i_enable_brightness_filter: false
+      i_brightness_filter_min_brightness: 1
+      i_brightness_filter_max_brightness: 256
       i_extended_disp: false
       i_height: 720
       i_low_bandwidth: false
