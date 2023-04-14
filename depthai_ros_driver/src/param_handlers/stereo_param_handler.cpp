@@ -59,8 +59,9 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
         } catch(rclcpp::exceptions::ParameterNotDeclaredException& e) {
             RCLCPP_ERROR(getROSNode()->get_logger(), "Right parameters not set, defaulting to 1280x720 unless specified otherwise.");
         }
-        stereo->setDepthAlign(dai::CameraBoardSocket::RIGHT);
     }
+    declareAndLogParam("i_board_socket_id", static_cast<int>(socket));
+    stereo->setDepthAlign(socket);
     if(declareAndLogParam<bool>("i_set_input_size", false)) {
         stereo->setInputResolution(declareAndLogParam<int>("i_input_width", 1280), declareAndLogParam<int>("i_input_height", 720));
     }
