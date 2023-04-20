@@ -90,6 +90,8 @@
       i_board_socket_id: 0
       i_depth_filter_size: 5
       i_depth_preset: HIGH_ACCURACY
+      i_disparity_width: DISPARITY_96
+      i_enable_companding: false
       i_enable_decimation_filter: false
       i_enable_distortion_correction: true
       i_enable_spatial_filter: false
