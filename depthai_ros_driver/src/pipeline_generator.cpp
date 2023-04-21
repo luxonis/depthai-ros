@@ -24,7 +24,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
     std::string pTypeUpCase = utils::getUpperCaseStr(pipelineType);
     std::string nTypeUpCase = utils::getUpperCaseStr(nnType);
     auto pType = utils::getValFromMap(pTypeUpCase, pipelineTypeMap);
-    pType = validatePipeline(node, pType, device->getCameraSensorNames().size());
+    // pType = validatePipeline(node, pType, device->getCameraSensorNames().size());
     auto nType = utils::getValFromMap(nTypeUpCase, nnTypeMap);
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
     switch(pType) {
