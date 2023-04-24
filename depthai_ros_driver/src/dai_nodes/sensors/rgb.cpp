@@ -48,7 +48,10 @@ void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
             colorCamNode->video.link(videoEnc->input);
             videoEnc->bitstream.link(xoutColor->input);
         } else {
-            colorCamNode->isp.link(xoutColor->input);
+            if(ph->getParam<bool>("i_output_isp"))
+                colorCamNode->isp.link(xoutColor->input);
+            else
+                colorCamNode->video.link(xoutColor->input);
         }
     }
     if(ph->getParam<bool>("i_enable_preview")) {

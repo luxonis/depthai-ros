@@ -5,8 +5,9 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import LoadComposableNodes, Node
+from launch_ros.actions import LoadComposableNodes
 from launch_ros.descriptions import ComposableNode
+from launch.conditions import IfCondition
 
 
 def launch_setup(context, *args, **kwargs):
@@ -32,22 +33,30 @@ def launch_setup(context, *args, **kwargs):
                                }.items()),
 
         LoadComposableNodes(
+            condition=IfCondition(LaunchConfiguration("rectify_rgb")),
             target_container=name+"_container",
             composable_node_descriptions=[
                     ComposableNode(
-                        package="depth_image_proc",
-                        plugin="depth_image_proc::ConvertMetricNode",
-                        name="convert_metric_node",
-                        remappings=[('image_raw', name+'/stereo/image_raw'),
-                                            ('camera_info', name+'/stereo/camera_info'),
-                                            ('image', name+'/stereo/converted_depth')]
-                    ),
+                        package="image_proc",
+                        plugin="image_proc::RectifyNode",
+                        name="rectify_color_node",
+                        remappings=[('image', name+'/rgb/image_raw'),
+                                    ('camera_info', name+'/rgb/camera_info'),
+                                    ('image_rect', name+'/rgb/image_rect'),
+                                    ('image_rect/compressed', name+'/rgb/image_rect/compressed'),
+                                    ('image_rect/compressedDepth', name+'/rgb/image_rect/compressedDepth'),
+                                    ('image_rect/theora', name+'/rgb/image_rect/theora')]
+                    )
+            ]),
+        LoadComposableNodes(
+            target_container=name+"_container",
+            composable_node_descriptions=[
                     ComposableNode(
                     package='depth_image_proc',
                     plugin='depth_image_proc::PointCloudXyzrgbNode',
                     name='point_cloud_xyzrgb_node',
-                    remappings=[('depth_registered/image_rect', name+'/stereo/converted_depth'),
-                                ('rgb/image_rect_color', name+'/rgb/image_raw'),
+                    remappings=[('depth_registered/image_rect', name+'/stereo/image_raw'),
+                                ('rgb/image_rect_color', name+'/rgb/image_rect'),
                                 ('rgb/camera_info', name+'/rgb/camera_info'),
                                 ('points', name+'/points')]
                     ),
@@ -69,6 +78,7 @@ def generate_launch_description():
         DeclareLaunchArgument("cam_yaw", default_value="0.0"),
         DeclareLaunchArgument("params_file", default_value=os.path.join(depthai_prefix, 'config', 'rgbd.yaml')),
         DeclareLaunchArgument("use_rviz", default_value="False"),
+        DeclareLaunchArgument("rectify_rgb", default_value="False"),
     ]
 
     return LaunchDescription(
