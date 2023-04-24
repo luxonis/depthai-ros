@@ -5,12 +5,12 @@
 #include "depthai_ros_driver/dai_nodes/nn/nn_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/nn_wrapper.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/spatial_nn_wrapper.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/camera_sensor.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/imu.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
 #include "depthai_ros_driver/dai_nodes/stereo.hpp"
-#include "ros/node_handle.h"
 #include "depthai_ros_driver/utils.hpp"
+#include "ros/node_handle.h"
 
 namespace depthai_ros_driver {
 namespace pipeline_gen {
@@ -29,7 +29,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
     switch(pType) {
         case PipelineType::RGB: {
-            auto rgb = std::make_unique<dai_nodes::CameraSensor>("rgb", node, pipeline, device, dai::CameraBoardSocket::RGB);
+            auto rgb = std::make_unique<dai_nodes::SensorWrapper>("rgb", node, pipeline, device, dai::CameraBoardSocket::RGB);
             switch(nType) {
                 case NNType::None:
                     break;
@@ -49,7 +49,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
         }
 
         case PipelineType::RGBD: {
-            auto rgb = std::make_unique<dai_nodes::CameraSensor>("rgb", node, pipeline, device, dai::CameraBoardSocket::RGB);
+            auto rgb = std::make_unique<dai_nodes::SensorWrapper>("rgb", node, pipeline, device, dai::CameraBoardSocket::RGB);
             auto stereo = std::make_unique<dai_nodes::Stereo>("stereo", node, pipeline, device);
             switch(nType) {
                 case NNType::None:
@@ -72,9 +72,9 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
             break;
         }
         case PipelineType::RGBStereo: {
-            auto rgb = std::make_unique<dai_nodes::CameraSensor>("rgb", node, pipeline, device, dai::CameraBoardSocket::RGB);
-            auto left = std::make_unique<dai_nodes::CameraSensor>("left", node, pipeline, device, dai::CameraBoardSocket::LEFT);
-            auto right = std::make_unique<dai_nodes::CameraSensor>("right", node, pipeline, device, dai::CameraBoardSocket::RIGHT);
+            auto rgb = std::make_unique<dai_nodes::SensorWrapper>("rgb", node, pipeline, device, dai::CameraBoardSocket::RGB);
+            auto left = std::make_unique<dai_nodes::SensorWrapper>("left", node, pipeline, device, dai::CameraBoardSocket::LEFT);
+            auto right = std::make_unique<dai_nodes::SensorWrapper>("right", node, pipeline, device, dai::CameraBoardSocket::RIGHT);
             switch(nType) {
                 case NNType::None:
                     break;
@@ -95,8 +95,8 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
             break;
         }
         case PipelineType::Stereo: {
-            auto left = std::make_unique<dai_nodes::CameraSensor>("left", node, pipeline, device, dai::CameraBoardSocket::LEFT);
-            auto right = std::make_unique<dai_nodes::CameraSensor>("right", node, pipeline, device, dai::CameraBoardSocket::RIGHT);
+            auto left = std::make_unique<dai_nodes::SensorWrapper>("left", node, pipeline, device, dai::CameraBoardSocket::LEFT);
+            auto right = std::make_unique<dai_nodes::SensorWrapper>("right", node, pipeline, device, dai::CameraBoardSocket::RIGHT);
             daiNodes.push_back(std::move(left));
             daiNodes.push_back(std::move(right));
             break;
@@ -115,7 +115,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
                     j++;
                 }
                 std::string nodeName(j, alphabet[i % alphabet.size()]);
-                auto daiNode = std::make_unique<dai_nodes::CameraSensor>(nodeName, node, pipeline, device, sensor.first);
+                auto daiNode = std::make_unique<dai_nodes::SensorWrapper>(nodeName, node, pipeline, device, sensor.first);
                 daiNodes.push_back(std::move(daiNode));
                 i++;
             };

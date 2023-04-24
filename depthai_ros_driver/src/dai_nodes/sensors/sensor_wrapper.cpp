@@ -1,6 +1,5 @@
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
 
-
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/XLinkIn.hpp"
@@ -14,12 +13,12 @@
 namespace depthai_ros_driver {
 namespace dai_nodes {
 SensorWrapper::SensorWrapper(const std::string& daiNodeName,
-                           ros::NodeHandle node,
-                           std::shared_ptr<dai::Pipeline> pipeline,
-                           std::shared_ptr<dai::Device> device,
-                           dai::CameraBoardSocket socket,
-                           bool publish)
-    : BaseNode(daiNodeName, node, pipeline) {
+                             ros::NodeHandle node,
+                             std::shared_ptr<dai::Pipeline> pipeline,
+                             std::shared_ptr<dai::Device> device,
+                             dai::CameraBoardSocket socket,
+                             bool publish)
+    : BaseNode(daiNodeName, node, pipeline), ready(false) {
     ROS_DEBUG("Creating node %s base", daiNodeName.c_str());
     ph = std::make_unique<param_handlers::SensorParamHandler>(node, daiNodeName);
 
@@ -63,10 +62,11 @@ SensorWrapper::~SensorWrapper() = default;
 
 void SensorWrapper::subCB(const sensor_msgs::Image::ConstPtr& img) {
     dai::ImgFrame data;
-
-    converter->toDaiMsg(*img, data);
-    data.setInstanceNum(socketID);
-    inQ->send(data);
+    if(ready) {
+        converter->toDaiMsg(*img, data);
+        data.setInstanceNum(socketID);
+        inQ->send(data);
+    }
 }
 void SensorWrapper::setNames() {
     inQName = getName() + "_topic_in";
@@ -80,6 +80,7 @@ void SensorWrapper::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 void SensorWrapper::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_simulate_from_topic")) {
         inQ = device->getInputQueue(inQName, ph->getParam<int>("i_max_q_size"), false);
+        ready = true;
     }
     if(!ph->getParam<bool>("i_disable_node")) {
         sensorNode->setupQueues(device);

@@ -23,7 +23,7 @@
         <rosparam file="$(arg params_file)" />
 
 
-    <include file="$(find depthai_bridge)/launch/urdf.launch">
+    <include file="$(find depthai_descriptions)/launch/urdf.launch">
         <arg name="base_frame" value="$(arg  name)" />
         <arg name="parent_frame" value="$(arg  parent_frame)"/>
         <arg name="camera_model" value="$(arg  camera_model)"/>
@@ -53,7 +53,7 @@
 
     <node pkg="nodelet" type="nodelet" name="nodelet_manager" args="manager" output="screen"/>
 
-    <node name="oak" pkg="nodelet" type="nodelet" output="screen" required="true" args="load depthai_ros_driver/Camera nodelet_manager">
+    <node name="oak" pkg="nodelet" type="nodelet" output="screen" required="true" args="load depthai_ros_driver/Camera $(arg  name)_nodelet_manager">
     </node>
 
 

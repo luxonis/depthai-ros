@@ -11,7 +11,6 @@
 #include "sensor_msgs/Imu.h"
 #include "stereo_msgs/DisparityImage.h"
 
-
 // Inludes common necessary includes for development using depthai library
 #include "depthai/device/DataQueue.hpp"
 #include "depthai/device/Device.hpp"

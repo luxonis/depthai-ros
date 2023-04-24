@@ -1,10 +1,9 @@
-#include "sensor_msgs/Image.h"
-
 #include <depthai_bridge/ImageConverter.hpp>
+
 #include "opencv2/core/mat.hpp"
 #include "opencv2/highgui.hpp"
-
 #include "ros/node_handle.h"
+#include "sensor_msgs/Image.h"
 
 // Inludes common necessary includes for development using depthai library
 

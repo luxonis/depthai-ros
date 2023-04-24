@@ -1,14 +1,14 @@
 #include "depthai_ros_driver/camera.hpp"
 
-#include <memory>
 #include <fstream>
+#include <memory>
 
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
 #include "depthai_ros_driver/pipeline_generator.hpp"
 #include "dynamic_reconfigure/server.h"
 #include "nodelet/nodelet.h"
 #include "pluginlib/class_list_macros.h"
-#include "depthai/device/Device.hpp"
-#include "depthai/pipeline/Pipeline.hpp"
 
 namespace depthai_ros_driver {
 
@@ -59,7 +59,6 @@ bool Camera::savePipelineCB(Trigger::Request& /*req*/, Trigger::Response& res) {
     res.success = true;
     return true;
 }
-
 
 bool Camera::startCB(Trigger::Request& /*req*/, Trigger::Response& res) {
     ROS_INFO("Starting camera!");
@@ -116,7 +115,6 @@ void Camera::onConfigure() {
     ROS_INFO("Camera ready!");
 }
 
-
 void Camera::getDeviceType() {
     pipeline = std::make_shared<dai::Pipeline>();
     startDevice();
@@ -135,12 +133,8 @@ void Camera::getDeviceType() {
 
 void Camera::createPipeline() {
     auto generator = std::make_unique<pipeline_gen::PipelineGenerator>();
-    daiNodes = generator->createPipeline(pNH,
-                                         device,
-                                         pipeline,
-                                         ph->getParam<std::string>("i_pipeline_type"),
-                                         ph->getParam<std::string>("i_nn_type"),
-                                         ph->getParam<bool>("i_enable_imu"));
+    daiNodes = generator->createPipeline(
+        pNH, device, pipeline, ph->getParam<std::string>("i_pipeline_type"), ph->getParam<std::string>("i_nn_type"), ph->getParam<bool>("i_enable_imu"));
     if(ph->getParam<bool>("i_pipeline_dump")) {
         savePipeline();
     }

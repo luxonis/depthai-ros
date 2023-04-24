@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="params_file" default="$(find depthai_filters)/config/wls.yaml"/>
+
+    <arg name="name" default="oak" />
+    <node pkg="nodelet" type="nodelet" name="rectify_left"
+            args="load image_proc/rectify $(arg  name)_nodelet_manager">
+            <remap from="image_mono" to="$(arg name)/left/image_raw"/>
+        <remap from="image_rect" to="$(arg name)/left/image_rect"/>
+    </node>  
+    <include file="$(find depthai_ros_driver)/launch/camera.launch">
+        <arg name="name" value="$(arg name)"/>
+        <arg name="params_file" value="$(arg params_file)"/>
+    </include>
+
+    <node name="wls" pkg="nodelet" type="nodelet" output="screen" required="true" args="load depthai_filters/WLSFilter $(arg  name)_nodelet_manager">
+        <remap from="/stereo/image_raw" to="$(arg name)/stereo/image_raw"/>
+        <remap from="/stereo/left/rect" to="$(arg name)/left/image_rect"/>
+        <remap from="/stereo/camera_info" to="$(arg name)/stereo/camera_info"/>
+        <remap from="/stereo/wls/filtered" to="$(arg name)/stereo/wls/filtered"/>
+
+    </node>
+</launch>

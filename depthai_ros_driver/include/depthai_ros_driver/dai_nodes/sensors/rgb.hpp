@@ -1,10 +1,10 @@
 #pragma once
 
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
+#include "depthai_ros_driver/parametersConfig.h"
 #include "image_transport/camera_publisher.h"
 #include "image_transport/image_transport.h"
 #include "sensor_msgs/CameraInfo.h"
-#include "depthai_ros_driver/parametersConfig.h"
 
 namespace dai {
 class Pipeline;

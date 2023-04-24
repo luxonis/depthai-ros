@@ -41,9 +41,8 @@ class BaseParamHandler {
         return std::string(baseNode.getNamespace()) + "/" + baseName + "_" + paramName;
     }
 
-
    protected:
-    ros::NodeHandle getROSNode(){
+    ros::NodeHandle getROSNode() {
         return baseNode;
     }
     template <typename T>

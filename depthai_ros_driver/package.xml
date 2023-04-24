@@ -28,6 +28,7 @@
   <depend>image_pipeline</depend>
   <depend>depthai</depend>
   <depend>depthai_bridge</depend>
+  <depend>depthai_descriptions</depend>
   <depend>nodelet</depend>
 
   <export>

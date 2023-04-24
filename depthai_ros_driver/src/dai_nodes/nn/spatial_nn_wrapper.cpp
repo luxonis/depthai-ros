@@ -30,6 +30,8 @@ SpatialNNWrapper::SpatialNNWrapper(const std::string& daiNodeName, ros::NodeHand
 
     ROS_DEBUG("Base node %s created", daiNodeName.c_str());
 }
+
+SpatialNNWrapper::~SpatialNNWrapper() = default;
 void SpatialNNWrapper::setNames() {}
 
 void SpatialNNWrapper::setXinXout(std::shared_ptr<dai::Pipeline> /*pipeline*/) {}

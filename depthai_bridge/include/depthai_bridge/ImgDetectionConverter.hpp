@@ -4,11 +4,9 @@
 #include <memory>
 #include <string>
 
+#include "depthai/pipeline/datatype/ImgDetections.hpp"
 #include "ros/time.h"
 #include "vision_msgs/Detection2DArray.h"
-
-#include "depthai/pipeline/datatype/ImgDetections.hpp"
-
 
 namespace dai {
 

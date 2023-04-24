@@ -1,4 +1,5 @@
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
+
 #include "camera_info_manager/camera_info_manager.h"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/VideoEncoder.hpp"

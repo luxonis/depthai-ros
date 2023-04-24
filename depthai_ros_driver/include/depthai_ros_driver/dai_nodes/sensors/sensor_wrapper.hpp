@@ -35,11 +35,11 @@ namespace dai_nodes {
 class SensorWrapper : public BaseNode {
    public:
     explicit SensorWrapper(const std::string& daiNodeName,
-                          ros::NodeHandle node,
-                          std::shared_ptr<dai::Pipeline> pipeline,
-                          std::shared_ptr<dai::Device> device,
-                          dai::CameraBoardSocket socket,
-                          bool publish = true);
+                           ros::NodeHandle node,
+                           std::shared_ptr<dai::Pipeline> pipeline,
+                           std::shared_ptr<dai::Device> device,
+                           dai::CameraBoardSocket socket,
+                           bool publish = true);
     ~SensorWrapper();
     void updateParams(parametersConfig& config) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
@@ -58,6 +58,7 @@ class SensorWrapper : public BaseNode {
     std::shared_ptr<dai::DataInputQueue> inQ;
     std::string inQName;
     int socketID;
+    bool ready;
 };
 
 }  // namespace dai_nodes

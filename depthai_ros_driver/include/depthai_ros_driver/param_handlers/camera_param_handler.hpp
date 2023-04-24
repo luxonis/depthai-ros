@@ -13,7 +13,6 @@ namespace ros {
 class NodeHandle;
 }  // namespace ros
 
-
 namespace depthai_ros_driver {
 namespace param_handlers {
 class CameraParamHandler : public BaseParamHandler {

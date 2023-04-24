@@ -14,23 +14,17 @@ class Device;
 namespace ros {
 class NodeHandle;
 class Parameter;
-}  // namespace rclcpp
-
+}  // namespace ros
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
 class BaseNode {
    public:
-    BaseNode(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> /*pipeline*/) {
-        setNodeName(daiNodeName);
-        setROSNodePointer(node);
-    };
-    virtual ~BaseNode(){};
+    BaseNode(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> /*pipeline*/);
+    virtual ~BaseNode();
     virtual void updateParams(parametersConfig& config) = 0;
     virtual void link(dai::Node::Input in, int linkType = 0) = 0;
-    virtual dai::Node::Input getInput(int /*linkType = 0*/) {
-        throw(std::runtime_error("getInput() not implemented"));
-    };
+    virtual dai::Node::Input getInput(int /*linkType = 0*/);
     virtual void setupQueues(std::shared_ptr<dai::Device> device) = 0;
     virtual void setNames() = 0;
     virtual void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) = 0;

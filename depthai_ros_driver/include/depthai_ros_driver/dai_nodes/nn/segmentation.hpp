@@ -6,10 +6,9 @@
 
 #include "cv_bridge/cv_bridge.h"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
+#include "depthai_ros_driver/parametersConfig.h"
 #include "image_transport/camera_publisher.h"
 #include "image_transport/image_transport.h"
-#include "depthai_ros_driver/parametersConfig.h"
-
 
 namespace dai {
 class Pipeline;
@@ -57,6 +56,8 @@ class Segmentation : public BaseNode {
     std::vector<std::string> labelNames;
     image_transport::CameraPublisher nnPub, ptPub;
     sensor_msgs::CameraInfo nnInfo;
+    std::unique_ptr<dai::ros::ImageConverter> imageConverter;
+    std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
     std::shared_ptr<dai::node::NeuralNetwork> segNode;
     std::shared_ptr<dai::node::ImageManip> imageManip;
     std::unique_ptr<param_handlers::NNParamHandler> ph;

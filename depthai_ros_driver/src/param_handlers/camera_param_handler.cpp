@@ -1,9 +1,9 @@
 #include "depthai_ros_driver/param_handlers/camera_param_handler.hpp"
 
 #include "depthai-shared/common/UsbSpeed.hpp"
+#include "depthai_ros_driver/parametersConfig.h"
 #include "depthai_ros_driver/utils.hpp"
 #include "ros/node_handle.h"
-#include "depthai_ros_driver/parametersConfig.h"
 
 namespace depthai_ros_driver {
 namespace param_handlers {

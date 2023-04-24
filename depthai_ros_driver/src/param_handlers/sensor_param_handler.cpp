@@ -1,6 +1,5 @@
 #include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
 
-
 #include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai-shared/properties/ColorCameraProperties.hpp"
 #include "depthai/pipeline/node/ColorCamera.hpp"
@@ -11,17 +10,19 @@
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-SensorParamHandler::SensorParamHandler(ros::NodeHandle node, const std::string& name) : BaseParamHandler(node, name) {
-
-}
+SensorParamHandler::SensorParamHandler(ros::NodeHandle node, const std::string& name) : BaseParamHandler(node, name) {}
 SensorParamHandler::~SensorParamHandler() = default;
 
-void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> monoCam, dai::CameraBoardSocket socket, dai_nodes::sensor_helpers::ImageSensor, bool publish) {
-            monoResolutionMap = {
+void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> monoCam,
+                                       dai::CameraBoardSocket socket,
+                                       dai_nodes::sensor_helpers::ImageSensor,
+                                       bool publish) {
+    monoResolutionMap = {
         {"400", dai::MonoCameraProperties::SensorResolution::THE_400_P},
         {"480", dai::MonoCameraProperties::SensorResolution::THE_480_P},
         {"720", dai::MonoCameraProperties::SensorResolution::THE_720_P},
         {"800", dai::MonoCameraProperties::SensorResolution::THE_800_P},
+        {"1200", dai::MonoCameraProperties::SensorResolution::THE_1200_P},
     };
     getParam<int>("i_max_q_size", 30);
     getParam<bool>("i_publish_topic", publish);
@@ -30,7 +31,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> mo
     monoCam->setBoardSocket(socket);
     monoCam->setFps(getParam<double>("i_fps", 30.0));
 
-    monoCam->setResolution(monoResolutionMap.at(getParam<std::string>("i_resolution", "720")));
+    monoCam->setResolution(utils::getValFromMap(getParam<std::string>("i_resolution", "720"), monoResolutionMap));
     getParam<int>("i_width");
     getParam<int>("i_height");
     size_t iso = getParam<int>("r_iso", 800);
@@ -41,12 +42,11 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> mo
     }
 }
 
-void SensorParamHandler::declareParams(
-                                    std::shared_ptr<dai::node::ColorCamera> colorCam,
-                                    dai::CameraBoardSocket socket,
-                                    dai_nodes::sensor_helpers::ImageSensor sensor,
-                                    bool publish) {
-                                            rgbResolutionMap = {{"720", dai::ColorCameraProperties::SensorResolution::THE_720_P},
+void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> colorCam,
+                                       dai::CameraBoardSocket socket,
+                                       dai_nodes::sensor_helpers::ImageSensor sensor,
+                                       bool publish) {
+    rgbResolutionMap = {{"720", dai::ColorCameraProperties::SensorResolution::THE_720_P},
                         {"1080", dai::ColorCameraProperties::SensorResolution::THE_1080_P},
                         {"4K", dai::ColorCameraProperties::SensorResolution::THE_4_K},
                         {"12MP", dai::ColorCameraProperties::SensorResolution::THE_12_MP},
@@ -56,7 +56,8 @@ void SensorParamHandler::declareParams(
                         {"5MP", dai::ColorCameraProperties::SensorResolution::THE_5_MP},
                         {"4000x3000", dai::ColorCameraProperties::SensorResolution::THE_4000X3000},
                         {"5312X6000", dai::ColorCameraProperties::SensorResolution::THE_5312X6000},
-                        {"48_MP", dai::ColorCameraProperties::SensorResolution::THE_48_MP}};
+                        {"48_MP", dai::ColorCameraProperties::SensorResolution::THE_48_MP},
+                        {"1440X1080", dai::ColorCameraProperties::SensorResolution::THE_1440X1080}};
     getParam<int>("i_max_q_size", 30);
     getParam<bool>("i_publish_topic", publish);
     getParam<bool>("i_enable_preview", false);
@@ -64,8 +65,8 @@ void SensorParamHandler::declareParams(
 
     colorCam->setBoardSocket(socket);
     colorCam->setFps(getParam<int>("i_fps", 30.0));
-    colorCam->setPreviewSize(getParam<int>("i_preview_size", 416), getParam<int>("i_preview_size", 416));
-    auto resolution = rgbResolutionMap.at(getParam<std::string>("i_resolution", "1080"));
+    colorCam->setPreviewSize(getParam<int>("i_preview_size", 300), getParam<int>("i_preview_size", 300));
+    auto resolution = utils::getValFromMap(getParam<std::string>("i_resolution", "1080"), rgbResolutionMap);
     int width, height;
     colorCam->setResolution(resolution);
     sensor.getSizeFromResolution(colorCam->getResolution(), width, height);
@@ -89,7 +90,6 @@ void SensorParamHandler::declareParams(
     colorCam->setVideoSize(getParam<int>("i_width", width), getParam<int>("i_height", height));
     setParam<int>("i_height", height);
     setParam<int>("i_width", width);
-
     colorCam->setPreviewKeepAspectRatio(getParam<bool>("i_keep_preview_aspect_ratio", true));
     size_t iso = getParam<int>("r_iso", 800);
     size_t exposure = getParam<int>("r_exposure", 20000);

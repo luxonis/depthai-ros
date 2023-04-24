@@ -102,12 +102,11 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         auto tfPrefix = getTFPrefix(getName());
         imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
         if(ph->getParam<std::string>("i_calibration_file").empty()) {
-            previewInfoManager->setCameraInfo(
-                sensor_helpers::getCalibInfo(*imageConverter,
-                                             device,
-                                             static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")),
-                                             ph->getParam<int>("i_preview_size"),
-                                             ph->getParam<int>("i_preview_size")));
+            previewInfoManager->setCameraInfo(sensor_helpers::getCalibInfo(*imageConverter,
+                                                                           device,
+                                                                           static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")),
+                                                                           ph->getParam<int>("i_preview_size"),
+                                                                           ph->getParam<int>("i_preview_size")));
         } else {
             infoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
         }

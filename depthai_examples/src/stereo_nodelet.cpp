@@ -4,8 +4,6 @@
 #include "camera_info_manager/camera_info_manager.h"
 #include "nodelet/nodelet.h"
 #include "pluginlib/class_list_macros.h"
-
-
 #include "ros/node_handle.h"
 #include "sensor_msgs/Image.h"
 

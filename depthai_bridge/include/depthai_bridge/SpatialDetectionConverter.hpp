@@ -4,11 +4,9 @@
 #include <memory>
 #include <string>
 
+#include "depthai/pipeline/datatype/SpatialImgDetections.hpp"
 #include "depthai_ros_msgs/SpatialDetectionArray.h"
 #include "ros/ros.h"
-
-#include "depthai/pipeline/datatype/SpatialImgDetections.hpp"
-
 #include "vision_msgs/Detection3DArray.h"
 
 namespace dai {
@@ -19,7 +17,7 @@ using SpatialDetectionArrayPtr = SpatialMessages::SpatialDetectionArray::Ptr;
 class SpatialDetectionConverter {
    public:
     // DetectionConverter() = default;
-    SpatialDetectionConverter(std::string frameName, int width, int height, bool normalized = false, bool getBaseDeviceTimestamp=false);
+    SpatialDetectionConverter(std::string frameName, int width, int height, bool normalized = false, bool getBaseDeviceTimestamp = false);
 
     void toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData, std::deque<SpatialMessages::SpatialDetectionArray>& opDetectionMsg);
 

@@ -14,7 +14,6 @@ namespace ros {
 class NodeHandle;
 }  // namespace ros
 
-
 namespace depthai_ros_driver {
 namespace param_handlers {
 class StereoParamHandler : public BaseParamHandler {
@@ -26,6 +25,7 @@ class StereoParamHandler : public BaseParamHandler {
 
    private:
     std::unordered_map<std::string, dai::node::StereoDepth::PresetMode> depthPresetMap;
+    std::unordered_map<std::string, dai::StereoDepthConfig::CostMatching::DisparityWidth> disparityWidthMap;
     std::unordered_map<std::string, dai::StereoDepthConfig::PostProcessing::DecimationFilter::DecimationMode> decimationModeMap;
     std::unordered_map<std::string, dai::StereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode> temporalPersistencyMap;
 };

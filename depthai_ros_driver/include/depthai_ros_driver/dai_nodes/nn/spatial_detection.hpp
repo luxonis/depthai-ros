@@ -17,11 +17,10 @@
 #include "depthai_ros_driver/dai_nodes/nn/nn_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
+#include "depthai_ros_driver/parametersConfig.h"
 #include "image_transport/camera_publisher.h"
 #include "image_transport/image_transport.h"
 #include "ros/node_handle.h"
-#include "depthai_ros_driver/parametersConfig.h"
-
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -29,7 +28,8 @@ namespace nn {
 template <typename T>
 class SpatialDetection : public BaseNode {
    public:
-    SpatialDetection(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline), it(node) {
+    SpatialDetection(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline)
+        : BaseNode(daiNodeName, node, pipeline), it(node) {
         ROS_DEBUG("Creating node %s", daiNodeName.c_str());
         setNames();
         spatialNode = pipeline->create<T>();
@@ -54,13 +54,12 @@ class SpatialDetection : public BaseNode {
                                                                              ph->getParam<bool>("i_get_base_device_timestamp"));
         nnQ->addCallback(std::bind(&SpatialDetection::spatialCB, this, std::placeholders::_1, std::placeholders::_2));
         detPub = getROSNode().template advertise<vision_msgs::Detection3DArray>(getName() + "/spatial_detections", 10);
-        
+
         if(ph->getParam<bool>("i_enable_passthrough")) {
             ptQ = device->getOutputQueue(ptQName, ph->getParam<int>("i_max_q_size"), false);
             ptImageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
             ptInfoMan = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), getName()), "/" + getName());
-            ptInfoMan->setCameraInfo(sensor_helpers::getCalibInfo(
-                                                                  *ptImageConverter,
+            ptInfoMan->setCameraInfo(sensor_helpers::getCalibInfo(*ptImageConverter,
                                                                   device,
                                                                   dai::CameraBoardSocket::RGB,
                                                                   imageManip->initialConfig.getResizeWidth(),
@@ -84,12 +83,7 @@ class SpatialDetection : public BaseNode {
             int width, height;
             getROSNode().getParam("stereo_i_width", width);
             getROSNode().getParam("stereo_i_height", height);
-            ptDepthInfoMan->setCameraInfo(sensor_helpers::getCalibInfo(
-                                                                       *ptDepthImageConverter,
-                                                                       device,
-                                                                       socket,
-                                                                       width,
-                                                                       height));
+            ptDepthInfoMan->setCameraInfo(sensor_helpers::getCalibInfo(*ptDepthImageConverter, device, socket, width, height));
 
             ptDepthPub = it.advertiseCamera(getName() + "/passthrough_depth/image_raw", 1);
             ptDepthQ->addCallback(

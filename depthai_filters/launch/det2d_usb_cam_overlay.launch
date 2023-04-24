@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="params_file" default="$(find depthai_filters)/config/usb_cam_overlay.yaml"/>
+
+    <arg name="name" default="oak" />
+
+    <include file="$(find depthai_ros_driver)/launch/camera.launch">
+        <arg name="name" value="$(arg name)"/>
+        <arg name="params_file" value="$(arg params_file)"/>
+    </include>
+
+    <node name="usb_cam" pkg="usb_cam" type="usb_cam_node">
+        <param name="image_width" value="320"/>
+        <param name="image_height" value="240"/>
+    </node>
+    <node name="overlay" pkg="nodelet" type="nodelet" output="screen" required="true" args="load depthai_filters/Detection2DOverlay $(arg  name)_nodelet_manager">
+        <remap from="/rgb/preview/image_raw" to="$(arg name)/nn/passthrough/image_raw"/>
+        <remap from="/nn/detections" to="$(arg name)/nn/detections"/>
+
+    </node>
+</launch>

@@ -16,10 +16,10 @@
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
+#include "depthai_ros_driver/parametersConfig.h"
 #include "image_transport/camera_publisher.h"
 #include "image_transport/image_transport.h"
 #include "ros/node_handle.h"
-#include "depthai_ros_driver/parametersConfig.h"
 
 namespace depthai_ros_driver {
 
@@ -52,15 +52,12 @@ class Detection : public BaseNode {
         detPub = getROSNode().template advertise<vision_msgs::Detection2DArray>(getName() + "/detections", 10);
         nnQ->addCallback(std::bind(&Detection::detectionCB, this, std::placeholders::_1, std::placeholders::_2));
 
-        if(ph->getParam<bool>("i_enable_passthrough")) {;
+        if(ph->getParam<bool>("i_enable_passthrough")) {
             ptQ = device->getOutputQueue(ptQName, ph->getParam<int>("i_max_q_size"), false);
             imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
             infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), getName()), "/" + getName());
-            infoManager->setCameraInfo(sensor_helpers::getCalibInfo(*imageConverter,
-                                                                    device,
-                                                                    dai::CameraBoardSocket::RGB,
-                                                                    imageManip->initialConfig.getResizeWidth(),
-                                                                    imageManip->initialConfig.getResizeWidth()));
+            infoManager->setCameraInfo(sensor_helpers::getCalibInfo(
+                *imageConverter, device, dai::CameraBoardSocket::RGB, imageManip->initialConfig.getResizeWidth(), imageManip->initialConfig.getResizeWidth()));
 
             ptPub = it.advertiseCamera(getName() + "/passthrough/image_raw", 1);
             ptQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager));

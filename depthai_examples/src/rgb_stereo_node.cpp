@@ -5,12 +5,9 @@
 #include <iostream>
 #include <tuple>
 
-
 #include "ros/node_handle.h"
 // #include "utility.hpp"
 #include "camera_info_manager/camera_info_manager.h"
-
-
 #include "sensor_msgs/Image.h"
 
 // Inludes common necessary includes for development using depthai library

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
+#include "depthai_ros_driver/parametersConfig.h"
 #include "ros/publisher.h"
 #include "sensor_msgs/Imu.h"
-#include "depthai_ros_driver/parametersConfig.h"
 
 namespace dai {
 class Pipeline;

@@ -4,13 +4,12 @@
 #include <iostream>
 
 #include "camera_info_manager/camera_info_manager.h"
-#include "vision_msgs/Detection2DArray.h"
 #include "depthai_bridge/BridgePublisher.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_bridge/ImgDetectionConverter.hpp"
-
 #include "ros/node_handle.h"
 #include "sensor_msgs/Image.h"
+#include "vision_msgs/Detection2DArray.h"
 
 // Inludes common necessary includes for development using depthai library
 #include "depthai/device/DataQueue.hpp"

@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/param_handlers/camera_param_handler.hpp"
 #include "depthai_ros_driver/parametersConfig.h"
@@ -13,7 +12,6 @@ namespace dai {
 class Pipeline;
 class Device;
 }  // namespace dai
-
 
 namespace depthai_ros_driver {
 using Trigger = std_srvs::Trigger;
