@@ -1,0 +1,5 @@
+/oak:
+  camera_i_nn_type: none
+  left_i_publish_topic: true
+  stereo_i_output_disparity: true
+  stereo_i_subpixel: true

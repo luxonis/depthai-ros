@@ -1,0 +1,17 @@
+<library path="lib/libdepthai_filters">
+  <class name="depthai_filters/Detection2DOverlay" type="depthai_filters::Detection2DOverlay" base_class_type="nodelet::Nodelet">
+  <description>
+  Detection 2D Overlay.
+  </description>
+  </class>
+    <class name="depthai_filters/SegmentationOverlay" type="depthai_filters::SegmentationOverlay" base_class_type="nodelet::Nodelet">
+  <description>
+  Segmentation Overlay.
+  </description>
+  </class>
+    <class name="depthai_filters/WLSFilter" type="depthai_filters::WLSFilter" base_class_type="nodelet::Nodelet">
+  <description>
+  WLS Filter.
+  </description>
+  </class>
+</library>

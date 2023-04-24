@@ -1,18 +1,25 @@
-#include <camera_info_manager/camera_info_manager.h>
-#include <nodelet/nodelet.h>
-#include <pluginlib/class_list_macros.h>
-
 #include <functional>
 #include <tuple>
 
-#include "ros/ros.h"
+#include "camera_info_manager/camera_info_manager.h"
+#include "nodelet/nodelet.h"
+#include "pluginlib/class_list_macros.h"
+#include "ros/node_handle.h"
 #include "sensor_msgs/Image.h"
 
 // Inludes common necessary includes for development using depthai library
-#include <depthai_bridge/BridgePublisher.hpp>
-#include <depthai_bridge/ImageConverter.hpp>
 
-#include "depthai/depthai.hpp"
+#include "depthai/device/DataQueue.hpp"
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/node/MonoCamera.hpp"
+#include "depthai/pipeline/node/StereoDepth.hpp"
+#include "depthai/pipeline/node/XLinkIn.hpp"
+#include "depthai/pipeline/node/XLinkOut.hpp"
+#include "depthai_bridge/BridgePublisher.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_bridge/ImuConverter.hpp"
+#include "depthai_bridge/SpatialDetectionConverter.hpp"
 
 namespace depthai_examples {
 

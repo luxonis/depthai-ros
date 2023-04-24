@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.10.2)
 project(depthai_ros_driver)
 if(NOT CMAKE_C_STANDARD)
   set(CMAKE_C_STANDARD 99)
@@ -10,7 +10,17 @@ endif()
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
+
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+add_compile_options(-g)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+## is used, also find other catkin packages
+if(POLICY CMP0057)
+    cmake_policy(SET CMP0057 NEW)
+endif()
+
 
 set(opencv_version 4)
 find_package(OpenCV ${opencv_version} QUIET COMPONENTS imgproc highgui)
@@ -40,12 +50,7 @@ find_package(depthai CONFIG REQUIRED)
 generate_dynamic_reconfigure_options(
   cfg/parameters.cfg
 )
-catkin_package(
-  LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp sensor_msgs std_msgs camera_info_manager depthai_bridge vision_msgs cv_bridge message_filters image_transport 
-  DEPENDS
-  OpenCV
-)
+
 
 include_directories(include)
 
@@ -55,30 +60,81 @@ include_directories(
   ${OpenCV_INCLUDE_DIRS}
 )
 
+include_directories(include)
+
+catkin_package(
+  LIBRARIES ${PROJECT_NAME} ${SENSOR_LIB_NAME}
+  ${NN_LIB_NAME}
+  ${COMMON_LIB_NAME}
+  CATKIN_DEPENDS roscpp sensor_msgs std_msgs camera_info_manager depthai_bridge vision_msgs cv_bridge message_filters image_transport 
+  DEPENDS
+  OpenCV
+)
+
+set(COMMON_LIB_NAME ${PROJECT_NAME}_common)
+add_library(
+  ${COMMON_LIB_NAME} SHARED
+  src/utils.cpp
+  src/dai_nodes/base_node.cpp
+  src/dai_nodes/sensors/sensor_helpers.cpp # TODO: Figure out different place for this 
+  src/param_handlers/camera_param_handler.cpp
+  src/param_handlers/imu_param_handler.cpp
+  src/param_handlers/nn_param_handler.cpp
+  src/param_handlers/sensor_param_handler.cpp
+  src/param_handlers/stereo_param_handler.cpp
+)
+
+add_dependencies(${COMMON_LIB_NAME}
+${catkin_EXPORTED_TARGETS} 
+${${PROJECT_NAME}_EXPORTED_TARGETS}
+)
+
+target_link_libraries(${COMMON_LIB_NAME}
+  ${catkin_LIBRARIES}
+  depthai::core
+  opencv_imgproc
+  opencv_highgui
+)
+
+set(SENSOR_LIB_NAME ${PROJECT_NAME}_sensor_nodes)
+add_library(
+  ${SENSOR_LIB_NAME} SHARED
+  src/dai_nodes/sensors/imu.cpp
+  src/dai_nodes/sensors/rgb.cpp
+  src/dai_nodes/sensors/mono.cpp
+  src/dai_nodes/sensors/sensor_wrapper.cpp
+  src/dai_nodes/stereo.cpp
+)
+
+target_link_libraries(
+  ${SENSOR_LIB_NAME}
+  ${COMMON_LIB_NAME}
+)
+set(NN_LIB_NAME ${PROJECT_NAME}_nn_nodes)
+add_library(
+  ${NN_LIB_NAME} SHARED
+  src/dai_nodes/nn/nn_wrapper.cpp
+  src/dai_nodes/nn/spatial_nn_wrapper.cpp
+  src/dai_nodes/nn/segmentation.cpp
+)
+
+target_link_libraries(
+  ${NN_LIB_NAME}
+  ${COMMON_LIB_NAME}
+)
 
 add_library(
   ${PROJECT_NAME} SHARED
   src/camera.cpp
   src/pipeline_generator.cpp
-  src/dai_nodes/sensors/imu.cpp
-  src/dai_nodes/sensors/rgb.cpp
-  src/dai_nodes/sensors/mono.cpp
-  src/dai_nodes/sensors/camera_sensor.cpp
-  src/dai_nodes/sensors/sensor_helpers.cpp
-  src/dai_nodes/stereo.cpp
-  src/dai_nodes/nn/nn_wrapper.cpp
-  src/dai_nodes/nn/spatial_nn_wrapper.cpp
-  src/dai_nodes/nn/segmentation.cpp
-  src/dai_nodes/nn/mobilenet.cpp
-  src/dai_nodes/nn/yolo.cpp
-  src/dai_nodes/nn/spatial_mobilenet.cpp
-  src/dai_nodes/nn/spatial_yolo.cpp
-  src/param_handlers/camera_param_handler.cpp
-  src/param_handlers/imu_param_handler.cpp
-  src/param_handlers/nn_param_handler.cpp
-  src/param_handlers/rgb_param_handler.cpp
-  src/param_handlers/mono_param_handler.cpp
-  src/param_handlers/stereo_param_handler.cpp
+)
+
+
+target_link_libraries(
+  ${PROJECT_NAME}
+  ${SENSOR_LIB_NAME}
+  ${NN_LIB_NAME}
+  ${COMMON_LIB_NAME}
 )
 
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS}

@@ -1,16 +1,20 @@
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
 
 #include <fstream>
-#include <nlohmann/json.hpp>
 
-#include "depthai/depthai.hpp"
-#include "depthai/pipeline/nodes.hpp"
+#include "depthai/pipeline/node/DetectionNetwork.hpp"
+#include "depthai/pipeline/node/ImageManip.hpp"
+#include "depthai/pipeline/node/NeuralNetwork.hpp"
+#include "depthai/pipeline/node/SpatialDetectionNetwork.hpp"
+#include "depthai_ros_driver/utils.hpp"
+#include "nlohmann/json.hpp"
+#include "ros/node_handle.h"
 #include "ros/package.h"
 
 namespace depthai_ros_driver {
 namespace param_handlers {
 
-NNParamHandler::NNParamHandler(const std::string& name) : BaseParamHandler(name) {
+NNParamHandler::NNParamHandler(ros::NodeHandle node, const std::string& name) : BaseParamHandler(node, name) {
     nnFamilyMap = {
         {"segmentation", nn::NNFamily::Segmentation},
         {"mobilenet", nn::NNFamily::Mobilenet},
@@ -18,9 +22,9 @@ NNParamHandler::NNParamHandler(const std::string& name) : BaseParamHandler(name)
     };
 }
 NNParamHandler::~NNParamHandler() = default;
-std::string NNParamHandler::getConfigPath(ros::NodeHandle node) {
+std::string NNParamHandler::getConfigPath() {
     std::string configPath = ros::package::getPath("depthai_ros_driver") + "/config/nn/";
-    auto nnPath = getParam<std::string>(node, "i_nn_config_path");
+    auto nnPath = getParam<std::string>("i_nn_config_path");
     if(nnPath == "depthai_ros_driver/yolo") {
         nnPath = configPath + "yolo.json";
     } else if(nnPath == "depthai_ros_driver/segmentation") {
@@ -30,8 +34,8 @@ std::string NNParamHandler::getConfigPath(ros::NodeHandle node) {
     }
     return nnPath;
 }
-nn::NNFamily NNParamHandler::getNNFamily(ros::NodeHandle node) {
-    auto nnPath = getConfigPath(node);
+nn::NNFamily NNParamHandler::getNNFamily() {
+    auto nnPath = getConfigPath();
     using json = nlohmann::json;
     std::ifstream f(nnPath);
     json data = json::parse(f);
@@ -102,13 +106,21 @@ void NNParamHandler::setNNParams(nlohmann::json data, std::shared_ptr<dai::node:
 
 void NNParamHandler::setImageManip(const std::string& model_path, std::shared_ptr<dai::node::ImageManip> imageManip) {
     auto blob = dai::OpenVINO::Blob(model_path);
-    auto first_info = blob.networkInputs.begin();
-    auto input_size = first_info->second.dims[0];
+    auto firstInfo = blob.networkInputs.begin();
+    auto inputSize = firstInfo->second.dims[0];
 
+    if(inputSize > 590) {
+        std::ostringstream stream;
+        stream << "Current network input size is too large to resize. Please set following parameters: rgb.i_preview_size: " << inputSize;
+        stream << " and nn.i_disable_resize to true";
+        throw std::runtime_error(stream.str());
+    }
     imageManip->initialConfig.setFrameType(dai::ImgFrame::Type::BGR888p);
     imageManip->inputImage.setBlocking(false);
     imageManip->inputImage.setQueueSize(8);
-    imageManip->initialConfig.setResize(input_size, input_size);
+    imageManip->setKeepAspectRatio(false);
+    ROS_INFO("NN input size: %d x %d. Resizing input image in case of different dimensions.", inputSize, inputSize);
+    imageManip->initialConfig.setResize(inputSize, inputSize);
 }
 std::string NNParamHandler::getModelPath(const nlohmann::json& data) {
     std::string modelPath;
@@ -123,7 +135,7 @@ std::string NNParamHandler::getModelPath(const nlohmann::json& data) {
     return modelPath;
 }
 
-dai::CameraControl NNParamHandler::setRuntimeParams(ros::NodeHandle /*node*/, parametersConfig& /*config*/) {
+dai::CameraControl NNParamHandler::setRuntimeParams(parametersConfig& /*config*/) {
     dai::CameraControl ctrl;
     return ctrl;
 }

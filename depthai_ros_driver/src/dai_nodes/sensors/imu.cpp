@@ -1,19 +1,26 @@
 #include "depthai_ros_driver/dai_nodes/sensors/imu.hpp"
 
-#include "cv_bridge/cv_bridge.h"
-#include "image_transport/camera_publisher.h"
-#include "image_transport/image_transport.h"
+#include "depthai/device/DataQueue.hpp"
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/node/IMU.hpp"
+#include "depthai/pipeline/node/XLinkOut.hpp"
+#include "depthai_bridge/ImuConverter.hpp"
+#include "depthai_ros_driver/param_handlers/imu_param_handler.hpp"
+#include "ros/node_handle.h"
+
 namespace depthai_ros_driver {
 namespace dai_nodes {
 Imu::Imu(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
     ROS_DEBUG("Creating node %s", daiNodeName.c_str());
     setNames();
     imuNode = pipeline->create<dai::node::IMU>();
-    ph = std::make_unique<param_handlers::ImuParamHandler>(daiNodeName);
-    ph->declareParams(node, imuNode);
+    ph = std::make_unique<param_handlers::ImuParamHandler>(node, daiNodeName);
+    ph->declareParams(imuNode);
     setXinXout(pipeline);
     ROS_DEBUG("Node %s created", daiNodeName.c_str());
 }
+Imu::~Imu() = default;
 void Imu::setNames() {
     imuQName = getName() + "_imu";
 }
@@ -25,7 +32,7 @@ void Imu::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 }
 
 void Imu::setupQueues(std::shared_ptr<dai::Device> device) {
-    imuQ = device->getOutputQueue(imuQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
+    imuQ = device->getOutputQueue(imuQName, ph->getParam<int>("i_max_q_size"), false);
     auto tfPrefix = std::string(getROSNode().getNamespace()) + "_" + getName();
     tfPrefix.erase(0, 1);
     auto imuMode = static_cast<dai::ros::ImuSyncMethod>(0);
@@ -49,12 +56,12 @@ void Imu::imuQCB(const std::string& /*name*/, const std::shared_ptr<dai::ADataty
     }
 }
 
-void Imu::link(const dai::Node::Input& in, int /*linkType*/) {
+void Imu::link(dai::Node::Input in, int /*linkType*/) {
     imuNode->out.link(in);
 }
 
 void Imu::updateParams(parametersConfig& config) {
-    ph->setRuntimeParams(getROSNode(), config);
+    ph->setRuntimeParams(config);
 }
 
 }  // namespace dai_nodes

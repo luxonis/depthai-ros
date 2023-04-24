@@ -1,7 +1,10 @@
 #include "depthai_ros_driver/camera.hpp"
 
+#include <fstream>
 #include <memory>
 
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
 #include "depthai_ros_driver/pipeline_generator.hpp"
 #include "dynamic_reconfigure/server.h"
 #include "nodelet/nodelet.h"
@@ -13,39 +16,48 @@ void Camera::onInit() {
     pNH = getPrivateNodeHandle();
     paramServer = std::make_shared<dynamic_reconfigure::Server<parametersConfig>>(pNH);
     paramServer->setCallback(std::bind(&Camera::parameterCB, this, std::placeholders::_1, std::placeholders::_2));
-    ph = std::make_unique<param_handlers::CameraParamHandler>("camera");
-    ph->declareParams(pNH);
+    ph = std::make_unique<param_handlers::CameraParamHandler>(pNH, "camera");
+    ph->declareParams();
     onConfigure();
     startSrv = pNH.advertiseService("start_camera", &Camera::startCB, this);
     stopSrv = pNH.advertiseService("stop_camera", &Camera::stopCB, this);
+    savePipelineSrv = pNH.advertiseService("save_pipeline", &Camera::startCB, this);
+    saveCalibSrv = pNH.advertiseService("save_calibration", &Camera::stopCB, this);
 }
 
-void Camera::parameterCB(parametersConfig& config, uint32_t /*level*/) {
-    enableIR = config.camera_i_enable_ir;
-    floodlightBrighness = config.camera_i_floodlight_brightness;
-    laserDotBrightness = config.camera_i_laser_dot_brightness;
-    if(camRunning && enableIR && !device->getIrDrivers().empty()) {
-        device->setIrFloodLightBrightness(floodlightBrighness);
-        device->setIrLaserDotProjectorBrightness(laserDotBrightness);
-    }
-    if(!daiNodes.empty()) {
-        for(const auto& node : daiNodes) {
-            try {
-                node->updateParams(config);
-            } catch(std::runtime_error& e) {
-                ROS_ERROR("%s", e.what());
-            }
-        }
-    }
+void Camera::saveCalib() {
+    auto calibHandler = device->readCalibration();
+    std::stringstream savePath;
+    savePath << "/tmp/" << device->getMxId().c_str() << "_calibration.json";
+    ROS_INFO("Saving calibration to: %s", savePath.str().c_str());
+    calibHandler.eepromToJsonFile(savePath.str());
 }
 
-void Camera::onConfigure() {
-    getDeviceType();
-    createPipeline();
-    device->startPipeline(*pipeline);
-    setupQueues();
-    setIR();
-    ROS_INFO("Camera ready!");
+void Camera::loadCalib(const std::string& path) {
+    ROS_INFO("Reading calibration from: %s", path.c_str());
+    dai::CalibrationHandler cH(path);
+    pipeline->setCalibrationData(cH);
+}
+
+void Camera::savePipeline() {
+    std::stringstream savePath;
+    savePath << "/tmp/" << device->getMxId().c_str() << "_pipeline.json";
+    ROS_INFO("Saving pipeline schema to: %s", savePath.str().c_str());
+    std::ofstream file(savePath.str());
+    file << pipeline->serializeToJson()["pipeline"];
+    file.close();
+}
+
+bool Camera::saveCalibCB(Trigger::Request& /*req*/, Trigger::Response& res) {
+    saveCalib();
+    res.success = true;
+    return true;
+}
+
+bool Camera::savePipelineCB(Trigger::Request& /*req*/, Trigger::Response& res) {
+    savePipeline();
+    res.success = true;
+    return true;
 }
 
 bool Camera::startCB(Trigger::Request& /*req*/, Trigger::Response& res) {
@@ -74,6 +86,40 @@ bool Camera::stopCB(Trigger::Request& /*req*/, Trigger::Response& res) {
     res.success = true;
     return true;
 }
+
+void Camera::parameterCB(parametersConfig& config, uint32_t /*level*/) {
+    enableIR = config.camera_i_enable_ir;
+    floodlightBrighness = config.camera_i_floodlight_brightness;
+    laserDotBrightness = config.camera_i_laser_dot_brightness;
+    if(camRunning && enableIR && !device->getIrDrivers().empty()) {
+        device->setIrFloodLightBrightness(floodlightBrighness);
+        device->setIrLaserDotProjectorBrightness(laserDotBrightness);
+    }
+    if(!daiNodes.empty()) {
+        for(const auto& node : daiNodes) {
+            try {
+                node->updateParams(config);
+            } catch(std::runtime_error& e) {
+                ROS_ERROR("%s", e.what());
+            }
+        }
+    }
+}
+
+void Camera::onConfigure() {
+    try {
+        getDeviceType();
+        createPipeline();
+        device->startPipeline(*pipeline);
+        setupQueues();
+        setIR();
+    } catch(const std::runtime_error& e) {
+        ROS_ERROR(e.what());
+        throw std::runtime_error("Failed to start up the camera.");
+    }
+    ROS_INFO("Camera ready!");
+}
+
 void Camera::getDeviceType() {
     pipeline = std::make_shared<dai::Pipeline>();
     startDevice();
@@ -92,12 +138,14 @@ void Camera::getDeviceType() {
 
 void Camera::createPipeline() {
     auto generator = std::make_unique<pipeline_gen::PipelineGenerator>();
-    daiNodes = generator->createPipeline(pNH,
-                                         device,
-                                         pipeline,
-                                         ph->getParam<std::string>(pNH, "i_pipeline_type"),
-                                         ph->getParam<std::string>(pNH, "i_nn_type"),
-                                         ph->getParam<bool>(pNH, "i_enable_imu"));
+    daiNodes = generator->createPipeline(
+        pNH, device, pipeline, ph->getParam<std::string>("i_pipeline_type"), ph->getParam<std::string>("i_nn_type"), ph->getParam<bool>("i_enable_imu"));
+    if(ph->getParam<bool>("i_pipeline_dump")) {
+        savePipeline();
+    }
+    if(ph->getParam<bool>("i_calibration_dump")) {
+        saveCalib();
+    }
 }
 
 void Camera::setupQueues() {
@@ -110,9 +158,9 @@ void Camera::startDevice() {
     ros::Rate r(1.0);
     while(!camRunning) {
         try {
-            auto mxid = ph->getParam<std::string>(pNH, "i_mx_id");
-            auto ip = ph->getParam<std::string>(pNH, "i_ip");
-            auto usb_id = ph->getParam<std::string>(pNH, "i_usb_port_id");
+            auto mxid = ph->getParam<std::string>("i_mx_id");
+            auto ip = ph->getParam<std::string>("i_ip");
+            auto usb_id = ph->getParam<std::string>("i_usb_port_id");
             if(mxid.empty() && ip.empty() && usb_id.empty()) {
                 ROS_INFO("No ip/mxid/usb_id specified, connecting to the next available device.");
                 device = std::make_shared<dai::Device>();
@@ -122,7 +170,7 @@ void Camera::startDevice() {
                 if(availableDevices.size() == 0) {
                     throw std::runtime_error("No devices detected!");
                 }
-                dai::UsbSpeed speed = ph->getUSBSpeed(pNH);
+                dai::UsbSpeed speed = ph->getUSBSpeed();
 
                 for(const auto& info : availableDevices) {
                     if(!mxid.empty() && info.getMxId() == mxid) {

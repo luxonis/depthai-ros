@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>depthai_bridge</name>
-  <version>2.6.4</version>
+  <version>2.7.2</version>
   <description>The depthai_bridge package</description>
 
   <maintainer email="sachin@luxonis.com">Sachin Guruswamy</maintainer>
@@ -25,9 +25,6 @@
   <depend>std_msgs</depend>
   <depend>stereo_msgs</depend>
   <depend>vision_msgs</depend>
-
-  <exec_depend>robot_state_publisher</exec_depend>
-  <exec_depend>xacro</exec_depend>
 
   <export>
       <build_type>catkin</build_type>

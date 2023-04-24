@@ -1,26 +1,33 @@
 
-#include <bits/stdc++.h>
-#include <camera_info_manager/camera_info_manager.h>
-#include <depthai_ros_msgs/SpatialDetectionArray.h>
-#include <ros/ros.h>
-#include <sensor_msgs/Image.h>
-#include <sensor_msgs/Imu.h>
-#include <stereo_msgs/DisparityImage.h>
-
-#include <cassert>  // assert
 #include <cstdio>
 #include <functional>
 #include <iostream>
 #include <tuple>
 
-// Inludes common necessary includes for development using depthai library
-#include <depthai_bridge/BridgePublisher.hpp>
-#include <depthai_bridge/DisparityConverter.hpp>
-#include <depthai_bridge/ImageConverter.hpp>
-#include <depthai_bridge/ImuConverter.hpp>
-#include <depthai_bridge/SpatialDetectionConverter.hpp>
+#include "camera_info_manager/camera_info_manager.h"
+#include "depthai_ros_msgs/SpatialDetectionArray.h"
+#include "ros/node_handle.h"
+#include "sensor_msgs/Image.h"
+#include "sensor_msgs/Imu.h"
+#include "stereo_msgs/DisparityImage.h"
 
-#include "depthai/depthai.hpp"
+// Inludes common necessary includes for development using depthai library
+#include "depthai/device/DataQueue.hpp"
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/node/ColorCamera.hpp"
+#include "depthai/pipeline/node/IMU.hpp"
+#include "depthai/pipeline/node/MonoCamera.hpp"
+#include "depthai/pipeline/node/SpatialDetectionNetwork.hpp"
+#include "depthai/pipeline/node/StereoDepth.hpp"
+#include "depthai/pipeline/node/XLinkIn.hpp"
+#include "depthai/pipeline/node/XLinkOut.hpp"
+#include "depthai_bridge/BridgePublisher.hpp"
+#include "depthai_bridge/DisparityConverter.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_bridge/ImuConverter.hpp"
+#include "depthai_bridge/SpatialDetectionConverter.hpp"
+#include "depthai_bridge/depthaiUtility.hpp"
 
 std::vector<std::string> usbStrings = {"UNKNOWN", "LOW", "FULL", "HIGH", "SUPER", "SUPER_PLUS"};
 

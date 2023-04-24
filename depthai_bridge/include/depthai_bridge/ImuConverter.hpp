@@ -1,15 +1,13 @@
 #pragma once
 
-#include <ros/ros.h>
-
-#include <boost/make_shared.hpp>
-#include <depthai/depthai.hpp>
-#include <depthai_bridge/depthaiUtility.hpp>
-#include <iostream>
-#include <opencv2/opencv.hpp>
-#include <sstream>
+#include <deque>
+#include <memory>
+#include <string>
 #include <unordered_map>
 
+#include "depthai-shared/datatype/RawIMUData.hpp"
+#include "depthai/pipeline/datatype/IMUData.hpp"
+#include "ros/time.h"
 #include "sensor_msgs/Imu.h"
 
 namespace dai {
@@ -33,6 +31,7 @@ class ImuConverter {
    private:
     void FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPackets, std::deque<ImuMsgs::Imu>& imuMsgs);
     ImuMsgs::Imu CreateUnitMessage(dai::IMUReportAccelerometer accel, dai::IMUReportGyroscope gyro);
+    ImuMsgs::Imu CreateUnitMessage(dai::IMUReportAccelerometer accel, dai::IMUReportGyroscope gyro, dai::IMUReportRotationVectorWAcc rot);
 
     uint32_t _sequenceNum;
     double _linear_accel_cov, _angular_velocity_cov;

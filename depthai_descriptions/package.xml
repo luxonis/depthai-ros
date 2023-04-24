@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>depthai_descriptions</name>
+  <version>2.7.2</version>
+  <description>The depthai_descriptions package</description>
+
+  <maintainer email="adam.serafin@luxonis.com">Adam Serafin</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>robot_state_publisher</build_depend>
+  <build_depend>xacro</build_depend>
+  <build_export_depend>robot_state_publisher</build_export_depend>
+  <build_export_depend>xacro</build_export_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>xacro</exec_depend>
+
+  <export>
+      <build_type>catkin</build_type>
+  </export>
+</package>

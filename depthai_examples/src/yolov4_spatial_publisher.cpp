@@ -1,22 +1,23 @@
 
 #include <cstdio>
-#include <depthai/pipeline/node/MonoCamera.hpp>
-#include <iostream>
 
-#include "ros/ros.h"
-// #include "utility.hpp"
-
-#include <camera_info_manager/camera_info_manager.h>
-#include <vision_msgs/Detection2DArray.h>
-
-#include <depthai_bridge/BridgePublisher.hpp>
-#include <depthai_bridge/ImageConverter.hpp>
-#include <depthai_bridge/SpatialDetectionConverter.hpp>
-
+#include "camera_info_manager/camera_info_manager.h"
+#include "depthai_bridge/BridgePublisher.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_bridge/SpatialDetectionConverter.hpp"
+#include "ros/node_handle.h"
 #include "sensor_msgs/Image.h"
+#include "vision_msgs/Detection2DArray.h"
 
 // Inludes common necessary includes for development using depthai library
-#include "depthai/depthai.hpp"
+#include "depthai/device/DataQueue.hpp"
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/node/ColorCamera.hpp"
+#include "depthai/pipeline/node/MonoCamera.hpp"
+#include "depthai/pipeline/node/SpatialDetectionNetwork.hpp"
+#include "depthai/pipeline/node/StereoDepth.hpp"
+#include "depthai/pipeline/node/XLinkOut.hpp"
 
 const std::vector<std::string> label_map = {
     "person",        "bicycle",      "car",           "motorbike",     "aeroplane",   "bus",         "train",       "truck",        "boat",

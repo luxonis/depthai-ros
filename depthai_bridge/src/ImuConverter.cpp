@@ -1,5 +1,7 @@
 
-#include <depthai_bridge/ImuConverter.hpp>
+#include "depthai_bridge/ImuConverter.hpp"
+
+#include "depthai_bridge/depthaiUtility.hpp"
 
 namespace dai {
 
@@ -198,6 +200,40 @@ ImuMsgs::Imu ImuConverter::CreateUnitMessage(dai::IMUReportAccelerometer accel, 
     return interpMsg;
 }
 
+ImuMsgs::Imu ImuConverter::CreateUnitMessage(dai::IMUReportAccelerometer accel, dai::IMUReportGyroscope gyro, dai::IMUReportRotationVectorWAcc rot) {
+    ImuMsgs::Imu interpMsg;
+    interpMsg.linear_acceleration.x = accel.x;
+    interpMsg.linear_acceleration.y = accel.y;
+    interpMsg.linear_acceleration.z = accel.z;
+
+    interpMsg.angular_velocity.x = gyro.x;
+    interpMsg.angular_velocity.y = gyro.y;
+    interpMsg.angular_velocity.z = gyro.z;
+
+    interpMsg.orientation.x = rot.i;
+    interpMsg.orientation.y = rot.j;
+    interpMsg.orientation.z = rot.k;
+    interpMsg.orientation.w = rot.real;
+
+    interpMsg.orientation_covariance = {-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    interpMsg.linear_acceleration_covariance = {_linear_accel_cov, 0.0, 0.0, 0.0, _linear_accel_cov, 0.0, 0.0, 0.0, _linear_accel_cov};
+    interpMsg.angular_velocity_covariance = {_angular_velocity_cov, 0.0, 0.0, 0.0, _angular_velocity_cov, 0.0, 0.0, 0.0, _angular_velocity_cov};
+
+    interpMsg.header.frame_id = _frameName;
+    interpMsg.header.seq = _sequenceNum;
+    _sequenceNum++;
+
+    if(_syncMode == ImuSyncMethod::LINEAR_INTERPOLATE_ACCEL) {
+        interpMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, gyro.timestamp.get());
+    } else if(_syncMode == ImuSyncMethod::LINEAR_INTERPOLATE_GYRO) {
+        interpMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, accel.timestamp.get());
+    } else {
+        interpMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, accel.timestamp.get());
+    }
+
+    return interpMsg;
+}
+
 void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<ImuMsgs::Imu>& outImuMsgs) {
     if(_syncMode != ImuSyncMethod::COPY) {
         FillImuData_LinearInterpolation(inData->packets, outImuMsgs);
@@ -205,7 +241,8 @@ void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<Imu
         for(int i = 0; i < inData->packets.size(); ++i) {
             auto accel = inData->packets[i].acceleroMeter;
             auto gyro = inData->packets[i].gyroscope;
-            outImuMsgs.push_back(CreateUnitMessage(accel, gyro));
+            auto rot = inData->packets[i].rotationVector;
+            outImuMsgs.push_back(CreateUnitMessage(accel, gyro, rot));
         }
     }
 }

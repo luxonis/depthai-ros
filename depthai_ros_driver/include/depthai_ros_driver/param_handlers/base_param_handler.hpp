@@ -1,47 +1,73 @@
 #pragma once
 #include "depthai/pipeline/datatype/CameraControl.hpp"
 #include "depthai_ros_driver/parametersConfig.h"
-#include "ros/ros.h"
+#include "ros/node_handle.h"
 
 namespace depthai_ros_driver {
 namespace param_handlers {
 
 class BaseParamHandler {
    public:
-    BaseParamHandler(const std::string& name) {
+    BaseParamHandler(ros::NodeHandle node, const std::string& name) {
         baseName = name;
+        baseNode = node;
     };
     virtual ~BaseParamHandler(){};
-    virtual dai::CameraControl setRuntimeParams(ros::NodeHandle node, parametersConfig& config) = 0;
+    virtual dai::CameraControl setRuntimeParams(parametersConfig& config) = 0;
     std::string getName() {
         return baseName;
     }
     template <typename T>
-    T getParam(ros::NodeHandle node, const std::string& paramName) {
+    T getParam(const std::string& paramName) {
         T value;
-        node.getParam(getFullParamName(node, paramName), value);
+        baseNode.getParam(getFullParamName(paramName), value);
+        logParam(getFullParamName(paramName), value);
         return value;
     }
     template <typename T>
-    T getParam(ros::NodeHandle node, const std::string& paramName, T defaultVal) {
+    T getOtherNodeParam(const std::string& daiNodeName, const std::string& paramName) {
         T value;
-        if(!node.param<T>(getFullParamName(node, paramName), value, defaultVal)) {
-            node.setParam(getFullParamName(node, paramName), defaultVal);
+        baseNode.getParam(getFullParamName(daiNodeName, paramName), value);
+        return value;
+    }
+    template <typename T>
+    T getParam(const std::string& paramName, T defaultVal) {
+        T value;
+        if(!baseNode.param<T>(getFullParamName(paramName), value, defaultVal)) {
+            baseNode.setParam(getFullParamName(paramName), defaultVal);
+            value = defaultVal;
+        }
+        logParam(getFullParamName(paramName), value);
+        return value;
+    }
+    template <typename T>
+    T getOtherNodeParam(const std::string& daiNodeName, const std::string& paramName, T defaultVal) {
+        T value;
+        if(!baseNode.param<T>(getFullParamName(daiNodeName, paramName), value, defaultVal)) {
+            baseNode.setParam(getFullParamName(daiNodeName, paramName), defaultVal);
+            value = defaultVal;
         }
         return value;
     }
     template <typename T>
-    T setParam(ros::NodeHandle node, const std::string& paramName, T value) {
-        logParam(getFullParamName(node, paramName), value);
-        node.setParam(getFullParamName(node, paramName), value);
+    T setParam(const std::string& paramName, T value) {
+        logParam(getFullParamName(paramName), value);
+        baseNode.setParam(getFullParamName(paramName), value);
         return value;
     }
-    std::string getFullParamName(ros::NodeHandle node, const std::string& paramName) {
-        return std::string(node.getNamespace()) + "/" + baseName + "_" + paramName;
+    std::string getFullParamName(const std::string& paramName) {
+        std::string name = std::string(baseNode.getNamespace()) + "/" + baseName + "_" + paramName;
+        return name;
     }
-    std::string baseName;
+    std::string getFullParamName(const std::string& daiNodeName, const std::string& paramName) {
+        std::string name = std::string(baseNode.getNamespace()) + "/" + daiNodeName + "_" + paramName;
+        return name;
+    }
 
-   private:
+   protected:
+    ros::NodeHandle getROSNode() {
+        return baseNode;
+    }
     template <typename T>
     inline void logParam(const std::string& name, T value) {
         std::stringstream ss;
@@ -56,6 +82,8 @@ class BaseParamHandler {
         }
         ROS_DEBUG("Param %s with value %s", name.c_str(), ss.str().c_str());
     }
+    std::string baseName;
+    ros::NodeHandle baseNode;
 };
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver

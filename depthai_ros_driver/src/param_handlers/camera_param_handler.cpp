@@ -1,12 +1,13 @@
 #include "depthai_ros_driver/param_handlers/camera_param_handler.hpp"
 
-#include "depthai/depthai.hpp"
-#include "depthai/pipeline/nodes.hpp"
+#include "depthai-shared/common/UsbSpeed.hpp"
 #include "depthai_ros_driver/parametersConfig.h"
+#include "depthai_ros_driver/utils.hpp"
+#include "ros/node_handle.h"
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-CameraParamHandler::CameraParamHandler(const std::string& name) : BaseParamHandler(name) {
+CameraParamHandler::CameraParamHandler(ros::NodeHandle node, const std::string& name) : BaseParamHandler(node, name) {
     usbSpeedMap = {
         {"LOW", dai::UsbSpeed::LOW},
         {"FULL", dai::UsbSpeed::FULL},
@@ -17,21 +18,21 @@ CameraParamHandler::CameraParamHandler(const std::string& name) : BaseParamHandl
 }
 CameraParamHandler::~CameraParamHandler() = default;
 
-dai::UsbSpeed CameraParamHandler::getUSBSpeed(ros::NodeHandle node) {
-    return usbSpeedMap.at(getParam<std::string>(node, "i_usb_speed"));
+dai::UsbSpeed CameraParamHandler::getUSBSpeed() {
+    return utils::getValFromMap(getParam<std::string>("i_usb_speed"), usbSpeedMap);
 }
-void CameraParamHandler::declareParams(ros::NodeHandle node) {
-    getParam<std::string>(node, "i_pipeline_type");
-    getParam<std::string>(node, "i_nn_type");
-    getParam<bool>(node, "i_enable_imu");
-    getParam<bool>(node, "i_enable_ir");
-    getParam<std::string>(node, "i_usb_speed");
-    getParam<std::string>(node, "i_mx_id");
-    getParam<std::string>(node, "i_ip");
-    getParam<int>(node, "i_laser_dot_brightness");
-    getParam<int>(node, "i_floodlight_brightness");
+void CameraParamHandler::declareParams() {
+    getParam<std::string>("i_pipeline_type");
+    getParam<std::string>("i_nn_type");
+    getParam<bool>("i_enable_imu");
+    getParam<bool>("i_enable_ir");
+    getParam<std::string>("i_usb_speed");
+    getParam<std::string>("i_mx_id");
+    getParam<std::string>("i_ip");
+    getParam<int>("i_laser_dot_brightness");
+    getParam<int>("i_floodlight_brightness");
 }
-dai::CameraControl CameraParamHandler::setRuntimeParams(ros::NodeHandle /*node*/, parametersConfig& /*config*/) {
+dai::CameraControl CameraParamHandler::setRuntimeParams(parametersConfig& /*config*/) {
     dai::CameraControl ctrl;
     return ctrl;
 }

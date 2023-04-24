@@ -1,13 +1,17 @@
 #pragma once
 
-#include "depthai/depthai.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/param_handlers/camera_param_handler.hpp"
 #include "depthai_ros_driver/parametersConfig.h"
 #include "dynamic_reconfigure/server.h"
 #include "nodelet/nodelet.h"
-#include "ros/ros.h"
+#include "ros/node_handle.h"
 #include "std_srvs/Trigger.h"
+
+namespace dai {
+class Pipeline;
+class Device;
+}  // namespace dai
 
 namespace depthai_ros_driver {
 using Trigger = std_srvs::Trigger;
@@ -24,12 +28,17 @@ class Camera : public nodelet::Nodelet {
     void rgbPipeline();
     void setupQueues();
     void setIR();
+    void savePipeline();
+    void saveCalib();
+    void loadCalib(const std::string& path);
     void parameterCB(parametersConfig& config, uint32_t level);
     std::shared_ptr<dynamic_reconfigure::Server<parametersConfig>> paramServer;
     std::unique_ptr<param_handlers::CameraParamHandler> ph;
-    ros::ServiceServer startSrv, stopSrv;
+    ros::ServiceServer startSrv, stopSrv, savePipelineSrv, saveCalibSrv;
     bool startCB(Trigger::Request& /*req*/, Trigger::Response& res);
     bool stopCB(Trigger::Request& /*req*/, Trigger::Response& res);
+    bool saveCalibCB(Trigger::Request& /*req*/, Trigger::Response& res);
+    bool savePipelineCB(Trigger::Request& /*req*/, Trigger::Response& res);
 
     std::vector<std::string> usbStrings = {"UNKNOWN", "LOW", "FULL", "HIGH", "SUPER", "SUPER_PLUS"};
     std::shared_ptr<dai::Pipeline> pipeline;

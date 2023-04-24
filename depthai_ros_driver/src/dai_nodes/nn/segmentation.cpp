@@ -1,8 +1,20 @@
 #include "depthai_ros_driver/dai_nodes/nn/segmentation.hpp"
 
+#include "camera_info_manager/camera_info_manager.h"
 #include "cv_bridge/cv_bridge.h"
+#include "depthai/device/DataQueue.hpp"
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/datatype/NNData.hpp"
+#include "depthai/pipeline/node/ImageManip.hpp"
+#include "depthai/pipeline/node/NeuralNetwork.hpp"
+#include "depthai/pipeline/node/XLinkOut.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
+#include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
 #include "image_transport/camera_publisher.h"
 #include "image_transport/image_transport.h"
+#include "ros/node_handle.h"
 #include "sensor_msgs/CameraInfo.h"
 #include "sensor_msgs/Image.h"
 
@@ -16,31 +28,53 @@ Segmentation::Segmentation(const std::string& daiNodeName, ros::NodeHandle node,
     setNames();
     segNode = pipeline->create<dai::node::NeuralNetwork>();
     imageManip = pipeline->create<dai::node::ImageManip>();
-    ph = std::make_unique<param_handlers::NNParamHandler>(daiNodeName);
-    ph->declareParams(node, segNode, imageManip);
+    ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName);
+    ph->declareParams(segNode, imageManip);
     imageManip->out.link(segNode->input);
     setXinXout(pipeline);
     ROS_DEBUG("Node %s created", daiNodeName.c_str());
 }
+Segmentation::~Segmentation() = default;
 
 void Segmentation::setNames() {
     nnQName = getName() + "_nn";
+    ptQName = getName() + "_pt";
 }
 
 void Segmentation::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     xoutNN = pipeline->create<dai::node::XLinkOut>();
     xoutNN->setStreamName(nnQName);
     segNode->out.link(xoutNN->input);
+    if(ph->getParam<bool>("i_enable_passthrough")) {
+        xoutPT = pipeline->create<dai::node::XLinkOut>();
+        xoutPT->setStreamName(ptQName);
+        segNode->passthrough.link(xoutPT->input);
+    }
 }
 
 void Segmentation::setupQueues(std::shared_ptr<dai::Device> device) {
-    nnQ = device->getOutputQueue(nnQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
+    nnQ = device->getOutputQueue(nnQName, ph->getParam<int>("i_max_q_size"), false);
     nnPub = it.advertiseCamera(getName() + "/image_raw", 1);
     nnQ->addCallback(std::bind(&Segmentation::segmentationCB, this, std::placeholders::_1, std::placeholders::_2));
+    if(ph->getParam<bool>("i_enable_passthrough")) {
+        auto tfPrefix = getTFPrefix("rgb");
+
+        ptQ = device->getOutputQueue(ptQName, ph->getParam<int>("i_max_q_size"), false);
+        imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
+        infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), getName()), "/" + getName());
+        infoManager->setCameraInfo(sensor_helpers::getCalibInfo(
+            *imageConverter, device, dai::CameraBoardSocket::RGB, imageManip->initialConfig.getResizeWidth(), imageManip->initialConfig.getResizeWidth()));
+
+        ptPub = it.advertiseCamera(getName() + "/passthrough/image_raw", 1);
+        ptQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager));
+    }
 }
 
 void Segmentation::closeQueues() {
     nnQ->close();
+    if(ph->getParam<bool>("i_enable_passthrough")) {
+        ptQ->close();
+    }
 }
 
 void Segmentation::segmentationCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
@@ -77,7 +111,7 @@ cv::Mat Segmentation::decodeDeeplab(cv::Mat mat) {
     }
     return colors;
 }
-void Segmentation::link(const dai::Node::Input& in, int /*linkType*/) {
+void Segmentation::link(dai::Node::Input in, int /*linkType*/) {
     segNode->out.link(in);
 }
 
@@ -86,7 +120,7 @@ dai::Node::Input Segmentation::getInput(int /*linkType*/) {
 }
 
 void Segmentation::updateParams(parametersConfig& config) {
-    ph->setRuntimeParams(getROSNode(), config);
+    ph->setRuntimeParams(config);
 }
 
 }  // namespace nn

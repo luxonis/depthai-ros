@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>depthai_filters</name>
+  <version>2.7.2</version>
+  <description>The depthai_filters package</description>
+
+  <maintainer email="adam.serafin@luxonis.com">Adam Serafin</maintainer>
+
+  <license>MIT</license>
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>roscpp</depend>
+  <depend>dynamic_reconfigure</depend>
+  <depend>message_filters</depend>
+  <depend>sensor_msgs</depend>
+  <depend>vision_msgs</depend>
+  <depend>cv_bridge</depend>
+  <depend>image_transport</depend>
+  <depend>image_transport_plugins</depend>
+  <depend>image_pipeline</depend>
+  <depend>nodelet</depend>
+  <depend>libopencv-dev</depend>
+
+
+  <export>
+    <nodelet plugin="${prefix}/nodelet_plugins.xml" />
+    <build_type>catkin</build_type>
+  </export>
+</package>
