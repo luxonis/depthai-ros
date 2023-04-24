@@ -81,8 +81,8 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
         } else {
             monoQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, monoPub, infoManager));
         }
-        controlQ = device->getInputQueue(controlQName);
     }
+    controlQ = device->getInputQueue(controlQName);
 }
 void Mono::closeQueues() {
     if(ph->getParam<bool>("i_publish_topic")) {

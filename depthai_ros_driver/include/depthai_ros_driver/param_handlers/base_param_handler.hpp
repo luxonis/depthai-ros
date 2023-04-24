@@ -21,6 +21,7 @@ class BaseParamHandler {
     T getParam(const std::string& paramName) {
         T value;
         baseNode.getParam(getFullParamName(paramName), value);
+        logParam(getFullParamName(paramName), value);
         return value;
     }
     template <typename T>
@@ -36,6 +37,7 @@ class BaseParamHandler {
             baseNode.setParam(getFullParamName(paramName), defaultVal);
             value = defaultVal;
         }
+        logParam(getFullParamName(paramName), value);
         return value;
     }
     template <typename T>

@@ -107,14 +107,13 @@ void Camera::parameterCB(parametersConfig& config, uint32_t /*level*/) {
 }
 
 void Camera::onConfigure() {
-    try{
-    getDeviceType();
-    createPipeline();
-    device->startPipeline(*pipeline);
-    setupQueues();
-    setIR();
-    }
-    catch (const std::runtime_error& e){
+    try {
+        getDeviceType();
+        createPipeline();
+        device->startPipeline(*pipeline);
+        setupQueues();
+        setIR();
+    } catch(const std::runtime_error& e) {
         ROS_ERROR(e.what());
         throw std::runtime_error("Failed to start up the camera.");
     }

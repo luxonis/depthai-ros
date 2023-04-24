@@ -40,7 +40,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     int width = 1280;
     int height = 720;
     dai::CameraBoardSocket socket = dai::CameraBoardSocket::RGB;
-    if(getParam<bool>("i_align_depth")){
+    if(getParam<bool>("i_align_depth")) {
         width = getOtherNodeParam("rgb", "i_width", width);
         height = getOtherNodeParam("rgb", "i_height", height);
     } else {

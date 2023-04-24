@@ -58,6 +58,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
                         {"5312X6000", dai::ColorCameraProperties::SensorResolution::THE_5312X6000},
                         {"48_MP", dai::ColorCameraProperties::SensorResolution::THE_48_MP},
                         {"1440X1080", dai::ColorCameraProperties::SensorResolution::THE_1440X1080}};
+
     getParam<int>("i_max_q_size", 30);
     getParam<bool>("i_publish_topic", publish);
     getParam<bool>("i_enable_preview", false);
@@ -77,7 +78,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
         int den = getParam<int>("i_isp_den", 3);
         width = (width * num + den - 1) / den;
         height = (height * num + den - 1) / den;
-        if(width < getParam<int>("i_preview_size") || height < getParam<int>("i_preview_size")){
+        if(width < getParam<int>("i_preview_size") || height < getParam<int>("i_preview_size")) {
             throw std::runtime_error("ISP image size lower than preview size! Adjust preview size accordingly");
         }
         colorCam->setIspScale(num, den);
@@ -90,7 +91,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
             ROS_ERROR(err_stream.str().c_str());
         }
     }
-    if(getParam<bool>("i_output_isp")){
+    if(getParam<bool>("i_output_isp")) {
         setParam<int>("i_width", width);
         setParam<int>("i_height", height);
     }
