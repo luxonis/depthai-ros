@@ -17,7 +17,7 @@
   left_i_low_bandwidth: false
   left_i_low_bandwidth_quality: 50
   left_i_max_q_size: 30
-  left_i_preview_size: 416
+  left_i_preview_size: 300
   left_i_publish_topic: false
   left_i_resolution: '720'
   left_i_set_isp_scale: true
@@ -31,25 +31,6 @@
   left_r_set_man_whitebalance: false
   left_r_whitebalance: 3300
   nn_i_nn_config_path: depthai_ros_driver/mobilenet
-  rgb:
-    image_raw:
-      compressed:
-        format: jpeg
-        jpeg_optimize: false
-        jpeg_progressive: false
-        jpeg_quality: 80
-        jpeg_restart_interval: 0
-        png_level: 9
-      compressedDepth:
-        depth_max: 10.0
-        depth_quantization: 100.0
-        format: png
-        png_level: 9
-      theora:
-        keyframe_frequency: 64
-        optimize_for: 1
-        quality: 31
-        target_bitrate: 800000
   rgb_i_board_socket_id: 0
   rgb_i_calibration_file: ''
   rgb_i_enable_preview: false
@@ -60,10 +41,11 @@
   rgb_i_low_bandwidth: false
   rgb_i_low_bandwidth_quality: 50
   rgb_i_max_q_size: 30
-  rgb_i_preview_size: 416
+  rgb_i_preview_size: 300
   rgb_i_publish_topic: true
   rgb_i_resolution: '1080'
   rgb_i_set_isp_scale: true
+  rgb_i_output_isp: true
   rgb_i_width: 1280
   rgb_r_exposure: 1000
   rgb_r_focus: 1
@@ -73,6 +55,8 @@
   rgb_r_set_man_focus: false
   rgb_r_set_man_whitebalance: false
   rgb_r_whitebalance: 3300
+  rgb_i_isp_num: 2
+  rgb_i_isp_den: 3
   right_i_board_socket_id: 2
   right_i_calibration_file: ''
   right_i_fps: 30.0
@@ -80,7 +64,7 @@
   right_i_low_bandwidth: false
   right_i_low_bandwidth_quality: 50
   right_i_max_q_size: 30
-  right_i_preview_size: 416
+  right_i_preview_size: 300
   right_i_publish_topic: false
   right_i_resolution: '720'
   right_i_set_isp_scale: true
@@ -93,25 +77,6 @@
   right_r_set_man_focus: false
   right_r_set_man_whitebalance: false
   right_r_whitebalance: 3300
-  stereo:
-    image_raw:
-      compressed:
-        format: jpeg
-        jpeg_optimize: false
-        jpeg_progressive: false
-        jpeg_quality: 80
-        jpeg_restart_interval: 0
-        png_level: 9
-      compressedDepth:
-        depth_max: 10.0
-        depth_quantization: 100.0
-        format: png
-        png_level: 9
-      theora:
-        keyframe_frequency: 64
-        optimize_for: 1
-        quality: 31
-        target_bitrate: 800000
   stereo_i_align_depth: true
   stereo_i_bilateral_sigma: 0
   stereo_i_board_socket_id: 0

@@ -40,12 +40,12 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     int width = 1280;
     int height = 720;
     dai::CameraBoardSocket socket = dai::CameraBoardSocket::RGB;
-    if(getParam<bool>("i_align_depth")) {
-        width = getROSNode().getParam("rgb_i_width", width);
-        height = getROSNode().getParam("rgb_i_height", height);
+    if(getParam<bool>("i_align_depth")){
+        width = getOtherNodeParam("rgb", "i_width", width);
+        height = getOtherNodeParam("rgb", "i_height", height);
     } else {
-        width = getROSNode().getParam("right_i_width", width);
-        height = getROSNode().getParam("right_i_height", height);
+        width = getParam<int>("i_width");
+        height = getParam<int>("i_height");
         socket = dai::CameraBoardSocket::RIGHT;
     }
     stereo->setDepthAlign(socket);
@@ -53,7 +53,8 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     if(getParam<bool>("i_set_input_size")) {
         stereo->setInputResolution(getParam<int>("i_input_width"), getParam<int>("i_input_height"));
     }
-    stereo->setOutputSize(getParam<int>("i_width", width), getParam<int>("i_height", height));
+    stereo->setOutputSize(width, height);
+
     stereo->setDefaultProfilePreset(depthPresetMap.at(getParam<std::string>("i_depth_preset")));
     stereo->enableDistortionCorrection(getParam<bool>("i_enable_distortion_correction"));
 

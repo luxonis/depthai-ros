@@ -77,6 +77,9 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
         int den = getParam<int>("i_isp_den", 3);
         width = (width * num + den - 1) / den;
         height = (height * num + den - 1) / den;
+        if(width < getParam<int>("i_preview_size") || height < getParam<int>("i_preview_size")){
+            throw std::runtime_error("ISP image size lower than preview size! Adjust preview size accordingly");
+        }
         colorCam->setIspScale(num, den);
         if(width % 16 != 0 && height % 16 != 0) {
             std::stringstream err_stream;
@@ -87,9 +90,12 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
             ROS_ERROR(err_stream.str().c_str());
         }
     }
+    if(getParam<bool>("i_output_isp")){
+        setParam<int>("i_width", width);
+        setParam<int>("i_height", height);
+    }
     colorCam->setVideoSize(getParam<int>("i_width", width), getParam<int>("i_height", height));
-    setParam<int>("i_height", height);
-    setParam<int>("i_width", width);
+
     colorCam->setPreviewKeepAspectRatio(getParam<bool>("i_keep_preview_aspect_ratio", true));
     size_t iso = getParam<int>("r_iso", 800);
     size_t exposure = getParam<int>("r_exposure", 20000);

@@ -24,10 +24,26 @@ class BaseParamHandler {
         return value;
     }
     template <typename T>
+    T getOtherNodeParam(const std::string& daiNodeName, const std::string& paramName) {
+        T value;
+        baseNode.getParam(getFullParamName(daiNodeName, paramName), value);
+        return value;
+    }
+    template <typename T>
     T getParam(const std::string& paramName, T defaultVal) {
         T value;
         if(!baseNode.param<T>(getFullParamName(paramName), value, defaultVal)) {
             baseNode.setParam(getFullParamName(paramName), defaultVal);
+            value = defaultVal;
+        }
+        return value;
+    }
+    template <typename T>
+    T getOtherNodeParam(const std::string& daiNodeName, const std::string& paramName, T defaultVal) {
+        T value;
+        if(!baseNode.param<T>(getFullParamName(daiNodeName, paramName), value, defaultVal)) {
+            baseNode.setParam(getFullParamName(daiNodeName, paramName), defaultVal);
+            value = defaultVal;
         }
         return value;
     }
@@ -38,7 +54,12 @@ class BaseParamHandler {
         return value;
     }
     std::string getFullParamName(const std::string& paramName) {
-        return std::string(baseNode.getNamespace()) + "/" + baseName + "_" + paramName;
+        std::string name = std::string(baseNode.getNamespace()) + "/" + baseName + "_" + paramName;
+        return name;
+    }
+    std::string getFullParamName(const std::string& daiNodeName, const std::string& paramName) {
+        std::string name = std::string(baseNode.getNamespace()) + "/" + daiNodeName + "_" + paramName;
+        return name;
     }
 
    protected:
