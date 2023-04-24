@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <launch>
+
     <arg name="name" default="oak" />
     <arg name="params_file" default="$(find depthai_ros_driver)/config/camera.yaml"/>
     <arg name="camera_model" default="OAK-D" />
@@ -21,7 +22,7 @@
     <!-- Orientation respect to base frame (i.e. "base_link) -->
 
     <rosparam file="$(arg params_file)" />
-
+    <node pkg="rosservice" if="$(env DEPTHAI_DEBUG)" type="rosservice" name="set_log_level" args="call --wait /oak_nodelet_manager/set_logger_level 'ros.depthai_ros_driver' 'debug'" />
     <include file="$(find depthai_descriptions)/launch/urdf.launch">
         <arg name="base_frame" value="$(arg  name)" />
         <arg name="parent_frame" value="$(arg  parent_frame)"/>
