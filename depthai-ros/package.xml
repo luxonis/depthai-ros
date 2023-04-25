@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>depthai-ros</name>
-  <version>2.5.3</version>
+  <version>2.7.1</version>
   <description>The depthai-ros package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
@@ -17,6 +17,8 @@
   <exec_depend>depthai_ros_msgs</exec_depend>
   <exec_depend>depthai_bridge</exec_depend>
   <exec_depend>depthai_examples</exec_depend>
+  <exec_depend>depthai_ros_driver</exec_depend>
+  <exec_depend>depthai_descriptions</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

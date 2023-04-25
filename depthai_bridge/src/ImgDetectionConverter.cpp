@@ -1,17 +1,31 @@
-#include <depthai_bridge/ImgDetectionConverter.hpp>
+#include "depthai_bridge/ImgDetectionConverter.hpp"
+
+#include "depthai_bridge/depthaiUtility.hpp"
 
 namespace dai {
 
 namespace ros {
 
-ImgDetectionConverter::ImgDetectionConverter(std::string frameName, int width, int height, bool normalized)
-    : _frameName(frameName), _width(width), _height(height), _normalized(normalized), _steadyBaseTime(std::chrono::steady_clock::now()) {
+ImgDetectionConverter::ImgDetectionConverter(std::string frameName, int width, int height, bool normalized, bool getBaseDeviceTimestamp)
+    : _frameName(frameName),
+      _width(width),
+      _height(height),
+      _normalized(normalized),
+      _steadyBaseTime(std::chrono::steady_clock::now()),
+      _getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
     _rosBaseTime = rclcpp::Clock().now();
 }
 
+ImgDetectionConverter::~ImgDetectionConverter() = default;
+
 void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, std::deque<VisionMsgs::Detection2DArray>& opDetectionMsgs) {
     // setting the header
-    auto tstamp = inNetData->getTimestamp();
+    std::chrono::_V2::steady_clock::time_point tstamp;
+    if(_getBaseDeviceTimestamp)
+        tstamp = inNetData->getTimestampDevice();
+    else
+        tstamp = inNetData->getTimestamp();
+
     VisionMsgs::Detection2DArray opDetectionMsg;
 
     opDetectionMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);

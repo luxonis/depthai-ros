@@ -1,0 +1,24 @@
+/oak_d_lite:
+  ros__parameters:
+    camera:
+      i_mx_id: 18443010C1038C1200
+      i_nn_type: rgb
+    left:
+      i_resolution: '480'
+    right:
+      i_resolution: '480'
+    nn:
+      i_nn_config_path: depthai_ros_driver/yolo
+/oak_d_w:
+  ros__parameters:
+    camera:
+      i_mx_id: 19443010D1BFF51200
+      i_nn_type: rgb
+    nn:
+      i_nn_config_path: depthai_ros_driver/segmentation
+/oak_d_pro:
+  ros__parameters:
+    camera:
+      i_mx_id: 1944301051FB4D1300
+    nn:
+      i_nn_config_path: depthai_ros_driver/mobilenet

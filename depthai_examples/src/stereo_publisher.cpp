@@ -1,20 +1,24 @@
-
-#include <camera_info_manager/camera_info_manager.hpp>
 #include <cstdio>
 #include <functional>
 #include <iostream>
-#include <sensor_msgs/msg/image.hpp>
-#include <stereo_msgs/msg/disparity_image.hpp>
 #include <tuple>
 
-#include "rclcpp/rclcpp.hpp"
+#include "camera_info_manager/camera_info_manager.hpp"
+#include "rclcpp/executors.hpp"
+#include "rclcpp/node.hpp"
+#include "sensor_msgs/msg/image.hpp"
+#include "stereo_msgs/msg/disparity_image.hpp"
 
 // Inludes common necessary includes for development using depthai library
-#include <depthai_bridge/BridgePublisher.hpp>
-#include <depthai_bridge/DisparityConverter.hpp>
-#include <depthai_bridge/ImageConverter.hpp>
-
-#include "depthai/depthai.hpp"
+#include "depthai/device/DataQueue.hpp"
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/node/MonoCamera.hpp"
+#include "depthai/pipeline/node/StereoDepth.hpp"
+#include "depthai/pipeline/node/XLinkOut.hpp"
+#include "depthai_bridge/BridgePublisher.hpp"
+#include "depthai_bridge/DisparityConverter.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
 
 std::tuple<dai::Pipeline, int, int> createPipeline(
     bool withDepth, bool lrcheck, bool extended, bool subpixel, int confidence, int LRchecktresh, std::string resolution) {

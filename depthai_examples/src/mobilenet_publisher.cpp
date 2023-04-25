@@ -1,17 +1,23 @@
 
-#include <camera_info_manager/camera_info_manager.hpp>
 #include <cstdio>
-#include <depthai_bridge/BridgePublisher.hpp>
-#include <depthai_bridge/ImageConverter.hpp>
-#include <depthai_bridge/ImgDetectionConverter.hpp>
 #include <iostream>
-#include <sensor_msgs/msg/image.hpp>
-#include <vision_msgs/msg/detection2_d_array.hpp>
 
-#include "rclcpp/rclcpp.hpp"
+#include "camera_info_manager/camera_info_manager.hpp"
+#include "depthai_bridge/BridgePublisher.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_bridge/ImgDetectionConverter.hpp"
+#include "rclcpp/executors.hpp"
+#include "rclcpp/node.hpp"
+#include "sensor_msgs/msg/image.hpp"
+#include "vision_msgs/msg/detection2_d_array.hpp"
 
 // Inludes common necessary includes for development using depthai library
-#include "depthai/depthai.hpp"
+#include "depthai/device/DataQueue.hpp"
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/node/ColorCamera.hpp"
+#include "depthai/pipeline/node/DetectionNetwork.hpp"
+#include "depthai/pipeline/node/XLinkOut.hpp"
 
 dai::Pipeline createPipeline(bool syncNN, std::string nnPath) {
     dai::Pipeline pipeline;

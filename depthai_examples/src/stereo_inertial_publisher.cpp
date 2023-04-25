@@ -1,25 +1,32 @@
-
-#include <camera_info_manager/camera_info_manager.hpp>
 #include <cstdio>
-#include <depthai_ros_msgs/msg/spatial_detection_array.hpp>
 #include <functional>
 #include <iostream>
-#include <sensor_msgs/msg/image.hpp>
-#include <sensor_msgs/msg/imu.hpp>
-#include <stereo_msgs/msg/disparity_image.hpp>
 #include <tuple>
 
-#include "rclcpp/rclcpp.hpp"
+#include "camera_info_manager/camera_info_manager.hpp"
+#include "depthai_ros_msgs/msg/spatial_detection_array.hpp"
+#include "rclcpp/node.hpp"
+#include "sensor_msgs/msg/image.hpp"
+#include "sensor_msgs/msg/imu.hpp"
+#include "stereo_msgs/msg/disparity_image.hpp"
 
 // Inludes common necessary includes for development using depthai library
-#include <depthai_bridge/BridgePublisher.hpp>
-#include <depthai_bridge/DisparityConverter.hpp>
-#include <depthai_bridge/ImageConverter.hpp>
-#include <depthai_bridge/ImuConverter.hpp>
-#include <depthai_bridge/SpatialDetectionConverter.hpp>
-#include <depthai_bridge/depthaiUtility.hpp>
-
-#include "depthai/depthai.hpp"
+#include "depthai/device/DataQueue.hpp"
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/node/ColorCamera.hpp"
+#include "depthai/pipeline/node/IMU.hpp"
+#include "depthai/pipeline/node/MonoCamera.hpp"
+#include "depthai/pipeline/node/SpatialDetectionNetwork.hpp"
+#include "depthai/pipeline/node/StereoDepth.hpp"
+#include "depthai/pipeline/node/XLinkIn.hpp"
+#include "depthai/pipeline/node/XLinkOut.hpp"
+#include "depthai_bridge/BridgePublisher.hpp"
+#include "depthai_bridge/DisparityConverter.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_bridge/ImuConverter.hpp"
+#include "depthai_bridge/SpatialDetectionConverter.hpp"
+#include "depthai_bridge/depthaiUtility.hpp"
 
 std::vector<std::string> usbStrings = {"UNKNOWN", "LOW", "FULL", "HIGH", "SUPER", "SUPER_PLUS"};
 
@@ -324,6 +331,7 @@ int main(int argc, char** argv) {
     node->declare_parameter("enableSpatialDetection", true);
     node->declare_parameter("detectionClassesCount", 80);
     node->declare_parameter("syncNN", true);
+    node->declare_parameter("nnName", "x");
 
     node->declare_parameter("enableDotProjector", false);
     node->declare_parameter("enableFloodLight", false);
@@ -470,8 +478,8 @@ int main(int argc, char** argv) {
         width = 640;
         height = 480;
     }
-
-    if(boardName.find("PRO") != std::string::npos) {
+    std::vector<std::tuple<std::string, int, int>> irDrivers = device->getIrDrivers();
+    if(!irDrivers.empty()) {
         if(enableDotProjector) {
             device->setIrLaserDotProjectorBrightness(dotProjectormA);
         }

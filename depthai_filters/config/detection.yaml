@@ -1,0 +1,4 @@
+camera:
+  i_nn_type: rgb
+nn:
+  i_enable_passthrough: true

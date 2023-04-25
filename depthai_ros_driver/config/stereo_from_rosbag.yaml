@@ -1,0 +1,19 @@
+/oak:
+  ros__parameters:
+    camera:
+      i_nn_type: none
+      i_pipeline_type: rgbd
+      i_external_calibration_path: '/tmp/calibration.json'
+    left:
+      i_board_socket_id: 1
+      i_simulate_from_topic: true
+      i_simulated_topic_name: '/oak/left/image_raw'
+      i_disable_node: true
+    right:
+      i_board_socket_id: 2
+      i_simulate_from_topic: true
+      i_simulated_topic_name: '/oak/right/image_raw'
+      i_disable_node: true
+    stereo:
+      i_input_width: 1280
+      i_input_height: 720

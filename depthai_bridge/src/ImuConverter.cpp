@@ -1,5 +1,7 @@
 
-#include <depthai_bridge/ImuConverter.hpp>
+#include "depthai_bridge/ImuConverter.hpp"
+
+#include "depthai_bridge/depthaiUtility.hpp"
 
 namespace dai {
 
@@ -14,6 +16,8 @@ ImuConverter::ImuConverter(const std::string& frameName, ImuSyncMethod syncMode,
       _steadyBaseTime(std::chrono::steady_clock::now()) {
     _rosBaseTime = rclcpp::Clock().now();
 }
+
+ImuConverter::~ImuConverter() = default;
 
 void ImuConverter::FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPackets, std::deque<ImuMsgs::Imu>& imuMsgs) {
     static std::deque<dai::IMUReportAccelerometer> accelHist;

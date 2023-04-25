@@ -1,0 +1,6 @@
+/oak:
+  ros__parameters:
+    camera:
+      i_nn_type: none
+    rgb:
+      i_resolution: '720'

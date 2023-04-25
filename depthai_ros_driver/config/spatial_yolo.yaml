@@ -1,0 +1,2 @@
+nn:
+  i_nn_config_path: depthai_ros_driver/yolo

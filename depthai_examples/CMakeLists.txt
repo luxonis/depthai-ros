@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
-project(depthai_examples VERSION 2.5.3 LANGUAGES CXX C)
+project(depthai_examples VERSION 2.7.1 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -17,9 +17,11 @@ if(NOT OpenCV_FOUND)
   set(_opencv_version 3)
   find_package(OpenCV 3 REQUIRED COMPONENTS imgproc highgui)
 endif()
+
 # find_package(depthai CONFIG REQUIRED PATHS "/home/sachin/Desktop/luxonis/depthai-core/build/install/lib/cmake/depthai")
 set(tiny_yolo_v4_blob_name "yolov4_tiny_coco_416x416_openvino_2021.4_6shave_bgr.blob")
 set(mobilenet_blob_name "mobilenet-ssd_openvino_2021.2_6shave.blob")
+set(deeplab_blob_name "deeplab_v3_plus_mnv2_decoder_256_openvino_2021.4.blob")
 
 set(mobilenet_blob "${PROJECT_SOURCE_DIR}/resources/${mobilenet_blob_name}")
 file(DOWNLOAD "https://artifacts.luxonis.com/artifactory/luxonis-depthai-data-local/network/mobilenet-ssd_openvino_2021.2_6shave.blob"
@@ -33,6 +35,14 @@ file(DOWNLOAD "https://artifacts.luxonis.com/artifactory/luxonis-depthai-data-lo
   ${tiny_yolo_v4_blob}
   TIMEOUT 60  # seconds
   EXPECTED_HASH SHA1=219d949610a5760e62a8458941e1300b81c3fe4a
+  TLS_VERIFY ON)
+
+set(deeplab_blob "${PROJECT_SOURCE_DIR}/resources/${deeplab_blob_name}")
+file(DOWNLOAD
+"https://github.com/luxonis/depthai-experiments/blob/master/gen2-deeplabv3_multiclass/models/deeplab_v3_plus_mnv2_decoder_256_openvino_2021.4.blob?raw=true"
+  ${deeplab_blob}
+  TIMEOUT 60  # seconds
+  EXPECTED_HASH SHA1=bdc2529f765f34c4799b478690fb4e32f1ad5d89
   TLS_VERIFY ON)
 
 find_package(ament_cmake REQUIRED)
@@ -86,9 +96,7 @@ endmacro()
 
 dai_add_node_ros2(crop_control_service src/crop_control_service.cpp)
 dai_add_node_ros2(mobilenet_node src/mobilenet_publisher.cpp)
-dai_add_node_ros2(rgb_node src/rgb_publisher.cpp)
 dai_add_node_ros2(rgb_stereo_node src/rgb_stereo_node.cpp)
-# dai_add_node_ros2(rgb_subscriber_node src/rgb_video_subscriber.cpp)
 dai_add_node_ros2(stereo_inertial_node src/stereo_inertial_publisher.cpp)
 dai_add_node_ros2(stereo_node src/stereo_publisher.cpp)
 dai_add_node_ros2(yolov4_spatial_node src/yolov4_spatial_publisher.cpp)
@@ -111,7 +119,6 @@ FILES_MATCHING PATTERN "*.py")
 install(TARGETS
         crop_control_service
         mobilenet_node
-        rgb_node
         rgb_stereo_node
         stereo_inertial_node
         stereo_node

@@ -1,11 +1,12 @@
 #pragma once
 
-#include <depthai/depthai.hpp>
-#include <depthai_bridge/depthaiUtility.hpp>
 #include <deque>
+#include <memory>
+#include <string>
 #include <vision_msgs/msg/detection2_d_array.hpp>
 
-#include "rclcpp/rclcpp.hpp"
+#include "depthai/pipeline/datatype/ImgDetections.hpp"
+#include "rclcpp/time.hpp"
 
 namespace dai {
 
@@ -17,8 +18,8 @@ using Detection2DArrayPtr = VisionMsgs::Detection2DArray::SharedPtr;
 class ImgDetectionConverter {
    public:
     // DetectionConverter() = default;
-    ImgDetectionConverter(std::string frameName, int width, int height, bool normalized = false);
-
+    ImgDetectionConverter(std::string frameName, int width, int height, bool normalized = false, bool getBaseDeviceTimestamp = false);
+    ~ImgDetectionConverter();
     void toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, std::deque<VisionMsgs::Detection2DArray>& opDetectionMsgs);
 
     Detection2DArrayPtr toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData);
@@ -29,6 +30,7 @@ class ImgDetectionConverter {
     bool _normalized;
     std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
     rclcpp::Time _rosBaseTime;
+    bool _getBaseDeviceTimestamp;
 };
 
 /** TODO(sachin): Do we need to have ros msg -> dai bounding box ?

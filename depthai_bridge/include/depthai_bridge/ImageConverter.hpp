@@ -1,18 +1,17 @@
 #pragma once
 
-#include <cv_bridge/cv_bridge.h>
-
-#include <depthai-shared/common/CameraBoardSocket.hpp>
-#include <depthai-shared/common/Point2f.hpp>
-#include <depthai/depthai.hpp>
-#include <depthai_bridge/depthaiUtility.hpp>
-#include <iostream>
-#include <opencv2/opencv.hpp>
-#include <sstream>
+#include <deque>
+#include <memory>
+#include <string>
 #include <tuple>
 #include <unordered_map>
 
-#include "rclcpp/rclcpp.hpp"
+#include "cv_bridge/cv_bridge.h"
+#include "depthai-shared/common/CameraBoardSocket.hpp"
+#include "depthai-shared/common/Point2f.hpp"
+#include "depthai/device/CalibrationHandler.hpp"
+#include "depthai/pipeline/datatype/ImgFrame.hpp"
+#include "rclcpp/time.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "std_msgs/msg/header.hpp"
@@ -26,12 +25,22 @@ namespace ImageMsgs = sensor_msgs::msg;
 using ImagePtr = ImageMsgs::Image::SharedPtr;
 
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration>;
-
+ImageMsgs::CameraInfo calibrationToCameraInfo(dai::CalibrationHandler calibHandler,
+                                              dai::CameraBoardSocket cameraId,
+                                              int width = -1,
+                                              int height = -1,
+                                              Point2f topLeftPixelId = Point2f(),
+                                              Point2f bottomRightPixelId = Point2f());
 class ImageConverter {
    public:
     // ImageConverter() = default;
-    ImageConverter(const std::string frameName, bool interleaved);
-    ImageConverter(bool interleaved);
+    ImageConverter(const std::string frameName, bool interleaved, bool getBaseDeviceTimestamp = false);
+    ~ImageConverter();
+    ImageConverter(bool interleaved, bool getBaseDeviceTimestamp = false);
+    void toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData,
+                               std::deque<ImageMsgs::Image>& outImageMsgs,
+                               dai::RawImgFrame::Type type,
+                               const sensor_msgs::msg::CameraInfo& info);
 
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs);
     ImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
@@ -63,6 +72,7 @@ class ImageConverter {
     std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
 
     rclcpp::Time _rosBaseTime;
+    bool _getBaseDeviceTimestamp;
 };
 
 }  // namespace ros

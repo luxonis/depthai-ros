@@ -1,13 +1,15 @@
 #pragma once
 
-#include <depthai/depthai.hpp>
-#include <depthai_bridge/depthaiUtility.hpp>
+#include <deque>
 #include <iostream>
-#include <opencv2/opencv.hpp>
+#include <memory>
 #include <sstream>
+#include <string>
 #include <unordered_map>
 
-#include "rclcpp/rclcpp.hpp"
+#include "depthai-shared/datatype/RawIMUData.hpp"
+#include "depthai/pipeline/datatype/IMUData.hpp"
+#include "rclcpp/time.hpp"
 #include "sensor_msgs/msg/imu.hpp"
 
 namespace dai {
@@ -25,7 +27,7 @@ class ImuConverter {
                  ImuSyncMethod syncMode = ImuSyncMethod::LINEAR_INTERPOLATE_ACCEL,
                  double linear_accel_cov = 0.0,
                  double angular_velocity_cov = 0.0);
-
+    ~ImuConverter();
     void toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<ImuMsgs::Imu>& outImuMsg);
 
    private:

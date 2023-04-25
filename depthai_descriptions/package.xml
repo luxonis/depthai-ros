@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>depthai_descriptions</name>
+  <version>2.7.1</version>
+  <description>The depthai_descriptions package</description>
+
+  <maintainer email="sachin@luxonis.com">Sachin Guruswamy</maintainer>
+  <maintainer email="adam.serafin@luxonis.com">Adam Serafin</maintainer>
+  <author>Adam Serafin</author>
+
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>xacro</exec_depend>
+
+  <export>
+      <build_type>ament_cmake</build_type>
+  </export>
+
+</package>

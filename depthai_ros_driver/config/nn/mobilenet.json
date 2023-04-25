@@ -1,0 +1,35 @@
+{
+    "model": {
+        "model_name": "mobilenet-ssd_openvino_2021.2_6shave",
+        "zoo": "depthai_examples"
+    },
+    "nn_config": {
+        "NN_family": "mobilenet",
+        "confidence_threshold": 0.5
+    },
+    "mappings": {
+        "labels": [
+            "background",
+            "aeroplane",
+            "bicycle",
+            "bird",
+            "boat",
+            "bottle",
+            "bus",
+            "car",
+            "cat",
+            "chair",
+            "cow",
+            "diningtable",
+            "dog",
+            "horse",
+            "motorbike",
+            "person",
+            "pottedplant",
+            "sheep",
+            "sofa",
+            "train",
+            "tvmonitor"
+        ]
+    }
+}
