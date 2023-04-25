@@ -61,4 +61,4 @@ void WLSFilter::wlsCB(const sensor_msgs::msg::Image::ConstSharedPtr& disp,
 }  // namespace depthai_filters
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(depthai_filters::WLSFilter);
+RCLCPP_COMPONENTS_REGISTER_NODE(depthai_filters::WLSFilter)
