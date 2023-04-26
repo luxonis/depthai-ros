@@ -1,10 +1,11 @@
 #pragma once
 
-#include <depthai_bridge/depthaiUtility.hpp>
 #include <deque>
+#include <memory>
+#include <string>
 
-#include "depthai/depthai.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include "depthai/pipeline/datatype/ImgFrame.hpp"
+#include "rclcpp/time.hpp"
 #include "sensor_msgs/image_encodings.hpp"
 #include "stereo_msgs/msg/disparity_image.hpp"
 
@@ -21,8 +22,9 @@ using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono
 
 class DisparityConverter {
    public:
-    DisparityConverter(const std::string frameName, float focalLength, float baseline = 7.5, float minDepth = 80, float maxDepth = 1100);
-
+    DisparityConverter(
+        const std::string frameName, float focalLength, float baseline = 7.5, float minDepth = 80, float maxDepth = 1100, bool getBaseDeviceTimestamp = false);
+    ~DisparityConverter();
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<DisparityMsgs::DisparityImage>& outImageMsg);
     DisparityImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
 
@@ -33,6 +35,7 @@ class DisparityConverter {
     const float _focalLength = 882.2, _baseline = 7.5, _minDepth = 80, _maxDepth;
     std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
     rclcpp::Time _rosBaseTime;
+    bool _getBaseDeviceTimestamp;
 };
 
 }  // namespace ros

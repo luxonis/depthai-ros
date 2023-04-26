@@ -89,6 +89,7 @@ class ObjectPublisher(Node):
             tf = TransformStamped()
             tf.child_frame_id = label
             tf.header.frame_id = msg.header.frame_id
+            tf.header.stamp = self.get_clock().now().to_msg()
             tf.transform.translation.x = det.results[0].pose.pose.position.x
             tf.transform.translation.y = det.results[0].pose.pose.position.y
             tf.transform.translation.z = det.results[0].pose.pose.position.z

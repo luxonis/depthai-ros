@@ -2,15 +2,22 @@
  * This example shows usage of depth camera in crop mode with the possibility to move the crop.
  * Use 'WASD' in order to do it.
  */
-#include <depthai_bridge/BridgePublisher.hpp>
-#include <depthai_bridge/ImageConverter.hpp>
-#include <depthai_ros_msgs/srv/NormalizedImageCrop.hpp>
-#include <iostream>
 #include <memory>
-#include <sensor_msgs/msg/Image.hpp>
+#include <string>
 
-#include "depthai/depthai.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include "depthai/device/DataQueue.hpp"
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/node/ImageManip.hpp"
+#include "depthai/pipeline/node/MonoCamera.hpp"
+#include "depthai/pipeline/node/StereoDepth.hpp"
+#include "depthai/pipeline/node/XLinkIn.hpp"
+#include "depthai/pipeline/node/XLinkOut.hpp"
+#include "depthai_bridge/BridgePublisher.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_ros_msgs/srv/NormalizedImageCrop.hpp"
+#include "rclcpp/node.hpp"
+#include "sensor_msgs/msg/Image.hpp"
 
 // Step size ('W','A','S','D' controls)
 static constexpr float stepSize = 0.02;

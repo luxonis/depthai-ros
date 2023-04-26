@@ -1,22 +1,33 @@
 
-#include <depthai_bridge/DisparityConverter.hpp>
+#include "depthai_bridge/DisparityConverter.hpp"
+
+#include "depthai_bridge/depthaiUtility.hpp"
 
 namespace dai {
 
 namespace ros {
 
-DisparityConverter::DisparityConverter(const std::string frameName, float focalLength, float baseline, float minDepth, float maxDepth)
+DisparityConverter::DisparityConverter(
+    const std::string frameName, float focalLength, float baseline, float minDepth, float maxDepth, bool getBaseDeviceTimestamp)
     : _frameName(frameName),
       _focalLength(focalLength),
       _baseline(baseline / 100.0),
       _minDepth(minDepth / 100.0),
       _maxDepth(maxDepth / 100.0),
-      _steadyBaseTime(std::chrono::steady_clock::now()) {
+      _steadyBaseTime(std::chrono::steady_clock::now()),
+      _getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
     _rosBaseTime = rclcpp::Clock().now();
 }
 
+DisparityConverter::~DisparityConverter() = default;
+
 void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<DisparityMsgs::DisparityImage>& outDispImageMsgs) {
-    auto tstamp = inData->getTimestamp();
+    std::chrono::_V2::steady_clock::time_point tstamp;
+    if(_getBaseDeviceTimestamp)
+        tstamp = inData->getTimestampDevice();
+    else
+        tstamp = inData->getTimestamp();
+
     DisparityMsgs::DisparityImage outDispImageMsg;
     outDispImageMsg.header.frame_id = _frameName;
     outDispImageMsg.f = _focalLength;

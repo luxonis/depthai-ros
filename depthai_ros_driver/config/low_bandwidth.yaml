@@ -1,4 +1,5 @@
 /oak:
+  ros__parameters:
     rgb:
       i_low_bandwidth: true
     left:

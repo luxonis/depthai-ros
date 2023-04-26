@@ -1,9 +1,18 @@
 #include "depthai_ros_driver/dai_nodes/sensors/mono.hpp"
 
-#include "cv_bridge/cv_bridge.h"
+#include "camera_info_manager/camera_info_manager.hpp"
+#include "depthai/device/DataQueue.hpp"
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/node/MonoCamera.hpp"
+#include "depthai/pipeline/node/VideoEncoder.hpp"
+#include "depthai/pipeline/node/XLinkIn.hpp"
+#include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
+#include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -17,24 +26,23 @@ Mono::Mono(const std::string& daiNodeName,
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     monoCamNode = pipeline->create<dai::node::MonoCamera>();
-    ph = std::make_unique<param_handlers::MonoParamHandler>(daiNodeName);
-    ph->declareParams(node, monoCamNode, socket, sensor, publish);
+    ph = std::make_unique<param_handlers::SensorParamHandler>(node, daiNodeName);
+    ph->declareParams(monoCamNode, socket, sensor, publish);
     setXinXout(pipeline);
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
-};
+}
+Mono::~Mono() = default;
 void Mono::setNames() {
     monoQName = getName() + "_mono";
     controlQName = getName() + "_control";
 }
 
 void Mono::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
-    if(ph->getParam<bool>(getROSNode(), "i_publish_topic")) {
+    if(ph->getParam<bool>("i_publish_topic")) {
         xoutMono = pipeline->create<dai::node::XLinkOut>();
         xoutMono->setStreamName(monoQName);
-        if(ph->getParam<bool>(getROSNode(), "i_low_bandwidth")) {
-            videoEnc = pipeline->create<dai::node::VideoEncoder>();
-            videoEnc->setQuality(ph->getParam<int>(getROSNode(), "i_low_bandwidth_quality"));
-            videoEnc->setProfile(dai::VideoEncoderProperties::Profile::MJPEG);
+        if(ph->getParam<bool>("i_low_bandwidth")) {
+            videoEnc = sensor_helpers::createEncoder(pipeline, ph->getParam<int>("i_low_bandwidth_quality"));
             monoCamNode->out.link(videoEnc->input);
             videoEnc->bitstream.link(xoutMono->input);
         } else {
@@ -47,52 +55,51 @@ void Mono::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 }
 
 void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
-    if(ph->getParam<bool>(getROSNode(), "i_publish_topic")) {
-        monoQ = device->getOutputQueue(monoQName, ph->getParam<int>(getROSNode(), "i_max_q_size"), false);
-        monoQ->addCallback(std::bind(&Mono::monoQCB, this, std::placeholders::_1, std::placeholders::_2));
-        auto tfPrefix = std::string(getROSNode()->get_name()) + "_" + getName();
-        imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
+    if(ph->getParam<bool>("i_publish_topic")) {
+        monoQ = device->getOutputQueue(monoQName, ph->getParam<int>("i_max_q_size"), false);
+        auto tfPrefix = getTFPrefix(getName());
+        imageConverter =
+            std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
         monoPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
-        auto calibHandler = device->readCalibration();
-        try {
-            monoInfo = imageConverter->calibrationToCameraInfo(calibHandler,
-                                                               static_cast<dai::CameraBoardSocket>(ph->getParam<int>(getROSNode(), "i_board_socket_id")),
-                                                               ph->getParam<int>(getROSNode(), "i_width"),
-                                                               ph->getParam<int>(getROSNode(), "i_height"));
-        } catch(std::runtime_error& e) {
-            RCLCPP_ERROR(getROSNode()->get_logger(), "No calibration! Publishing empty camera_info.");
+        infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
+            getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
+        if(ph->getParam<std::string>("i_calibration_file").empty()) {
+            infoManager->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
+                                                                    *imageConverter,
+                                                                    device,
+                                                                    static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")),
+                                                                    ph->getParam<int>("i_width"),
+                                                                    ph->getParam<int>("i_height")));
+        } else {
+            infoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
+        }
+        if(ph->getParam<bool>("i_low_bandwidth")) {
+            monoQ->addCallback(std::bind(sensor_helpers::compressedImgCB,
+                                         std::placeholders::_1,
+                                         std::placeholders::_2,
+                                         *imageConverter,
+                                         monoPub,
+                                         infoManager,
+                                         dai::RawImgFrame::Type::GRAY8));
+        } else {
+            monoQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, monoPub, infoManager));
         }
     }
     controlQ = device->getInputQueue(controlQName);
 }
 void Mono::closeQueues() {
-    if(ph->getParam<bool>(getROSNode(), "i_publish_topic")) {
+    if(ph->getParam<bool>("i_publish_topic")) {
         monoQ->close();
     }
     controlQ->close();
 }
 
-void Mono::monoQCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
-    auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
-    std::deque<sensor_msgs::msg::Image> deq;
-    if(ph->getParam<bool>(getROSNode(), "i_low_bandwidth"))
-        imageConverter->toRosMsgFromBitStream(img, deq, dai::RawImgFrame::Type::GRAY8, monoInfo);
-    else
-        imageConverter->toRosMsg(img, deq);
-    while(deq.size() > 0) {
-        auto currMsg = deq.front();
-        monoInfo.header = currMsg.header;
-        monoPub.publish(currMsg, monoInfo);
-        deq.pop_front();
-    }
-}
-
-void Mono::link(const dai::Node::Input& in, int /*linkType*/) {
+void Mono::link(dai::Node::Input in, int /*linkType*/) {
     monoCamNode->out.link(in);
 }
 
 void Mono::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    auto ctrl = ph->setRuntimeParams(getROSNode(), params);
+    auto ctrl = ph->setRuntimeParams(params);
     controlQ->send(ctrl);
 }
 

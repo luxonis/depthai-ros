@@ -5,13 +5,18 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import ComposableNodeContainer
+from launch.conditions import IfCondition
+from launch_ros.actions import ComposableNodeContainer, Node
 from launch_ros.descriptions import ComposableNode
 
 
 def launch_setup(context, *args, **kwargs):
+    log_level = 'info'
+    if(context.environment.get('DEPTHAI_DEBUG')=='1'):
+        log_level='debug'
 
-    urdf_launch_dir = os.path.join(get_package_share_directory('depthai_bridge'), 'launch')
+    urdf_launch_dir = os.path.join(get_package_share_directory('depthai_descriptions'), 'launch')
+    
     params_file = LaunchConfiguration("params_file")
     camera_model = LaunchConfiguration('camera_model',  default = 'OAK-D')
 
@@ -26,6 +31,14 @@ def launch_setup(context, *args, **kwargs):
     cam_yaw      = LaunchConfiguration('cam_yaw',       default = '0.0')
     
     return [
+            Node(
+                condition=IfCondition(LaunchConfiguration("use_rviz").perform(context)),
+                package="rviz2",
+                executable="rviz2",
+                name="rviz2",
+                output="log",
+                arguments=["-d", LaunchConfiguration("rviz_config")],
+            ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 os.path.join(urdf_launch_dir, 'urdf_launch.py')),
@@ -51,9 +64,10 @@ def launch_setup(context, *args, **kwargs):
                         plugin="depthai_ros_driver::Camera",
                         name=name,
                         parameters=[params_file],
-                    ),
+                    )
             ],
-            output="screen",
+            arguments=['--ros-args', '--log-level', log_level],
+            output="both",
         ),
 
     ]
@@ -72,6 +86,8 @@ def generate_launch_description():
         DeclareLaunchArgument("cam_pitch", default_value="0.0"),
         DeclareLaunchArgument("cam_yaw", default_value="0.0"),
         DeclareLaunchArgument("params_file", default_value=os.path.join(depthai_prefix, 'config', 'camera.yaml')),
+        DeclareLaunchArgument("use_rviz", default_value='false'),
+        DeclareLaunchArgument("rviz_config", default_value=os.path.join(depthai_prefix, "config", "rviz", "rgbd.rviz"))
     ]
 
     return LaunchDescription(
