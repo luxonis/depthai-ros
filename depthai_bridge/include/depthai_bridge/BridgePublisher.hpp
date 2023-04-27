@@ -217,24 +217,22 @@ void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDa
     }
     mainSubCount = _node->count_subscribers(_rosTopic);
 
-    if(mainSubCount > 0 || infoSubCount > 0) {
+
         _converter(inDataPtr, opMsgs);
 
         while(opMsgs.size()) {
             RosMsg currMsg = opMsgs.front();
-            if(mainSubCount > 0) {
                 _rosPublisher->publish(currMsg);
-            }
+            
 
-            if(infoSubCount > 0) {
                 auto localCameraInfo = _camInfoManager->getCameraInfo();
                 localCameraInfo.header.stamp = currMsg.header.stamp;
                 localCameraInfo.header.frame_id = currMsg.header.frame_id;
                 _cameraInfoPublisher->publish(localCameraInfo);
-            }
+            
             opMsgs.pop_front();
         }
-    }
+    
 }
 
 template <class RosMsg, class SimMsg>
