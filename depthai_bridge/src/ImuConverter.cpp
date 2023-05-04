@@ -1,5 +1,6 @@
 
 #include "depthai_bridge/ImuConverter.hpp"
+
 #include "depthai_bridge/depthaiUtility.hpp"
 
 namespace dai {
@@ -27,8 +28,6 @@ ImuConverter::ImuConverter(const std::string& frameName,
 
 ImuConverter::~ImuConverter() = default;
 
-
-
 void ImuConverter::fillImuMsg(dai::IMUReportAccelerometer report, ImuMsgs::Imu& msg) {
     msg.linear_acceleration.x = report.x;
     msg.linear_acceleration.y = report.y;
@@ -44,14 +43,13 @@ void ImuConverter::fillImuMsg(dai::IMUReportGyroscope report, ImuMsgs::Imu& msg)
 }
 
 void ImuConverter::fillImuMsg(dai::IMUReportRotationVectorWAcc report, ImuMsgs::Imu& msg) {
-    if(_enable_rotation){
-    msg.orientation.x = report.i;
-    msg.orientation.y = report.j;
-    msg.orientation.z = report.k;
-    msg.orientation.w = report.real;
-    msg.orientation_covariance = {_rotation_cov, 0.0, 0.0, 0.0, _rotation_cov, 0.0, 0.0, 0.0, _rotation_cov};
-    }
-    else{
+    if(_enable_rotation) {
+        msg.orientation.x = report.i;
+        msg.orientation.y = report.j;
+        msg.orientation.z = report.k;
+        msg.orientation.w = report.real;
+        msg.orientation_covariance = {_rotation_cov, 0.0, 0.0, 0.0, _rotation_cov, 0.0, 0.0, 0.0, _rotation_cov};
+    } else {
         msg.orientation.x = 0.0;
         msg.orientation.y = 0.0;
         msg.orientation.z = 0.0;
@@ -63,7 +61,6 @@ void ImuConverter::fillImuMsg(dai::IMUReportRotationVectorWAcc report, ImuMsgs::
 void ImuConverter::fillImuMsg(dai::IMUReportMagneticField report, ImuMsgs::Imu& msg) {
     return;
 }
-
 
 void ImuConverter::fillImuMsg(dai::IMUReportAccelerometer report, depthai_ros_msgs::msg::ImuWithMagneticField& msg) {
     fillImuMsg(report, msg.imu);
@@ -85,36 +82,36 @@ void ImuConverter::fillImuMsg(dai::IMUReportMagneticField report, depthai_ros_ms
 }
 
 void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<ImuMsgs::Imu>& outImuMsgs) {
-        if(_syncMode != ImuSyncMethod::COPY) {
-            FillImuData_LinearInterpolation(inData->packets, outImuMsgs);
-        } else {
-            for(int i = 0; i < inData->packets.size(); ++i) {
-                auto accel = inData->packets[i].acceleroMeter;
-                auto gyro = inData->packets[i].gyroscope;
-                auto rot = inData->packets[i].rotationVector;
-                auto magn = inData->packets[i].magneticField;
-                ImuMsgs::Imu msg;
-                CreateUnitMessage(accel, gyro, rot, magn, msg, accel.timestamp);
-                outImuMsgs.push_back(msg);
-            }
+    if(_syncMode != ImuSyncMethod::COPY) {
+        FillImuData_LinearInterpolation(inData->packets, outImuMsgs);
+    } else {
+        for(int i = 0; i < inData->packets.size(); ++i) {
+            auto accel = inData->packets[i].acceleroMeter;
+            auto gyro = inData->packets[i].gyroscope;
+            auto rot = inData->packets[i].rotationVector;
+            auto magn = inData->packets[i].magneticField;
+            ImuMsgs::Imu msg;
+            CreateUnitMessage(accel, gyro, rot, magn, msg, accel.timestamp);
+            outImuMsgs.push_back(msg);
         }
     }
+}
 
 void ImuConverter::toRosDaiMsg(std::shared_ptr<dai::IMUData> inData, std::deque<depthai_ros_msgs::msg::ImuWithMagneticField>& outImuMsgs) {
-        if(_syncMode != ImuSyncMethod::COPY) {
-            FillImuData_LinearInterpolation(inData->packets, outImuMsgs);
-        } else {
-            for(int i = 0; i < inData->packets.size(); ++i) {
-                auto accel = inData->packets[i].acceleroMeter;
-                auto gyro = inData->packets[i].gyroscope;
-                auto rot = inData->packets[i].rotationVector;
-                auto magn = inData->packets[i].magneticField;
-                depthai_ros_msgs::msg::ImuWithMagneticField msg;
-                CreateUnitMessage(accel, gyro, rot, magn, msg, accel.timestamp);
-                outImuMsgs.push_back(msg);
-            }
+    if(_syncMode != ImuSyncMethod::COPY) {
+        FillImuData_LinearInterpolation(inData->packets, outImuMsgs);
+    } else {
+        for(int i = 0; i < inData->packets.size(); ++i) {
+            auto accel = inData->packets[i].acceleroMeter;
+            auto gyro = inData->packets[i].gyroscope;
+            auto rot = inData->packets[i].rotationVector;
+            auto magn = inData->packets[i].magneticField;
+            depthai_ros_msgs::msg::ImuWithMagneticField msg;
+            CreateUnitMessage(accel, gyro, rot, magn, msg, accel.timestamp);
+            outImuMsgs.push_back(msg);
         }
     }
+}
 
 }  // namespace ros
 }  // namespace dai

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
+#include "depthai_ros_msgs/msg/imu_with_magnetic_field.hpp"
 #include "rclcpp/publisher.hpp"
 #include "sensor_msgs/msg/imu.hpp"
-#include "depthai_ros_msgs/msg/imu_with_magnetic_field.hpp"
 
 namespace dai {
 class Pipeline;

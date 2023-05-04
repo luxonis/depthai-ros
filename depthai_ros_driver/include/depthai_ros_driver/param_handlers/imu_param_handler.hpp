@@ -5,8 +5,8 @@
 #include <vector>
 
 #include "depthai/pipeline/datatype/CameraControl.hpp"
-#include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
 #include "depthai_bridge/ImuConverter.hpp"
+#include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
 
 namespace dai {
 namespace node {
@@ -21,8 +21,8 @@ class Parameter;
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-namespace imu{
-    enum class ImuMsgType{IMU, IMU_WITH_MAGN};
+namespace imu {
+enum class ImuMsgType { IMU, IMU_WITH_MAGN };
 }
 class ImuParamHandler : public BaseParamHandler {
    public:

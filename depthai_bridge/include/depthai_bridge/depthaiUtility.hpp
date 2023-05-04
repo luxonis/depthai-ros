@@ -84,7 +84,5 @@ inline rclcpp::Time getFrameTime(rclcpp::Time rclBaseTime,
     return rclStamp;
 }
 
-
-
 }  // namespace ros
 }  // namespace dai

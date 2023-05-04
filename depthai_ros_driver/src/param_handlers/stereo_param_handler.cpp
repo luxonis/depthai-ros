@@ -84,8 +84,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     stereo->setExtendedDisparity(declareAndLogParam<bool>("i_extended_disp", false));
     stereo->setRectifyEdgeFillColor(declareAndLogParam<int>("i_rectify_edge_fill_color", 0));
     auto config = stereo->initialConfig.get();
-    config.costMatching.disparityWidth =
-        utils::getValFromMap(declareAndLogParam<std::string>("i_disparity_width", "DISPARITY_96"), disparityWidthMap);
+    config.costMatching.disparityWidth = utils::getValFromMap(declareAndLogParam<std::string>("i_disparity_width", "DISPARITY_96"), disparityWidthMap);
     if(!config.algorithmControl.enableExtended) {
         config.costMatching.enableCompanding = declareAndLogParam<bool>("i_enable_companding", false);
     }

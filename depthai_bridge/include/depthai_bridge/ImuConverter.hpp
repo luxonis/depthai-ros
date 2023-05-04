@@ -68,7 +68,6 @@ class ImuConverter {
         static std::deque<dai::IMUReportRotationVectorWAcc> rotationHist;
         static std::deque<dai::IMUReportMagneticField> magnHist;
 
-
         for(int i = 0; i < imuPackets.size(); ++i) {
             if(accelHist.size() == 0) {
                 accelHist.push_back(imuPackets[i].acceleroMeter);
@@ -82,11 +81,11 @@ class ImuConverter {
                 gyroHist.push_back(imuPackets[i].gyroscope);
             }
 
-            if(_enable_rotation && rotationHist.size() == 0 ) {
+            if(_enable_rotation && rotationHist.size() == 0) {
                 rotationHist.push_back(imuPackets[i].rotationVector);
             } else if(_enable_rotation && rotationHist.back().sequence != imuPackets[i].rotationVector.sequence) {
                 rotationHist.push_back(imuPackets[i].rotationVector);
-            } else{
+            } else {
                 rotationHist.resize(accelHist.size());
             }
 
@@ -94,7 +93,7 @@ class ImuConverter {
                 magnHist.push_back(imuPackets[i].magneticField);
             } else if(_enable_rotation && magnHist.back().sequence != imuPackets[i].magneticField.sequence) {
                 magnHist.push_back(imuPackets[i].magneticField);
-            } else{
+            } else {
                 magnHist.resize(accelHist.size());
             }
 
@@ -149,9 +148,7 @@ class ImuConverter {
         msg.header.frame_id = _frameName;
 
         msg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, timestamp.get());
-        
     }
-
 
     template <typename I, typename S, typename T, typename F, typename M>
     void interpolate(std::deque<I> interpolated, std::deque<S> second, std::deque<T> third, std::deque<F> fourth, std::deque<M>& imuMsgs) {

@@ -17,9 +17,9 @@
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/ColorCamera.hpp"
+#include "depthai/pipeline/node/DetectionNetwork.hpp"
 #include "depthai/pipeline/node/MonoCamera.hpp"
 #include "depthai/pipeline/node/SpatialDetectionNetwork.hpp"
-#include "depthai/pipeline/node/DetectionNetwork.hpp"
 #include "depthai/pipeline/node/StereoDepth.hpp"
 #include "depthai/pipeline/node/XLinkOut.hpp"
 
@@ -38,19 +38,18 @@ dai::Pipeline createPipeline(bool spatial_camera, bool syncNN, bool subpixel, st
     dai::Pipeline pipeline;
     dai::node::MonoCamera::Properties::SensorResolution monoResolution;
     auto colorCam = pipeline.create<dai::node::ColorCamera>();
-    auto camRgb = pipeline.create<dai::node::ColorCamera>();  // non spatial add in 
+    auto camRgb = pipeline.create<dai::node::ColorCamera>();  // non spatial add in
     auto spatialDetectionNetwork = pipeline.create<dai::node::YoloSpatialDetectionNetwork>();
     auto detectionNetwork = pipeline.create<dai::node::YoloDetectionNetwork>();
     auto monoLeft = pipeline.create<dai::node::MonoCamera>();
     auto monoRight = pipeline.create<dai::node::MonoCamera>();
     auto stereo = pipeline.create<dai::node::StereoDepth>();
 
-
     // create xlink connections
     auto xoutRgb = pipeline.create<dai::node::XLinkOut>();
     auto xoutDepth = pipeline.create<dai::node::XLinkOut>();
     auto xoutNN = pipeline.create<dai::node::XLinkOut>();
-    auto nnOut = pipeline.create<dai::node::XLinkOut>();  // non spatial add in 
+    auto nnOut = pipeline.create<dai::node::XLinkOut>();  // non spatial add in
 
     xoutRgb->setStreamName("preview");
     xoutNN->setStreamName("detections");
@@ -112,12 +111,11 @@ dai::Pipeline createPipeline(bool spatial_camera, bool syncNN, bool subpixel, st
         else
             colorCam->preview.link(xoutRgb->input);
 
-       spatialDetectionNetwork->out.link(xoutNN->input);
+        spatialDetectionNetwork->out.link(xoutNN->input);
 
         stereo->depth.link(spatialDetectionNetwork->inputDepth);
         spatialDetectionNetwork->passthroughDepth.link(xoutDepth->input);
-    }
-    else {
+    } else {
         xoutRgb->setStreamName("rgb");
         nnOut->setStreamName("detections");
 
