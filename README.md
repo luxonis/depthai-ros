@@ -154,12 +154,15 @@ Parameters:
 * `i_acc_freq: 400` - Accelerometer sensor frequency
 * `i_accel_cov: 0.0` - Accelerometer covariance
 * `i_batch_report_threshold: 1` - Batch report size
-* `i_enable_rotation: false` - Whether to enable rotation vector & magnetometer data (available when using IMU_WITH_MAGN message type)
+* `i_enable_rotation: false` - Whether to enable rotation vector & magnetometer data (available when using IMU_WITH_MAGN/ IMU_WITH_MAGN_SPLIT message type)
 * `i_gyro_cov: 0.0` - Gyroscope covariance
 * `i_gyro_freq: 400` - Gyroscope frequency
 * `i_magn_cov: 0.0` - Magnetic field covariance
 * `i_max_batch_reports: 10` - Max reports per batch
-* `i_message_type: IMU` - ROS message type. Either sensor_msgs/Imu or depthai_ros_msgs/ImuWithMagneticField
+* `i_message_type: IMU` - ROS publisher type:
+  * `IMU` - sensor_msgs/Imu
+  * `IMU_WITH_MAGN` - depthai_ros_msgs/ImuWithMagneticField
+  * `IMU_WITH_MAGN_SPLIT` - two publishers - sensor_msgs/Imu & sensor_msgs/MagneticField
 * `i_rot_cov: -1.0` - Orientation covariance
 * `i_sync_method: LINEAR_INTERPOLATE_ACCEL` - sync method. Available options:
   * `COPY`

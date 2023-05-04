@@ -4,6 +4,7 @@
 #include "depthai_ros_msgs/msg/imu_with_magnetic_field.hpp"
 #include "rclcpp/publisher.hpp"
 #include "sensor_msgs/msg/imu.hpp"
+#include "sensor_msgs/msg/magnetic_field.hpp"
 
 namespace dai {
 class Pipeline;
@@ -45,7 +46,9 @@ class Imu : public BaseNode {
     std::unique_ptr<dai::ros::ImuConverter> imuConverter;
     void imuRosQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
     void imuDaiRosQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
+    void imuMagQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
     rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr rosImuPub;
+    rclcpp::Publisher<sensor_msgs::msg::MagneticField>::SharedPtr magPub;
     rclcpp::Publisher<depthai_ros_msgs::msg::ImuWithMagneticField>::SharedPtr daiImuPub;
     std::shared_ptr<dai::node::IMU> imuNode;
     std::unique_ptr<param_handlers::ImuParamHandler> ph;

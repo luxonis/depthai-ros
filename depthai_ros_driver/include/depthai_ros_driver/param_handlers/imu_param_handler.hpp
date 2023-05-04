@@ -22,7 +22,7 @@ class Parameter;
 namespace depthai_ros_driver {
 namespace param_handlers {
 namespace imu {
-enum class ImuMsgType { IMU, IMU_WITH_MAGN };
+enum class ImuMsgType { IMU, IMU_WITH_MAGN, IMU_WITH_MAGN_SPLIT };
 }
 class ImuParamHandler : public BaseParamHandler {
    public:

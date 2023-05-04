@@ -177,7 +177,7 @@ class ImuConverter {
                         const double alpha = diff.count() / dt;
                         I interp = lerpImu(interp0, interp1, alpha);
                         M msg;
-                        CreateUnitMessage(interp, currSecond, currThird, currFourth, msg, interp.timestamp);
+                        CreateUnitMessage(interp, currSecond, currThird, currFourth, msg, currSecond.timestamp);
                         imuMsgs.push_back(msg);
                         second.pop_front();
                         third.pop_front();

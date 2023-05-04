@@ -17,7 +17,8 @@ void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const s
         {"LINEAR_INTERPOLATE_ACCEL", dai::ros::ImuSyncMethod::LINEAR_INTERPOLATE_ACCEL},
         {"LINEAR_INTERPOLATE_ROTATION", dai::ros::ImuSyncMethod::LINEAR_INTERPOLATE_ROTATION},
     };
-    imuMessagetTypeMap = {{"IMU", imu::ImuMsgType::IMU}, {"IMU_WITH_MAGN", imu::ImuMsgType::IMU_WITH_MAGN}};
+    imuMessagetTypeMap = {
+        {"IMU", imu::ImuMsgType::IMU}, {"IMU_WITH_MAGN", imu::ImuMsgType::IMU_WITH_MAGN}, {"IMU_WITH_MAGN_SPLIT", imu::ImuMsgType::IMU_WITH_MAGN_SPLIT}};
     declareAndLogParam<std::string>("i_message_type", "IMU");
     declareAndLogParam<std::string>("i_sync_method", "LINEAR_INTERPOLATE_ACCEL");
     declareAndLogParam<float>("i_accel_cov", 0.0);
