@@ -40,10 +40,10 @@ void Imu::setupQueues(std::shared_ptr<dai::Device> device) {
     auto imuMode = ph->getSyncMethod();
     imuConverter = std::make_unique<dai::ros::ImuConverter>(tfPrefix + "_frame",
                                                             imuMode,
-                                                            ph->getParam<float>("i_accel_cov"),
+                                                            ph->getParam<float>("i_acc_cov"),
                                                             ph->getParam<float>("i_gyro_cov"),
                                                             ph->getParam<float>("i_rot_cov"),
-                                                            ph->getParam<float>("i_magn_cov"),
+                                                            ph->getParam<float>("i_mag_cov"),
                                                             ph->getParam<bool>("i_enable_rotation"));
     param_handlers::imu::ImuMsgType msgType = ph->getMsgType();
     switch(msgType) {

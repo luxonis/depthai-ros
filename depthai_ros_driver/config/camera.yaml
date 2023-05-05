@@ -16,15 +16,17 @@
       i_external_calibration_path: ''
     imu:
       i_acc_freq: 400
-      i_accel_cov: 0.0
+      i_acc_cov: 0.0
       i_batch_report_threshold: 1
       i_enable_rotation: false
       i_gyro_cov: 0.0
       i_gyro_freq: 400
-      i_magn_cov: 0.0
+      i_mag_cov: 0.0
+      i_mag_freq: 100
       i_max_batch_reports: 10
       i_message_type: IMU
       i_rot_cov: -1.0
+      i_rot_freq: 400
       i_sync_method: LINEAR_INTERPOLATE_ACCEL
     left:
       i_board_socket_id: 1

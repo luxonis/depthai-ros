@@ -18,18 +18,18 @@ void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const s
         {"LINEAR_INTERPOLATE_ROTATION", dai::ros::ImuSyncMethod::LINEAR_INTERPOLATE_ROTATION},
     };
     imuMessagetTypeMap = {
-        {"IMU", imu::ImuMsgType::IMU}, {"IMU_WITH_MAGN", imu::ImuMsgType::IMU_WITH_MAGN}, {"IMU_WITH_MAGN_SPLIT", imu::ImuMsgType::IMU_WITH_MAGN_SPLIT}};
+        {"IMU", imu::ImuMsgType::IMU}, {"IMU_WITH_MAG", imu::ImuMsgType::IMU_WITH_MAG}, {"IMU_WITH_MAG_SPLIT", imu::ImuMsgType::IMU_WITH_MAG_SPLIT}};
     declareAndLogParam<std::string>("i_message_type", "IMU");
     declareAndLogParam<std::string>("i_sync_method", "LINEAR_INTERPOLATE_ACCEL");
-    declareAndLogParam<float>("i_accel_cov", 0.0);
+    declareAndLogParam<float>("i_acc_cov", 0.0);
     declareAndLogParam<float>("i_gyro_cov", 0.0);
     declareAndLogParam<float>("i_rot_cov", -1.0);
-    declareAndLogParam<float>("i_magn_cov", 0.0);
+    declareAndLogParam<float>("i_mag_cov", 0.0);
     bool rotationAvailable = imuType == "BNO086";
     if(declareAndLogParam<bool>("i_enable_rotation", false)) {
         if(rotationAvailable) {
-            imu->enableIMUSensor(dai::IMUSensor::ROTATION_VECTOR, declareAndLogParam<int>("i_rotation_vec_freq", 400));
-            imu->enableIMUSensor(dai::IMUSensor::MAGNETOMETER_CALIBRATED, declareAndLogParam<int>("i_magnetometer_freq", 100));
+            imu->enableIMUSensor(dai::IMUSensor::ROTATION_VECTOR, declareAndLogParam<int>("i_rot_freq", 400));
+            imu->enableIMUSensor(dai::IMUSensor::MAGNETOMETER_CALIBRATED, declareAndLogParam<int>("i_mag_freq", 100));
         } else {
             RCLCPP_ERROR(getROSNode()->get_logger(), "Rotation enabled but not available with current sensor");
             declareAndLogParam<bool>("i_enable_rotation", false, true);
