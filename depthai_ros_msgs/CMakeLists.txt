@@ -30,6 +30,7 @@ add_message_files (
   # ImageMarkerArray.msg
   SpatialDetection.msg
   SpatialDetectionArray.msg
+  ImuWithMagneticField.msg
 )
 
 ## Generate services in the 'srv' folder

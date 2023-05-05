@@ -31,7 +31,7 @@ namespace dai_nodes {
 
 class Imu : public BaseNode {
    public:
-    explicit Imu(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline);
+    explicit Imu(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device);
     ~Imu();
     void updateParams(parametersConfig& config) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
@@ -42,8 +42,10 @@ class Imu : public BaseNode {
 
    private:
     std::unique_ptr<dai::ros::ImuConverter> imuConverter;
-    void imuQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
-    ros::Publisher imuPub;
+    void imuRosQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
+    void imuDaiRosQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
+    void imuMagQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
+    ros::Publisher rosImuPub, daiImuPub, magPub;
     std::shared_ptr<dai::node::IMU> imuNode;
     std::unique_ptr<param_handlers::ImuParamHandler> ph;
     std::shared_ptr<dai::DataOutputQueue> imuQ;

@@ -127,7 +127,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
         }
     }
     if(enableImu) {
-        auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline);
+        auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device);
         daiNodes.push_back(std::move(imu));
     }
     ROS_INFO("Finished setting up pipeline.");

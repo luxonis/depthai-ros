@@ -29,6 +29,8 @@
   <depend>depthai</depend>
   <depend>depthai_bridge</depend>
   <depend>depthai_descriptions</depend>
+  <depend>depthai_ros_msgs</depend>
+  <depend>depthai_examples</depend>
   <depend>nodelet</depend>
 
   <export>
