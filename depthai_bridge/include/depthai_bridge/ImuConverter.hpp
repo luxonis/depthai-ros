@@ -151,7 +151,7 @@ class ImuConverter {
     }
 
     template <typename I, typename S, typename T, typename F, typename M>
-    void interpolate(std::deque<I> interpolated, std::deque<S> second, std::deque<T> third, std::deque<F> fourth, std::deque<M>& imuMsgs) {
+    void interpolate(std::deque<I>& interpolated, std::deque<S>& second, std::deque<T>& third, std::deque<F>& fourth, std::deque<M>& imuMsgs) {
         I interp0, interp1;
         S currSecond;
         T currThird;
