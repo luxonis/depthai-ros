@@ -153,7 +153,7 @@ def generate_launch_description():
                         {'sync_nn': sync_nn},
                         {'nnName': nnName},
                         {'resourceBaseFolder': resourceBaseFolder},
-                        {'monoResolution': monoResolution}])
+                        {'monoResolution': monoResolution},
                         {'spatial_camera': spatial_camera}])
 
     rviz_node = launch_ros.actions.Node(
