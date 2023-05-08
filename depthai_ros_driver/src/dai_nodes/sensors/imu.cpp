@@ -7,14 +7,15 @@
 #include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_bridge/ImuConverter.hpp"
 #include "depthai_ros_driver/param_handlers/imu_param_handler.hpp"
-#include "sensor_msgs/Imu.h"
-#include "sensor_msgs/MagneticField.h"
 #include "depthai_ros_msgs/ImuWithMagneticField.h"
 #include "ros/node_handle.h"
+#include "sensor_msgs/Imu.h"
+#include "sensor_msgs/MagneticField.h"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-Imu::Imu(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device) : BaseNode(daiNodeName, node, pipeline) {
+Imu::Imu(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device)
+    : BaseNode(daiNodeName, node, pipeline) {
     ROS_DEBUG("Creating node %s", daiNodeName.c_str());
     setNames();
     imuNode = pipeline->create<dai::node::IMU>();
@@ -59,7 +60,7 @@ void Imu::setupQueues(std::shared_ptr<dai::Device> device) {
             imuQ->addCallback(std::bind(&Imu::imuDaiRosQCB, this, std::placeholders::_1, std::placeholders::_2));
             break;
         }
-        case param_handlers::imu::ImuMsgType::IMU_WITH_MAG_SPLIT:{
+        case param_handlers::imu::ImuMsgType::IMU_WITH_MAG_SPLIT: {
             rosImuPub = getROSNode().advertise<sensor_msgs::Imu>(getName() + "/data", 10);
             magPub = getROSNode().advertise<sensor_msgs::MagneticField>(getName() + "/mag", 10);
             imuQ->addCallback(std::bind(&Imu::imuMagQCB, this, std::placeholders::_1, std::placeholders::_2));
@@ -112,7 +113,6 @@ void Imu::imuMagQCB(const std::string& /*name*/, const std::shared_ptr<dai::ADat
         deq.pop_front();
     }
 }
-
 
 void Imu::link(dai::Node::Input in, int /*linkType*/) {
     imuNode->out.link(in);

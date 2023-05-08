@@ -170,7 +170,6 @@ Parameters:
   * `COPY`
   * `LINEAR_INTERPOLATE_GYRO`
   * `LINEAR_INTERPOLATE_ACCEL`
-  * `LINEAR_INTERPOLATE_ROTATION`
 
 #### Stopping/starting camera for power saving/reconfiguration
 ![](docs/start_stop.gif)

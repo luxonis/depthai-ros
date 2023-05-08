@@ -7,11 +7,11 @@
 
 #include "depthai-shared/datatype/RawIMUData.hpp"
 #include "depthai/pipeline/datatype/IMUData.hpp"
-#include "ros/time.h"
-#include "depthai_ros_msgs/ImuWithMagneticField.h"
-#include "sensor_msgs/MagneticField.h"
-#include "sensor_msgs/Imu.h"
 #include "depthaiUtility.hpp"
+#include "depthai_ros_msgs/ImuWithMagneticField.h"
+#include "ros/time.h"
+#include "sensor_msgs/Imu.h"
+#include "sensor_msgs/MagneticField.h"
 
 namespace dai {
 
@@ -20,7 +20,7 @@ namespace ros {
 namespace ImuMsgs = sensor_msgs;
 using ImuPtr = ImuMsgs::Imu::Ptr;
 
-enum class ImuSyncMethod { COPY, LINEAR_INTERPOLATE_GYRO, LINEAR_INTERPOLATE_ACCEL, LINEAR_INTERPOLATE_ROTATION };
+enum class ImuSyncMethod { COPY, LINEAR_INTERPOLATE_GYRO, LINEAR_INTERPOLATE_ACCEL };
 
 class ImuConverter {
    public:
@@ -107,12 +107,6 @@ class ImuConverter {
                     continue;
                 } else {
                     interpolate(gyroHist, accelHist, rotationHist, magnHist, imuMsgs);
-                }
-            } else if(_syncMode == ImuSyncMethod::LINEAR_INTERPOLATE_ROTATION && _enable_rotation) {
-                if(rotationHist.size() < 3) {
-                    continue;
-                } else {
-                    interpolate(rotationHist, accelHist, gyroHist, magnHist, imuMsgs);
                 }
             }
         }
@@ -202,8 +196,6 @@ class ImuConverter {
         interpolated.push_back(interp0);
     }
 };
-
-
 
 }  // namespace ros
 

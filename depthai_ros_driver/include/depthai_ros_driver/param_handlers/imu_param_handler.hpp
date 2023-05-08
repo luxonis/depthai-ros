@@ -5,9 +5,9 @@
 #include <vector>
 
 #include "depthai/pipeline/datatype/CameraControl.hpp"
+#include "depthai_bridge/ImuConverter.hpp"
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
 #include "depthai_ros_driver/parametersConfig.h"
-#include "depthai_bridge/ImuConverter.hpp"
 
 namespace dai {
 namespace node {
