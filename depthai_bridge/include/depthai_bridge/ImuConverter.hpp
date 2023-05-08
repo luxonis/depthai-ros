@@ -22,7 +22,7 @@ namespace ros {
 namespace ImuMsgs = sensor_msgs::msg;
 using ImuPtr = ImuMsgs::Imu::SharedPtr;
 
-enum class ImuSyncMethod { COPY, LINEAR_INTERPOLATE_GYRO, LINEAR_INTERPOLATE_ACCEL, LINEAR_INTERPOLATE_ROTATION };
+enum class ImuSyncMethod { COPY, LINEAR_INTERPOLATE_GYRO, LINEAR_INTERPOLATE_ACCEL};
 
 class ImuConverter {
    public:
@@ -48,15 +48,6 @@ class ImuConverter {
         res.x = lerp(a.x, b.x, t);
         res.y = lerp(a.y, b.y, t);
         res.z = lerp(a.z, b.z, t);
-        return res;
-    }
-
-    dai::IMUReportRotationVectorWAcc lerpImu(const dai::IMUReportRotationVectorWAcc& a, const dai::IMUReportRotationVectorWAcc& b, const double t) {
-        dai::IMUReportRotationVectorWAcc res;
-        res.i = lerp(a.i, b.i, t);
-        res.j = lerp(a.j, b.j, t);
-        res.k = lerp(a.k, b.k, t);
-        res.real = lerp(a.real, b.real, t);
         return res;
     }
 
@@ -109,12 +100,6 @@ class ImuConverter {
                     continue;
                 } else {
                     interpolate(gyroHist, accelHist, rotationHist, magnHist, imuMsgs);
-                }
-            } else if(_syncMode == ImuSyncMethod::LINEAR_INTERPOLATE_ROTATION && _enable_rotation) {
-                if(rotationHist.size() < 3) {
-                    continue;
-                } else {
-                    interpolate(rotationHist, accelHist, gyroHist, magnHist, imuMsgs);
                 }
             }
         }

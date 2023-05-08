@@ -52,12 +52,12 @@ void Imu::setupQueues(std::shared_ptr<dai::Device> device) {
             imuQ->addCallback(std::bind(&Imu::imuRosQCB, this, std::placeholders::_1, std::placeholders::_2));
             break;
         }
-        case param_handlers::imu::ImuMsgType::IMU_WITH_MAGN: {
+        case param_handlers::imu::ImuMsgType::IMU_WITH_MAG: {
             daiImuPub = getROSNode()->create_publisher<depthai_ros_msgs::msg::ImuWithMagneticField>("~/" + getName() + "/data", 10);
             imuQ->addCallback(std::bind(&Imu::imuDaiRosQCB, this, std::placeholders::_1, std::placeholders::_2));
             break;
         }
-        case param_handlers::imu::ImuMsgType::IMU_WITH_MAGN_SPLIT:{
+        case param_handlers::imu::ImuMsgType::IMU_WITH_MAG_SPLIT:{
             rosImuPub = getROSNode()->create_publisher<sensor_msgs::msg::Imu>("~/" + getName() + "/data", 10);
             magPub = getROSNode()->create_publisher<sensor_msgs::msg::MagneticField>("~/" + getName() + "/mag", 10);
             imuQ->addCallback(std::bind(&Imu::imuMagQCB, this, std::placeholders::_1, std::placeholders::_2));
