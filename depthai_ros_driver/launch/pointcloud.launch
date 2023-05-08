@@ -20,14 +20,24 @@
     <arg name="cam_yaw" default="0.0" />
     <!-- Orientation respect to base frame (i.e. "base_link) -->
 
-        <rosparam file="$(arg params_file)" />
+    <rosparam file="$(arg params_file)" />
 
+    <node pkg="nodelet" type="nodelet" name="depth_image_to_pointcloud"
+        args="load depth_image_proc/point_cloud_xyz $(arg  name)_nodelet_manager">
+        <param name="queue_size"          value="10"/>
 
-    <include file="$(find depthai_descriptions)/launch/urdf.launch">
+        <remap from="camera_info" to="$(arg name)/stereo/camera_info"/>
+        <remap from="image_rect" to="$(arg name)/stereo/image_raw"/>    
+        <remap from="points" to="$(arg name)/points"/>
+    </node>
+
+    <rosparam file="$(arg params_file)" />
+    <include file="$(find depthai_ros_driver)/launch/camera.launch">
+        <arg name="name" value="$(arg name)"/>
+        <arg name="params_file" value="$(arg params_file)"/>
         <arg name="base_frame" value="$(arg  name)" />
         <arg name="parent_frame" value="$(arg  parent_frame)"/>
         <arg name="camera_model" value="$(arg  camera_model)"/>
-        <arg name="tf_prefix" value="$(arg  name)" />
         <arg name="cam_pos_x" value="$(arg  cam_pos_x)" />
         <arg name="cam_pos_y" value="$(arg  cam_pos_y)" />
         <arg name="cam_pos_z" value="$(arg  cam_pos_z)" />
@@ -35,26 +45,6 @@
         <arg name="cam_pitch" value="$(arg  cam_pitch)" />
         <arg name="cam_yaw" value="$(arg  cam_yaw)" />
     </include>
-
-    <node pkg="nodelet" type="nodelet" name="depth_image_convertion_nodelet"
-        args="load depth_image_proc/convert_metric nodelet_manager">
-        <remap from="image_raw" to="$(arg name)/stereo/image_raw"/>    
-        <remap from="image" to="$(arg name)/stereo/image"/>
-    </node>
-
-    <node pkg="nodelet" type="nodelet" name="depth_image_to_pointcloud"
-        args="load depth_image_proc/point_cloud_xyz nodelet_manager">
-        <param name="queue_size"          value="10"/>
-
-        <remap from="camera_info" to="$(arg name)/stereo/camera_info"/>
-        <remap from="image_rect" to="$(arg name)/stereo/image"/>    
-        <remap from="points" to="$(arg name)/points"/>
-    </node>
-
-    <node pkg="nodelet" type="nodelet" name="nodelet_manager" args="manager" output="screen"/>
-
-    <node name="oak" pkg="nodelet" type="nodelet" output="screen" required="true" args="load depthai_ros_driver/Camera $(arg  name)_nodelet_manager">
-    </node>
 
 
 </launch>
