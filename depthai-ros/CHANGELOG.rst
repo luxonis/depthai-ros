@@ -2,6 +2,9 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.7.2 (20230-5-08)
+* IMU improvements
+
 2.7.1 (2023-03-29)
 -------------------
 * Add custom output size option for streams
