@@ -49,15 +49,6 @@ class ImuConverter {
         return res;
     }
 
-    dai::IMUReportRotationVectorWAcc lerpImu(const dai::IMUReportRotationVectorWAcc& a, const dai::IMUReportRotationVectorWAcc& b, const double t) {
-        dai::IMUReportRotationVectorWAcc res;
-        res.i = lerp(a.i, b.i, t);
-        res.j = lerp(a.j, b.j, t);
-        res.k = lerp(a.k, b.k, t);
-        res.real = lerp(a.real, b.real, t);
-        return res;
-    }
-
    private:
     template <typename T>
     void FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPackets, std::deque<T>& imuMsgs) {
