@@ -67,7 +67,7 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_align_depth")) {
         tfPrefix = getTFPrefix("rgb");
     } else {
-        tfPrefix = getTFPrefix("right");
+        tfPrefix = getTFPrefix(rightSensInfo.name);
     }
     imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
 
