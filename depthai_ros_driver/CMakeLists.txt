@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10.2)
+cmake_minimum_required(VERSION 3.16.3)
 project(depthai_ros_driver)
 if(NOT CMAKE_C_STANDARD)
   set(CMAKE_C_STANDARD 99)
@@ -15,12 +15,17 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 add_compile_options(-g)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(BUILD_SHARED_LIBS ON)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 ## is used, also find other catkin packages
 if(POLICY CMP0057)
     cmake_policy(SET CMP0057 NEW)
 endif()
-
+set(CMAKE_LINKER_FLAGS "-pthread" CACHE STRING "Linker Flags" FORCE)
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_LINKER_FLAGS}" CACHE STRING "" FORCE)
+set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS}" CACHE STRING "" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_LINKER_FLAGS}" CACHE STRING "" FORCE)
 
 set(opencv_version 4)
 find_package(OpenCV ${opencv_version} QUIET COMPONENTS imgproc highgui)
@@ -45,6 +50,8 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   nodelet
 )
+find_package(Threads REQUIRED)
+
 
 find_package(depthai CONFIG REQUIRED)
 generate_dynamic_reconfigure_options(
@@ -63,7 +70,9 @@ include_directories(
 include_directories(include)
 
 catkin_package(
-  LIBRARIES ${PROJECT_NAME} ${SENSOR_LIB_NAME}
+  LIBRARIES 
+  ${PROJECT_NAME} 
+  ${SENSOR_LIB_NAME}
   ${NN_LIB_NAME}
   ${COMMON_LIB_NAME}
   CATKIN_DEPENDS roscpp sensor_msgs std_msgs camera_info_manager depthai_bridge vision_msgs cv_bridge message_filters image_transport 
@@ -149,7 +158,10 @@ target_link_libraries(${PROJECT_NAME}
   opencv_highgui
 )
 install(TARGETS
-${PROJECT_NAME}
+${PROJECT_NAME} 
+${SENSOR_LIB_NAME}
+${NN_LIB_NAME}
+${COMMON_LIB_NAME}
 LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

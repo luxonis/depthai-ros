@@ -7,231 +7,78 @@ namespace dai {
 
 namespace ros {
 
-ImuConverter::ImuConverter(const std::string& frameName, ImuSyncMethod syncMode, double linear_accel_cov, double angular_velocity_cov)
+ImuConverter::ImuConverter(const std::string& frameName,
+                           ImuSyncMethod syncMode,
+                           double linear_accel_cov,
+                           double angular_velocity_cov,
+                           double rotation_cov,
+                           double magnetic_field_cov,
+                           bool enable_rotation)
     : _frameName(frameName),
       _syncMode(syncMode),
       _linear_accel_cov(linear_accel_cov),
       _angular_velocity_cov(angular_velocity_cov),
+      _rotation_cov(rotation_cov),
+      _magnetic_field_cov(magnetic_field_cov),
+      _enable_rotation(enable_rotation),
       _sequenceNum(0),
       _steadyBaseTime(std::chrono::steady_clock::now()) {
     _rosBaseTime = ::ros::Time::now();
 }
 
-void ImuConverter::FillImuData_LinearInterpolation(std::vector<IMUPacket>& imuPackets, std::deque<ImuMsgs::Imu>& imuMsgs) {
-    static std::deque<dai::IMUReportAccelerometer> accelHist;
-    static std::deque<dai::IMUReportGyroscope> gyroHist;
+ImuConverter::~ImuConverter() = default;
 
-    for(int i = 0; i < imuPackets.size(); ++i) {
-        if(accelHist.size() == 0) {
-            accelHist.push_back(imuPackets[i].acceleroMeter);
-        } else if(accelHist.back().sequence != imuPackets[i].acceleroMeter.sequence) {
-            accelHist.push_back(imuPackets[i].acceleroMeter);
-        }
+void ImuConverter::fillImuMsg(dai::IMUReportAccelerometer report, ImuMsgs::Imu& msg) {
+    msg.linear_acceleration.x = report.x;
+    msg.linear_acceleration.y = report.y;
+    msg.linear_acceleration.z = report.z;
+    msg.linear_acceleration_covariance = {_linear_accel_cov, 0.0, 0.0, 0.0, _linear_accel_cov, 0.0, 0.0, 0.0, _linear_accel_cov};
+}
 
-        if(gyroHist.size() == 0) {
-            gyroHist.push_back(imuPackets[i].gyroscope);
-        } else if(gyroHist.back().sequence != imuPackets[i].gyroscope.sequence) {
-            gyroHist.push_back(imuPackets[i].gyroscope);
-        }
+void ImuConverter::fillImuMsg(dai::IMUReportGyroscope report, ImuMsgs::Imu& msg) {
+    msg.angular_velocity.x = report.x;
+    msg.angular_velocity.y = report.y;
+    msg.angular_velocity.z = report.z;
+    msg.angular_velocity_covariance = {_angular_velocity_cov, 0.0, 0.0, 0.0, _angular_velocity_cov, 0.0, 0.0, 0.0, _angular_velocity_cov};
+}
 
-        if(_syncMode == ImuSyncMethod::LINEAR_INTERPOLATE_ACCEL) {
-            if(accelHist.size() < 3) {
-                continue;
-            } else {
-                dai::IMUReportAccelerometer accel0, accel1;
-                dai::IMUReportGyroscope currGyro;
-                accel0.sequence = -1;
-                DEPTHAI_ROS_DEBUG_STREAM("IMU INTERPOLATION: ", " Interpolating LINEAR_INTERPOLATE_ACCEL mode " << std::endl);
-                while(accelHist.size()) {
-                    if(accel0.sequence == -1) {
-                        accel0 = accelHist.front();
-                        accelHist.pop_front();
-                    } else {
-                        accel1 = accelHist.front();
-                        accelHist.pop_front();
-
-                        // remove std::milli to get in seconds
-                        std::chrono::duration<double, std::milli> duration_ms = accel1.timestamp.get() - accel0.timestamp.get();
-                        double dt = duration_ms.count();
-
-                        if(!gyroHist.size()) {
-                            DEPTHAI_ROS_WARN_STREAM("IMU INTERPOLATION: ", "Gyro data not found. Dropping accel data points");
-                        }
-                        while(gyroHist.size()) {
-                            currGyro = gyroHist.front();
-
-                            DEPTHAI_ROS_DEBUG_STREAM(
-                                "IMU INTERPOLATION: ",
-                                "Accel 0: Seq => " << accel0.sequence << " timeStamp => " << (accel0.timestamp.get() - _steadyBaseTime).count() << std::endl);
-                            DEPTHAI_ROS_DEBUG_STREAM("IMU INTERPOLATION: ",
-                                                     "currGyro 0: Seq => " << currGyro.sequence << "timeStamp => "
-                                                                           << (currGyro.timestamp.get() - _steadyBaseTime).count() << std::endl);
-                            DEPTHAI_ROS_DEBUG_STREAM(
-                                "IMU INTERPOLATION: ",
-                                "Accel 1: Seq => " << accel1.sequence << " timeStamp => " << (accel1.timestamp.get() - _steadyBaseTime).count() << std::endl);
-                            if(currGyro.timestamp.get() > accel0.timestamp.get() && currGyro.timestamp.get() <= accel1.timestamp.get()) {
-                                // remove std::milli to get in seconds
-                                std::chrono::duration<double, std::milli> diff = currGyro.timestamp.get() - accel0.timestamp.get();
-                                const double alpha = diff.count() / dt;
-                                dai::IMUReportAccelerometer interpAccel = lerpImu(accel0, accel1, alpha);
-                                imuMsgs.push_back(CreateUnitMessage(interpAccel, currGyro));
-                                gyroHist.pop_front();
-                            } else if(currGyro.timestamp.get() > accel1.timestamp.get()) {
-                                accel0 = accel1;
-                                if(accelHist.size()) {
-                                    accel1 = accelHist.front();
-                                    accelHist.pop_front();
-                                    duration_ms = accel1.timestamp.get() - accel0.timestamp.get();
-                                    dt = duration_ms.count();
-                                } else {
-                                    break;
-                                }
-                            } else {
-                                gyroHist.pop_front();
-                                DEPTHAI_ROS_DEBUG_STREAM("IMU INTERPOLATION: ", "Droppinh GYRO with old timestamps which are below accel10 \n");
-                            }
-                        }
-                        // gyroHist.push_back(currGyro); // Undecided whether this is necessary
-                        accel0 = accel1;
-                    }
-                }
-                DEPTHAI_ROS_DEBUG_STREAM("IMU INTERPOLATION: ", "Count  ->" << i << " Placing Accel 0 Seq Number :" << accel0.sequence << std::endl);
-
-                accelHist.push_back(accel0);
-            }
-        } else if(_syncMode == ImuSyncMethod::LINEAR_INTERPOLATE_GYRO) {
-            if(gyroHist.size() < 3) {
-                continue;
-            } else {
-                dai::IMUReportGyroscope gyro0, gyro1;
-                dai::IMUReportAccelerometer currAccel;
-                gyro0.sequence = -1;
-                DEPTHAI_ROS_DEBUG_STREAM("IMU INTERPOLATION: ", " Interpolating LINEAR_INTERPOLATE_GYRO mode " << std::endl);
-                while(gyroHist.size()) {
-                    if(gyro0.sequence == -1) {
-                        gyro0 = gyroHist.front();
-                        gyroHist.pop_front();
-                    } else {
-                        gyro1 = gyroHist.front();
-                        gyroHist.pop_front();
-                        // remove std::milli to get in seconds
-                        std::chrono::duration<double, std::milli> duration_ms = gyro1.timestamp.get() - gyro0.timestamp.get();
-                        double dt = duration_ms.count();
-
-                        if(!accelHist.size()) {
-                            DEPTHAI_ROS_WARN_STREAM("IMU INTERPOLATION: ", "Accel data not found. Dropping data");
-                        }
-                        while(accelHist.size()) {
-                            currAccel = accelHist.front();
-                            DEPTHAI_ROS_DEBUG_STREAM("IMU INTERPOLATION: ",
-                                                     "gyro 0: Seq => " << gyro0.sequence << std::endl
-                                                                       << "       timeStamp => " << (gyro0.timestamp.get() - _steadyBaseTime).count()
-                                                                       << std::endl);
-                            DEPTHAI_ROS_DEBUG_STREAM("IMU INTERPOLATION: ",
-                                                     "currAccel 0: Seq => " << currAccel.sequence << std::endl
-                                                                            << "       timeStamp => " << (currAccel.timestamp.get() - _steadyBaseTime).count()
-                                                                            << std::endl);
-                            DEPTHAI_ROS_DEBUG_STREAM("IMU INTERPOLATION: ",
-                                                     "gyro 1: Seq => " << gyro1.sequence << std::endl
-                                                                       << "       timeStamp => " << (gyro1.timestamp.get() - _steadyBaseTime).count()
-                                                                       << std::endl);
-                            if(currAccel.timestamp.get() > gyro0.timestamp.get() && currAccel.timestamp.get() <= gyro1.timestamp.get()) {
-                                // remove std::milli to get in seconds
-                                std::chrono::duration<double, std::milli> diff = currAccel.timestamp.get() - gyro0.timestamp.get();
-                                const double alpha = diff.count() / dt;
-                                dai::IMUReportGyroscope interpGyro = lerpImu(gyro0, gyro1, alpha);
-                                imuMsgs.push_back(CreateUnitMessage(currAccel, interpGyro));
-                                accelHist.pop_front();
-                            } else if(currAccel.timestamp.get() > gyro1.timestamp.get()) {
-                                gyro0 = gyro1;
-                                if(gyroHist.size()) {
-                                    gyro1 = gyroHist.front();
-                                    gyroHist.pop_front();
-                                    duration_ms = gyro1.timestamp.get() - gyro0.timestamp.get();
-                                    dt = duration_ms.count();
-                                } else {
-                                    break;
-                                }
-                            } else {
-                                accelHist.pop_front();
-                                DEPTHAI_ROS_DEBUG_STREAM("IMU INTERPOLATION: ", "Droppinh ACCEL with old timestamps which are below accel10 \n");
-                            }
-                        }
-                        gyro0 = gyro1;
-                    }
-                }
-                gyroHist.push_back(gyro0);
-            }
-        }
+void ImuConverter::fillImuMsg(dai::IMUReportRotationVectorWAcc report, ImuMsgs::Imu& msg) {
+    if(_enable_rotation) {
+        msg.orientation.x = report.i;
+        msg.orientation.y = report.j;
+        msg.orientation.z = report.k;
+        msg.orientation.w = report.real;
+        msg.orientation_covariance = {_rotation_cov, 0.0, 0.0, 0.0, _rotation_cov, 0.0, 0.0, 0.0, _rotation_cov};
+    } else {
+        msg.orientation.x = 0.0;
+        msg.orientation.y = 0.0;
+        msg.orientation.z = 0.0;
+        msg.orientation.w = 1.0;
+        msg.orientation_covariance = {-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     }
 }
 
-ImuMsgs::Imu ImuConverter::CreateUnitMessage(dai::IMUReportAccelerometer accel, dai::IMUReportGyroscope gyro) {
-    ImuMsgs::Imu interpMsg;
-    interpMsg.linear_acceleration.x = accel.x;
-    interpMsg.linear_acceleration.y = accel.y;
-    interpMsg.linear_acceleration.z = accel.z;
-
-    interpMsg.angular_velocity.x = gyro.x;
-    interpMsg.angular_velocity.y = gyro.y;
-    interpMsg.angular_velocity.z = gyro.z;
-
-    interpMsg.orientation.x = 0.0;
-    interpMsg.orientation.y = 0.0;
-    interpMsg.orientation.z = 0.0;
-    interpMsg.orientation.w = 1.0;
-
-    interpMsg.orientation_covariance = {-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    interpMsg.linear_acceleration_covariance = {_linear_accel_cov, 0.0, 0.0, 0.0, _linear_accel_cov, 0.0, 0.0, 0.0, _linear_accel_cov};
-    interpMsg.angular_velocity_covariance = {_angular_velocity_cov, 0.0, 0.0, 0.0, _angular_velocity_cov, 0.0, 0.0, 0.0, _angular_velocity_cov};
-
-    interpMsg.header.frame_id = _frameName;
-    interpMsg.header.seq = _sequenceNum;
-    _sequenceNum++;
-
-    if(_syncMode == ImuSyncMethod::LINEAR_INTERPOLATE_ACCEL) {
-        interpMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, gyro.timestamp.get());
-    } else if(_syncMode == ImuSyncMethod::LINEAR_INTERPOLATE_GYRO) {
-        interpMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, accel.timestamp.get());
-    } else {
-        interpMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, accel.timestamp.get());
-    }
-
-    return interpMsg;
+void ImuConverter::fillImuMsg(dai::IMUReportMagneticField report, ImuMsgs::Imu& msg) {
+    return;
 }
 
-ImuMsgs::Imu ImuConverter::CreateUnitMessage(dai::IMUReportAccelerometer accel, dai::IMUReportGyroscope gyro, dai::IMUReportRotationVectorWAcc rot) {
-    ImuMsgs::Imu interpMsg;
-    interpMsg.linear_acceleration.x = accel.x;
-    interpMsg.linear_acceleration.y = accel.y;
-    interpMsg.linear_acceleration.z = accel.z;
+void ImuConverter::fillImuMsg(dai::IMUReportAccelerometer report, depthai_ros_msgs::ImuWithMagneticField& msg) {
+    fillImuMsg(report, msg.imu);
+}
 
-    interpMsg.angular_velocity.x = gyro.x;
-    interpMsg.angular_velocity.y = gyro.y;
-    interpMsg.angular_velocity.z = gyro.z;
+void ImuConverter::fillImuMsg(dai::IMUReportGyroscope report, depthai_ros_msgs::ImuWithMagneticField& msg) {
+    fillImuMsg(report, msg.imu);
+}
 
-    interpMsg.orientation.x = rot.i;
-    interpMsg.orientation.y = rot.j;
-    interpMsg.orientation.z = rot.k;
-    interpMsg.orientation.w = rot.real;
+void ImuConverter::fillImuMsg(dai::IMUReportRotationVectorWAcc report, depthai_ros_msgs::ImuWithMagneticField& msg) {
+    fillImuMsg(report, msg.imu);
+}
 
-    interpMsg.orientation_covariance = {-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    interpMsg.linear_acceleration_covariance = {_linear_accel_cov, 0.0, 0.0, 0.0, _linear_accel_cov, 0.0, 0.0, 0.0, _linear_accel_cov};
-    interpMsg.angular_velocity_covariance = {_angular_velocity_cov, 0.0, 0.0, 0.0, _angular_velocity_cov, 0.0, 0.0, 0.0, _angular_velocity_cov};
-
-    interpMsg.header.frame_id = _frameName;
-    interpMsg.header.seq = _sequenceNum;
-    _sequenceNum++;
-
-    if(_syncMode == ImuSyncMethod::LINEAR_INTERPOLATE_ACCEL) {
-        interpMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, gyro.timestamp.get());
-    } else if(_syncMode == ImuSyncMethod::LINEAR_INTERPOLATE_GYRO) {
-        interpMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, accel.timestamp.get());
-    } else {
-        interpMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, accel.timestamp.get());
-    }
-
-    return interpMsg;
+void ImuConverter::fillImuMsg(dai::IMUReportMagneticField report, depthai_ros_msgs::ImuWithMagneticField& msg) {
+    msg.field.magnetic_field.x = report.x;
+    msg.field.magnetic_field.y = report.y;
+    msg.field.magnetic_field.z = report.z;
+    msg.field.magnetic_field_covariance = {_magnetic_field_cov, 0.0, 0.0, 0.0, _magnetic_field_cov, 0.0, 0.0, 0.0, _magnetic_field_cov};
 }
 
 void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<ImuMsgs::Imu>& outImuMsgs) {
@@ -242,7 +89,26 @@ void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<Imu
             auto accel = inData->packets[i].acceleroMeter;
             auto gyro = inData->packets[i].gyroscope;
             auto rot = inData->packets[i].rotationVector;
-            outImuMsgs.push_back(CreateUnitMessage(accel, gyro, rot));
+            auto magn = inData->packets[i].magneticField;
+            ImuMsgs::Imu msg;
+            CreateUnitMessage(accel, gyro, rot, magn, msg, accel.timestamp);
+            outImuMsgs.push_back(msg);
+        }
+    }
+}
+
+void ImuConverter::toRosDaiMsg(std::shared_ptr<dai::IMUData> inData, std::deque<depthai_ros_msgs::ImuWithMagneticField>& outImuMsgs) {
+    if(_syncMode != ImuSyncMethod::COPY) {
+        FillImuData_LinearInterpolation(inData->packets, outImuMsgs);
+    } else {
+        for(int i = 0; i < inData->packets.size(); ++i) {
+            auto accel = inData->packets[i].acceleroMeter;
+            auto gyro = inData->packets[i].gyroscope;
+            auto rot = inData->packets[i].rotationVector;
+            auto magn = inData->packets[i].magneticField;
+            depthai_ros_msgs::ImuWithMagneticField msg;
+            CreateUnitMessage(accel, gyro, rot, magn, msg, accel.timestamp);
+            outImuMsgs.push_back(msg);
         }
     }
 }
