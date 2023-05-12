@@ -36,7 +36,7 @@
   rgb_i_enable_preview: false
   rgb_i_fps: 60.0
   rgb_i_height: 720
-  rgb_i_interleaved: true
+  rgb_i_interleaved: false
   rgb_i_keep_preview_aspect_ratio: true
   rgb_i_low_bandwidth: false
   rgb_i_low_bandwidth_quality: 50

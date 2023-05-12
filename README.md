@@ -165,7 +165,7 @@ Parameters:
   * `IMU_WITH_MAG` - depthai_ros_msgs/ImuWithMagneticField
   * `IMU_WITH_MAG_SPLIT` - two publishers - sensor_msgs/Imu & sensor_msgs/MagneticField
 * `i_rot_cov: -1.0` - Rotation covariance
-* `i_rot_freq: 400` - Rotation frequency
+* `i_rot_freq: 100` - Rotation frequency
 * `i_sync_method: LINEAR_INTERPOLATE_ACCEL` - sync method. Available options:
   * `COPY`
   * `LINEAR_INTERPOLATE_GYRO`
