@@ -5,6 +5,7 @@
     <arg name="tf_prefix"             default="oak"         />
     <arg name="base_frame"            default="oak-d_frame" />
     <arg name="parent_frame"          default="oak-d-base-frame" />
+    <arg name="publisher_name"        default="yolov4_publisher" />
 
     <arg name="cam_pos_x"             default="0.0" /> <!-- Position respect to base frame (i.e. "base_link) -->
     <arg name="cam_pos_y"             default="0.0" /> <!-- Position respect to base frame (i.e. "base_link) -->
@@ -35,7 +36,7 @@
         <arg name="cam_yaw"         value="$(arg  cam_yaw)"     />
     </include>
 
-    <node name="yolov4_publisher" pkg="depthai_examples" type="yolov4_spatial_node" output="screen" required="true">
+    <node name="$(arg publisher_name)" pkg="depthai_examples" type="yolov4_spatial_node" output="screen" required="true">
         <param name="tf_prefix"           value="$(arg tf_prefix)"     />
         <param name="camera_param_uri"    value="$(arg camera_param_uri)"/>
         <param name="sync_nn"             value="$(arg sync_nn)"/>
