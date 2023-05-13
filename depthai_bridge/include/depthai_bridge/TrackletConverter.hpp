@@ -7,7 +7,6 @@
 #include "depthai/pipeline/datatype/Tracklets.hpp"
 #include "depthai_ros_msgs/TrackletArray.h"
 #include "ros/ros.h"
-#include "vision_msgs/Detection3DArray.h"
 
 namespace dai {
 

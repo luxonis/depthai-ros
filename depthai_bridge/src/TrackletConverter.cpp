@@ -1,7 +1,5 @@
 #include "depthai_bridge/TrackletConverter.hpp"
 #include "depthai_bridge/depthaiUtility.hpp"
-#include <iostream>
-#include <string>
 
 namespace dai {
 namespace ros {
