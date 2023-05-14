@@ -17,7 +17,6 @@ class TrackletConverter {
    public:
     TrackletConverter(std::string frameName, int width, int height, bool normalized = false, bool getBaseDeviceTimestamp = false);
     void toRosMsg(std::shared_ptr<dai::Tracklets> trackData, std::deque<TrackletMessages::TrackletArray>& trackletsMsg);
-    void toRosVisionMsg(std::shared_ptr<dai::Tracklets> trackData, std::deque<vision_msgs::Detection3DArray>& trackletsMsg);
     TrackletArrayPtr toRosMsgPtr(std::shared_ptr<dai::Tracklets> trackData);
 
    private:
