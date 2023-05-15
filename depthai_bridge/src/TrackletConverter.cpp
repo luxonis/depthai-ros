@@ -4,11 +4,21 @@
 namespace dai {
 namespace ros {
 
-TrackletConverter::TrackletConverter(std::string frameName, int width, int height, bool normalized, bool getBaseDeviceTimestamp)
+TrackletConverter::TrackletConverter(std::string frameName,
+                                     int width_srcImgDetection,
+                                     int height_srcImgDetection,
+                                     int width_srcImgTracker,
+                                     int height_srcImgTracker,
+                                     bool normalized_srcImgDetection,
+                                     bool normalized_srcImgTracker,
+                                     bool getBaseDeviceTimestamp)
     : _frameName(frameName),
-      _width(width),
-      _height(height),
-      _normalized(normalized),
+      _width_srcImgDetection(width_srcImgDetection),
+      _height_srcImgDetection(height_srcImgDetection),
+      _width_srcImgTracker(width_srcImgTracker),
+      _height_srcImgTracker(height_srcImgTracker),
+      _normalized_srcImgDetection(normalized_srcImgDetection),
+      _normalized_srcImgTracker(normalized_srcImgTracker),
       _steadyBaseTime(std::chrono::steady_clock::now()),
       _getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
     _rosBaseTime = ::ros::Time::now();
@@ -30,40 +40,52 @@ void TrackletConverter::toRosMsg(std::shared_ptr<dai::Tracklets> trackData, std:
 
     // publishing
     for(int i = 0; i < trackData->tracklets.size(); ++i) {
-        int xMin, yMin, xMax, yMax;
-        if(_normalized) {
-            xMin = trackData->tracklets[i].srcImgDetection.xmin;
-            yMin = trackData->tracklets[i].srcImgDetection.ymin;
-            xMax = trackData->tracklets[i].srcImgDetection.xmax;
-            yMax = trackData->tracklets[i].srcImgDetection.ymax;
+        // srcImgDetection -> inputDetectionsFrame
+        int xMin_srcImgDetection, yMin_srcImgDetection, xMax_srcImgDetection, yMax_srcImgDetection;
+        if(_normalized_srcImgDetection) {
+            xMin_srcImgDetection = trackData->tracklets[i].srcImgDetection.xmin;
+            yMin_srcImgDetection = trackData->tracklets[i].srcImgDetection.ymin;
+            xMax_srcImgDetection = trackData->tracklets[i].srcImgDetection.xmax;
+            yMax_srcImgDetection = trackData->tracklets[i].srcImgDetection.ymax;
         } else {
-            xMin = trackData->tracklets[i].srcImgDetection.xmin * _width;
-            yMin = trackData->tracklets[i].srcImgDetection.ymin * _height;
-            xMax = trackData->tracklets[i].srcImgDetection.xmax * _width;
-            yMax = trackData->tracklets[i].srcImgDetection.ymax * _height;
+            xMin_srcImgDetection = trackData->tracklets[i].srcImgDetection.xmin * _width_srcImgDetection;
+            yMin_srcImgDetection = trackData->tracklets[i].srcImgDetection.ymin * _height_srcImgDetection;
+            xMax_srcImgDetection = trackData->tracklets[i].srcImgDetection.xmax * _width_srcImgDetection;
+            yMax_srcImgDetection = trackData->tracklets[i].srcImgDetection.ymax * _height_srcImgDetection;
         }
+        auto xSize_srcImgDetection = xMax_srcImgDetection - xMin_srcImgDetection;
+        auto ySize_srcImgDetection = yMax_srcImgDetection - yMin_srcImgDetection;
+        auto xCenter_srcImgDetection = xMin_srcImgDetection + xSize_srcImgDetection / 2;
+        auto yCenter_srcImgDetection = yMin_srcImgDetection + ySize_srcImgDetection / 2;
 
-        float xSize = xMax - xMin;
-        float ySize = yMax - yMin;
-        float xCenter = xMin + xSize / 2;
-        float yCenter = yMin + ySize / 2;
+        // roi -> inputTrackerFrame
+        dai::Rect roi;
+        if(_normalized_srcImgTracker) {
+            roi = trackData->tracklets[i].roi;
+        } else {
+            roi = trackData->tracklets[i].roi.denormalize(_width_srcImgTracker, _height_srcImgTracker);
+        }
+        auto xSize_srcImgTracker = roi.size().width;
+        auto ySize_srcImgTracker = roi.size().height;
+        auto xCenter_srcImgTracker = roi.topLeft().x + roi.width / 2;
+        auto yCenter_srcImgTracker = roi.topLeft().y + roi.height / 2;
 
-        trackletsMsg.tracklets[i].roi.center.x = xCenter;
-        trackletsMsg.tracklets[i].roi.center.y = yCenter;
-        trackletsMsg.tracklets[i].roi.size_x = xSize;
-        trackletsMsg.tracklets[i].roi.size_y = ySize;
+        trackletsMsg.tracklets[i].roi.center.x = xCenter_srcImgTracker;
+        trackletsMsg.tracklets[i].roi.center.y = yCenter_srcImgTracker;
+        trackletsMsg.tracklets[i].roi.size_x = xSize_srcImgTracker;
+        trackletsMsg.tracklets[i].roi.size_y = ySize_srcImgTracker;
 
         trackletsMsg.tracklets[i].id = trackData->tracklets[i].id;
         trackletsMsg.tracklets[i].label = trackData->tracklets[i].label;
         trackletsMsg.tracklets[i].age = trackData->tracklets[i].age;
         trackletsMsg.tracklets[i].status = static_cast<std::underlying_type<dai::Tracklet::TrackingStatus>::type>(trackData->tracklets[i].status);
 
-        trackletsMsg.tracklets[i].srcImgDetection.confidence = trackData->tracklets[i].srcImgDetection.confidence;
-        trackletsMsg.tracklets[i].srcImgDetection.label = trackData->tracklets[i].srcImgDetection.label;
-        trackletsMsg.tracklets[i].srcImgDetection.xmin = xMin;
-        trackletsMsg.tracklets[i].srcImgDetection.xmax = xMax;
-        trackletsMsg.tracklets[i].srcImgDetection.ymin = yMin;
-        trackletsMsg.tracklets[i].srcImgDetection.ymax = yMax;
+        trackletsMsg.tracklets[i].srcImgDetectionHypothesis.score = trackData->tracklets[i].srcImgDetection.confidence;
+        trackletsMsg.tracklets[i].srcImgDetectionHypothesis.id = trackData->tracklets[i].srcImgDetection.label;
+        trackletsMsg.tracklets[i].srcImgDetectionBBox.center.x = xCenter_srcImgDetection;
+        trackletsMsg.tracklets[i].srcImgDetectionBBox.center.y = yCenter_srcImgDetection;
+        trackletsMsg.tracklets[i].srcImgDetectionBBox.size_x = xSize_srcImgDetection;
+        trackletsMsg.tracklets[i].srcImgDetectionBBox.size_y = ySize_srcImgDetection;
 
         // converting mm to meters since per ros rep-103 lenght should always be in meters
         trackletsMsg.tracklets[i].spatialCoordinates.x = trackData->tracklets[i].spatialCoordinates.x / 1000;
