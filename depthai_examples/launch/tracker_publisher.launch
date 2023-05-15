@@ -26,7 +26,8 @@
     <arg name="rgbFPS"                default="30"/>
     <arg name="nnName"                default="x" />
     <arg name="resourceBaseFolder"    default="$(find depthai_examples)/resources" />
-    <arg name="previewSize"           default="416" />
+    <arg name="previewWidth"          default="416" />
+    <arg name="previewHeight"         default="416" />
     <arg name="rgbResolution"         default="1080p"/>
     <arg name="rgbScaleNumerator"     default="2"/>
     <arg name="rgbScaleDinominator"   default="3"/>
@@ -61,7 +62,8 @@
         <param name="monoFPS"             value="$(arg monoFPS)"/>
         <param name="nnName"              value="$(arg nnName)"/>
         <param name="resourceBaseFolder"  value="$(arg resourceBaseFolder)"/>
-        <param name="previewSize"         value="$(arg previewSize)"/>
+        <param name="previewWidth"         value="$(arg previewWidth)"/>
+        <param name="previewHeight"         value="$(arg previewHeight)"/>
         <param name="lrcheck"             value="$(arg lrcheck)"/> 
         <param name="extended"            value="$(arg extended)"/> 
         <param name="rgbFPS"              value="$(arg rgbFPS)"/> 

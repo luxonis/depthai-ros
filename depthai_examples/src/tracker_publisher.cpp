@@ -53,7 +53,8 @@ std::tuple<dai::Pipeline, int, int, int, int> createPipeline(bool syncNN,
                                                              int LRchecktresh,
                                                              int mono_fps,
                                                              int rgb_fps,
-                                                             int preview_size,
+                                                             int previewWidth,
+                                                             int previewHeight,
                                                              int rgbScaleNumerator,
                                                              int rgbScaleDinominator,
                                                              std::string monoResolutionStr,
@@ -159,7 +160,7 @@ std::tuple<dai::Pipeline, int, int, int, int> createPipeline(bool syncNN,
         throw std::runtime_error("Invalid color camera resolution.");
     }
     colorCam->setBoardSocket(dai::CameraBoardSocket::RGB);
-    colorCam->setPreviewSize(preview_size, preview_size);
+    colorCam->setPreviewSize(previewWidth, previewHeight);
     colorCam->setResolution(dai::ColorCameraProperties::SensorResolution::THE_1080_P);
     colorCam->setInterleaved(false);
     colorCam->setColorOrder(dai::ColorCameraProperties::ColorOrder::BGR);
@@ -196,7 +197,7 @@ std::tuple<dai::Pipeline, int, int, int, int> createPipeline(bool syncNN,
 
     // Link ColorCamera
     colorCam->preview.link(spatialDetectionNetwork->input);
-    colorCam->isp.link(xoutRgb->input);
+    colorCam->isp.link(objectTracker->inputTrackerFrame);
 
     // Link SpatialDetectionNetwork
     spatialDetectionNetwork->passthroughDepth.link(xoutDepth->input);
@@ -208,6 +209,7 @@ std::tuple<dai::Pipeline, int, int, int, int> createPipeline(bool syncNN,
     // objectTracker->setDetectionLabelsToTrack({47});
     objectTracker->passthroughDetectionFrame.link(xoutPreview->input);
     objectTracker->passthroughDetections.link(xoutNN->input);
+    objectTracker->passthroughTrackerFrame.link(xoutRgb->input);
     objectTracker->out.link(xoutTracker->input);
 
     // Link IMU
@@ -233,7 +235,8 @@ int main(int argc, char** argv) {
     int LRchecktresh = 5;
     int monoFPS = 30;
     int rgbFPS = 30;
-    int previewSize = 416;
+    int previewHeight = 416;
+    int previewWidth = 416;
     std::string monoResolution = "720p", rgbResolution = "1080p";
 
     badParams += !pnh.getParam("tf_prefix", tfPrefix);
@@ -246,7 +249,8 @@ int main(int argc, char** argv) {
     badParams += !pnh.getParam("resourceBaseFolder", resourceBaseFolder);
     badParams += !pnh.getParam("monoFPS", monoFPS);
     badParams += !pnh.getParam("rgbFPS", rgbFPS);
-    badParams += !pnh.getParam("previewSize", previewSize);
+    badParams += !pnh.getParam("previewHeight", previewHeight);
+    badParams += !pnh.getParam("previewWidth", previewWidth);
     badParams += !pnh.getParam("lrcheck", lrcheck);
     badParams += !pnh.getParam("extended", extended);
     badParams += !pnh.getParam("rgbScaleNumerator", rgbScaleNumerator);
@@ -288,7 +292,8 @@ int main(int argc, char** argv) {
                                                                                     LRchecktresh,
                                                                                     monoFPS,
                                                                                     rgbFPS,
-                                                                                    previewSize,
+                                                                                    previewWidth,
+                                                                                    previewHeight,
                                                                                     rgbScaleNumerator,
                                                                                     rgbScaleDinominator,
                                                                                     monoResolution,
@@ -362,7 +367,7 @@ int main(int argc, char** argv) {
 
     // Preview
     dai::rosBridge::ImageConverter previewConverter(tfPrefix + "_rgb_camera_optical_frame", false);
-    auto previewCameraInfo = previewConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RGB, previewSize, previewSize);
+    auto previewCameraInfo = previewConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RGB, previewWidth, previewHeight);
     dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame> previewPublish(
         previewQueue,
         pnh,
@@ -374,7 +379,7 @@ int main(int argc, char** argv) {
     previewPublish.addPublisherCallback();
 
     // SpatialDetections
-    dai::rosBridge::SpatialDetectionConverter detConverter(tfPrefix + "_rgb_camera_optical_frame", previewSize, previewSize, false);
+    dai::rosBridge::SpatialDetectionConverter detConverter(tfPrefix + "_rgb_camera_optical_frame", previewWidth, previewHeight, false);
     dai::rosBridge::BridgePublisher<depthai_ros_msgs::SpatialDetectionArray, dai::SpatialImgDetections> detectionPublish(
         detectionQueue,
         pnh,
@@ -384,7 +389,7 @@ int main(int argc, char** argv) {
     detectionPublish.addPublisherCallback();
 
     // Tracklets
-    dai::rosBridge::TrackletConverter trackConverter(tfPrefix + "_rgb_camera_optical_frame", previewSize, previewSize, false);
+    dai::rosBridge::TrackletConverter trackConverter(tfPrefix + "_rgb_camera_optical_frame", previewWidth, previewHeight, rgbWidth, rgbHeight, false, false);
     dai::rosBridge::BridgePublisher<depthai_ros_msgs::TrackletArray, dai::Tracklets> trackletPublish(
         trackletQueue,
         pnh,
