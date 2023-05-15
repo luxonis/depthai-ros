@@ -31,7 +31,6 @@ add_message_files (
   SpatialDetection.msg
   SpatialDetectionArray.msg
   ImuWithMagneticField.msg
-  ImgDetection.msg
   Tracklet.msg
   TrackletArray.msg
 )

@@ -19,8 +19,9 @@ int32 age
 # Status of tracklet.
 int32 status
 
-# Image detection that is tracked.
-ImgDetection srcImgDetection
+# srcImgDetection detection that is tracked.
+vision_msgs/ObjectHypothesis srcImgDetectionHypothesis 
+vision_msgs/BoundingBox2D srcImgDetectionBBox
 
 # Spatial coordinates of tracklet.
 geometry_msgs/Point spatialCoordinates
