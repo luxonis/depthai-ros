@@ -37,12 +37,22 @@ StereoParamHandler::StereoParamHandler(rclcpp::Node* node, const std::string& na
 }
 
 StereoParamHandler::~StereoParamHandler() = default;
-void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> stereo) {
+void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> stereo, const std::string& rightName) {
     declareAndLogParam<int>("i_max_q_size", 30);
     declareAndLogParam<bool>("i_low_bandwidth", false);
     declareAndLogParam<int>("i_low_bandwidth_quality", 50);
     declareAndLogParam<bool>("i_output_disparity", false);
     declareAndLogParam<bool>("i_get_base_device_timestamp", false);
+    declareAndLogParam<bool>("i_publish_topic", true);
+    
+    declareAndLogParam<bool>("i_publish_left_rect", false);
+    declareAndLogParam<bool>("i_left_rect_low_bandwidth", false);
+    declareAndLogParam<int>("i_left_rect_low_bandwidth_quality", 50);
+
+    declareAndLogParam<bool>("i_publish_right_rect", false);
+    declareAndLogParam<bool>("i_right_rect_low_bandwidth", false);
+    declareAndLogParam<int>("i_right_rect_low_bandwidth_quality", 50);
+
     stereo->setLeftRightCheck(declareAndLogParam<bool>("i_lr_check", true));
     int width = 1280;
     int height = 720;
