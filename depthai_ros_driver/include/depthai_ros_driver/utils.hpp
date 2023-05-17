@@ -19,7 +19,7 @@ T getValFromMap(const std::string& name, const std::unordered_map<std::string, T
         for(auto it = map.cbegin(); it != map.cend(); ++it) {
             stream << it->first << "\n";
         }
-        throw std::runtime_error(stream.str());
+        throw std::out_of_range(stream.str());
     }
 }
 std::string getUpperCaseStr(const std::string& string);
