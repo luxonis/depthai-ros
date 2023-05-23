@@ -125,8 +125,11 @@ std::tuple<dai::Pipeline, int, int, int, int> createPipeline(bool syncNN,
     stereo->setLeftRightCheck(lrcheck);
     stereo->setExtendedDisparity(extended);
     stereo->setDepthAlign(dai::CameraBoardSocket::RGB);
+    stereo->setOutputSize(monoLeft->getResolutionWidth(), monoLeft->getResolutionHeight());
+    // stereo->setDefaultProfilePreset(dai::node::StereoDepth::PresetMode::HIGH_DENSITY);
 
     // ObjectTracker
+    // objectTracker->setDetectionLabelsToTrack({15});  // track only person
     objectTracker->setTrackerType(dai::TrackerType::ZERO_TERM_COLOR_HISTOGRAM);
     objectTracker->setTrackerIdAssignmentPolicy(dai::TrackerIdAssignmentPolicy::UNIQUE_ID);
 
@@ -211,6 +214,8 @@ std::tuple<dai::Pipeline, int, int, int, int> createPipeline(bool syncNN,
     objectTracker->passthroughDetections.link(xoutNN->input);
     objectTracker->passthroughTrackerFrame.link(xoutRgb->input);
     objectTracker->out.link(xoutTracker->input);
+    objectTracker->inputTrackerFrame.setBlocking(false);
+    objectTracker->inputTrackerFrame.setQueueSize(2);
 
     // Link IMU
     imu->out.link(xoutImu->input);
