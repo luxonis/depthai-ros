@@ -101,7 +101,7 @@ jobs:
           platforms: |
             amd64
             arm64
-            arm32v7
+            arm32
           no-cache: true
 
       - name: Build and Push
