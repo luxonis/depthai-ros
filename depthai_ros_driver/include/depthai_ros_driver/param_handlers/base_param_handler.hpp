@@ -27,11 +27,22 @@ class BaseParamHandler {
     template <typename T>
     T getParam(const std::string paramName) {
         T value;
-        baseNode->get_parameter<T>(baseName + "." + paramName, value);
+        baseNode->get_parameter<T>(getFullParamName(paramName), value);
         return value;
     }
+    template <typename T>
+    T getOtherNodeParam(const std::string& daiNodeName, const std::string& paramName) {
+        T value;
+        baseNode->get_parameter<T>(getFullParamName(daiNodeName, paramName), value);
+        return value;
+    }
+
     std::string getFullParamName(const std::string& paramName) {
         return baseName + "." + paramName;
+    }
+    std::string getFullParamName(const std::string& daiNodeName, const std::string& paramName) {
+        std::string name = std::string(baseNode->get_namespace()) + "/" + daiNodeName + "." + paramName;
+        return name;
     }
 
    protected:
