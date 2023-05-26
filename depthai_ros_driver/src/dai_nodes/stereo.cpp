@@ -104,7 +104,7 @@ void Stereo::setupLeftRectQueue(std::shared_ptr<dai::Device> device) {
     if(left->getSensorData().color){
         encType = dai::RawImgFrame::Type::BGR888i;
     }
-    if(ph->getParam<bool>("i_low_bandwidth")) {
+    if(ph->getParam<bool>("i_left_rect_low_bandwidth")) {
         leftRectQ->addCallback(std::bind(sensor_helpers::compressedImgCB,
                                          std::placeholders::_1,
                                          std::placeholders::_2,
@@ -135,7 +135,7 @@ void Stereo::setupRightRectQueue(std::shared_ptr<dai::Device> device) {
     if(right->getSensorData().color){
         encType = dai::RawImgFrame::Type::BGR888i;
     }
-    if(ph->getParam<bool>("i_low_bandwidth")) {
+    if(ph->getParam<bool>("i_right_rect_low_bandwidth")) {
         rightRectQ->addCallback(std::bind(sensor_helpers::compressedImgCB,
                                          std::placeholders::_1,
                                          std::placeholders::_2,
