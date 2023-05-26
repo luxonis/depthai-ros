@@ -101,6 +101,7 @@ jobs:
           platforms: |
             amd64
             arm64
+            arm32v7
           no-cache: true
 
       - name: Build and Push
@@ -113,6 +114,7 @@ jobs:
           platforms: |
             amd64
             arm64
+            arm32v7
           push: ${{ env.PUSH }}
           no-cache: true
           tags: | 
