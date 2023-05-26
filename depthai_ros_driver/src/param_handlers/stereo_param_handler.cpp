@@ -56,26 +56,28 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     stereo->setLeftRightCheck(declareAndLogParam<bool>("i_lr_check", true));
     int width = 1280;
     int height = 720;
+    dai::CameraBoardSocket socket = dai::CameraBoardSocket::RIGHT;
     if(declareAndLogParam<bool>("i_align_depth", true)) {
-        declareAndLogParam<int>("i_board_socket_id", static_cast<int>(dai::CameraBoardSocket::RGB));
-        stereo->setDepthAlign(dai::CameraBoardSocket::RGB);
         try {
             width = getROSNode()->get_parameter("rgb.i_width").as_int();
             height = getROSNode()->get_parameter("rgb.i_height").as_int();
+            socket = static_cast<dai::CameraBoardSocket>(getROSNode()->get_parameter("rgb.i_board_socket_id").as_int());
         } catch(rclcpp::exceptions::ParameterNotDeclaredException& e) {
             RCLCPP_ERROR(getROSNode()->get_logger(), "RGB parameters not set, defaulting to 1280x720 unless specified otherwise.");
         }
 
     } else {
-        declareAndLogParam<int>("i_board_socket_id", static_cast<int>(dai::CameraBoardSocket::RIGHT));
         try {
-            width = getROSNode()->get_parameter("right.i_width").as_int();
-            height = getROSNode()->get_parameter("right.i_height").as_int();
+            width = getROSNode()->get_parameter(rightName + ".i_width").as_int();
+            height = getROSNode()->get_parameter(rightName + ".i_height").as_int();
+            socket = static_cast<dai::CameraBoardSocket>(getROSNode()->get_parameter(rightName + ".i_board_socket_id").as_int());
         } catch(rclcpp::exceptions::ParameterNotDeclaredException& e) {
             RCLCPP_ERROR(getROSNode()->get_logger(), "Right parameters not set, defaulting to 1280x720 unless specified otherwise.");
         }
-        stereo->setDepthAlign(dai::CameraBoardSocket::RIGHT);
     }
+    declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket));
+    stereo->setDepthAlign(socket);
+            
     if(declareAndLogParam<bool>("i_set_input_size", false)) {
         stereo->setInputResolution(declareAndLogParam<int>("i_input_width", 1280), declareAndLogParam<int>("i_input_height", 720));
     }
