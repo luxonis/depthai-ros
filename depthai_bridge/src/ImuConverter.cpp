@@ -13,7 +13,8 @@ ImuConverter::ImuConverter(const std::string& frameName,
                            double angular_velocity_cov,
                            double rotation_cov,
                            double magnetic_field_cov,
-                           bool enable_rotation)
+                           bool enable_rotation,
+                           bool getBaseDeviceTimestamp)
     : _frameName(frameName),
       _syncMode(syncMode),
       _linear_accel_cov(linear_accel_cov),
@@ -22,7 +23,8 @@ ImuConverter::ImuConverter(const std::string& frameName,
       _magnetic_field_cov(magnetic_field_cov),
       _enable_rotation(enable_rotation),
       _sequenceNum(0),
-      _steadyBaseTime(std::chrono::steady_clock::now()) {
+      _steadyBaseTime(std::chrono::steady_clock::now()),
+      _getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
     _rosBaseTime = rclcpp::Clock().now();
 }
 
@@ -91,7 +93,13 @@ void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<Imu
             auto rot = inData->packets[i].rotationVector;
             auto magn = inData->packets[i].magneticField;
             ImuMsgs::Imu msg;
-            CreateUnitMessage(accel, gyro, rot, magn, msg, accel.timestamp);
+            std::chrono::_V2::steady_clock::time_point tstamp;
+            if(_getBaseDeviceTimestamp)
+                tstamp = accel.getTimestampDevice();
+            else
+                tstamp = accel.getTimestamp();
+
+            CreateUnitMessage(accel, gyro, rot, magn, msg, tstamp);
             outImuMsgs.push_back(msg);
         }
     }
@@ -107,7 +115,13 @@ void ImuConverter::toRosDaiMsg(std::shared_ptr<dai::IMUData> inData, std::deque<
             auto rot = inData->packets[i].rotationVector;
             auto magn = inData->packets[i].magneticField;
             depthai_ros_msgs::msg::ImuWithMagneticField msg;
-            CreateUnitMessage(accel, gyro, rot, magn, msg, accel.timestamp);
+            std::chrono::_V2::steady_clock::time_point tstamp;
+            if(_getBaseDeviceTimestamp)
+                tstamp = accel.getTimestampDevice();
+            else
+                tstamp = accel.getTimestamp();
+
+            CreateUnitMessage(accel, gyro, rot, magn, msg, tstamp);
             outImuMsgs.push_back(msg);
         }
     }

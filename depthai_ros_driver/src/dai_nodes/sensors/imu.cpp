@@ -44,7 +44,8 @@ void Imu::setupQueues(std::shared_ptr<dai::Device> device) {
                                                             ph->getParam<float>("i_gyro_cov"),
                                                             ph->getParam<float>("i_rot_cov"),
                                                             ph->getParam<float>("i_mag_cov"),
-                                                            ph->getParam<bool>("i_enable_rotation"));
+                                                            ph->getParam<bool>("i_enable_rotation"),
+                                                            ph->getParam<bool>("i_get_base_device_timestamp"));
     param_handlers::imu::ImuMsgType msgType = ph->getMsgType();
     switch(msgType) {
         case param_handlers::imu::ImuMsgType::IMU: {
