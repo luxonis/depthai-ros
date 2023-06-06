@@ -13,6 +13,12 @@ StereoParamHandler::StereoParamHandler(rclcpp::Node* node, const std::string& na
         {"HIGH_ACCURACY", dai::node::StereoDepth::PresetMode::HIGH_ACCURACY},
         {"HIGH_DENSITY", dai::node::StereoDepth::PresetMode::HIGH_DENSITY},
     };
+
+    disparityWidthMap = {
+        {"DISPARITY_64", dai::StereoDepthConfig::CostMatching::DisparityWidth::DISPARITY_64},
+        {"DISPARITY_96", dai::StereoDepthConfig::CostMatching::DisparityWidth::DISPARITY_96},
+    };
+
     decimationModeMap = {{"PIXEL_SKIPPING", dai::StereoDepthConfig::PostProcessing::DecimationFilter::DecimationMode::PIXEL_SKIPPING},
                          {"NON_ZERO_MEDIAN", dai::StereoDepthConfig::PostProcessing::DecimationFilter::DecimationMode::NON_ZERO_MEDIAN},
                          {"NON_ZERO_MEAN", dai::StereoDepthConfig::PostProcessing::DecimationFilter::DecimationMode::NON_ZERO_MEAN}};
@@ -27,7 +33,6 @@ StereoParamHandler::StereoParamHandler(rclcpp::Node* node, const std::string& na
         {"VALID_1_IN_LAST_5", dai::StereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::VALID_1_IN_LAST_5},
         {"VALID_1_IN_LAST_8", dai::StereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::VALID_1_IN_LAST_8},
         {"PERSISTENCY_INDEFINITELY", dai::StereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::PERSISTENCY_INDEFINITELY},
-
     };
 }
 
@@ -38,6 +43,16 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<int>("i_low_bandwidth_quality", 50);
     declareAndLogParam<bool>("i_output_disparity", false);
     declareAndLogParam<bool>("i_get_base_device_timestamp", false);
+    declareAndLogParam<bool>("i_publish_topic", true);
+    
+    declareAndLogParam<bool>("i_publish_left_rect", false);
+    declareAndLogParam<bool>("i_left_rect_low_bandwidth", false);
+    declareAndLogParam<int>("i_left_rect_low_bandwidth_quality", 50);
+
+    declareAndLogParam<bool>("i_publish_right_rect", false);
+    declareAndLogParam<bool>("i_right_rect_low_bandwidth", false);
+    declareAndLogParam<int>("i_right_rect_low_bandwidth_quality", 50);
+
     stereo->setLeftRightCheck(declareAndLogParam<bool>("i_lr_check", true));
     int width = 1280;
     int height = 720;
@@ -60,8 +75,9 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
             RCLCPP_ERROR(getROSNode()->get_logger(), "Right parameters not set, defaulting to 1280x720 unless specified otherwise.");
         }
     }
-    declareAndLogParam("i_board_socket_id", static_cast<int>(socket));
+    declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket));
     stereo->setDepthAlign(socket);
+            
     if(declareAndLogParam<bool>("i_set_input_size", false)) {
         stereo->setInputResolution(declareAndLogParam<int>("i_input_width", 1280), declareAndLogParam<int>("i_input_height", 720));
     }
@@ -73,10 +89,17 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     stereo->initialConfig.setLeftRightCheckThreshold(declareAndLogParam<int>("i_lrc_threshold", 10));
     stereo->initialConfig.setMedianFilter(static_cast<dai::MedianFilter>(declareAndLogParam<int>("i_depth_filter_size", 5)));
     stereo->initialConfig.setConfidenceThreshold(declareAndLogParam<int>("i_stereo_conf_threshold", 255));
-    stereo->initialConfig.setSubpixel(declareAndLogParam<bool>("i_subpixel", false));
+    if(declareAndLogParam<bool>("i_subpixel", false)) {
+        stereo->initialConfig.setSubpixel(true);
+        stereo->initialConfig.setSubpixelFractionalBits(declareAndLogParam<int>("i_subpixel_fractional_bits", 3));
+    }
     stereo->setExtendedDisparity(declareAndLogParam<bool>("i_extended_disp", false));
     stereo->setRectifyEdgeFillColor(declareAndLogParam<int>("i_rectify_edge_fill_color", 0));
     auto config = stereo->initialConfig.get();
+    config.costMatching.disparityWidth = utils::getValFromMap(declareAndLogParam<std::string>("i_disparity_width", "DISPARITY_96"), disparityWidthMap);
+    if(!config.algorithmControl.enableExtended) {
+        config.costMatching.enableCompanding = declareAndLogParam<bool>("i_enable_companding", false);
+    }
     config.postProcessing.temporalFilter.enable = declareAndLogParam<bool>("i_enable_temporal_filter", false);
     if(config.postProcessing.temporalFilter.enable) {
         config.postProcessing.temporalFilter.alpha = declareAndLogParam<float>("i_temporal_filter_alpha", 0.4);

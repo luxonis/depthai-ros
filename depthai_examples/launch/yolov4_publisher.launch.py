@@ -23,6 +23,7 @@ def generate_launch_description():
     tf_prefix    = LaunchConfiguration('tf_prefix',     default = 'oak')
     base_frame   = LaunchConfiguration('base_frame',    default = 'oak-d_frame')
     parent_frame = LaunchConfiguration('parent_frame',  default = 'oak-d-base-frame')
+    spatial_camera = LaunchConfiguration('spatial_camera',  default = True)
 
     cam_pos_x = LaunchConfiguration('cam_pos_x',     default = '0.0')
     cam_pos_y = LaunchConfiguration('cam_pos_y',     default = '0.0')
@@ -34,6 +35,7 @@ def generate_launch_description():
     camera_param_uri   = LaunchConfiguration('camera_param_uri',  default = 'package://depthai_examples/params/camera')
     sync_nn            = LaunchConfiguration('sync_nn',           default = True)
     subpixel           = LaunchConfiguration('subpixel',          default = True)
+
     nnName             = LaunchConfiguration('nnName', default = "x")
     resourceBaseFolder = LaunchConfiguration('resourceBaseFolder', default = default_resources_path)
     confidence         = LaunchConfiguration('confidence',        default = 200)
@@ -43,7 +45,7 @@ def generate_launch_description():
     declare_camera_model_cmd = DeclareLaunchArgument(
         'camera_model',
         default_value=camera_model,
-        description='The model of the camera. Using a wrong camera model can disable camera features. Valid models: `OAK-D, OAK-D-LITE`.')
+        description='The model of the camera. Using a wrong camera model can disable camera features. Set spatial_camera:=False for `OAK-1, OAK-1-LITE, OAK-1-MAX`.')
 
     declare_tf_prefix_cmd = DeclareLaunchArgument(
         'tf_prefix',
@@ -143,7 +145,6 @@ def generate_launch_description():
                                               'cam_roll'    : cam_roll,
                                               'cam_pitch'   : cam_pitch,
                                               'cam_yaw'     : cam_yaw}.items())
-
     yolov4_spatial_node = launch_ros.actions.Node(
             package='depthai_examples', executable='yolov4_spatial_node',
             output='screen',
@@ -152,7 +153,8 @@ def generate_launch_description():
                         {'sync_nn': sync_nn},
                         {'nnName': nnName},
                         {'resourceBaseFolder': resourceBaseFolder},
-                        {'monoResolution': monoResolution}])
+                        {'monoResolution': monoResolution},
+                        {'spatial_camera': spatial_camera}])
 
     rviz_node = launch_ros.actions.Node(
             package='rviz2', executable='rviz2', output='screen',
@@ -173,16 +175,17 @@ def generate_launch_description():
     ld.add_action(declare_yaw_cmd)
     
     ld.add_action(declare_camera_param_uri_cmd)
-    ld.add_action(declare_sync_nn_cmd)
-    ld.add_action(declare_subpixel_cmd)
     ld.add_action(declare_nnName_cmd)
     ld.add_action(declare_resourceBaseFolder_cmd)
     ld.add_action(declare_confidence_cmd)
-    ld.add_action(declare_lrCheckTresh_cmd)
-    ld.add_action(declare_monoResolution_cmd)
-
-    ld.add_action(yolov4_spatial_node)
+    ld.add_action(declare_sync_nn_cmd)
     ld.add_action(urdf_launch)
+
+    if spatial_camera == True:
+        ld.add_action(declare_subpixel_cmd)
+        ld.add_action(declare_lrCheckTresh_cmd)
+        ld.add_action(declare_monoResolution_cmd)
+    ld.add_action(yolov4_spatial_node)
 
     return ld
 

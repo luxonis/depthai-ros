@@ -14,6 +14,20 @@
       i_pipeline_dump: false
       i_calibration_dump: false
       i_external_calibration_path: ''
+    imu:
+      i_acc_freq: 400
+      i_acc_cov: 0.0
+      i_batch_report_threshold: 1
+      i_enable_rotation: false
+      i_gyro_cov: 0.0
+      i_gyro_freq: 400
+      i_mag_cov: 0.0
+      i_mag_freq: 100
+      i_max_batch_reports: 10
+      i_message_type: IMU
+      i_rot_cov: -1.0
+      i_rot_freq: 400
+      i_sync_method: LINEAR_INTERPOLATE_ACCEL
     left:
       i_board_socket_id: 1
       i_calibration_file: ''
@@ -90,6 +104,8 @@
       i_board_socket_id: 0
       i_depth_filter_size: 5
       i_depth_preset: HIGH_ACCURACY
+      i_disparity_width: DISPARITY_96
+      i_enable_companding: false
       i_enable_decimation_filter: false
       i_enable_distortion_correction: true
       i_enable_spatial_filter: false

@@ -6,6 +6,7 @@
 
 #include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 namespace dai {
@@ -42,7 +43,7 @@ namespace link_types {
 enum class StereoLinkType { left, right };
 };
 
-struct StereoSensorInfo{
+struct StereoSensorInfo {
     std::string name;
     dai::CameraBoardSocket socket;
 };
@@ -65,17 +66,20 @@ class Stereo : public BaseNode {
     void closeQueues() override;
 
    private:
-    std::unique_ptr<dai::ros::ImageConverter> imageConverter;
-    image_transport::CameraPublisher stereoPub;
-    std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
+    void setupStereoQueue(std::shared_ptr<dai::Device> device);
+    void setupLeftRectQueue(std::shared_ptr<dai::Device> device);
+    void setupRightRectQueue(std::shared_ptr<dai::Device> device);
+    std::unique_ptr<dai::ros::ImageConverter> stereoConv, leftRectConv, rightRectConv;
+    image_transport::CameraPublisher stereoPub, leftRectPub, rightRectPub;
+    std::shared_ptr<camera_info_manager::CameraInfoManager> stereoIM, leftRectIM, rightRectIM;
     std::shared_ptr<dai::node::StereoDepth> stereoCamNode;
-    std::shared_ptr<dai::node::VideoEncoder> videoEnc;
-    std::unique_ptr<BaseNode> left;
-    std::unique_ptr<BaseNode> right;
+    std::shared_ptr<dai::node::VideoEncoder> stereoEnc, leftRectEnc, rightRectEnc;
+    std::unique_ptr<SensorWrapper> left;
+    std::unique_ptr<SensorWrapper> right;
     std::unique_ptr<param_handlers::StereoParamHandler> ph;
-    std::shared_ptr<dai::DataOutputQueue> stereoQ;
-    std::shared_ptr<dai::node::XLinkOut> xoutStereo;
-    std::string stereoQName;
+    std::shared_ptr<dai::DataOutputQueue> stereoQ, leftRectQ, rightRectQ;
+    std::shared_ptr<dai::node::XLinkOut> xoutStereo, xoutLeftRect, xoutRightRect;
+    std::string stereoQName, leftRectQName, rightRectQName;
     StereoSensorInfo leftSensInfo, rightSensInfo;
 };
 

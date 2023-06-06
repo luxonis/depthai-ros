@@ -5,7 +5,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import LoadComposableNodes
+from launch_ros.actions import LoadComposableNodes, Node
 from launch_ros.descriptions import ComposableNode
 from launch.conditions import IfCondition
 
@@ -15,7 +15,10 @@ def launch_setup(context, *args, **kwargs):
     depthai_prefix = get_package_share_directory("depthai_ros_driver")
 
     name = LaunchConfiguration('name').perform(context)
-
+    rgb_topic_name = name+'/rgb/image_raw'
+    print(LaunchConfiguration('rectify_rgb').perform(context))
+    if LaunchConfiguration('rectify_rgb').perform(context)=='true':
+        rgb_topic_name = name +'/rgb/image_rect'
     return [
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
@@ -56,7 +59,7 @@ def launch_setup(context, *args, **kwargs):
                     plugin='depth_image_proc::PointCloudXyzrgbNode',
                     name='point_cloud_xyzrgb_node',
                     remappings=[('depth_registered/image_rect', name+'/stereo/image_raw'),
-                                ('rgb/image_rect_color', name+'/rgb/image_rect'),
+                                ('rgb/image_rect_color', rgb_topic_name),
                                 ('rgb/camera_info', name+'/rgb/camera_info'),
                                 ('points', name+'/points')]
                     ),

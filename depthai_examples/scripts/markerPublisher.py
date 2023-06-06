@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import rospy
 from depthai_ros_msgs.msg import SpatialDetectionArray
 from foxglove_msgs.msg import ImageMarkerArray

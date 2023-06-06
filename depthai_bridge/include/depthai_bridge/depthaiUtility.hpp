@@ -84,19 +84,5 @@ inline rclcpp::Time getFrameTime(rclcpp::Time rclBaseTime,
     return rclStamp;
 }
 
-template <typename T>
-T lerp(const T& a, const T& b, const double t) {
-    return a * (1.0 - t) + b * t;
-}
-
-template <typename T>
-T lerpImu(const T& a, const T& b, const double t) {
-    T res;
-    res.x = lerp(a.x, b.x, t);
-    res.y = lerp(a.y, b.y, t);
-    res.z = lerp(a.z, b.z, t);
-    return res;
-}
-
 }  // namespace ros
 }  // namespace dai
