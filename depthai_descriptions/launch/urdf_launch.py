@@ -27,6 +27,7 @@ def launch_setup(context, *args, **kwargs):
     cam_pitch    = LaunchConfiguration('cam_pitch',     default = '0.0')
     cam_yaw      = LaunchConfiguration('cam_yaw',       default = '1.5708')
     namespace    = LaunchConfiguration('namespace',     default = '')
+    is_bno       = LaunchConfiguration('is_bno',     default = 'false')
 
 
     rsp_node =  Node(
@@ -46,7 +47,8 @@ def launch_setup(context, *args, **kwargs):
                     'cam_pos_z:=', cam_pos_z, ' ',
                     'cam_roll:=', cam_roll, ' ',
                     'cam_pitch:=', cam_pitch, ' ',
-                    'cam_yaw:=', cam_yaw
+                    'cam_yaw:=', cam_yaw, ' ',
+                    'is_bno:=', is_bno
                 ])}]
         )
 
@@ -106,7 +108,11 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'cam_yaw',
             default_value='0.0',
-            description='Yaw orientation of the camera with respect to the base frame.')
+            description='Yaw orientation of the camera with respect to the base frame.'),
+        DeclareLaunchArgument(
+            'is_bno',
+            default_value='false',
+            description='If IMU is BNO085.'),
     ]
 
     return LaunchDescription(
