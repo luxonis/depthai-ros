@@ -28,22 +28,22 @@
     <xacro:if value="${model == 'OAK-D-PRO-W'}">
       <xacro:if value="${is_bno}">
         <xacro:property name="has_imu" value="true" />
-        <xacro:property name="imu_offset_x" value="0.075448" />
+        <xacro:property name="imu_offset_x" value="0.000448" />
         <xacro:property name="imu_offset_y" value="0.0079" />
         <xacro:property name="imu_offset_z" value="0.0" />
         <xacro:property name="imu_r" value="-3.1415" />
         <xacro:property name="imu_p" value="0.0" />
-        <xacro:property name="imu_y" value="-1.5708" />
+        <xacro:property name="imu_y" value="1.5708" />
       </xacro:if>
 
       <xacro:unless value="${is_bno}">
         <xacro:property name="has_imu" value="true" />
-        <xacro:property name="imu_offset_x" value="0.06935" />
+        <xacro:property name="imu_offset_x" value="-0.00535" />
         <xacro:property name="imu_offset_y" value="0.00231" />
         <xacro:property name="imu_offset_z" value="0.0" />
         <xacro:property name="imu_r" value="-3.1415" />
         <xacro:property name="imu_p" value="0.0" />
-        <xacro:property name="imu_y" value="-1.5708" /> 
+        <xacro:property name="imu_y" value="1.5708" /> 
       </xacro:unless>
     </xacro:if>
 
@@ -80,7 +80,7 @@
     <xacro:if value="${has_imu}">
         <link name="${camera_name}_imu_frame" />
         <joint name="${camera_name}_imu_joint" type="fixed">
-            <parent link="${base_frame}"/>
+            <parent link="${camera_name}_right_camera_optical_frame"/>
             <child link="${camera_name}_imu_frame"/>
             <origin xyz="${imu_offset_x} ${imu_offset_y} ${imu_offset_z}" rpy="${imu_r} ${imu_p} ${imu_y}" />
         </joint>
