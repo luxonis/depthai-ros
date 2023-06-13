@@ -32,6 +32,15 @@ class ImuConverter {
                  double magnetic_field_cov = 0.0,
                  bool enable_rotation = false);
     ~ImuConverter();
+    
+    /**
+     * @brief Handles cases in which the ROS time shifts forward or backward
+     *  Should be called at regular intervals or on-change of ROS time, depending
+     *  on monitoring.
+     * 
+     */
+    void updateRosBaseTime();
+
     void toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<ImuMsgs::Imu>& outImuMsgs);
     void toRosDaiMsg(std::shared_ptr<dai::IMUData> inData, std::deque<depthai_ros_msgs::ImuWithMagneticField>& outImuMsgs);
 

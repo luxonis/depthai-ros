@@ -16,6 +16,26 @@ ImgDetectionConverter::ImgDetectionConverter(std::string frameName, int width, i
     _rosBaseTime = ::ros::Time::now();
 }
 
+void ImgDetectionConverter::updateRosBaseTime()
+{
+    ::ros::Time currentRosTime = ::ros::Time::now();
+    std::chrono::time_point<std::chrono::steady_clock> currentSteadyTime =
+        std::chrono::steady_clock::now();
+    // In nanoseconds
+    auto expectedOffset = std::chrono::duration_cast<std::chrono::nanoseconds>(currentSteadyTime - _steadyBaseTime).count();
+    uint64_t previousBaseTimeNs = _rosBaseTime.toNSec();
+    _rosBaseTime = _rosBaseTime.fromNSec(currentRosTime.toNSec() - expectedOffset);
+    uint64_t newBaseTimeNs = _rosBaseTime.toNSec();
+    int64_t diff = static_cast<int64_t>(newBaseTimeNs - previousBaseTimeNs);
+    if(::abs(diff) > 10)
+    {
+        // Has been updated
+        DEPTHAI_ROS_DEBUG_STREAM("ROS BASE TIME CHANGE: ", "ROS base time changed by " <<
+            std::to_string(diff) << " ns." );
+    }
+
+}
+
 void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, std::deque<VisionMsgs::Detection2DArray>& opDetectionMsgs) {
     // setting the header
     std::chrono::_V2::steady_clock::time_point tstamp;

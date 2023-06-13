@@ -29,6 +29,15 @@ class ImageConverter {
     // ImageConverter() = default;
     ImageConverter(const std::string frameName, bool interleaved, bool getBaseDeviceTimestamp = false);
     ImageConverter(bool interleaved, bool getBaseDeviceTimestamp = false);
+    
+    /**
+     * @brief Handles cases in which the ROS time shifts forward or backward
+     *  Should be called at regular intervals or on-change of ROS time, depending
+     *  on monitoring.
+     * 
+     */
+    void updateRosBaseTime();
+
     void toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData,
                                std::deque<ImageMsgs::Image>& outImageMsgs,
                                dai::RawImgFrame::Type type,

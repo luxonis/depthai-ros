@@ -22,6 +22,14 @@ class DisparityConverter {
     DisparityConverter(
         const std::string frameName, float focalLength, float baseline = 7.5, float minDepth = 80, float maxDepth = 1100, bool getBaseDeviceTimestamp = false);
 
+    /**
+     * @brief Handles cases in which the ROS time shifts forward or backward
+     *  Should be called at regular intervals or on-change of ROS time, depending
+     *  on monitoring.
+     * 
+     */
+    void updateRosBaseTime();
+
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<DisparityMsgs::DisparityImage>& outImageMsg);
     DisparityImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
 

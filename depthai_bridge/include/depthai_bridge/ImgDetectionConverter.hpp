@@ -19,6 +19,14 @@ class ImgDetectionConverter {
     // DetectionConverter() = default;
     ImgDetectionConverter(std::string frameName, int width, int height, bool normalized = false, bool getBaseDeviceTimestamp = false);
 
+    /**
+     * @brief Handles cases in which the ROS time shifts forward or backward
+     *  Should be called at regular intervals or on-change of ROS time, depending
+     *  on monitoring.
+     * 
+     */
+    void updateRosBaseTime();
+
     void toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, std::deque<VisionMsgs::Detection2DArray>& opDetectionMsgs);
 
     Detection2DArrayPtr toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData);

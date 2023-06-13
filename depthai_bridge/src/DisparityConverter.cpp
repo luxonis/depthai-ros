@@ -19,6 +19,26 @@ DisparityConverter::DisparityConverter(
     _rosBaseTime = ::ros::Time::now();
 }
 
+void DisparityConverter::updateRosBaseTime()
+{
+    ::ros::Time currentRosTime = ::ros::Time::now();
+    std::chrono::time_point<std::chrono::steady_clock> currentSteadyTime =
+        std::chrono::steady_clock::now();
+    // In nanoseconds
+    auto expectedOffset = std::chrono::duration_cast<std::chrono::nanoseconds>(currentSteadyTime - _steadyBaseTime).count();
+    uint64_t previousBaseTimeNs = _rosBaseTime.toNSec();
+    _rosBaseTime = _rosBaseTime.fromNSec(currentRosTime.toNSec() - expectedOffset);
+    uint64_t newBaseTimeNs = _rosBaseTime.toNSec();
+    int64_t diff = static_cast<int64_t>(newBaseTimeNs - previousBaseTimeNs);
+    if(::abs(diff) > 10)
+    {
+        // Has been updated
+        DEPTHAI_ROS_DEBUG_STREAM("ROS BASE TIME CHANGE: ", "ROS base time changed by " <<
+            std::to_string(diff) << " ns." );
+    }
+
+}
+
 void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<DisparityMsgs::DisparityImage>& outDispImageMsgs) {
     std::chrono::_V2::steady_clock::time_point tstamp;
     if(_getBaseDeviceTimestamp)
