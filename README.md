@@ -17,6 +17,7 @@ You can develop your ROS applications in following ways:
 Supported ROS versions:
 - Noetic
 - Humble
+- Iron
 
 For usage check out respective git branches.
 
