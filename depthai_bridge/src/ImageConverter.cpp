@@ -45,11 +45,13 @@ void ImageConverter::updateRosBaseTime()
     _rosBaseTime = _rosBaseTime.fromNSec(currentRosTime.toNSec() - expectedOffset);
     uint64_t newBaseTimeNs = _rosBaseTime.toNSec();
     int64_t diff = static_cast<int64_t>(newBaseTimeNs - previousBaseTimeNs);
-    if(::abs(diff) > 10)
+    _totalNsChange += diff;
+    if(::abs(diff) > ZERO_TIME_DELTA_NS)
     {
         // Has been updated
         DEPTHAI_ROS_DEBUG_STREAM("ROS BASE TIME CHANGE: ", "ROS base time changed by " <<
-            std::to_string(diff) << " ns." );
+            std::to_string(diff) << " ns. Total change: " << std::to_string(_totalNsChange) << " ns. New time: " <<
+            std::to_string(_rosBaseTime.toNSec()) << " ns.");
     }
 
 }

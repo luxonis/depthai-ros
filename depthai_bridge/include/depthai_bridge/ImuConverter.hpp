@@ -119,6 +119,9 @@ class ImuConverter {
     ImuSyncMethod _syncMode;
     std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
     ::ros::Time _rosBaseTime;
+    // For handling ROS time shifts and debugging
+    int64_t _totalNsChange{ 0 };
+    static const int64_t ZERO_TIME_DELTA_NS { 100 };
 
     void fillImuMsg(dai::IMUReportAccelerometer report, ImuMsgs::Imu& msg);
     void fillImuMsg(dai::IMUReportGyroscope report, ImuMsgs::Imu& msg);
