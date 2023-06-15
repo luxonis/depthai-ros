@@ -28,6 +28,28 @@ ImuConverter::ImuConverter(const std::string& frameName,
 
 ImuConverter::~ImuConverter() = default;
 
+void ImuConverter::updateRosBaseTime()
+{
+    ::ros::Time currentRosTime = ::ros::Time::now();
+    std::chrono::time_point<std::chrono::steady_clock> currentSteadyTime =
+        std::chrono::steady_clock::now();
+    // In nanoseconds
+    auto expectedOffset = std::chrono::duration_cast<std::chrono::nanoseconds>(currentSteadyTime - _steadyBaseTime).count();
+    uint64_t previousBaseTimeNs = _rosBaseTime.toNSec();
+    _rosBaseTime = _rosBaseTime.fromNSec(currentRosTime.toNSec() - expectedOffset);
+    uint64_t newBaseTimeNs = _rosBaseTime.toNSec();
+    int64_t diff = static_cast<int64_t>(newBaseTimeNs - previousBaseTimeNs);
+    _totalNsChange += diff;
+    if(::abs(diff) > ZERO_TIME_DELTA_NS)
+    {
+        // Has been updated
+        DEPTHAI_ROS_DEBUG_STREAM("ROS BASE TIME CHANGE: ", "ROS base time changed by " <<
+            std::to_string(diff) << " ns. Total change: " << std::to_string(_totalNsChange) << " ns. New time: " <<
+            std::to_string(_rosBaseTime.toNSec()) << " ns.");
+    }
+
+}
+
 void ImuConverter::fillImuMsg(dai::IMUReportAccelerometer report, ImuMsgs::Imu& msg) {
     msg.linear_acceleration.x = report.x;
     msg.linear_acceleration.y = report.y;
