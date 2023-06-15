@@ -50,7 +50,7 @@ class NNParamHandler : public BaseParamHandler {
             RCLCPP_ERROR(getROSNode()->get_logger(), "Unable to get correct socket for RGB node, defaulting to RGB.");
         }
         declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket));
-    
+
         auto nn_path = getParam<std::string>("i_nn_config_path");
         using json = nlohmann::json;
         std::ifstream f(nn_path);
@@ -66,39 +66,39 @@ class NNParamHandler : public BaseParamHandler {
 
     template <typename T>
     void setSpatialParams(std::shared_ptr<T> nn) {
-        nn->setBoundingBoxScaleFactor(0.5);
-        nn->setDepthLowerThreshold(100);
-        nn->setDepthUpperThreshold(10000);
+        // nn->setBoundingBoxScaleFactor(0.5);
+        // nn->setDepthLowerThreshold(100);
+        // nn->setDepthUpperThreshold(10000);
     }
 
     template <typename T>
     void setYoloParams(nlohmann::json data, std::shared_ptr<T> nn) {
         auto metadata = data["nn_config"]["NN_specific_metadata"];
-        int num_classes = 80;
         if(metadata.contains("classes")) {
+            int num_classes = 80;
             num_classes = metadata["classes"].get<int>();
             nn->setNumClasses(num_classes);
         }
-        int coordinates = 4;
         if(metadata.contains("coordinates")) {
+            int coordinates = 4;
             coordinates = metadata["coordinates"].get<int>();
             nn->setCoordinateSize(coordinates);
         }
-        std::vector<float> anchors = {10, 14, 23, 27, 37, 58, 81, 82, 135, 169, 344, 319};
         if(metadata.contains("anchors")) {
+            std::vector<float> anchors = {10, 14, 23, 27, 37, 58, 81, 82, 135, 169, 344, 319};
             anchors = metadata["anchors"].get<std::vector<float>>();
             nn->setAnchors(anchors);
         }
-        std::map<std::string, std::vector<int>> anchor_masks = {{"side13", {3, 4, 5}}, {"side26", {1, 2, 3}}};
         if(metadata.contains("anchor_masks")) {
+            std::map<std::string, std::vector<int>> anchor_masks = {{"side13", {3, 4, 5}}, {"side26", {1, 2, 3}}};
             anchor_masks.clear();
             for(auto& el : metadata["anchor_masks"].items()) {
                 anchor_masks.insert({el.key(), el.value()});
             }
+            nn->setAnchorMasks(anchor_masks);
         }
-        nn->setAnchorMasks(anchor_masks);
-        float iou_threshold = 0.5f;
         if(metadata.contains("iou_threshold")) {
+            float iou_threshold = 0.5f;
             iou_threshold = metadata["iou_threshold"].get<float>();
             nn->setIouThreshold(iou_threshold);
         }

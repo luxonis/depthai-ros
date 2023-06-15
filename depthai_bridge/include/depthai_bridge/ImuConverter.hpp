@@ -132,7 +132,8 @@ class ImuConverter {
 
         msg.header.frame_id = _frameName;
 
-        msg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, timestamp.get());
+        // header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp); RAE doesn't output correct time
+        msg.header.stamp = rclcpp::Clock().now();
     }
 
     template <typename I, typename S, typename T, typename F, typename M>
