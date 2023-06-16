@@ -42,7 +42,6 @@ class DisparityConverter {
     bool _getBaseDeviceTimestamp;
     // For handling ROS time shifts and debugging
     int64_t _totalNsChange{ 0 };
-    static const int64_t ZERO_TIME_DELTA_NS { 100 };
 };
 
 }  // namespace ros
