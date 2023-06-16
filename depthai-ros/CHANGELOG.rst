@@ -2,7 +2,15 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.7.2 (20230-5-08)
+2.7.3 (20230-06-16)
+
+* Pipeline generation as a plugin
+* Fixed bounding box generation issue
+* Stereo rectified streams publishing
+* Camera trigger mechanisms
+* Brightness filter
+
+2.7.2 (20230-05-08)
 * IMU improvements
 
 2.7.1 (2023-03-29)
