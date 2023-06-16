@@ -46,7 +46,7 @@ def launch_setup(context, *args, **kwargs):
                     'cam_pos_z:=', cam_pos_z, ' ',
                     'cam_roll:=', cam_roll, ' ',
                     'cam_pitch:=', cam_pitch, ' ',
-                    'cam_yaw:=', cam_yaw, ' '
+                    'cam_yaw:=', cam_yaw
                 ])}]
         )
 
