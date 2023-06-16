@@ -129,15 +129,15 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
                                                                     device,
                                                                     dai_nodes::StereoSensorInfo{"left_front", dai::CameraBoardSocket::CAM_B},
                                                                     dai_nodes::StereoSensorInfo{"right_front", dai::CameraBoardSocket::CAM_C});
-            // auto stereo_back = std::make_unique<dai_nodes::Stereo>("stereo_back",
-            //                                                        node,
-            //                                                        pipeline,
-            //                                                        device,
-            //                                                        dai_nodes::StereoSensorInfo{"left_back", dai::CameraBoardSocket::CAM_C},
-            //                                                        dai_nodes::StereoSensorInfo{"right_back", dai::CameraBoardSocket::CAM_D});
+            auto stereo_back = std::make_unique<dai_nodes::Stereo>("stereo_back",
+                                                                   node,
+                                                                   pipeline,
+                                                                   device,
+                                                                   dai_nodes::StereoSensorInfo{"left_back", dai::CameraBoardSocket::CAM_D},
+                                                                   dai_nodes::StereoSensorInfo{"right_back", dai::CameraBoardSocket::CAM_E});
             // daiNodes.push_back(std::move(rgb));
             daiNodes.push_back(std::move(stereo_front));
-            // daiNodes.push_back(std::move(stereo_back));
+            daiNodes.push_back(std::move(stereo_back));
             // switch(nType) {
             //     case NNType::None:
             //         break;
