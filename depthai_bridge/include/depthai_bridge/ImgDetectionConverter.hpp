@@ -23,7 +23,7 @@ class ImgDetectionConverter {
      * @brief Handles cases in which the ROS time shifts forward or backward
      *  Should be called at regular intervals or on-change of ROS time, depending
      *  on monitoring.
-     * 
+     *
      */
     void updateRosBaseTime();
 
@@ -39,7 +39,7 @@ class ImgDetectionConverter {
     ::ros::Time _rosBaseTime;
     bool _getBaseDeviceTimestamp;
     // For handling ROS time shifts and debugging
-    int64_t _totalNsChange{ 0 };
+    int64_t _totalNsChange{0};
 };
 
 /** TODO(sachin): Do we need to have ros msg -> dai bounding box ?

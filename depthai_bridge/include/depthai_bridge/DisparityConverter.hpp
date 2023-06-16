@@ -26,7 +26,7 @@ class DisparityConverter {
      * @brief Handles cases in which the ROS time shifts forward or backward
      *  Should be called at regular intervals or on-change of ROS time, depending
      *  on monitoring.
-     * 
+     *
      */
     void updateRosBaseTime();
 
@@ -41,7 +41,7 @@ class DisparityConverter {
     ::ros::Time _rosBaseTime;
     bool _getBaseDeviceTimestamp;
     // For handling ROS time shifts and debugging
-    int64_t _totalNsChange{ 0 };
+    int64_t _totalNsChange{0};
 };
 
 }  // namespace ros

@@ -42,7 +42,7 @@ enum LogLevel { DEBUG, INFO, WARN, ERROR, FATAL };
 
 #define DEPTHAI_ROS_FATAL_STREAM_ONCE(loggerName, args) DEPTHAI_ROS_LOG_STREAM(loggerName, dai::ros::LogLevel::FATAL, true, args)
 
-static const int64_t ZERO_TIME_DELTA_NS { 100 };
+static const int64_t ZERO_TIME_DELTA_NS{100};
 
 inline ::ros::Time getFrameTime(::ros::Time rosBaseTime,
                                 std::chrono::time_point<std::chrono::steady_clock> steadyBaseTime,
@@ -55,12 +55,9 @@ inline ::ros::Time getFrameTime(::ros::Time rosBaseTime,
     return rosStamp;
 }
 
-inline void updateBaseTime(std::chrono::time_point<std::chrono::steady_clock> steadyBaseTime,
-                               ::ros::Time &rosBaseTime,
-                               int64_t &totalNsChange) {
+inline void updateBaseTime(std::chrono::time_point<std::chrono::steady_clock> steadyBaseTime, ::ros::Time& rosBaseTime, int64_t& totalNsChange) {
     ::ros::Time currentRosTime = ::ros::Time::now();
-    std::chrono::time_point<std::chrono::steady_clock> currentSteadyTime =
-        std::chrono::steady_clock::now();
+    std::chrono::time_point<std::chrono::steady_clock> currentSteadyTime = std::chrono::steady_clock::now();
     // In nanoseconds
     auto expectedOffset = std::chrono::duration_cast<std::chrono::nanoseconds>(currentSteadyTime - steadyBaseTime).count();
     uint64_t previousBaseTimeNs = rosBaseTime.toNSec();
@@ -68,12 +65,11 @@ inline void updateBaseTime(std::chrono::time_point<std::chrono::steady_clock> st
     uint64_t newBaseTimeNs = rosBaseTime.toNSec();
     int64_t diff = static_cast<int64_t>(newBaseTimeNs - previousBaseTimeNs);
     totalNsChange += diff;
-    if(::abs(diff) > ZERO_TIME_DELTA_NS)
-    {
+    if(::abs(diff) > ZERO_TIME_DELTA_NS) {
         // Has been updated
-        DEPTHAI_ROS_DEBUG_STREAM("ROS BASE TIME CHANGE: ", "ROS base time changed by " <<
-            std::to_string(diff) << " ns. Total change: " << std::to_string(totalNsChange) << " ns. New time: " <<
-            std::to_string(rosBaseTime.toNSec()) << " ns.");
+        DEPTHAI_ROS_DEBUG_STREAM("ROS BASE TIME CHANGE: ",
+                                 "ROS base time changed by " << std::to_string(diff) << " ns. Total change: " << std::to_string(totalNsChange)
+                                                             << " ns. New time: " << std::to_string(rosBaseTime.toNSec()) << " ns.");
     }
 }
 

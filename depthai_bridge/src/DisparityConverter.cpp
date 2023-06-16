@@ -19,8 +19,7 @@ DisparityConverter::DisparityConverter(
     _rosBaseTime = ::ros::Time::now();
 }
 
-void DisparityConverter::updateRosBaseTime()
-{
+void DisparityConverter::updateRosBaseTime() {
     updateBaseTime(_steadyBaseTime, _rosBaseTime, _totalNsChange);
 }
 

@@ -15,8 +15,7 @@ SpatialDetectionConverter::SpatialDetectionConverter(std::string frameName, int 
     _rosBaseTime = ::ros::Time::now();
 }
 
-void SpatialDetectionConverter::updateRosBaseTime()
-{
+void SpatialDetectionConverter::updateRosBaseTime() {
     updateBaseTime(_steadyBaseTime, _rosBaseTime, _totalNsChange);
 }
 

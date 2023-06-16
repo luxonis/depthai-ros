@@ -16,8 +16,7 @@ ImgDetectionConverter::ImgDetectionConverter(std::string frameName, int width, i
     _rosBaseTime = ::ros::Time::now();
 }
 
-void ImgDetectionConverter::updateRosBaseTime()
-{
+void ImgDetectionConverter::updateRosBaseTime() {
     updateBaseTime(_steadyBaseTime, _rosBaseTime, _totalNsChange);
 }
 

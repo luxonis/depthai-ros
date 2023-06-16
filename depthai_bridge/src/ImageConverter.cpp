@@ -34,8 +34,7 @@ ImageConverter::ImageConverter(const std::string frameName, bool interleaved, bo
     _rosBaseTime = ::ros::Time::now();
 }
 
-void ImageConverter::updateRosBaseTime()
-{
+void ImageConverter::updateRosBaseTime() {
     updateBaseTime(_steadyBaseTime, _rosBaseTime, _totalNsChange);
 }
 

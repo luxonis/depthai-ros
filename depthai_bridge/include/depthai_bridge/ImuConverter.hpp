@@ -32,12 +32,12 @@ class ImuConverter {
                  double magnetic_field_cov = 0.0,
                  bool enable_rotation = false);
     ~ImuConverter();
-    
+
     /**
      * @brief Handles cases in which the ROS time shifts forward or backward
      *  Should be called at regular intervals or on-change of ROS time, depending
      *  on monitoring.
-     * 
+     *
      */
     void updateRosBaseTime();
 
@@ -120,7 +120,7 @@ class ImuConverter {
     std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
     ::ros::Time _rosBaseTime;
     // For handling ROS time shifts and debugging
-    int64_t _totalNsChange{ 0 };
+    int64_t _totalNsChange{0};
 
     void fillImuMsg(dai::IMUReportAccelerometer report, ImuMsgs::Imu& msg);
     void fillImuMsg(dai::IMUReportGyroscope report, ImuMsgs::Imu& msg);

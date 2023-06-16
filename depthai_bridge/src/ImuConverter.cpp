@@ -28,8 +28,7 @@ ImuConverter::ImuConverter(const std::string& frameName,
 
 ImuConverter::~ImuConverter() = default;
 
-void ImuConverter::updateRosBaseTime()
-{
+void ImuConverter::updateRosBaseTime() {
     updateBaseTime(_steadyBaseTime, _rosBaseTime, _totalNsChange);
 }
 
