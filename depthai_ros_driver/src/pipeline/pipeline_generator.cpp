@@ -38,8 +38,12 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
     }
 
     if(enableImu) {
-        auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device);
-        daiNodes.push_back(std::move(imu));
+        if(device->getConnectedIMU()== "NONE") {
+            RCLCPP_WARN(node->get_logger(), "IMU enabled but not available!");
+        } else {
+            auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device);
+            daiNodes.push_back(std::move(imu));
+        }
     }
 
     RCLCPP_INFO(node->get_logger(), "Finished setting up pipeline.");
