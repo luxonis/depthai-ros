@@ -39,7 +39,6 @@ def generate_launch_description():
     cam_roll     = LaunchConfiguration('cam_roll',      default = '0.0')
     cam_pitch    = LaunchConfiguration('cam_pitch',     default = '0.0')
     cam_yaw      = LaunchConfiguration('cam_yaw',       default = '0.0')
-    is_bno      = LaunchConfiguration('is_bno',         default = False)
 
     lrcheck        = LaunchConfiguration('lrcheck', default = True)
     extended       = LaunchConfiguration('extended', default = False)
@@ -155,10 +154,6 @@ def generate_launch_description():
         default_value=cam_yaw,
         description='Yaw orientation of the camera with respect to the base frame.')
     
-    declare_is_bno_cmd = DeclareLaunchArgument(
-        'is_bno',
-        default_value=is_bno,
-        description='If IMU is BNO085.')
 
     declare_lrcheck_cmd = DeclareLaunchArgument(
         'lrcheck',
@@ -319,8 +314,7 @@ def generate_launch_description():
                                               'cam_pos_z'   : cam_pos_z,
                                               'cam_roll'    : cam_roll,
                                               'cam_pitch'   : cam_pitch,
-                                              'cam_yaw'     : cam_yaw,
-                                              'is_bno'      : is_bno}.items())
+                                              'cam_yaw'     : cam_yaw}.items())
 
 
     stereo_node = launch_ros.actions.Node(
