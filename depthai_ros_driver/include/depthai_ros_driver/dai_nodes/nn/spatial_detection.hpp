@@ -45,9 +45,19 @@ class SpatialDetection : public BaseNode {
     void setupQueues(std::shared_ptr<dai::Device> device) override {
         nnQ = device->getOutputQueue(nnQName, ph->getParam<int>("i_max_q_size"), false);
         auto tfPrefix = getTFPrefix("rgb");
+        int width;
+        int height;
+        if(ph->getParam<bool>("i_disable_resize")) {
+            width = getROSNode()->get_parameter("rgb.i_preview_size").as_int();
+            height = getROSNode()->get_parameter("rgb.i_preview_size").as_int();
+        }
+        else{
+            width = imageManip->initialConfig.getResizeConfig().width;
+            height = imageManip->initialConfig.getResizeConfig().height;
+        }
         detConverter = std::make_unique<dai::ros::SpatialDetectionConverter>(tfPrefix + "_camera_optical_frame",
-                                                                             imageManip->initialConfig.getResizeConfig().width,
-                                                                             imageManip->initialConfig.getResizeConfig().height,
+                                                                             width,
+                                                                             height,
                                                                              false,
                                                                              ph->getParam<bool>("i_get_base_device_timestamp"));
         nnQ->addCallback(std::bind(&SpatialDetection::spatialCB, this, std::placeholders::_1, std::placeholders::_2));
@@ -61,19 +71,18 @@ class SpatialDetection : public BaseNode {
             ptInfoMan->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
                                                                   *ptImageConverter,
                                                                   device,
-                                                                  dai::CameraBoardSocket::RGB,
-                                                                  imageManip->initialConfig.getResizeWidth(),
-                                                                  imageManip->initialConfig.getResizeWidth()));
+                                                                  static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")),
+                                                                  width,
+                                                                  height));
 
             ptPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/passthrough/image_raw");
             ptQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *ptImageConverter, ptPub, ptInfoMan));
         }
 
         if(ph->getParam<bool>("i_enable_passthrough_depth")) {
-            dai::CameraBoardSocket socket = dai::CameraBoardSocket::RGB;
+            dai::CameraBoardSocket socket = static_cast<dai::CameraBoardSocket>(getROSNode()->get_parameter("stereo.i_board_socket_id").as_int());
             if(!getROSNode()->get_parameter("stereo.i_align_depth").as_bool()) {
                 tfPrefix = getTFPrefix("right");
-                socket = dai::CameraBoardSocket::RIGHT;
             };
             ptDepthQ = device->getOutputQueue(ptDepthQName, ph->getParam<int>("i_max_q_size"), false);
             ptDepthImageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
