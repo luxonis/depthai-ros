@@ -17,7 +17,7 @@ def launch_setup(context, *args, **kwargs):
     return [
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                os.path.join(depthai_prefix, 'launch', 'camera.launch.py')),
+                os.path.join(depthai_prefix, 'launch', 'rgbd_pcl.launch.py')),
             launch_arguments={"name": name,
                               "params_file": params_file}.items()),
 
@@ -25,21 +25,11 @@ def launch_setup(context, *args, **kwargs):
             target_container=name+"_container",
             composable_node_descriptions=[
                     ComposableNode(
-                        package='image_proc',
-                        plugin='image_proc::RectifyNode',
-                        name='rectify_color_node',
-                        remappings=[
-                            ('image', name+'/left/image_raw'),
-                            ('camera_info', name+'/left/camera_info'),
-                            ('image_rect', name+'/left/image_rect')
-                        ]
-                    ),
-                    ComposableNode(
                         package="depthai_filters",
                         plugin="depthai_filters::SpatialPolygon",
                         remappings=[('stereo/image_raw', name+'/stereo/image_raw'),
                                     ('stereo/camera_info', name+'/stereo/camera_info'),
-                                    ('nn/detections', name+'/nn/detections'),
+                                    ('nn/spatial_detections', name+'/nn/spatial_detections'),
                                     ('rgb/preview/image_raw', name+'/rgb/preview/image_raw')]
                     ),
             ],
@@ -53,7 +43,7 @@ def generate_launch_description():
 
     declared_arguments = [
         DeclareLaunchArgument("name", default_value="oak"),
-        DeclareLaunchArgument("params_file", default_value=os.path.join(depthai_filters_prefix, 'config', 'wls.yaml')),
+        DeclareLaunchArgument("params_file", default_value=os.path.join(depthai_filters_prefix, 'config', 'detection.yaml')),
     ]
 
     return LaunchDescription(

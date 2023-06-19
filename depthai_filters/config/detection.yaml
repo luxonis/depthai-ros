@@ -1,8 +1,11 @@
 /oak:
   ros__parameters:
     camera:
-      i_nn_type: rgb
+      i_nn_type: spatial
     rgb:
       i_enable_preview: true
     nn:
       i_enable_passthrough: true
+      i_disable_resize: true
+    stereo:
+      i_subpixel: true
