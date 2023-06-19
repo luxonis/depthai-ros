@@ -20,7 +20,7 @@
   left_i_preview_size: 300
   left_i_publish_topic: false
   left_i_resolution: '720'
-  left_i_set_isp_scale: false
+  left_i_set_isp_scale: true
   left_i_width: 1280
   left_r_exposure: 1000
   left_r_focus: 1
@@ -67,7 +67,7 @@
   right_i_preview_size: 300
   right_i_publish_topic: false
   right_i_resolution: '720'
-  right_i_set_isp_scale: false
+  right_i_set_isp_scale: true
   right_i_width: 1280
   right_r_exposure: 1000
   right_r_focus: 1

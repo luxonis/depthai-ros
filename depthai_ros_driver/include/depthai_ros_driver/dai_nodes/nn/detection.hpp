@@ -44,9 +44,19 @@ class Detection : public BaseNode {
     void setupQueues(std::shared_ptr<dai::Device> device) override {
         nnQ = device->getOutputQueue(nnQName, ph->getParam<int>("i_max_q_size"), false);
         auto tfPrefix = getTFPrefix("rgb");
+        int width;
+        int height;
+        if(ph->getParam<bool>("i_disable_resize")) {
+            width = ph->getOtherNodeParam<int>("rgb", "i_preview_size");
+            height = ph->getOtherNodeParam<int>("rgb", "i_preview_size");
+        }
+        else{
+            width = imageManip->initialConfig.getResizeConfig().width;
+            height = imageManip->initialConfig.getResizeConfig().height;
+        }
         detConverter = std::make_unique<dai::ros::ImgDetectionConverter>(tfPrefix + "_camera_optical_frame",
-                                                                         imageManip->initialConfig.getResizeConfig().width,
-                                                                         imageManip->initialConfig.getResizeConfig().height,
+                                                                         width,
+                                                                         height,
                                                                          false,
                                                                          ph->getParam<bool>("i_get_base_device_timestamp"));
         detPub = getROSNode().template advertise<vision_msgs::Detection2DArray>(getName() + "/detections", 10);
@@ -57,7 +67,7 @@ class Detection : public BaseNode {
             imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
             infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), getName()), "/" + getName());
             infoManager->setCameraInfo(sensor_helpers::getCalibInfo(
-                *imageConverter, device, dai::CameraBoardSocket::RGB, imageManip->initialConfig.getResizeWidth(), imageManip->initialConfig.getResizeWidth()));
+                *imageConverter, device, dai::CameraBoardSocket::RGB, width, height));
 
             ptPub = it.advertiseCamera(getName() + "/passthrough/image_raw", 1);
             ptQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager));
