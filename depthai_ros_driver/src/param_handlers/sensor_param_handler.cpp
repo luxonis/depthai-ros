@@ -26,6 +26,11 @@ void SensorParamHandler::declareCommonParams() {
     declareAndLogParam<bool>("i_disable_node", false);
     declareAndLogParam<bool>("i_get_base_device_timestamp", false);
     declareAndLogParam<int>("i_board_socket_id", 0);
+    fSyncModeMap = {
+        {"OFF", dai::CameraControl::FrameSyncMode::OFF},
+        {"OUTPUT", dai::CameraControl::FrameSyncMode::OUTPUT},
+        {"INPUT", dai::CameraControl::FrameSyncMode::INPUT},
+    };
 }
 
 void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> monoCam,
@@ -49,8 +54,14 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> mo
     size_t iso = declareAndLogParam("r_iso", 800, getRangedIntDescriptor(100, 1600));
     size_t exposure = declareAndLogParam("r_exposure", 1000, getRangedIntDescriptor(1, 33000));
 
-    if(declareAndLogParam("r_set_man_exposure", false)) {
+    if(declareAndLogParam<bool>("r_set_man_exposure", false)) {
         monoCam->initialControl.setManualExposure(exposure, iso);
+    }
+    if(declareAndLogParam<bool>("i_fsync_continuous", false)){
+        monoCam->initialControl.setFrameSyncMode(utils::getValFromMap(declareAndLogParam<std::string>("i_fsync_mode", "INPUT"), fSyncModeMap));
+    }
+    if(declareAndLogParam<bool>("i_fsync_trigger", false)){
+        monoCam->initialControl.setExternalTrigger(declareAndLogParam<int>("i_num_frames_burst", 1), declareAndLogParam<int>("i_num_frames_discard", 0));
     }
 }
 void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> colorCam,
@@ -112,6 +123,12 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     }
     if(declareAndLogParam("r_set_man_whitebalance", false)) {
         colorCam->initialControl.setManualWhiteBalance(whitebalance);
+    }
+    if(declareAndLogParam<bool>("i_fsync_continuous", false)){
+        colorCam->initialControl.setFrameSyncMode(utils::getValFromMap(declareAndLogParam<std::string>("i_fsync_mode", "INPUT"), fSyncModeMap));
+    }
+    if(declareAndLogParam<bool>("i_fsync_trigger", false)){
+        colorCam->initialControl.setExternalTrigger(declareAndLogParam<int>("i_num_frames_burst", 1), declareAndLogParam<int>("i_num_frames_discard", 0));
     }
 }
 dai::CameraControl SensorParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& params) {

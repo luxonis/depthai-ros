@@ -185,6 +185,26 @@ As for the parameters themselves, there are a few crucial ones that decide on ho
   * `Depth` - Publishes only depth stream, no NN available
   * `CamArray` - Publishes streams for all detected sensors, no NN available
 This tells the camera whether it should load stereo components. Default set to `RGBD`.
+It is also possible to create a custom pipeline since all types are defined as plugins. 
+
+To do that, you can create a custom package (let's say `test_plugins`), create an executable in that package (`test_plugins.cpp`). Inside that file, define a cusom plugin that inherits from `depthai_ros_driver::pipeline_gen::BasePipeline` and overrides `createPipeline` method.
+
+After that export plugin, for example:
+
+```c++
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS(test_plugins::Test, depthai_ros_driver::pipeline_gen::BasePipeline)
+```
+Add plugin definition:
+```xml
+<library path="test_plugins">
+    <class type="test_plugins::Test" base_class_type="depthai_ros_driver::pipeline_gen::BasePipeline">
+        <description>Test Pipeline.</description>
+    </class>
+</library>
+```
+
+Now you can use created plugin as pipeline, just set `camera.i_pipeline_type` to `test_plugins::Test`.
 
 * `camera.i_nn_type` can be either `none`, `rgb` or `spatial`. This is responsible for whether the NN that we load should also take depth information (and for example provide detections in 3D format). Default set to `spatial`
 * `camera.i_mx_id`/`camera.i_ip`/`camera.i_usb_port_id` are for connecting to a specific camera. If not set, it automatically connects to the next available device. You can get those parameters from logs by running the default launch file.
