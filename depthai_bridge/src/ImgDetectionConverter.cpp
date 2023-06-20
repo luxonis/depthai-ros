@@ -21,6 +21,10 @@ void ImgDetectionConverter::updateRosBaseTime() {
 }
 
 void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, std::deque<VisionMsgs::Detection2DArray>& opDetectionMsgs) {
+    if(_updateRosBaseTimeOnToRosMsg)
+    {
+        updateRosBaseTime();
+    }
     // setting the header
     std::chrono::_V2::steady_clock::time_point tstamp;
     if(_getBaseDeviceTimestamp)

@@ -41,6 +41,16 @@ class ImuConverter {
      */
     void updateRosBaseTime();
 
+    /**
+     * @brief Commands the converter to automatically update the ROS base time on message conversion based on variable
+     * 
+     * @param update: bool whether to automatically update the ROS base time on message conversion
+     */
+    void setUpdateRosBaseTimeOnToRosMsg(bool update = true)
+    {
+        _updateRosBaseTimeOnToRosMsg = update;
+    }
+
     void toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<ImuMsgs::Imu>& outImuMsgs);
     void toRosDaiMsg(std::shared_ptr<dai::IMUData> inData, std::deque<depthai_ros_msgs::ImuWithMagneticField>& outImuMsgs);
 
@@ -121,6 +131,8 @@ class ImuConverter {
     ::ros::Time _rosBaseTime;
     // For handling ROS time shifts and debugging
     int64_t _totalNsChange{0};
+    // Whether to update the ROS base time on each message conversion
+    bool _updateRosBaseTimeOnToRosMsg{false};
 
     void fillImuMsg(dai::IMUReportAccelerometer report, ImuMsgs::Imu& msg);
     void fillImuMsg(dai::IMUReportGyroscope report, ImuMsgs::Imu& msg);

@@ -38,6 +38,16 @@ class ImageConverter {
      */
     void updateRosBaseTime();
 
+    /**
+     * @brief Commands the converter to automatically update the ROS base time on message conversion based on variable
+     * 
+     * @param update: bool whether to automatically update the ROS base time on message conversion
+     */
+    void setUpdateRosBaseTimeOnToRosMsg(bool update = true)
+    {
+        _updateRosBaseTimeOnToRosMsg = update;
+    }
+
     void toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData,
                                std::deque<ImageMsgs::Image>& outImageMsgs,
                                dai::RawImgFrame::Type type,
@@ -75,6 +85,8 @@ class ImageConverter {
     bool _getBaseDeviceTimestamp;
     // For handling ROS time shifts and debugging
     int64_t _totalNsChange{0};
+    // Whether to update the ROS base time on each message conversion
+    bool _updateRosBaseTimeOnToRosMsg{false};
 };
 
 }  // namespace ros
