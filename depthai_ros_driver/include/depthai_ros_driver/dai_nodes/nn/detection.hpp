@@ -58,7 +58,9 @@ class Detection : public BaseNode {
                                                                          height,
                                                                          false,
                                                                          ph->getParam<bool>("i_get_base_device_timestamp"));
-        detPub = getROSNode()->template create_publisher<vision_msgs::msg::Detection2DArray>("~/" + getName() + "/detections", 10);
+        rclcpp::PublisherOptions options;
+        options.qos_overriding_options = rclcpp::QosOverridingOptions();
+        detPub = getROSNode()->template create_publisher<vision_msgs::msg::Detection2DArray>("~/" + getName() + "/detections", 10, options);
         nnQ->addCallback(std::bind(&Detection::detectionCB, this, std::placeholders::_1, std::placeholders::_2));
 
         if(ph->getParam<bool>("i_enable_passthrough")) {

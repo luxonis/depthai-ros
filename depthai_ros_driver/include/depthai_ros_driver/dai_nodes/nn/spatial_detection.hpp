@@ -61,7 +61,9 @@ class SpatialDetection : public BaseNode {
                                                                              false,
                                                                              ph->getParam<bool>("i_get_base_device_timestamp"));
         nnQ->addCallback(std::bind(&SpatialDetection::spatialCB, this, std::placeholders::_1, std::placeholders::_2));
-        detPub = getROSNode()->template create_publisher<vision_msgs::msg::Detection3DArray>("~/" + getName() + "/spatial_detections", 10);
+        rclcpp::PublisherOptions options;
+        options.qos_overriding_options = rclcpp::QosOverridingOptions();
+        detPub = getROSNode()->template create_publisher<vision_msgs::msg::Detection3DArray>("~/" + getName() + "/spatial_detections", 10, options);
 
         if(ph->getParam<bool>("i_enable_passthrough")) {
             ptQ = device->getOutputQueue(ptQName, ph->getParam<int>("i_max_q_size"), false);
