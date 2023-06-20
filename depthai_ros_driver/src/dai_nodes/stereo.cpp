@@ -18,7 +18,10 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-Stereo::Stereo(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device,
+Stereo::Stereo(const std::string& daiNodeName,
+               ros::NodeHandle node,
+               std::shared_ptr<dai::Pipeline> pipeline,
+               std::shared_ptr<dai::Device> device,
                StereoSensorInfo leftInfo,
                StereoSensorInfo rightInfo)
     : BaseNode(daiNodeName, node, pipeline), it(node), leftSensInfo(leftInfo), rightSensInfo(rightInfo) {
@@ -96,17 +99,12 @@ void Stereo::setupLeftRectQueue(std::shared_ptr<dai::Device> device) {
     leftRectIM->setCameraInfo(info);
     leftRectPub = it.advertiseCamera(leftSensInfo.name + "/image_rect", 1);
     dai::RawImgFrame::Type encType = dai::RawImgFrame::Type::GRAY8;
-    if(left->getSensorData().color){
+    if(left->getSensorData().color) {
         encType = dai::RawImgFrame::Type::BGR888i;
     }
     if(ph->getParam<bool>("i_left_rect_low_bandwidth")) {
-        leftRectQ->addCallback(std::bind(sensor_helpers::compressedImgCB,
-                                         std::placeholders::_1,
-                                         std::placeholders::_2,
-                                         *leftRectConv,
-                                         leftRectPub,
-                                         leftRectIM,
-                                         encType));
+        leftRectQ->addCallback(
+            std::bind(sensor_helpers::compressedImgCB, std::placeholders::_1, std::placeholders::_2, *leftRectConv, leftRectPub, leftRectIM, encType));
     } else {
         leftRectQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *leftRectConv, leftRectPub, leftRectIM));
     }
@@ -116,7 +114,8 @@ void Stereo::setupRightRectQueue(std::shared_ptr<dai::Device> device) {
     rightRectQ = device->getOutputQueue(rightRectQName, ph->getOtherNodeParam<int>(rightSensInfo.name, "i_max_q_size"), false);
     auto tfPrefix = getTFPrefix(rightSensInfo.name);
     rightRectConv = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
-    rightRectIM = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), rightSensInfo.name), "/" + rightSensInfo.name + "/rect");
+    rightRectIM =
+        std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), rightSensInfo.name), "/" + rightSensInfo.name + "/rect");
     auto info = sensor_helpers::getCalibInfo(*rightRectConv,
                                              device,
                                              rightSensInfo.socket,
@@ -125,17 +124,12 @@ void Stereo::setupRightRectQueue(std::shared_ptr<dai::Device> device) {
     rightRectIM->setCameraInfo(info);
     rightRectPub = it.advertiseCamera(rightSensInfo.name + "/image_rect", 1);
     dai::RawImgFrame::Type encType = dai::RawImgFrame::Type::GRAY8;
-    if(right->getSensorData().color){
+    if(right->getSensorData().color) {
         encType = dai::RawImgFrame::Type::BGR888i;
     }
     if(ph->getParam<bool>("i_right_rect_low_bandwidth")) {
-        rightRectQ->addCallback(std::bind(sensor_helpers::compressedImgCB,
-                                         std::placeholders::_1,
-                                         std::placeholders::_2,
-                                         *rightRectConv,
-                                         rightRectPub,
-                                         rightRectIM,
-                                         encType));
+        rightRectQ->addCallback(
+            std::bind(sensor_helpers::compressedImgCB, std::placeholders::_1, std::placeholders::_2, *rightRectConv, rightRectPub, rightRectIM, encType));
     } else {
         rightRectQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *rightRectConv, rightRectPub, rightRectIM));
     }
@@ -173,19 +167,13 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
                                            dai::RawImgFrame::Type::GRAY8));
         } else {
             // converting disp->depth
-            stereoQ->addCallback(std::bind(sensor_helpers::compressedImgCB,
-                                           std::placeholders::_1,
-                                           std::placeholders::_2,
-                                           *stereoConv,
-                                           stereoPub,
-                                           stereoIM,
-                                           dai::RawImgFrame::Type::RAW8));
+            stereoQ->addCallback(std::bind(
+                sensor_helpers::compressedImgCB, std::placeholders::_1, std::placeholders::_2, *stereoConv, stereoPub, stereoIM, dai::RawImgFrame::Type::RAW8));
         }
     } else {
         stereoQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *stereoConv, stereoPub, stereoIM));
     }
 }
-
 
 void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
     left->setupQueues(device);

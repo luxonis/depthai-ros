@@ -60,7 +60,7 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
     ROS_DEBUG("Base node %s created", daiNodeName.c_str());
 }
 SensorWrapper::~SensorWrapper() = default;
-sensor_helpers::ImageSensor SensorWrapper::getSensorData(){
+sensor_helpers::ImageSensor SensorWrapper::getSensorData() {
     return sensorData;
 }
 void SensorWrapper::subCB(const sensor_msgs::Image::ConstPtr& img) {

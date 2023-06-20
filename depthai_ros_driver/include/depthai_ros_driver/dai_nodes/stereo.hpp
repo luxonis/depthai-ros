@@ -5,10 +5,10 @@
 #include <vector>
 
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
 #include "depthai_ros_driver/parametersConfig.h"
 #include "image_transport/camera_publisher.h"
 #include "image_transport/image_transport.h"
-#include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
 namespace dai {
 class Pipeline;
 class Device;
