@@ -456,21 +456,18 @@ int main(int argc, char** argv) {
     }
 
     dai::rosBridge::ImageConverter converter(tfPrefix + "_left_camera_optical_frame", true);
-    if(enableRosBaseTimeUpdate)
-    {
+    if(enableRosBaseTimeUpdate) {
         converter.setUpdateRosBaseTimeOnToRosMsg();
     }
     dai::rosBridge::ImageConverter rightconverter(tfPrefix + "_right_camera_optical_frame", true);
-    if(enableRosBaseTimeUpdate)
-    {
+    if(enableRosBaseTimeUpdate) {
         rightconverter.setUpdateRosBaseTimeOnToRosMsg();
     }
     const std::string leftPubName = rectify ? std::string("left/image_rect") : std::string("left/image_raw");
     const std::string rightPubName = rectify ? std::string("right/image_rect") : std::string("right/image_raw");
 
     dai::rosBridge::ImuConverter imuConverter(tfPrefix + "_imu_frame", imuMode, linearAccelCovariance, angularVelCovariance);
-    if(enableRosBaseTimeUpdate)
-    {
+    if(enableRosBaseTimeUpdate) {
         imuConverter.setUpdateRosBaseTimeOnToRosMsg();
     }
 
@@ -493,8 +490,7 @@ int main(int argc, char** argv) {
     */
 
     dai::rosBridge::ImageConverter rgbConverter(tfPrefix + "_rgb_camera_optical_frame", false);
-    if(enableRosBaseTimeUpdate)
-    {
+    if(enableRosBaseTimeUpdate) {
         rgbConverter.setUpdateRosBaseTimeOnToRosMsg();
     }
     if(enableDepth) {

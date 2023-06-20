@@ -32,11 +32,10 @@ class DisparityConverter {
 
     /**
      * @brief Commands the converter to automatically update the ROS base time on message conversion based on variable
-     * 
+     *
      * @param update: bool whether to automatically update the ROS base time on message conversion
      */
-    void setUpdateRosBaseTimeOnToRosMsg(bool update = true)
-    {
+    void setUpdateRosBaseTimeOnToRosMsg(bool update = true) {
         _updateRosBaseTimeOnToRosMsg = update;
     }
 

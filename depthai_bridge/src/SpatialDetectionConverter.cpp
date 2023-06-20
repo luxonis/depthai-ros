@@ -21,8 +21,7 @@ void SpatialDetectionConverter::updateRosBaseTime() {
 
 void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData,
                                          std::deque<SpatialMessages::SpatialDetectionArray>& opDetectionMsgs) {
-    if(_updateRosBaseTimeOnToRosMsg)
-    {
+    if(_updateRosBaseTimeOnToRosMsg) {
         updateRosBaseTime();
     }
     // setting the header

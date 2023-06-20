@@ -21,8 +21,7 @@ void ImgDetectionConverter::updateRosBaseTime() {
 }
 
 void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, std::deque<VisionMsgs::Detection2DArray>& opDetectionMsgs) {
-    if(_updateRosBaseTimeOnToRosMsg)
-    {
+    if(_updateRosBaseTimeOnToRosMsg) {
         updateRosBaseTime();
     }
     // setting the header

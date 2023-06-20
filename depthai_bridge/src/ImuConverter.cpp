@@ -86,8 +86,7 @@ void ImuConverter::fillImuMsg(dai::IMUReportMagneticField report, depthai_ros_ms
 }
 
 void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<ImuMsgs::Imu>& outImuMsgs) {
-    if(_updateRosBaseTimeOnToRosMsg)
-    {
+    if(_updateRosBaseTimeOnToRosMsg) {
         updateRosBaseTime();
     }
     if(_syncMode != ImuSyncMethod::COPY) {
