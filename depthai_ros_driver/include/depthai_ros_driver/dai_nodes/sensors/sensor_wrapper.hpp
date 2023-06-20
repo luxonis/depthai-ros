@@ -7,6 +7,7 @@
 #include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai/pipeline/Node.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "ros/subscriber.h"
 #include "sensor_msgs/Image.h"
 
@@ -47,6 +48,7 @@ class SensorWrapper : public BaseNode {
     void setNames() override;
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
+    sensor_helpers::ImageSensor getSensorData();
 
    private:
     void subCB(const sensor_msgs::Image::ConstPtr& img);
@@ -59,6 +61,7 @@ class SensorWrapper : public BaseNode {
     std::string inQName;
     int socketID;
     bool ready;
+    sensor_helpers::ImageSensor sensorData;
 };
 
 }  // namespace dai_nodes

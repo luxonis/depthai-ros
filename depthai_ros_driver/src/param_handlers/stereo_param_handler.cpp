@@ -34,7 +34,7 @@ StereoParamHandler::StereoParamHandler(ros::NodeHandle node, const std::string& 
 }
 
 StereoParamHandler::~StereoParamHandler() = default;
-void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> stereo) {
+void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> stereo, const std::string& rightName) {
     getParam<int>("i_max_q_size");
     stereo->setLeftRightCheck(getParam<bool>("i_lr_check"));
     int width = 1280;
@@ -44,11 +44,13 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
         width = getOtherNodeParam("rgb", "i_width", width);
         height = getOtherNodeParam("rgb", "i_height", height);
     } else {
-        width = getParam<int>("i_width");
-        height = getParam<int>("i_height");
+        width = getOtherNodeParam(rightName, "i_width", width);
+        height = getOtherNodeParam(rightName, "i_height", height);
         socket = dai::CameraBoardSocket::RIGHT;
     }
     stereo->setDepthAlign(socket);
+    setParam<int>("i_width", width);
+    setParam<int>("i_height", height);
     setParam<int>("i_board_socket_id", static_cast<int>(socket));
     if(getParam<bool>("i_set_input_size")) {
         stereo->setInputResolution(getParam<int>("i_input_width"), getParam<int>("i_input_height"));
@@ -93,6 +95,10 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     if(getParam<bool>("i_enable_threshold_filter")) {
         config.postProcessing.thresholdFilter.minRange = getParam<int>("i_threshold_filter_min_range");
         config.postProcessing.thresholdFilter.maxRange = getParam<int>("i_threshold_filter_max_range");
+    }
+    if(getParam<bool>("i_enable_brightness_filter")) {
+        config.postProcessing.brightnessFilter.minBrightness = getParam<int>("i_brightness_filter_min_brightness");
+        config.postProcessing.brightnessFilter.maxBrightness = getParam<int>("i_brightness_filter_max_brightness");
     }
     if(getParam<bool>("i_enable_decimation_filter")) {
         config.postProcessing.decimationFilter.decimationMode =
