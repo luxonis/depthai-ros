@@ -291,6 +291,7 @@ int main(int argc, char** argv) {
     int rgbScaleNumerator, rgbScaleDinominator, previewWidth, previewHeight;
     bool lrcheck, extended, subpixel, enableDepth, rectify, depth_aligned, manualExposure;
     bool enableSpatialDetection, enableDotProjector, enableFloodLight;
+    bool enableRosBaseTimeUpdate;
     bool usb2Mode, poeMode, syncNN;
     double angularVelCovariance, linearAccelCovariance;
     double dotProjectormA, floodLightmA;
@@ -330,6 +331,8 @@ int main(int argc, char** argv) {
     badParams += !pnh.getParam("enableSpatialDetection", enableSpatialDetection);
     badParams += !pnh.getParam("detectionClassesCount", detectionClassesCount);
     badParams += !pnh.getParam("syncNN", syncNN);
+
+    badParams += !pnh.getParam("enableRosBaseTimeUpdate", enableRosBaseTimeUpdate);
 
     // Applies only to PRO model
     badParams += !pnh.getParam("enableDotProjector", enableDotProjector);
@@ -453,11 +456,20 @@ int main(int argc, char** argv) {
     }
 
     dai::rosBridge::ImageConverter converter(tfPrefix + "_left_camera_optical_frame", true);
+    if(enableRosBaseTimeUpdate) {
+        converter.setUpdateRosBaseTimeOnToRosMsg();
+    }
     dai::rosBridge::ImageConverter rightconverter(tfPrefix + "_right_camera_optical_frame", true);
+    if(enableRosBaseTimeUpdate) {
+        rightconverter.setUpdateRosBaseTimeOnToRosMsg();
+    }
     const std::string leftPubName = rectify ? std::string("left/image_rect") : std::string("left/image_raw");
     const std::string rightPubName = rectify ? std::string("right/image_rect") : std::string("right/image_raw");
 
     dai::rosBridge::ImuConverter imuConverter(tfPrefix + "_imu_frame", imuMode, linearAccelCovariance, angularVelCovariance);
+    if(enableRosBaseTimeUpdate) {
+        imuConverter.setUpdateRosBaseTimeOnToRosMsg();
+    }
 
     dai::rosBridge::BridgePublisher<sensor_msgs::Imu, dai::IMUData> imuPublish(
         imuQueue,
@@ -478,6 +490,9 @@ int main(int argc, char** argv) {
     */
 
     dai::rosBridge::ImageConverter rgbConverter(tfPrefix + "_rgb_camera_optical_frame", false);
+    if(enableRosBaseTimeUpdate) {
+        rgbConverter.setUpdateRosBaseTimeOnToRosMsg();
+    }
     if(enableDepth) {
         auto rightCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RIGHT, width, height);
 

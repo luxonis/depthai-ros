@@ -15,8 +15,15 @@ SpatialDetectionConverter::SpatialDetectionConverter(std::string frameName, int 
     _rosBaseTime = ::ros::Time::now();
 }
 
+void SpatialDetectionConverter::updateRosBaseTime() {
+    updateBaseTime(_steadyBaseTime, _rosBaseTime, _totalNsChange);
+}
+
 void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData,
                                          std::deque<SpatialMessages::SpatialDetectionArray>& opDetectionMsgs) {
+    if(_updateRosBaseTimeOnToRosMsg) {
+        updateRosBaseTime();
+    }
     // setting the header
     std::chrono::_V2::steady_clock::time_point tstamp;
     if(_getBaseDeviceTimestamp)

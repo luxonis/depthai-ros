@@ -34,6 +34,10 @@ ImageConverter::ImageConverter(const std::string frameName, bool interleaved, bo
     _rosBaseTime = ::ros::Time::now();
 }
 
+void ImageConverter::updateRosBaseTime() {
+    updateBaseTime(_steadyBaseTime, _rosBaseTime, _totalNsChange);
+}
+
 void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData,
                                            std::deque<ImageMsgs::Image>& outImageMsgs,
                                            dai::RawImgFrame::Type type,
@@ -92,6 +96,9 @@ void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData
 }
 
 void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs) {
+    if(_updateRosBaseTimeOnToRosMsg) {
+        updateRosBaseTime();
+    }
     std::chrono::_V2::steady_clock::time_point tstamp;
     if(_getBaseDeviceTimestamp)
         tstamp = inData->getTimestampDevice();

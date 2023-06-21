@@ -58,6 +58,8 @@
     <arg name="enableRviz"            default="true"/>
     <arg name="enableMarkerPublish"   default="false" />
 
+    <arg name="enableRosBaseTimeUpdate" default="false" />  <!-- Used to handle when ROS time shifts and steady_clock does not -->
+
     <include file="$(find depthai_descriptions)/launch/urdf.launch">
         <arg name="base_frame"      value="$(arg  base_frame)"  />
         <arg name="parent_frame"    value="$(arg  parent_frame)"/>
@@ -114,6 +116,7 @@
         <param name="enableFloodLight"      value="$(arg enableFloodLight)" />
         <param name="dotProjectormA"        value="$(arg dotProjectormA)" />
         <param name="floodLightmA"          value="$(arg floodLightmA)" />
+        <param name="enableRosBaseTimeUpdate" value="$(arg enableRosBaseTimeUpdate)" />
     </node>            
 
     <node pkg="nodelet" type="nodelet" name="nodelet_manager"  args="manager" output="screen"/>
