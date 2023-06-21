@@ -67,7 +67,6 @@ include_directories(
   ${OpenCV_INCLUDE_DIRS}
 )
 
-include_directories(include)
 
 catkin_package(
   LIBRARIES 
@@ -134,8 +133,9 @@ target_link_libraries(
 
 add_library(
   ${PROJECT_NAME} SHARED
+  src/pipeline/pipeline_generator.cpp
+  src/pipeline/base_types.cpp
   src/camera.cpp
-  src/pipeline_generator.cpp
 )
 
 
@@ -176,6 +176,9 @@ install(
   scripts/obj_pub.py
   DESTINATION lib/${PROJECT_NAME}
 )
+
+install(FILES plugins.xml
+      DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 install(
     DIRECTORY include/

@@ -50,6 +50,7 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
             throw std::runtime_error("Sensor not supported!");
         }
         ROS_DEBUG("Node %s has sensor %s", daiNodeName.c_str(), sensorName.c_str());
+        sensorData = *sensorIt;
         if((*sensorIt).color) {
             sensorNode = std::make_unique<RGB>(daiNodeName, node, pipeline, socket, (*sensorIt), publish);
         } else {
@@ -59,7 +60,9 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
     ROS_DEBUG("Base node %s created", daiNodeName.c_str());
 }
 SensorWrapper::~SensorWrapper() = default;
-
+sensor_helpers::ImageSensor SensorWrapper::getSensorData() {
+    return sensorData;
+}
 void SensorWrapper::subCB(const sensor_msgs::Image::ConstPtr& img) {
     dai::ImgFrame data;
     if(ready) {

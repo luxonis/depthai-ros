@@ -19,7 +19,6 @@ class NodeHandle;
 namespace depthai_ros_driver {
 namespace pipeline_gen {
 enum class PipelineType { RGB, RGBD, RGBStereo, Depth, Stereo, CamArray };
-enum class NNType { None, RGB, Spatial };
 
 class PipelineGenerator {
    public:
@@ -39,18 +38,19 @@ class PipelineGenerator {
                                                                      bool enableImu);
 
    private:
+   protected:
+    std::unordered_map<std::string, std::string> pluginTypeMap{{"RGB", "depthai_ros_driver::pipeline_gen::RGB"},
+                                                               {"RGBD", "depthai_ros_driver::pipeline_gen::RGBD"},
+                                                               {"RGBSTEREO", "depthai_ros_driver::pipeline_gen::RGBStereo"},
+                                                               {"STEREO", "depthai_ros_driver::pipeline_gen::Stereo"},
+                                                               {"DEPTH", "depthai_ros_driver::pipeline_gen::Depth"},
+                                                               {"CAMARRAY", "depthai_ros_driver::pipeline_gen::CamArray"}};
     std::unordered_map<std::string, PipelineType> pipelineTypeMap{{"RGB", PipelineType::RGB},
                                                                   {"RGBD", PipelineType::RGBD},
                                                                   {"RGBSTEREO", PipelineType::RGBStereo},
                                                                   {"STEREO", PipelineType::Stereo},
                                                                   {"DEPTH", PipelineType::Depth},
                                                                   {"CAMARRAY", PipelineType::CamArray}};
-    std::unordered_map<std::string, NNType> nnTypeMap = {
-        {"", NNType::None},
-        {"NONE", NNType::None},
-        {"RGB", NNType::RGB},
-        {"SPATIAL", NNType::Spatial},
-    };
     const std::string alphabet = "abcdefghijklmnopqrstuvwxyz";
 };
 }  // namespace pipeline_gen

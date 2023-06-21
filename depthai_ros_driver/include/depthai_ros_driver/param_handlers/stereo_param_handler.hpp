@@ -20,7 +20,7 @@ class StereoParamHandler : public BaseParamHandler {
    public:
     explicit StereoParamHandler(ros::NodeHandle node, const std::string& name);
     ~StereoParamHandler();
-    void declareParams(std::shared_ptr<dai::node::StereoDepth> stereo);
+    void declareParams(std::shared_ptr<dai::node::StereoDepth> stereo, const std::string& rightName);
     dai::CameraControl setRuntimeParams(parametersConfig& config) override;
 
    private:

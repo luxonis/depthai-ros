@@ -5,7 +5,7 @@
 
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
-#include "depthai_ros_driver/pipeline_generator.hpp"
+#include "depthai_ros_driver/pipeline/pipeline_generator.hpp"
 #include "dynamic_reconfigure/server.h"
 #include "nodelet/nodelet.h"
 #include "pluginlib/class_list_macros.h"

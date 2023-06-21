@@ -47,11 +47,17 @@ class SpatialDetection : public BaseNode {
     void setupQueues(std::shared_ptr<dai::Device> device) override {
         nnQ = device->getOutputQueue(nnQName, ph->getParam<int>("i_max_q_size"), false);
         auto tfPrefix = getTFPrefix("rgb");
-        detConverter = std::make_unique<dai::ros::SpatialDetectionConverter>(tfPrefix + "_camera_optical_frame",
-                                                                             imageManip->initialConfig.getResizeConfig().width,
-                                                                             imageManip->initialConfig.getResizeConfig().height,
-                                                                             false,
-                                                                             ph->getParam<bool>("i_get_base_device_timestamp"));
+        int width;
+        int height;
+        if(ph->getParam<bool>("i_disable_resize")) {
+            width = ph->getOtherNodeParam<int>("rgb", "i_preview_size");
+            height = ph->getOtherNodeParam<int>("rgb", "i_preview_size");
+        } else {
+            width = imageManip->initialConfig.getResizeConfig().width;
+            height = imageManip->initialConfig.getResizeConfig().height;
+        }
+        detConverter = std::make_unique<dai::ros::SpatialDetectionConverter>(
+            tfPrefix + "_camera_optical_frame", width, height, false, ph->getParam<bool>("i_get_base_device_timestamp"));
         nnQ->addCallback(std::bind(&SpatialDetection::spatialCB, this, std::placeholders::_1, std::placeholders::_2));
         detPub = getROSNode().template advertise<vision_msgs::Detection3DArray>(getName() + "/spatial_detections", 10);
 
@@ -59,11 +65,7 @@ class SpatialDetection : public BaseNode {
             ptQ = device->getOutputQueue(ptQName, ph->getParam<int>("i_max_q_size"), false);
             ptImageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
             ptInfoMan = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), getName()), "/" + getName());
-            ptInfoMan->setCameraInfo(sensor_helpers::getCalibInfo(*ptImageConverter,
-                                                                  device,
-                                                                  dai::CameraBoardSocket::RGB,
-                                                                  imageManip->initialConfig.getResizeWidth(),
-                                                                  imageManip->initialConfig.getResizeWidth()));
+            ptInfoMan->setCameraInfo(sensor_helpers::getCalibInfo(*ptImageConverter, device, dai::CameraBoardSocket::RGB, width, height));
 
             ptPub = it.advertiseCamera(getName() + "/passthrough/image_raw", 1);
             ptQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *ptImageConverter, ptPub, ptInfoMan));
@@ -80,9 +82,8 @@ class SpatialDetection : public BaseNode {
             ptDepthQ = device->getOutputQueue(ptDepthQName, ph->getParam<int>("i_max_q_size"), false);
             ptDepthImageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
             ptDepthInfoMan = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), getName()), "/" + getName());
-            int width, height;
-            getROSNode().getParam("stereo_i_width", width);
-            getROSNode().getParam("stereo_i_height", height);
+            int width = ph->getOtherNodeParam<int>("stereo", "i_width");
+            int height = ph->getOtherNodeParam<int>("stereo", "i_height");
             ptDepthInfoMan->setCameraInfo(sensor_helpers::getCalibInfo(*ptDepthImageConverter, device, socket, width, height));
 
             ptDepthPub = it.advertiseCamera(getName() + "/passthrough_depth/image_raw", 1);
