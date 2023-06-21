@@ -13,3 +13,7 @@ List of changes:
 ## Testing
 Hardware used:
 Depthai library version:
+
+
+## Visuals from testing
+Add screenshots/gifs/videos from RVIZ or other visualizers demonstrating the effect of the changes when applicable. 
