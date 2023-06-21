@@ -28,6 +28,10 @@ ImuConverter::ImuConverter(const std::string& frameName,
 
 ImuConverter::~ImuConverter() = default;
 
+void ImuConverter::updateRosBaseTime() {
+    updateBaseTime(_steadyBaseTime, _rosBaseTime, _totalNsChange);
+}
+
 void ImuConverter::fillImuMsg(dai::IMUReportAccelerometer report, ImuMsgs::Imu& msg) {
     msg.linear_acceleration.x = report.x;
     msg.linear_acceleration.y = report.y;
@@ -82,6 +86,9 @@ void ImuConverter::fillImuMsg(dai::IMUReportMagneticField report, depthai_ros_ms
 }
 
 void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<ImuMsgs::Imu>& outImuMsgs) {
+    if(_updateRosBaseTimeOnToRosMsg) {
+        updateRosBaseTime();
+    }
     if(_syncMode != ImuSyncMethod::COPY) {
         FillImuData_LinearInterpolation(inData->packets, outImuMsgs);
     } else {
