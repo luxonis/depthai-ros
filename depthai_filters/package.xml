@@ -20,6 +20,7 @@
   <depend>image_pipeline</depend>
   <depend>nodelet</depend>
   <depend>libopencv-dev</depend>
+  <depend>visualization_msgs</depend>
 
 
   <export>

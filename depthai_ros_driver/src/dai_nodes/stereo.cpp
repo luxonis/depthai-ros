@@ -90,6 +90,7 @@ void Stereo::setupLeftRectQueue(std::shared_ptr<dai::Device> device) {
     leftRectQ = device->getOutputQueue(leftRectQName, ph->getOtherNodeParam<int>(leftSensInfo.name, "i_max_q_size"), false);
     auto tfPrefix = getTFPrefix(leftSensInfo.name);
     leftRectConv = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
+    leftRectConv->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_left_rect_update_ros_base_time_on_ros_msg"));
     leftRectIM = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), leftSensInfo.name), "/" + leftSensInfo.name + "/rect");
     auto info = sensor_helpers::getCalibInfo(*leftRectConv,
                                              device,
@@ -114,6 +115,7 @@ void Stereo::setupRightRectQueue(std::shared_ptr<dai::Device> device) {
     rightRectQ = device->getOutputQueue(rightRectQName, ph->getOtherNodeParam<int>(rightSensInfo.name, "i_max_q_size"), false);
     auto tfPrefix = getTFPrefix(rightSensInfo.name);
     rightRectConv = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
+    rightRectConv->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_right_rect_update_ros_base_time_on_ros_msg"));
     rightRectIM =
         std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), rightSensInfo.name), "/" + rightSensInfo.name + "/rect");
     auto info = sensor_helpers::getCalibInfo(*rightRectConv,
@@ -144,7 +146,7 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
         tfPrefix = getTFPrefix(rightSensInfo.name);
     }
     stereoConv = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
-
+    stereoConv->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
     stereoPub = it.advertiseCamera(getName() + "/image_raw", 1);
     stereoIM = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), getName()), "/" + getName());
     auto info = sensor_helpers::getCalibInfo(*stereoConv,

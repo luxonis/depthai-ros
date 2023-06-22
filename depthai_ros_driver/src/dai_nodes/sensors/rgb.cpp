@@ -72,6 +72,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         auto tfPrefix = getTFPrefix(getName());
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), getName()), "/" + getName());
         imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
+        imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
         if(ph->getParam<std::string>("i_calibration_file").empty()) {
             infoManager->setCameraInfo(sensor_helpers::getCalibInfo(*imageConverter,
                                                                     device,

@@ -14,6 +14,7 @@ void Detection2DOverlay::onInit() {
     previewSub.subscribe(pNH, "/rgb/preview/image_raw", 1);
     detSub.subscribe(pNH, "/nn/detections", 1);
     sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), previewSub, detSub);
+    pNH.getParam("label_map", labelMap);
     sync->registerCallback(std::bind(&Detection2DOverlay::overlayCB, this, std::placeholders::_1, std::placeholders::_2));
     overlayPub = pNH.advertise<sensor_msgs::Image>("overlay", 10);
 }
