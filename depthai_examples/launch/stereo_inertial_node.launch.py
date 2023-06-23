@@ -153,6 +153,7 @@ def generate_launch_description():
         'cam_yaw',
         default_value=cam_yaw,
         description='Yaw orientation of the camera with respect to the base frame.')
+    
 
     declare_lrcheck_cmd = DeclareLaunchArgument(
         'lrcheck',
@@ -298,6 +299,7 @@ def generate_launch_description():
         'enableRviz',
         default_value=enableRviz,
         description='When True create a RVIZ window.')
+    
 
 
     urdf_launch = IncludeLaunchDescription(
