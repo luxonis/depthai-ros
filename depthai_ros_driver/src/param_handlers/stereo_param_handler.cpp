@@ -43,6 +43,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<int>("i_low_bandwidth_quality", 50);
     declareAndLogParam<bool>("i_output_disparity", false);
     declareAndLogParam<bool>("i_get_base_device_timestamp", false);
+    declareAndLogParam<bool>("i_update_ros_base_time_on_ros_msg", false);
     declareAndLogParam<bool>("i_publish_topic", true);
     
     declareAndLogParam<bool>("i_publish_left_rect", false);

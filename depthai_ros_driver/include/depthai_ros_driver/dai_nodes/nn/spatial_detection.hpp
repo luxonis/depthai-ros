@@ -60,6 +60,7 @@ class SpatialDetection : public BaseNode {
                                                                              height,
                                                                              false,
                                                                              ph->getParam<bool>("i_get_base_device_timestamp"));
+        detConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
         nnQ->addCallback(std::bind(&SpatialDetection::spatialCB, this, std::placeholders::_1, std::placeholders::_2));
         rclcpp::PublisherOptions options;
         options.qos_overriding_options = rclcpp::QosOverridingOptions();
@@ -68,6 +69,7 @@ class SpatialDetection : public BaseNode {
         if(ph->getParam<bool>("i_enable_passthrough")) {
             ptQ = device->getOutputQueue(ptQName, ph->getParam<int>("i_max_q_size"), false);
             ptImageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
+            ptImageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
             ptInfoMan = std::make_shared<camera_info_manager::CameraInfoManager>(
                 getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
             ptInfoMan->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
@@ -88,6 +90,7 @@ class SpatialDetection : public BaseNode {
             };
             ptDepthQ = device->getOutputQueue(ptDepthQName, ph->getParam<int>("i_max_q_size"), false);
             ptDepthImageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
+            ptDepthImageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
             ptDepthInfoMan = std::make_shared<camera_info_manager::CameraInfoManager>(
                 getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
             ptDepthInfoMan->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),

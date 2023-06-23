@@ -90,6 +90,7 @@ void Stereo::setupLeftRectQueue(std::shared_ptr<dai::Device> device) {
     leftRectQ = device->getOutputQueue(leftRectQName, ph->getOtherNodeParam<int>(leftSensInfo.name, "i_max_q_size"), false);
     auto tfPrefix = getTFPrefix(leftSensInfo.name);
     leftRectConv = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
+    leftRectConv->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
     leftRectIM = std::make_shared<camera_info_manager::CameraInfoManager>(
         getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + leftSensInfo.name).get(), "/rect");
     auto info = sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
@@ -121,6 +122,7 @@ void Stereo::setupRightRectQueue(std::shared_ptr<dai::Device> device) {
     rightRectQ = device->getOutputQueue(rightRectQName, ph->getOtherNodeParam<int>(rightSensInfo.name, "i_max_q_size"), false);
     auto tfPrefix = getTFPrefix(rightSensInfo.name);
     rightRectConv = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
+    rightRectConv->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
     rightRectIM = std::make_shared<camera_info_manager::CameraInfoManager>(
         getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + rightSensInfo.name).get(), "/rect");
     auto info = sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
@@ -157,7 +159,7 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
         tfPrefix = getTFPrefix(rightSensInfo.name);
     }
     stereoConv = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
-
+    stereoConv->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
     stereoPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
     stereoIM = std::make_shared<camera_info_manager::CameraInfoManager>(
         getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
