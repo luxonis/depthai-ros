@@ -42,6 +42,9 @@ void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData
                                            std::deque<ImageMsgs::Image>& outImageMsgs,
                                            dai::RawImgFrame::Type type,
                                            const sensor_msgs::CameraInfo& info) {
+    if(_updateRosBaseTimeOnToRosMsg) {
+        updateRosBaseTime();
+    }
     std::chrono::_V2::steady_clock::time_point tstamp;
     if(_getBaseDeviceTimestamp)
         tstamp = inData->getTimestampDevice();
