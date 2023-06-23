@@ -23,8 +23,8 @@ class Detection2DOverlay : public rclcpp::Node {
     std::unique_ptr<message_filters::Synchronizer<syncPolicy>> sync;
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr overlayPub;
     std::vector<std::string> labelMap = {"background", "aeroplane", "bicycle",     "bird",  "boat",        "bottle", "bus",
-                                               "car",        "cat",       "chair",       "cow",   "diningtable", "dog",    "horse",
-                                               "motorbike",  "person",    "pottedplant", "sheep", "sofa",        "train",  "tvmonitor"};
+                                         "car",        "cat",       "chair",       "cow",   "diningtable", "dog",    "horse",
+                                         "motorbike",  "person",    "pottedplant", "sheep", "sofa",        "train",  "tvmonitor"};
 };
 
 }  // namespace depthai_filters

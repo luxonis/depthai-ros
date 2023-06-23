@@ -50,16 +50,12 @@ class SpatialDetection : public BaseNode {
         if(ph->getParam<bool>("i_disable_resize")) {
             width = getROSNode()->get_parameter("rgb.i_preview_size").as_int();
             height = getROSNode()->get_parameter("rgb.i_preview_size").as_int();
-        }
-        else{
+        } else {
             width = imageManip->initialConfig.getResizeConfig().width;
             height = imageManip->initialConfig.getResizeConfig().height;
         }
-        detConverter = std::make_unique<dai::ros::SpatialDetectionConverter>(tfPrefix + "_camera_optical_frame",
-                                                                             width,
-                                                                             height,
-                                                                             false,
-                                                                             ph->getParam<bool>("i_get_base_device_timestamp"));
+        detConverter = std::make_unique<dai::ros::SpatialDetectionConverter>(
+            tfPrefix + "_camera_optical_frame", width, height, false, ph->getParam<bool>("i_get_base_device_timestamp"));
         detConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
         nnQ->addCallback(std::bind(&SpatialDetection::spatialCB, this, std::placeholders::_1, std::placeholders::_2));
         rclcpp::PublisherOptions options;

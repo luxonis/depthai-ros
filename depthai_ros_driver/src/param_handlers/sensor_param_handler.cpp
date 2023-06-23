@@ -58,10 +58,10 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> mo
     if(declareAndLogParam<bool>("r_set_man_exposure", false)) {
         monoCam->initialControl.setManualExposure(exposure, iso);
     }
-    if(declareAndLogParam<bool>("i_fsync_continuous", false)){
+    if(declareAndLogParam<bool>("i_fsync_continuous", false)) {
         monoCam->initialControl.setFrameSyncMode(utils::getValFromMap(declareAndLogParam<std::string>("i_fsync_mode", "INPUT"), fSyncModeMap));
     }
-    if(declareAndLogParam<bool>("i_fsync_trigger", false)){
+    if(declareAndLogParam<bool>("i_fsync_trigger", false)) {
         monoCam->initialControl.setExternalTrigger(declareAndLogParam<int>("i_num_frames_burst", 1), declareAndLogParam<int>("i_num_frames_discard", 0));
     }
 }
@@ -125,10 +125,10 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     if(declareAndLogParam("r_set_man_whitebalance", false)) {
         colorCam->initialControl.setManualWhiteBalance(whitebalance);
     }
-    if(declareAndLogParam<bool>("i_fsync_continuous", false)){
+    if(declareAndLogParam<bool>("i_fsync_continuous", false)) {
         colorCam->initialControl.setFrameSyncMode(utils::getValFromMap(declareAndLogParam<std::string>("i_fsync_mode", "INPUT"), fSyncModeMap));
     }
-    if(declareAndLogParam<bool>("i_fsync_trigger", false)){
+    if(declareAndLogParam<bool>("i_fsync_trigger", false)) {
         colorCam->initialControl.setExternalTrigger(declareAndLogParam<int>("i_num_frames_burst", 1), declareAndLogParam<int>("i_num_frames_discard", 0));
     }
 }

@@ -102,17 +102,12 @@ void Stereo::setupLeftRectQueue(std::shared_ptr<dai::Device> device) {
     leftRectIM->setCameraInfo(info);
     leftRectPub = image_transport::create_camera_publisher(getROSNode(), "~/" + leftSensInfo.name + "/image_rect");
     dai::RawImgFrame::Type encType = dai::RawImgFrame::Type::GRAY8;
-    if(left->getSensorData().color){
+    if(left->getSensorData().color) {
         encType = dai::RawImgFrame::Type::BGR888i;
     }
     if(ph->getParam<bool>("i_left_rect_low_bandwidth")) {
-        leftRectQ->addCallback(std::bind(sensor_helpers::compressedImgCB,
-                                         std::placeholders::_1,
-                                         std::placeholders::_2,
-                                         *leftRectConv,
-                                         leftRectPub,
-                                         leftRectIM,
-                                         encType));
+        leftRectQ->addCallback(
+            std::bind(sensor_helpers::compressedImgCB, std::placeholders::_1, std::placeholders::_2, *leftRectConv, leftRectPub, leftRectIM, encType));
     } else {
         leftRectQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *leftRectConv, leftRectPub, leftRectIM));
     }
@@ -134,17 +129,12 @@ void Stereo::setupRightRectQueue(std::shared_ptr<dai::Device> device) {
     rightRectIM->setCameraInfo(info);
     rightRectPub = image_transport::create_camera_publisher(getROSNode(), "~/" + rightSensInfo.name + "/image_rect");
     dai::RawImgFrame::Type encType = dai::RawImgFrame::Type::GRAY8;
-    if(right->getSensorData().color){
+    if(right->getSensorData().color) {
         encType = dai::RawImgFrame::Type::BGR888i;
     }
     if(ph->getParam<bool>("i_right_rect_low_bandwidth")) {
-        rightRectQ->addCallback(std::bind(sensor_helpers::compressedImgCB,
-                                         std::placeholders::_1,
-                                         std::placeholders::_2,
-                                         *rightRectConv,
-                                         rightRectPub,
-                                         rightRectIM,
-                                         encType));
+        rightRectQ->addCallback(
+            std::bind(sensor_helpers::compressedImgCB, std::placeholders::_1, std::placeholders::_2, *rightRectConv, rightRectPub, rightRectIM, encType));
     } else {
         rightRectQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *rightRectConv, rightRectPub, rightRectIM));
     }
