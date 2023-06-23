@@ -93,13 +93,11 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
         stereo->initialConfig.setSubpixel(true);
         stereo->initialConfig.setSubpixelFractionalBits(declareAndLogParam<int>("i_subpixel_fractional_bits", 3));
     }
-    stereo->setExtendedDisparity(declareAndLogParam<bool>("i_extended_disp", false));
     stereo->setRectifyEdgeFillColor(declareAndLogParam<int>("i_rectify_edge_fill_color", 0));
     auto config = stereo->initialConfig.get();
     config.costMatching.disparityWidth = utils::getValFromMap(declareAndLogParam<std::string>("i_disparity_width", "DISPARITY_96"), disparityWidthMap);
-    if(!config.algorithmControl.enableExtended) {
-        config.costMatching.enableCompanding = declareAndLogParam<bool>("i_enable_companding", false);
-    }
+    stereo->setExtendedDisparity(declareAndLogParam<bool>("i_extended_disp", false));
+    config.costMatching.enableCompanding = declareAndLogParam<bool>("i_enable_companding", false);
     config.postProcessing.temporalFilter.enable = declareAndLogParam<bool>("i_enable_temporal_filter", false);
     if(config.postProcessing.temporalFilter.enable) {
         config.postProcessing.temporalFilter.alpha = declareAndLogParam<float>("i_temporal_filter_alpha", 0.4);
