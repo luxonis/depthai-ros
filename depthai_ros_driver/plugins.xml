@@ -1,0 +1,20 @@
+<library path="depthai_ros_driver">
+    <class type="depthai_ros_driver::pipeline_gen::RGB" base_class_type="depthai_ros_driver::pipeline_gen::BasePipeline">
+        <description>RGB Pipeline.</description>
+    </class>
+    <class type="depthai_ros_driver::pipeline_gen::RGBD" base_class_type="depthai_ros_driver::pipeline_gen::BasePipeline">
+        <description>RGBD Pipeline.</description>
+    </class>
+    <class type="depthai_ros_driver::pipeline_gen::RGBStereo" base_class_type="depthai_ros_driver::pipeline_gen::BasePipeline">
+        <description>RGBStereo Pipeline.</description>
+    </class>
+    <class type="depthai_ros_driver::pipeline_gen::Stereo" base_class_type="depthai_ros_driver::pipeline_gen::BasePipeline">
+        <description>Stereo Pipeline.</description>
+    </class>
+    <class type="depthai_ros_driver::pipeline_gen::Depth" base_class_type="depthai_ros_driver::pipeline_gen::BasePipeline">
+        <description>Depth Pipeline.</description>
+    </class>
+    <class type="depthai_ros_driver::pipeline_gen::CamArray" base_class_type="depthai_ros_driver::pipeline_gen::BasePipeline">
+        <description>CamArray Pipeline.</description>
+    </class>
+</library>

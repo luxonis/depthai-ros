@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>depthai_ros_driver</name>
-  <version>2.7.2</version>
+  <version>2.7.4</version>
   <description>Depthai ROS Monolithic node.</description>
   <maintainer email="adam.serafin@luxonis.com">Adam Serafin</maintainer>
   <maintainer email="sachin@luxonis.com">Sachin Guruswamy</maintainer>
@@ -28,6 +28,7 @@
   <depend>depthai_descriptions</depend>
   <depend>depthai_ros_msgs</depend>
   <depend>depthai_examples</depend>
+  <depend>pluginlib</depend>
   <export>
     <build_type>ament_cmake</build_type>
   </export>

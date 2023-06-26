@@ -59,8 +59,8 @@ def launch_setup(context, *args, **kwargs):
             target_container=name+"_container",
             composable_node_descriptions=[
                 ComposableNode(
-                    package='rtabmap_ros',
-                    plugin='rtabmap_ros::RGBDOdometry',
+                    package='rtabmap_odom',
+                    plugin='rtabmap_odom::RGBDOdometry',
                     name='rgbd_odometry',
                     parameters=parameters,
                     remappings=remappings,
@@ -72,8 +72,8 @@ def launch_setup(context, *args, **kwargs):
             target_container=name+"_container",
             composable_node_descriptions=[
                 ComposableNode(
-                    package='rtabmap_ros',
-                    plugin='rtabmap_ros::CoreWrapper',
+                    package='rtabmap_slam',
+                    plugin='rtabmap_slam::CoreWrapper',
                     name='rtabmap',
                     parameters=parameters,
                     remappings=remappings,
@@ -82,8 +82,8 @@ def launch_setup(context, *args, **kwargs):
         ),
 
         Node(
-            package="rtabmap_ros",
-            executable="rtabmapviz",
+            package="rtabmap_viz",
+            executable="rtabmap_viz",
             output="screen",
             parameters=parameters,
             remappings=remappings,

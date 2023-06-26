@@ -14,14 +14,13 @@ void Detection2DOverlay::onInit() {
     sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), previewSub, detSub);
     sync->registerCallback(std::bind(&Detection2DOverlay::overlayCB, this, std::placeholders::_1, std::placeholders::_2));
     overlayPub = this->create_publisher<sensor_msgs::msg::Image>("overlay", 10);
+    labelMap = this->declare_parameter<std::vector<std::string>>("label_map", labelMap);
 }
 
 void Detection2DOverlay::overlayCB(const sensor_msgs::msg::Image::ConstSharedPtr& preview,
                                    const vision_msgs::msg::Detection2DArray::ConstSharedPtr& detections) {
     cv::Mat previewMat = utils::msgToMat(this->get_logger(), preview, sensor_msgs::image_encodings::BGR8);
 
-    auto white = cv::Scalar(255, 255, 255);
-    auto black = cv::Scalar(0, 0, 0);
     auto blue = cv::Scalar(255, 0, 0);
 
     for(auto& detection : detections->detections) {
@@ -31,12 +30,10 @@ void Detection2DOverlay::overlayCB(const sensor_msgs::msg::Image::ConstSharedPtr
         auto y2 = detection.bbox.center.position.y + detections->detections[0].bbox.size_y / 2.0;
         auto labelStr = labelMap[stoi(detection.results[0].hypothesis.class_id)];
         auto confidence = detection.results[0].hypothesis.score;
-        cv::putText(previewMat, labelStr, cv::Point(x1 + 10, y1 + 20), cv::FONT_HERSHEY_TRIPLEX, 0.5, white, 3);
-        cv::putText(previewMat, labelStr, cv::Point(x1 + 10, y1 + 20), cv::FONT_HERSHEY_TRIPLEX, 0.5, black);
+        utils::addTextToFrame(previewMat, labelStr, x1 + 10, y1 + 20);
         std::stringstream confStr;
         confStr << std::fixed << std::setprecision(2) << confidence * 100;
-        cv::putText(previewMat, confStr.str(), cv::Point(x1 + 10, y1 + 40), cv::FONT_HERSHEY_TRIPLEX, 0.5, white, 3);
-        cv::putText(previewMat, confStr.str(), cv::Point(x1 + 10, y1 + 40), cv::FONT_HERSHEY_TRIPLEX, 0.5, black);
+        utils::addTextToFrame(previewMat, confStr.str(), x1 + 10, y1 + 40);
         cv::rectangle(previewMat, cv::Rect(cv::Point(x1, y1), cv::Point(x2, y2)), blue);
     }
     sensor_msgs::msg::Image outMsg;

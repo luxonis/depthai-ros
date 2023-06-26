@@ -32,8 +32,27 @@ class ImuConverter {
                  double angular_velocity_cov = 0.0,
                  double rotation_cov = 0.0,
                  double magnetic_field_cov = 0.0,
-                 bool enable_rotation = false);
+                 bool enable_rotation = false,
+                 bool getBaseDeviceTimestamp = false);
     ~ImuConverter();
+
+    /**
+     * @brief Handles cases in which the ROS time shifts forward or backward
+     *  Should be called at regular intervals or on-change of ROS time, depending
+     *  on monitoring.
+     *
+     */
+    void updateRosBaseTime();
+
+    /**
+     * @brief Commands the converter to automatically update the ROS base time on message conversion based on variable
+     *
+     * @param update: bool whether to automatically update the ROS base time on message conversion
+     */
+    void setUpdateRosBaseTimeOnToRosMsg(bool update = true) {
+        _updateRosBaseTimeOnToRosMsg = update;
+    }
+
     void toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<ImuMsgs::Imu>& outImuMsgs);
     void toRosDaiMsg(std::shared_ptr<dai::IMUData> inData, std::deque<depthai_ros_msgs::msg::ImuWithMagneticField>& outImuMsgs);
 
@@ -112,6 +131,11 @@ class ImuConverter {
     ImuSyncMethod _syncMode;
     std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
     rclcpp::Time _rosBaseTime;
+    bool _getBaseDeviceTimestamp;
+    // For handling ROS time shifts and debugging
+    int64_t _totalNsChange{0};
+    // Whether to update the ROS base time on each message conversion
+    bool _updateRosBaseTimeOnToRosMsg{false};
 
     void fillImuMsg(dai::IMUReportAccelerometer report, ImuMsgs::Imu& msg);
     void fillImuMsg(dai::IMUReportGyroscope report, ImuMsgs::Imu& msg);
@@ -124,7 +148,7 @@ class ImuConverter {
     void fillImuMsg(dai::IMUReportMagneticField report, depthai_ros_msgs::msg::ImuWithMagneticField& msg);
 
     template <typename I, typename S, typename T, typename F, typename M>
-    void CreateUnitMessage(I first, S second, T third, F fourth, M& msg, dai::Timestamp timestamp) {
+    void CreateUnitMessage(I first, S second, T third, F fourth, M& msg, std::chrono::_V2::steady_clock::time_point timestamp) {
         fillImuMsg(first, msg);
         fillImuMsg(second, msg);
         fillImuMsg(third, msg);
@@ -132,7 +156,7 @@ class ImuConverter {
 
         msg.header.frame_id = _frameName;
 
-        msg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, timestamp.get());
+        msg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, timestamp);
     }
 
     template <typename I, typename S, typename T, typename F, typename M>
@@ -162,7 +186,12 @@ class ImuConverter {
                         const double alpha = diff.count() / dt;
                         I interp = lerpImu(interp0, interp1, alpha);
                         M msg;
-                        CreateUnitMessage(interp, currSecond, currThird, currFourth, msg, currSecond.timestamp);
+                        std::chrono::_V2::steady_clock::time_point tstamp;
+                        if(_getBaseDeviceTimestamp)
+                            tstamp = currSecond.getTimestampDevice();
+                        else
+                            tstamp = currSecond.getTimestamp();
+                        CreateUnitMessage(interp, currSecond, currThird, currFourth, msg, tstamp);
                         imuMsgs.push_back(msg);
                         second.pop_front();
                         third.pop_front();

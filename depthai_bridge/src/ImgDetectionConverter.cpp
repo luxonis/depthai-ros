@@ -18,8 +18,14 @@ ImgDetectionConverter::ImgDetectionConverter(std::string frameName, int width, i
 
 ImgDetectionConverter::~ImgDetectionConverter() = default;
 
+void ImgDetectionConverter::updateRosBaseTime() {
+    updateBaseTime(_steadyBaseTime, _rosBaseTime, _totalNsChange);
+}
+
 void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, std::deque<VisionMsgs::Detection2DArray>& opDetectionMsgs) {
-    // setting the header
+    if(_updateRosBaseTimeOnToRosMsg) {
+        updateRosBaseTime();
+    }
     std::chrono::_V2::steady_clock::time_point tstamp;
     if(_getBaseDeviceTimestamp)
         tstamp = inNetData->getTimestampDevice();

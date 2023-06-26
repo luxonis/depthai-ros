@@ -8,6 +8,7 @@
 #include "depthai/device/DataQueue.hpp"
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/node.hpp"
+#include "rclcpp/qos.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "std_msgs/msg/header.hpp"
@@ -147,7 +148,9 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(std::shared_ptr<dai::DataOutput
 
 template <class RosMsg, class SimMsg>
 typename rclcpp::Publisher<RosMsg>::SharedPtr BridgePublisher<RosMsg, SimMsg>::advertise(int queueSize, std::false_type) {
-    return _node->create_publisher<RosMsg>(_rosTopic, queueSize);
+    rclcpp::PublisherOptions options;
+    options.qos_overriding_options = rclcpp::QosOverridingOptions();
+    return _node->create_publisher<RosMsg>(_rosTopic, queueSize, options);
 }
 
 template <class RosMsg, class SimMsg>
@@ -158,7 +161,9 @@ std::shared_ptr<image_transport::Publisher> BridgePublisher<RosMsg, SimMsg>::adv
         if(_cameraParamUri.empty()) {
             _camInfoManager->setCameraInfo(_cameraInfoData);
         }
-        _cameraInfoPublisher = _node->create_publisher<ImageMsgs::CameraInfo>(_cameraName + "/camera_info", queueSize);
+        rclcpp::PublisherOptions options;
+        options.qos_overriding_options = rclcpp::QosOverridingOptions();
+        _cameraInfoPublisher = _node->create_publisher<ImageMsgs::CameraInfo>(_cameraName + "/camera_info", queueSize, options);
     }
     return std::make_shared<image_transport::Publisher>(_it.advertise(_rosTopic, queueSize));
 }

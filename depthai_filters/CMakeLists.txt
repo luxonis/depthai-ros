@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(depthai_filters VERSION 2.7.2 LANGUAGES CXX C)
+project(depthai_filters VERSION 2.7.4 LANGUAGES CXX C)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -16,6 +16,7 @@ ament_auto_add_library(
   ${PROJECT_NAME} SHARED
   src/detection2d_overlay.cpp
   src/segmentation_overlay.cpp
+  src/spatial_bb.cpp
   src/wls_filter.cpp
   src/utils.cpp
 )
@@ -27,6 +28,7 @@ target_link_libraries(
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::Detection2DOverlay")
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::SegmentationOverlay")
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::WLSFilter")
+rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::SpatialBB")
 ament_export_include_directories(include)
 install(DIRECTORY launch config DESTINATION share/${PROJECT_NAME})
 install(
