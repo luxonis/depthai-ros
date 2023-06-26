@@ -13,6 +13,7 @@ void SegmentationOverlay::onInit() {
     previewSub.subscribe(pNH, "/rgb/preview/image_raw", 1);
     segSub.subscribe(pNH, "/nn/image_raw", 1);
     sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), previewSub, segSub);
+    pNH.getParam("label_map", labelMap);
     sync->registerCallback(std::bind(&SegmentationOverlay::overlayCB, this, std::placeholders::_1, std::placeholders::_2));
     overlayPub = pNH.advertise<sensor_msgs::Image>("overlay", 10);
 }

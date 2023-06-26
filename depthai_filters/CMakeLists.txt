@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10.2)
-project(depthai_filters VERSION 2.7.3 LANGUAGES CXX C)
+project(depthai_filters VERSION 2.7.4 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -22,7 +22,7 @@ endif()
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp dynamic_reconfigure message_filters sensor_msgs vision_msgs cv_bridge image_transport nodelet)
+find_package(catkin REQUIRED COMPONENTS roscpp dynamic_reconfigure message_filters sensor_msgs vision_msgs visualization_msgs cv_bridge image_transport nodelet)
 
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
@@ -34,7 +34,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES ${PROJECT_NAME}
- CATKIN_DEPENDS roscpp dynamic_reconfigure message_filters sensor_msgs vision_msgs cv_bridge image_transport nodelet
+ CATKIN_DEPENDS roscpp dynamic_reconfigure message_filters sensor_msgs vision_msgs visualization_msgs cv_bridge image_transport nodelet
  DEPENDS OpenCV
 )
 
@@ -55,6 +55,7 @@ add_library(${PROJECT_NAME} SHARED
     src/detection2d_overlay.cpp
     src/segmentation_overlay.cpp
     src/wls_filter.cpp
+    src/spatial_bb.cpp
     src/utils.cpp
 )
 

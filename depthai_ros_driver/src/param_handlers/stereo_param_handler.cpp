@@ -71,9 +71,8 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     stereo->setRectifyEdgeFillColor(getParam<int>("i_rectify_edge_fill_color"));
     auto config = stereo->initialConfig.get();
     config.costMatching.disparityWidth = utils::getValFromMap(getParam<std::string>("i_disparity_width", "DISPARITY_96"), disparityWidthMap);
-    if(!config.algorithmControl.enableExtended) {
-        config.costMatching.enableCompanding = getParam<bool>("i_enable_companding", false);
-    }
+    stereo->setExtendedDisparity(getParam<bool>("i_extended_disp"));
+    config.costMatching.enableCompanding = getParam<bool>("i_enable_companding", false);
     config.postProcessing.temporalFilter.enable = getParam<bool>("i_enable_temporal_filter");
     if(config.postProcessing.temporalFilter.enable) {
         config.postProcessing.temporalFilter.alpha = getParam<float>("i_temporal_filter_alpha");
@@ -81,8 +80,8 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
         config.postProcessing.temporalFilter.persistencyMode =
             utils::getValFromMap(getParam<std::string>("i_temporal_filter_persistency"), temporalPersistencyMap);
     }
+    config.postProcessing.speckleFilter.enable = getParam<bool>("i_enable_speckle_filter");
     if(config.postProcessing.speckleFilter.enable) {
-        config.postProcessing.speckleFilter.enable = getParam<bool>("i_enable_speckle_filter");
         config.postProcessing.speckleFilter.speckleRange = getParam<int>("i_speckle_filter_speckle_range");
     }
     config.postProcessing.spatialFilter.enable = getParam<bool>("i_enable_spatial_filter");

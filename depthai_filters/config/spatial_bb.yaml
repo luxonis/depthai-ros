@@ -1,0 +1,9 @@
+/oak:
+  camera_i_nn_type: spatial
+  rgb_i_enable_preview: true
+  rgb_i_keep_preview_aspect_ratio: false
+  nn_i_enable_passthrough: true
+  nn_i_disable_resize: true
+  stereo_i_subpixel: true
+/spatial_bb_node:
+  desqueeze: true

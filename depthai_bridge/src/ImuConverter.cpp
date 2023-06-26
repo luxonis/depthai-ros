@@ -113,6 +113,9 @@ void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<Imu
 }
 
 void ImuConverter::toRosDaiMsg(std::shared_ptr<dai::IMUData> inData, std::deque<depthai_ros_msgs::ImuWithMagneticField>& outImuMsgs) {
+    if(_updateRosBaseTimeOnToRosMsg) {
+        updateRosBaseTime();
+    }
     if(_syncMode != ImuSyncMethod::COPY) {
         FillImuData_LinearInterpolation(inData->packets, outImuMsgs);
     } else {

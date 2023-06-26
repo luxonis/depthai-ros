@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="params_file" default="$(find depthai_filters)/config/spatial_bb.yaml"/>
+
+    <arg name="name" default="oak" />
+
+    <include file="$(find depthai_ros_driver)/launch/rgbd_pcl.launch">
+        <arg name="name" value="$(arg name)"/>
+        <arg name="rectify_rgb" value="true"/>
+        <arg name="params_file" value="$(arg params_file)"/>
+    </include>
+
+    <node name="spatial_bb_node" pkg="nodelet" type="nodelet" output="screen" required="true" args="load depthai_filters/SpatialBB $(arg  name)_nodelet_manager">
+        <remap from="/rgb/preview/image_raw" to="$(arg name)/nn/passthrough/image_raw"/>
+        <remap from="/nn/spatial_detections" to="$(arg name)/nn/spatial_detections"/>
+        <remap from="/stereo/camera_info" to="$(arg name)/stereo/camera_info"/>
+
+    </node>
+</launch>

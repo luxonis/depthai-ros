@@ -21,8 +21,8 @@ class SegmentationOverlay : public nodelet::Nodelet {
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> syncPolicy;
     std::unique_ptr<message_filters::Synchronizer<syncPolicy>> sync;
     ros::Publisher overlayPub;
-    const std::vector<std::string> labelMap = {"background", "aeroplane", "bicycle",     "bird",  "boat",        "bottle", "bus",
-                                               "car",        "cat",       "chair",       "cow",   "diningtable", "dog",    "horse",
-                                               "motorbike",  "person",    "pottedplant", "sheep", "sofa",        "train",  "tvmonitor"};
+    std::vector<std::string> labelMap = {"background", "aeroplane", "bicycle",     "bird",  "boat",        "bottle", "bus",
+                                         "car",        "cat",       "chair",       "cow",   "diningtable", "dog",    "horse",
+                                         "motorbike",  "person",    "pottedplant", "sheep", "sofa",        "train",  "tvmonitor"};
 };
 }  // namespace depthai_filters

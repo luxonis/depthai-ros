@@ -47,7 +47,7 @@ void Imu::setupQueues(std::shared_ptr<dai::Device> device) {
                                                             ph->getParam<float>("i_rot_cov"),
                                                             ph->getParam<float>("i_mag_cov"),
                                                             ph->getParam<bool>("i_enable_rotation"));
-
+    imuConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
     param_handlers::imu::ImuMsgType msgType = ph->getMsgType();
     switch(msgType) {
         case param_handlers::imu::ImuMsgType::IMU: {
