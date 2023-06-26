@@ -75,6 +75,7 @@ def generate_launch_description():
     enableFloodLight   = LaunchConfiguration('enableFloodLight', default = False)
     dotProjectormA     = LaunchConfiguration('dotProjectormA', default = 200.0)
     floodLightmA       = LaunchConfiguration('floodLightmA', default = 200.0)
+    enableRosBaseTimeUpdate       = LaunchConfiguration('enableRosBaseTimeUpdate', default = False)
     enableRviz         = LaunchConfiguration('enableRviz', default = True)
 
 
@@ -294,6 +295,11 @@ def generate_launch_description():
         'floodLightmA',
         default_value=floodLightmA,
         description='Set the mA at which you intend to drive the FloodLight. Default is set to 200mA.')
+    declare_enableRosBaseTimeUpdate_cmd = DeclareLaunchArgument(
+        'enableRosBaseTimeUpdate',
+        default_value=enableRosBaseTimeUpdate,
+        description='Whether to update ROS time on each message.')
+
 
     declare_enableRviz_cmd = DeclareLaunchArgument(
         'enableRviz',
@@ -359,7 +365,8 @@ def generate_launch_description():
                         {'enableDotProjector':      enableDotProjector},
                         {'enableFloodLight':        enableFloodLight},
                         {'dotProjectormA':          dotProjectormA},
-                        {'floodLightmA':            floodLightmA}
+                        {'floodLightmA':            floodLightmA},
+                        {'enableRosBaseTimeUpdate': enableRosBaseTimeUpdate}
                         ])
     
     depth_metric_converter = launch_ros.descriptions.ComposableNode(

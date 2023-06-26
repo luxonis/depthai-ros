@@ -296,6 +296,7 @@ int main(int argc, char** argv) {
     bool usb2Mode, poeMode, syncNN;
     double angularVelCovariance, linearAccelCovariance;
     double dotProjectormA, floodLightmA;
+    bool enableRosBaseTimeUpdate;
     std::string nnName(BLOB_NAME);  // Set your blob name for the model here
 
     node->declare_parameter("mxId", "");
@@ -338,6 +339,7 @@ int main(int argc, char** argv) {
     node->declare_parameter("enableFloodLight", false);
     node->declare_parameter("dotProjectormA", 200.0);
     node->declare_parameter("floodLightmA", 200.0);
+    node->declare_parameter("enableRosBaseTimeUpdate", false);
 
     // updating parameters if defined in launch file.
 
@@ -380,6 +382,7 @@ int main(int argc, char** argv) {
     node->get_parameter("enableFloodLight", enableFloodLight);
     node->get_parameter("dotProjectormA", dotProjectormA);
     node->get_parameter("floodLightmA", floodLightmA);
+    node->get_parameter("enableRosBaseTimeUpdate", enableRosBaseTimeUpdate);
 
     if(resourceBaseFolder.empty()) {
         throw std::runtime_error("Send the path to the resouce folder containing NNBlob in \'resourceBaseFolder\' ");
@@ -491,11 +494,20 @@ int main(int argc, char** argv) {
     }
 
     dai::rosBridge::ImageConverter converter(tfPrefix + "_left_camera_optical_frame", true);
+    if(enableRosBaseTimeUpdate) {
+        converter.setUpdateRosBaseTimeOnToRosMsg();
+    }
     dai::rosBridge::ImageConverter rightconverter(tfPrefix + "_right_camera_optical_frame", true);
+    if(enableRosBaseTimeUpdate) {
+        rightconverter.setUpdateRosBaseTimeOnToRosMsg();
+    }
     const std::string leftPubName = rectify ? std::string("left/image_rect") : std::string("left/image_raw");
     const std::string rightPubName = rectify ? std::string("right/image_rect") : std::string("right/image_raw");
 
     dai::rosBridge::ImuConverter imuConverter(tfPrefix + "_imu_frame", imuMode, linearAccelCovariance, angularVelCovariance);
+    if(enableRosBaseTimeUpdate) {
+        imuConverter.setUpdateRosBaseTimeOnToRosMsg();
+    }
     dai::rosBridge::BridgePublisher<sensor_msgs::msg::Imu, dai::IMUData> imuPublish(
         imuQueue,
         node,
@@ -513,6 +525,9 @@ int main(int argc, char** argv) {
     // const std::string rightPubName = rectify ? std::string("right/image_rect") : std::string("right/image_raw");
 
     dai::rosBridge::ImageConverter rgbConverter(tfPrefix + "_rgb_camera_optical_frame", false);
+    if(enableRosBaseTimeUpdate) {
+        rgbConverter.setUpdateRosBaseTimeOnToRosMsg();
+    }
     if(enableDepth) {
         auto rightCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RIGHT, width, height);
         auto depthCameraInfo =

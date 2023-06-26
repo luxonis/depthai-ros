@@ -30,10 +30,10 @@ void Detection2DOverlay::overlayCB(const sensor_msgs::msg::Image::ConstSharedPtr
         auto y2 = detection.bbox.center.position.y + detections->detections[0].bbox.size_y / 2.0;
         auto labelStr = labelMap[stoi(detection.results[0].hypothesis.class_id)];
         auto confidence = detection.results[0].hypothesis.score;
-        utils::addTextToFrame(previewMat, labelStr, x1+10, y1+20);
+        utils::addTextToFrame(previewMat, labelStr, x1 + 10, y1 + 20);
         std::stringstream confStr;
         confStr << std::fixed << std::setprecision(2) << confidence * 100;
-        utils::addTextToFrame(previewMat, confStr.str(), x1+10, y1+40);
+        utils::addTextToFrame(previewMat, confStr.str(), x1 + 10, y1 + 40);
         cv::rectangle(previewMat, cv::Rect(cv::Point(x1, y1), cv::Point(x2, y2)), blue);
     }
     sensor_msgs::msg::Image outMsg;
