@@ -2,6 +2,11 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.7.4 (2023-06-26)
+-------------------
+* ROS time update
+* Minor bugfixes
+
 2.7.3 (2023-06-16)
 -------------------
 * Pipeline generation as a plugin
