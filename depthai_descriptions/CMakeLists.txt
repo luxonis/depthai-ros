@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10.2)
-project(depthai_descriptions VERSION 2.7.3 LANGUAGES CXX C)
+project(depthai_descriptions VERSION 2.7.4 LANGUAGES CXX C)
 
 
 find_package(catkin REQUIRED
