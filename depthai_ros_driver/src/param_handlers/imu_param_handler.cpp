@@ -25,6 +25,7 @@ void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const s
     declareAndLogParam<float>("i_gyro_cov", 0.0);
     declareAndLogParam<float>("i_rot_cov", -1.0);
     declareAndLogParam<float>("i_mag_cov", 0.0);
+    declareAndLogParam<bool>("i_update_ros_base_time_on_ros_msg", false);
     bool rotationAvailable = imuType == "BNO086";
     if(declareAndLogParam<bool>("i_enable_rotation", false)) {
         if(rotationAvailable) {

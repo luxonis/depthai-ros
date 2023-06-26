@@ -15,8 +15,7 @@ void SpatialBB::onInit() {
     infoSub.subscribe(this, "stereo/camera_info");
     detSub.subscribe(this, "nn/spatial_detections");
     sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), previewSub, infoSub, detSub);
-    sync->registerCallback(
-        std::bind(&SpatialBB::overlayCB, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    sync->registerCallback(std::bind(&SpatialBB::overlayCB, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     markerPub = this->create_publisher<visualization_msgs::msg::MarkerArray>("spatial_bb", 10);
     overlayPub = this->create_publisher<sensor_msgs::msg::Image>("overlay", 10);
     desqueeze = this->declare_parameter<bool>("desqueeze", false);
@@ -24,19 +23,18 @@ void SpatialBB::onInit() {
 }
 
 void SpatialBB::overlayCB(const sensor_msgs::msg::Image::ConstSharedPtr& preview,
-                               const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info,
-                               const vision_msgs::msg::Detection3DArray::ConstSharedPtr& detections) {
+                          const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info,
+                          const vision_msgs::msg::Detection3DArray::ConstSharedPtr& detections) {
     cv::Mat previewMat = utils::msgToMat(this->get_logger(), preview, sensor_msgs::image_encodings::BGR8);
     auto blue = cv::Scalar(255, 0, 0);
 
     double ratioY = double(info->height) / double(previewMat.rows);
     double ratioX;
     int offsetX;
-    if(desqueeze){
+    if(desqueeze) {
         ratioX = double(info->width) / double(previewMat.cols);
-        offsetX=0;
-    }
-    else{
+        offsetX = 0;
+    } else {
         ratioX = ratioY;
         offsetX = (info->width - info->height) / 2.0;
     }
@@ -55,28 +53,27 @@ void SpatialBB::overlayCB(const sensor_msgs::msg::Image::ConstSharedPtr& preview
 
         cv::rectangle(previewMat, cv::Rect(cv::Point(x1, y1), cv::Point(x2, y2)), blue);
         auto labelStr = labelMap[stoi(detection.results[0].hypothesis.class_id)];
-        utils::addTextToFrame(previewMat, labelStr, x1+10, y1+10);
+        utils::addTextToFrame(previewMat, labelStr, x1 + 10, y1 + 10);
         auto confidence = detection.results[0].hypothesis.score;
         std::stringstream confStr;
         confStr << std::fixed << std::setprecision(2) << confidence * 100;
-        utils::addTextToFrame(previewMat, confStr.str(), x1+10, y1+40);
+        utils::addTextToFrame(previewMat, confStr.str(), x1 + 10, y1 + 40);
 
         std::stringstream depthX;
         depthX << "X: " << detection.results[0].pose.pose.position.x << " mm";
-        utils::addTextToFrame(previewMat, depthX.str(), x1+10, y1+60);
-        
+        utils::addTextToFrame(previewMat, depthX.str(), x1 + 10, y1 + 60);
+
         std::stringstream depthY;
-        depthY << "Y: " <<  detection.results[0].pose.pose.position.y << " mm";
-        utils::addTextToFrame(previewMat, depthY.str(), x1+10, y1+75);
+        depthY << "Y: " << detection.results[0].pose.pose.position.y << " mm";
+        utils::addTextToFrame(previewMat, depthY.str(), x1 + 10, y1 + 75);
         std::stringstream depthZ;
-        depthZ << "Z: " <<  detection.results[0].pose.pose.position.z << " mm";
-        utils::addTextToFrame(previewMat, depthZ.str(), x1+10, y1+90);
+        depthZ << "Z: " << detection.results[0].pose.pose.position.z << " mm";
+        utils::addTextToFrame(previewMat, depthZ.str(), x1 + 10, y1 + 90);
 
         // Marker publishing
         const auto& bbox = detection.bbox;
         auto bbox_size_x = bbox.size.x * ratioX;
         auto bbox_size_y = bbox.size.y * ratioY;
-
 
         auto bbox_center_x = bbox.center.position.x * ratioX + offsetX;
         auto bbox_center_y = bbox.center.position.y * ratioY + offsetY;
