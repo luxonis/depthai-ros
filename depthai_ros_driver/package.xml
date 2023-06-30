@@ -29,6 +29,7 @@
   <depend>depthai_ros_msgs</depend>
   <depend>depthai_examples</depend>
   <depend>pluginlib</depend>
+  <depend>bondcpp</depend>
   <export>
     <build_type>ament_cmake</build_type>
   </export>

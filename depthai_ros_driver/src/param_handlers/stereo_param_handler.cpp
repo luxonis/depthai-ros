@@ -57,7 +57,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     stereo->setLeftRightCheck(declareAndLogParam<bool>("i_lr_check", true));
     int width = 1280;
     int height = 720;
-    dai::CameraBoardSocket socket = dai::CameraBoardSocket::RIGHT;
+    dai::CameraBoardSocket socket = dai::CameraBoardSocket::CAM_C;
     if(declareAndLogParam<bool>("i_align_depth", true)) {
         try {
             width = getROSNode()->get_parameter("rgb.i_width").as_int();
@@ -95,6 +95,9 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
         stereo->initialConfig.setSubpixelFractionalBits(declareAndLogParam<int>("i_subpixel_fractional_bits", 3));
     }
     stereo->setRectifyEdgeFillColor(declareAndLogParam<int>("i_rectify_edge_fill_color", 0));
+    if(declareAndLogParam<bool>("i_enable_alpha_scaling", false)){
+        stereo->setAlphaScaling(declareAndLogParam<float>("i_alpha_scaling", 0.0));
+    }
     auto config = stereo->initialConfig.get();
     config.costMatching.disparityWidth = utils::getValFromMap(declareAndLogParam<std::string>("i_disparity_width", "DISPARITY_96"), disparityWidthMap);
     stereo->setExtendedDisparity(declareAndLogParam<bool>("i_extended_disp", false));
@@ -109,6 +112,9 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     config.postProcessing.speckleFilter.enable = declareAndLogParam<bool>("i_enable_speckle_filter", false);
     if(config.postProcessing.speckleFilter.enable) {
         config.postProcessing.speckleFilter.speckleRange = declareAndLogParam<int>("i_speckle_filter_speckle_range", 50);
+    }
+    if(declareAndLogParam<bool>("i_enable_disparity_shift", false)){
+        config.algorithmControl.disparityShift = declareAndLogParam<int>("i_disparity_shift", 0);
     }
     config.postProcessing.spatialFilter.enable = declareAndLogParam<bool>("i_enable_spatial_filter", false);
     if(config.postProcessing.spatialFilter.enable) {

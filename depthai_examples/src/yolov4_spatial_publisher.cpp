@@ -75,16 +75,16 @@ dai::Pipeline createPipeline(bool spatial_camera, bool syncNN, bool subpixel, st
         }
 
         monoLeft->setResolution(monoResolution);
-        monoLeft->setBoardSocket(dai::CameraBoardSocket::LEFT);
+        monoLeft->setBoardSocket(dai::CameraBoardSocket::CAM_B);
         monoRight->setResolution(monoResolution);
-        monoRight->setBoardSocket(dai::CameraBoardSocket::RIGHT);
+        monoRight->setBoardSocket(dai::CameraBoardSocket::CAM_C);
 
         /// setting node configs
         stereo->initialConfig.setConfidenceThreshold(confidence);
         stereo->setRectifyEdgeFillColor(0);  // black, to better see the cutout
         stereo->initialConfig.setLeftRightCheckThreshold(LRchecktresh);
         stereo->setSubpixel(subpixel);
-        stereo->setDepthAlign(dai::CameraBoardSocket::RGB);
+        stereo->setDepthAlign(dai::CameraBoardSocket::CAM_A);
 
         spatialDetectionNetwork->setBlobPath(nnPath);
         spatialDetectionNetwork->setConfidenceThreshold(0.5f);
@@ -225,7 +225,7 @@ int main(int argc, char** argv) {
     }
 
     dai::rosBridge::ImageConverter rgbConverter(tfPrefix + "_rgb_camera_optical_frame", false);
-    auto rgbCameraInfo = rgbConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RGB, -1, -1);
+    auto rgbCameraInfo = rgbConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_A, -1, -1);
     dai::rosBridge::BridgePublisher<sensor_msgs::msg::Image, dai::ImgFrame> rgbPublish(colorQueue,
                                                                                        node,
                                                                                        std::string("color/image"),
@@ -247,7 +247,7 @@ int main(int argc, char** argv) {
         30);
 
     dai::rosBridge::ImageConverter depthConverter(tfPrefix + "_right_camera_optical_frame", true);
-    auto rightCameraInfo = depthConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RIGHT, width, height);
+    auto rightCameraInfo = depthConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_C, width, height);
     dai::rosBridge::BridgePublisher<sensor_msgs::msg::Image, dai::ImgFrame> depthPublish(
         depthQueue,
         node,
