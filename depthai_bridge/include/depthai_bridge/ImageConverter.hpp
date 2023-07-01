@@ -27,8 +27,8 @@ using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono
 class ImageConverter {
    public:
     // ImageConverter() = default;
-    ImageConverter(const std::string frameName, bool interleaved, bool getBaseDeviceTimestamp = false);
-    ImageConverter(bool interleaved, bool getBaseDeviceTimestamp = false);
+    ImageConverter(const std::string frameName, bool interleaved, bool getBaseDeviceTimestamp = false, dai::CameraExposureOffset offset = dai::CameraExposureOffset::END);
+    ImageConverter(bool interleaved, bool getBaseDeviceTimestamp = false, dai::CameraExposureOffset offset = dai::CameraExposureOffset::END);
 
     /**
      * @brief Handles cases in which the ROS time shifts forward or backward
@@ -82,6 +82,7 @@ class ImageConverter {
 
     ::ros::Time _rosBaseTime;
     bool _getBaseDeviceTimestamp;
+    dai::CameraExposureOffset _offset;
     // For handling ROS time shifts and debugging
     int64_t _totalNsChange{0};
     // Whether to update the ROS base time on each message conversion

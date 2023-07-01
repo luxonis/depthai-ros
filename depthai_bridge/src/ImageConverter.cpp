@@ -24,13 +24,13 @@ std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::planarEn
     {dai::RawImgFrame::Type::NV12, "rgb8"},
     {dai::RawImgFrame::Type::YUV420p, "rgb8"}};
 
-ImageConverter::ImageConverter(bool interleaved, bool getBaseDeviceTimestamp)
-    : _daiInterleaved(interleaved), _steadyBaseTime(std::chrono::steady_clock::now()), _getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
+ImageConverter::ImageConverter(bool interleaved, bool getBaseDeviceTimestamp, dai::CameraExposureOffset offset)
+    : _daiInterleaved(interleaved), _steadyBaseTime(std::chrono::steady_clock::now()), _getBaseDeviceTimestamp(getBaseDeviceTimestamp), _offset(offset) {
     _rosBaseTime = ::ros::Time::now();
 }
 
-ImageConverter::ImageConverter(const std::string frameName, bool interleaved, bool getBaseDeviceTimestamp)
-    : _frameName(frameName), _daiInterleaved(interleaved), _steadyBaseTime(std::chrono::steady_clock::now()), _getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
+ImageConverter::ImageConverter(const std::string frameName, bool interleaved, bool getBaseDeviceTimestamp, dai::CameraExposureOffset offset)
+    : _frameName(frameName), _daiInterleaved(interleaved), _steadyBaseTime(std::chrono::steady_clock::now()), _getBaseDeviceTimestamp(getBaseDeviceTimestamp), _offset(offset) {
     _rosBaseTime = ::ros::Time::now();
 }
 
@@ -47,9 +47,9 @@ void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData
     }
     std::chrono::_V2::steady_clock::time_point tstamp;
     if(_getBaseDeviceTimestamp)
-        tstamp = inData->getTimestampDevice();
+        tstamp = inData->getTimestampDevice(_offset);
     else
-        tstamp = inData->getTimestamp();
+        tstamp = inData->getTimestamp(_offset);
     ImageMsgs::Image outImageMsg;
     StdMsgs::Header header;
     header.frame_id = _frameName;
