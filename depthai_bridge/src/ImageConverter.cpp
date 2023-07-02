@@ -30,7 +30,11 @@ ImageConverter::ImageConverter(bool interleaved, bool getBaseDeviceTimestamp, da
 }
 
 ImageConverter::ImageConverter(const std::string frameName, bool interleaved, bool getBaseDeviceTimestamp, dai::CameraExposureOffset offset)
-    : _frameName(frameName), _daiInterleaved(interleaved), _steadyBaseTime(std::chrono::steady_clock::now()), _getBaseDeviceTimestamp(getBaseDeviceTimestamp), _offset(offset) {
+    : _frameName(frameName),
+      _daiInterleaved(interleaved),
+      _steadyBaseTime(std::chrono::steady_clock::now()),
+      _getBaseDeviceTimestamp(getBaseDeviceTimestamp),
+      _offset(offset) {
     _rosBaseTime = ::ros::Time::now();
 }
 

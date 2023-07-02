@@ -27,7 +27,10 @@ using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono
 class ImageConverter {
    public:
     // ImageConverter() = default;
-    ImageConverter(const std::string frameName, bool interleaved, bool getBaseDeviceTimestamp = false, dai::CameraExposureOffset offset = dai::CameraExposureOffset::END);
+    ImageConverter(const std::string frameName,
+                   bool interleaved,
+                   bool getBaseDeviceTimestamp = false,
+                   dai::CameraExposureOffset offset = dai::CameraExposureOffset::END);
     ImageConverter(bool interleaved, bool getBaseDeviceTimestamp = false, dai::CameraExposureOffset offset = dai::CameraExposureOffset::END);
 
     /**
