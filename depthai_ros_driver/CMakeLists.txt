@@ -54,7 +54,6 @@ rclcpp_components
 std_srvs
 pluginlib
 bondcpp
-tf2_ros
 )
 
 
@@ -106,7 +105,6 @@ target_link_libraries(
 add_library(
   ${PROJECT_NAME} SHARED
   src/camera.cpp
-  src/tf_publisher.cpp
   src/pipeline/pipeline_generator.cpp
   src/pipeline/base_types.cpp
 )

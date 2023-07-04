@@ -9,7 +9,7 @@
 #include "rclcpp/node.hpp"
 #include "std_srvs/srv/trigger.hpp"
 #include "bondcpp/bond.hpp"
-#include "depthai_ros_driver/tf_publisher.hpp"
+#include "depthai_bridge/TFPublisher.hpp"
 
 namespace dai {
 class Pipeline;
@@ -49,5 +49,6 @@ class Camera : public rclcpp::Node {
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
     bool camRunning = false;
     std::unique_ptr<bond::Bond> bond;
+    std::unique_ptr<dai::ros::TFPublisher> tfPub;
 };
 }  // namespace depthai_ros_driver

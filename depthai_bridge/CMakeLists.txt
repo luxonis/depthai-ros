@@ -37,6 +37,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(stereo_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(vision_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 set(dependencies
   camera_info_manager
@@ -48,6 +49,7 @@ set(dependencies
   stereo_msgs
   std_msgs
   vision_msgs
+  tf2_ros
 )
 
 include_directories(
@@ -62,6 +64,7 @@ file(GLOB LIB_SRC
 "src/ImgDetectionConverter.cpp"
 "src/SpatialDetectionConverter.cpp"
 "src/ImuConverter.cpp"
+"src/TFPublisher.cpp"
 )
 
 add_library(${PROJECT_NAME} SHARED ${LIB_SRC})

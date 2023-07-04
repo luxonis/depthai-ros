@@ -1,4 +1,4 @@
-#include "depthai_ros_driver/tf_publisher.hpp"
+#include "depthai_bridge/TFPublisher.hpp"
 
 #include "geometry_msgs/msg/quaternion.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
@@ -8,7 +8,8 @@
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
-namespace depthai_ros_driver {
+namespace dai {
+namespace ros {
 TFPublisher::TFPublisher(rclcpp::Node* node, dai::CalibrationHandler handler) {
     tfPub = std::make_shared<tf2_ros::StaticTransformBroadcaster>(node);
     auto json = handler.eepromToJson();
@@ -66,4 +67,5 @@ TFPublisher::TFPublisher(rclcpp::Node* node, dai::CalibrationHandler handler) {
         tfPub->sendTransform(optical_ts);
     }
 }
-}  // namespace depthai_ros_driver
+}  // namespace ros
+}  // namespace dai
