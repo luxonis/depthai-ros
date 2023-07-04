@@ -9,6 +9,7 @@
 #include "rclcpp/node.hpp"
 #include "std_srvs/srv/trigger.hpp"
 #include "bondcpp/bond.hpp"
+#include "depthai_ros_driver/tf_publisher.hpp"
 
 namespace dai {
 class Pipeline;

@@ -7,6 +7,7 @@
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai_ros_driver/pipeline/pipeline_generator.hpp"
+#include "depthai_ros_driver/tf_publisher.hpp"
 
 namespace depthai_ros_driver {
 
@@ -30,6 +31,7 @@ void Camera::onConfigure() {
     //     std::unique_ptr<bond::Bond> bond = std::make_unique<bond::Bond>(this->get_name() + std::string("_bond"), this->get_name(), this->shared_from_this());
     //     bond->start();
     // }
+    auto tf = std::make_shared<TFPublisher>(this, device->readCalibration());
     RCLCPP_INFO(this->get_logger(), "Camera ready!");
 }
 
