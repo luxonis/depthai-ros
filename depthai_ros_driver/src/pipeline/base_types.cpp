@@ -160,29 +160,32 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> Rae::createPipeline(rclcpp::No
                                                            dai_nodes::StereoSensorInfo{"left_back", dai::CameraBoardSocket::CAM_D},
                                                            dai_nodes::StereoSensorInfo{"right_back", dai::CameraBoardSocket::CAM_E});
 
-    auto nn = std::make_unique<dai_nodes::SpatialNNWrapper>("nn", node, pipeline);
-    stereo_front->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::input)),
-                static_cast<int>(dai_nodes::link_types::StereoLinkType::left_preview));
-    stereo_front->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::inputDepth)),
-                0);
+
+    std::string nTypeUpCase = utils::getUpperCaseStr(nnType);
+    auto nType = utils::getValFromMap(nTypeUpCase, nnTypeMap);
+    switch(nType) {
+        case NNType::None:
+            break;
+        case NNType::RGB: {
+            auto nn = std::make_unique<dai_nodes::SpatialNNWrapper>("nn", node, pipeline);
+            stereo_front->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::input)),
+                               static_cast<int>(dai_nodes::link_types::StereoLinkType::left_preview));
+            daiNodes.push_back(std::move(nn));
+            break;
+        }
+        case NNType::Spatial: {
+            auto nn = std::make_unique<dai_nodes::SpatialNNWrapper>("nn", node, pipeline);
+            stereo_front->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::input)),
+                               static_cast<int>(dai_nodes::link_types::StereoLinkType::left_preview));
+            stereo_front->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::inputDepth)), 0);
+            daiNodes.push_back(std::move(nn));
+            break;
+        }
+        default:
+            break;
+    }
     daiNodes.push_back(std::move(stereo_front));
     daiNodes.push_back(std::move(stereo_back));
-    daiNodes.push_back(std::move(nn));
-    // switch(nType) {
-    //     case NNType::None:
-    //         break;
-    //     case NNType::RGB: {
-    //         auto nn = createNN(node, pipeline, *rgb);
-    //         daiNodes.push_back(std::move(nn));
-    //         break;
-    //     }
-    //     case NNType::Spatial: {
-    //         daiNodes.push_back(std::move(nn));
-    //         break;
-    //     }
-    //     default:
-    //         break;
-    // }
     return daiNodes;
 }
 }  // namespace pipeline_gen
