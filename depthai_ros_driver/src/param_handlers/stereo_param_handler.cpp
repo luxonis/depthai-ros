@@ -43,8 +43,9 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<int>("i_low_bandwidth_quality", 50);
     declareAndLogParam<bool>("i_output_disparity", false);
     declareAndLogParam<bool>("i_get_base_device_timestamp", false);
+    declareAndLogParam<bool>("i_update_ros_base_time_on_ros_msg", false);
     declareAndLogParam<bool>("i_publish_topic", true);
-    
+
     declareAndLogParam<bool>("i_publish_left_rect", false);
     declareAndLogParam<bool>("i_left_rect_low_bandwidth", false);
     declareAndLogParam<int>("i_left_rect_low_bandwidth_quality", 50);
@@ -77,7 +78,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     }
     declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket));
     stereo->setDepthAlign(socket);
-            
+
     if(declareAndLogParam<bool>("i_set_input_size", false)) {
         stereo->setInputResolution(declareAndLogParam<int>("i_input_width", 1280), declareAndLogParam<int>("i_input_height", 720));
     }
@@ -93,13 +94,11 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
         stereo->initialConfig.setSubpixel(true);
         stereo->initialConfig.setSubpixelFractionalBits(declareAndLogParam<int>("i_subpixel_fractional_bits", 3));
     }
-    stereo->setExtendedDisparity(declareAndLogParam<bool>("i_extended_disp", false));
     stereo->setRectifyEdgeFillColor(declareAndLogParam<int>("i_rectify_edge_fill_color", 0));
     auto config = stereo->initialConfig.get();
     config.costMatching.disparityWidth = utils::getValFromMap(declareAndLogParam<std::string>("i_disparity_width", "DISPARITY_96"), disparityWidthMap);
-    if(!config.algorithmControl.enableExtended) {
-        config.costMatching.enableCompanding = declareAndLogParam<bool>("i_enable_companding", false);
-    }
+    stereo->setExtendedDisparity(declareAndLogParam<bool>("i_extended_disp", false));
+    config.costMatching.enableCompanding = declareAndLogParam<bool>("i_enable_companding", false);
     config.postProcessing.temporalFilter.enable = declareAndLogParam<bool>("i_enable_temporal_filter", false);
     if(config.postProcessing.temporalFilter.enable) {
         config.postProcessing.temporalFilter.alpha = declareAndLogParam<float>("i_temporal_filter_alpha", 0.4);
@@ -121,6 +120,10 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     if(declareAndLogParam<bool>("i_enable_threshold_filter", false)) {
         config.postProcessing.thresholdFilter.minRange = declareAndLogParam<int>("i_threshold_filter_min_range", 400);
         config.postProcessing.thresholdFilter.maxRange = declareAndLogParam<int>("i_threshold_filter_max_range", 15000);
+    }
+    if(declareAndLogParam<bool>("i_enable_brightness_filter", false)) {
+        config.postProcessing.brightnessFilter.minBrightness = declareAndLogParam<int>("i_brightness_filter_min_brightness", 0);
+        config.postProcessing.brightnessFilter.maxBrightness = declareAndLogParam<int>("i_brightness_filter_max_brightness", 256);
     }
     if(declareAndLogParam<bool>("i_enable_decimation_filter", false)) {
         config.postProcessing.decimationFilter.decimationMode =

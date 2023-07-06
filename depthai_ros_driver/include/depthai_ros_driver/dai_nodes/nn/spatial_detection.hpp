@@ -50,22 +50,22 @@ class SpatialDetection : public BaseNode {
         if(ph->getParam<bool>("i_disable_resize")) {
             width = getROSNode()->get_parameter("rgb.i_preview_size").as_int();
             height = getROSNode()->get_parameter("rgb.i_preview_size").as_int();
-        }
-        else{
+        } else {
             width = imageManip->initialConfig.getResizeConfig().width;
             height = imageManip->initialConfig.getResizeConfig().height;
         }
-        detConverter = std::make_unique<dai::ros::SpatialDetectionConverter>(tfPrefix + "_camera_optical_frame",
-                                                                             width,
-                                                                             height,
-                                                                             false,
-                                                                             ph->getParam<bool>("i_get_base_device_timestamp"));
+        detConverter = std::make_unique<dai::ros::SpatialDetectionConverter>(
+            tfPrefix + "_camera_optical_frame", width, height, false, ph->getParam<bool>("i_get_base_device_timestamp"));
+        detConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
         nnQ->addCallback(std::bind(&SpatialDetection::spatialCB, this, std::placeholders::_1, std::placeholders::_2));
-        detPub = getROSNode()->template create_publisher<vision_msgs::msg::Detection3DArray>("~/" + getName() + "/spatial_detections", 10);
+        rclcpp::PublisherOptions options;
+        options.qos_overriding_options = rclcpp::QosOverridingOptions();
+        detPub = getROSNode()->template create_publisher<vision_msgs::msg::Detection3DArray>("~/" + getName() + "/spatial_detections", 10, options);
 
         if(ph->getParam<bool>("i_enable_passthrough")) {
             ptQ = device->getOutputQueue(ptQName, ph->getParam<int>("i_max_q_size"), false);
             ptImageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
+            ptImageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
             ptInfoMan = std::make_shared<camera_info_manager::CameraInfoManager>(
                 getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
             ptInfoMan->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
@@ -86,6 +86,7 @@ class SpatialDetection : public BaseNode {
             };
             ptDepthQ = device->getOutputQueue(ptDepthQName, ph->getParam<int>("i_max_q_size"), false);
             ptDepthImageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
+            ptDepthImageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
             ptDepthInfoMan = std::make_shared<camera_info_manager::CameraInfoManager>(
                 getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
             ptDepthInfoMan->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),

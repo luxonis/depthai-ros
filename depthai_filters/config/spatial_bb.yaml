@@ -1,0 +1,16 @@
+/oak:
+  ros__parameters:
+    camera:
+      i_nn_type: spatial
+    rgb:
+      i_enable_preview: true
+      i_keep_preview_aspect_ratio: false
+    nn:
+      i_enable_passthrough: true
+      i_disable_resize: true
+    stereo:
+      i_subpixel: true
+/spatial_bb_node:
+  ros__parameters:
+    desqueeze: true
+
