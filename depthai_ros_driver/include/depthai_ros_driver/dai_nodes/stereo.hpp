@@ -40,7 +40,7 @@ class StereoParamHandler;
 
 namespace dai_nodes {
 namespace link_types {
-enum class StereoLinkType { left, right };
+enum class StereoLinkType { depth, left, left_isp, left_preview, right, right_isp, right_preview};
 };
 
 struct StereoSensorInfo {
@@ -51,11 +51,11 @@ struct StereoSensorInfo {
 class Stereo : public BaseNode {
    public:
     explicit Stereo(const std::string& daiNodeName,
-                    rclcpp::Node* node,
-                    std::shared_ptr<dai::Pipeline> pipeline,
-                    std::shared_ptr<dai::Device> device,
-                    StereoSensorInfo leftInfo = StereoSensorInfo{"left", dai::CameraBoardSocket::LEFT},
-                    StereoSensorInfo rightInfo = StereoSensorInfo{"right", dai::CameraBoardSocket::RIGHT});
+           rclcpp::Node* node,
+           std::shared_ptr<dai::Pipeline> pipeline,
+           std::shared_ptr<dai::Device> device,
+           StereoSensorInfo leftInfo = StereoSensorInfo{"left", dai::CameraBoardSocket::LEFT},
+           StereoSensorInfo rightInfo = StereoSensorInfo{"right", dai::CameraBoardSocket::RIGHT});
     ~Stereo();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;

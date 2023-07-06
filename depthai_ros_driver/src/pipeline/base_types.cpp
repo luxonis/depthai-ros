@@ -142,6 +142,49 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> CamArray::createPipeline(rclcp
     };
     return daiNodes;
 }
+std::vector<std::unique_ptr<dai_nodes::BaseNode>> Rae::createPipeline(rclcpp::Node* node,
+                                                                      std::shared_ptr<dai::Device> device,
+                                                                      std::shared_ptr<dai::Pipeline> pipeline,
+                                                                      const std::string& nnType) {
+    std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
+    auto stereo_front = std::make_unique<dai_nodes::Stereo>("stereo_front",
+                                                            node,
+                                                            pipeline,
+                                                            device,
+                                                            dai_nodes::StereoSensorInfo{"left_front", dai::CameraBoardSocket::CAM_B},
+                                                            dai_nodes::StereoSensorInfo{"right_front", dai::CameraBoardSocket::CAM_C});
+    auto stereo_back = std::make_unique<dai_nodes::Stereo>("stereo_back",
+                                                           node,
+                                                           pipeline,
+                                                           device,
+                                                           dai_nodes::StereoSensorInfo{"left_back", dai::CameraBoardSocket::CAM_D},
+                                                           dai_nodes::StereoSensorInfo{"right_back", dai::CameraBoardSocket::CAM_E});
+
+    auto nn = std::make_unique<dai_nodes::SpatialNNWrapper>("nn", node, pipeline);
+    stereo_front->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::input)),
+                static_cast<int>(dai_nodes::link_types::StereoLinkType::left_preview));
+    stereo_front->link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::inputDepth)),
+                0);
+    daiNodes.push_back(std::move(stereo_front));
+    daiNodes.push_back(std::move(stereo_back));
+    daiNodes.push_back(std::move(nn));
+    // switch(nType) {
+    //     case NNType::None:
+    //         break;
+    //     case NNType::RGB: {
+    //         auto nn = createNN(node, pipeline, *rgb);
+    //         daiNodes.push_back(std::move(nn));
+    //         break;
+    //     }
+    //     case NNType::Spatial: {
+    //         daiNodes.push_back(std::move(nn));
+    //         break;
+    //     }
+    //     default:
+    //         break;
+    // }
+    return daiNodes;
+}
 }  // namespace pipeline_gen
 }  // namespace depthai_ros_driver
 
@@ -153,3 +196,4 @@ PLUGINLIB_EXPORT_CLASS(depthai_ros_driver::pipeline_gen::RGBStereo, depthai_ros_
 PLUGINLIB_EXPORT_CLASS(depthai_ros_driver::pipeline_gen::Stereo, depthai_ros_driver::pipeline_gen::BasePipeline)
 PLUGINLIB_EXPORT_CLASS(depthai_ros_driver::pipeline_gen::Depth, depthai_ros_driver::pipeline_gen::BasePipeline)
 PLUGINLIB_EXPORT_CLASS(depthai_ros_driver::pipeline_gen::CamArray, depthai_ros_driver::pipeline_gen::BasePipeline)
+PLUGINLIB_EXPORT_CLASS(depthai_ros_driver::pipeline_gen::Rae, depthai_ros_driver::pipeline_gen::BasePipeline)
