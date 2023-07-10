@@ -78,7 +78,7 @@ void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData
             break;
         }
         default: {
-            throw(std::runtime_error("Converted type not supported!"));
+            throw std::runtime_error("Converted type not supported!");
         }
     }
 
@@ -113,9 +113,9 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<
         tstamp = inData->getTimestamp();
     ImageMsgs::Image outImageMsg;
     StdMsgs::Header header;
-    header.frame_id = _frameName;
-
+    header.seq = (uint32_t)inData->getSequenceNum();
     header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
+    header.frame_id = _frameName;
 
     if(planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end()) {
         cv::Mat mat, output;
@@ -134,7 +134,7 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<
                 break;
 
             default:
-                std::runtime_error("Invalid dataType inputs..");
+                throw std::runtime_error("Invalid dataType inputs..");
                 break;
         }
         mat = cv::Mat(size, type, inData->getData().data());
@@ -208,7 +208,7 @@ void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outD
             return pair.second == inMsg.encoding;
         });
         if(revEncodingIter == encodingEnumMap.end())
-            std::runtime_error(
+            throw std::runtime_error(
                 "Unable to find DAI encoding for the corresponding "
                 "sensor_msgs::image.encoding stream");
 
@@ -271,7 +271,7 @@ void ImageConverter::planarToInterleaved(const std::vector<uint8_t>& srcData, st
             destData[i * 3 + 2] = r;
         }
     } else {
-        std::runtime_error(
+        throw std::runtime_error(
             "If you encounter the scenario where you need this "
             "please create an issue on github");
     }
@@ -291,7 +291,7 @@ void ImageConverter::interleavedToPlanar(const std::vector<uint8_t>& srcData, st
             destData[i + w * h * 2] = r;
         }
     } else {
-        std::runtime_error(
+        throw std::runtime_error(
             "If you encounter the scenario where you need this "
             "please create an issue on github");
     }
@@ -305,7 +305,7 @@ cv::Mat ImageConverter::rosMsgtoCvMat(ImageMsgs::Image& inMsg) {
         cv::cvtColor(nv_frame, rgb, cv::COLOR_YUV2BGR_NV12);
         return rgb;
     } else {
-        std::runtime_error("This frature is still WIP");
+        throw std::runtime_error("This frature is still WIP");
         return rgb;
     }
 }
