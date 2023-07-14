@@ -108,9 +108,9 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<
     }
     std::chrono::_V2::steady_clock::time_point tstamp;
     if(_getBaseDeviceTimestamp)
-        tstamp = inData->getTimestampDevice();
+        tstamp = inData->getTimestampDevice(_offset);
     else
-        tstamp = inData->getTimestamp();
+        tstamp = inData->getTimestamp(_offset);
     ImageMsgs::Image outImageMsg;
     StdMsgs::Header header;
     header.seq = (uint32_t)inData->getSequenceNum();
