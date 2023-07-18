@@ -86,10 +86,10 @@ void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData
 
     // converting disparity
     if(type == dai::RawImgFrame::Type::RAW8) {
-        auto factor = (info.K[0] * info.P[3]);
+        auto factor = std::abs(info.P[3]) * 1000;
         cv::Mat depthOut = cv::Mat(cv::Size(output.cols, output.rows), CV_16UC1);
-        depthOut.forEach<short>([&output, &factor](short& pixel, const int* position) -> void {
-            auto disp = output.at<int8_t>(position);
+        depthOut.forEach<uint16_t>([&output, &factor](uint16_t& pixel, const int* position) -> void {
+            auto disp = output.at<uint8_t>(position);
             if(disp == 0)
                 pixel = 0;
             else
