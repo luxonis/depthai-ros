@@ -29,7 +29,7 @@ class BridgePublisher {
     using ConvertFunc = std::function<void(std::shared_ptr<SimMsg>, std::deque<RosMsg>&)>;
 
     using CustomPublisher = typename std::
-        conditional<std::is_same<RosMsg, ImageMsgs::Image>::value, std::shared_ptr<image_transport::Publisher>, std::shared_ptr<rosOrigin::Publisher>>::type;
+        conditional<std::is_same<RosMsg, ImageMsgs::Image>::value, std::shared_ptr<image_transport::Publisher>, std::shared_ptr<rosOrigin::Publisher> >::type;
 
     BridgePublisher(std::shared_ptr<dai::DataOutputQueue> daiMessageQueue,
                     rosOrigin::NodeHandle nh,
@@ -45,12 +45,7 @@ class BridgePublisher {
                     ConvertFunc converter,
                     int queueSize,
                     ImageMsgs::CameraInfo cameraInfoData,
-                    std::string cameraName,
-                    std::vector<std::shared_ptr<dai::DataOutputQueue>> syncImageQueues = {},
-                    std::vector<std::string> syncImageTopics = {},
-                    std::vector<std::function<void(std::shared_ptr<dai::ImgFrame>, std::deque<ImageMsgs::Image>&)>> syncImageConverters = {},
-                    std::vector<ImageMsgs::CameraInfo> syncCameraInfo = {},
-                    std::vector<std::string> syncCameraNames = {});
+                    std::string cameraName);
 
     /**
      * Tag Dispacher function to to overload the Publisher to ImageTransport Publisher
@@ -81,23 +76,18 @@ class BridgePublisher {
 
     static const std::string LOG_TAG;
     std::shared_ptr<dai::DataOutputQueue> _daiMessageQueue;
-    std::vector<std::shared_ptr<dai::DataOutputQueue>> _syncImageQueues;
     ConvertFunc _converter;
-    std::vector<std::function<void(std::shared_ptr<dai::ImgFrame>, std::deque<ImageMsgs::Image>&)>> _syncImageConverters;
 
     rosOrigin::NodeHandle _nh;
     std::shared_ptr<rosOrigin::Publisher> _cameraInfoPublisher;
-    std::vector<std::shared_ptr<rosOrigin::Publisher>> _syncCameraInfoPublishers;
 
     image_transport::ImageTransport _it;
     ImageMsgs::CameraInfo _cameraInfoData;
     CustomPublisher _rosPublisher;
-    std::vector<std::shared_ptr<image_transport::Publisher>> _syncImagePublishers;
 
     std::thread _readingThread;
     std::string _rosTopic, _camInfoFrameId, _cameraName, _cameraParamUri;
     std::unique_ptr<camera_info_manager::CameraInfoManager> _camInfoManager;
-    std::vector<std::unique_ptr<camera_info_manager::CameraInfoManager>> _syncCamInfoManagers;
     bool _isCallbackAdded = false;
     bool _isImageMessage = false;  // used to enable camera info manager
 };
@@ -125,43 +115,22 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(std::shared_ptr<dai::DataOutput
 }
 
 template <class RosMsg, class SimMsg>
-BridgePublisher<RosMsg, SimMsg>::BridgePublisher(
-    std::shared_ptr<dai::DataOutputQueue> daiMessageQueue,
-    rosOrigin::NodeHandle nh,
-    std::string rosTopic,
-    ConvertFunc converter,
-    int queueSize,
-    ImageMsgs::CameraInfo cameraInfoData,
-    std::string cameraName,
-    std::vector<std::shared_ptr<dai::DataOutputQueue>> syncImageQueues,
-    std::vector<std::string> syncImageTopics,
-    std::vector<std::function<void(std::shared_ptr<dai::ImgFrame>, std::deque<ImageMsgs::Image>&)>> syncImageConverters,
-    std::vector<ImageMsgs::CameraInfo> syncCameraInfo,
-    std::vector<std::string> syncCameraNames)
+BridgePublisher<RosMsg, SimMsg>::BridgePublisher(std::shared_ptr<dai::DataOutputQueue> daiMessageQueue,
+                                                 rosOrigin::NodeHandle nh,
+                                                 std::string rosTopic,
+                                                 ConvertFunc converter,
+                                                 int queueSize,
+                                                 ImageMsgs::CameraInfo cameraInfoData,
+                                                 std::string cameraName)
     : _daiMessageQueue(daiMessageQueue),
       _nh(nh),
       _converter(converter),
       _it(_nh),
       _cameraInfoData(cameraInfoData),
       _rosTopic(rosTopic),
-      _cameraName(cameraName),
-      _syncImageQueues(syncImageQueues),
-      _syncImageConverters(syncImageConverters) {
+      _cameraName(cameraName) {
     // ROS_DEBUG_STREAM_NAMED(LOG_TAG, "Publisher Type : " << typeid(CustomPublisher).name());
     _rosPublisher = advertise(queueSize, std::is_same<RosMsg, ImageMsgs::Image>{});
-    if((syncImageQueues.size() | syncImageTopics.size() | syncImageConverters.size() | syncCameraInfo.size() | syncCameraNames.size())
-       == (syncImageQueues.size() & syncImageTopics.size() & syncImageConverters.size() & syncCameraInfo.size() & syncCameraNames.size())) {
-        for(size_t i = 0; i < syncImageTopics.size(); i++) {
-            _syncCamInfoManagers.emplace_back(
-                std::make_unique<camera_info_manager::CameraInfoManager>(rosOrigin::NodeHandle{_nh, syncCameraNames[i]}, syncCameraNames[i]));
-            _syncCamInfoManagers[i]->setCameraInfo(syncCameraInfo[i]);
-            _syncCameraInfoPublishers.emplace_back(
-                std::make_shared<rosOrigin::Publisher>(_nh.advertise<ImageMsgs::CameraInfo>(syncCameraNames[i] + "/camera_info", queueSize)));
-            _syncImagePublishers.emplace_back(std::make_shared<image_transport::Publisher>(_it.advertise(syncImageTopics[i], queueSize)));
-        }
-    } else {
-        throw std::runtime_error("sync params should have the same size");
-    }
 }
 
 template <class RosMsg, class SimMsg>
@@ -207,7 +176,7 @@ void BridgePublisher<RosMsg, SimMsg>::daiCallback(std::string name, std::shared_
 template <class RosMsg, class SimMsg>
 void BridgePublisher<RosMsg, SimMsg>::startPublisherThread() {
     if(_isCallbackAdded) {
-        throw std::runtime_error(
+        std::runtime_error(
             "addPublisherCallback() function adds a callback to the"
             "depthai which handles the publishing so no need to start"
             "the thread using startPublisherThread() ");
@@ -250,53 +219,27 @@ void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDa
     }
     mainSubCount = _rosPublisher->getNumSubscribers();
 
-    _converter(inDataPtr, opMsgs);
+    if(mainSubCount > 0 || infoSubCount > 0) {
+        _converter(inDataPtr, opMsgs);
 
-    while(opMsgs.size()) {
-        RosMsg currMsg = opMsgs.front();
-
-        for(size_t i = 0; i < _syncImagePublishers.size(); i++) {
-            std::shared_ptr<dai::ImgFrame> syncImagePtr = _syncImageQueues[i]->get<dai::ImgFrame>();
-            while((uint32_t)syncImagePtr->getSequenceNum() < currMsg.header.seq) {
-                syncImagePtr = _syncImageQueues[i]->get<dai::ImgFrame>();
+        while(opMsgs.size()) {
+            RosMsg currMsg = opMsgs.front();
+            if(mainSubCount > 0) {
+                _rosPublisher->publish(currMsg);
             }
 
-            int syncInfoSubCount = 0, syncMainSubCount = 0;
-            syncInfoSubCount = _syncCameraInfoPublishers[i]->getNumSubscribers();
-            syncMainSubCount = _syncImagePublishers[i]->getNumSubscribers();
-
-            if(syncInfoSubCount > 0 || syncMainSubCount > 0) {
-                std::deque<ImageMsgs::Image> syncImageMsgs;
-                _syncImageConverters[i](syncImagePtr, syncImageMsgs);
-
-                if(syncInfoSubCount > 0) {
-                    auto cameraInfo = _syncCamInfoManagers[i]->getCameraInfo();
-                    cameraInfo.header = syncImageMsgs.front().header;
-                    cameraInfo.header.stamp = currMsg.header.stamp;
-                    _syncCameraInfoPublishers[i]->publish(cameraInfo);
-                }
-
-                if(syncMainSubCount > 0) {
-                    ImageMsgs::Image imageMsg = syncImageMsgs.front();
-                    imageMsg.header.stamp = currMsg.header.stamp;
-                    _syncImagePublishers[i]->publish(imageMsg);
-                }
+            if(infoSubCount > 0) {
+                // if (_isImageMessage){
+                //     _camInfoFrameId = curr.header.frame_id
+                // }
+                auto localCameraInfo = _camInfoManager->getCameraInfo();
+                localCameraInfo.header.seq = currMsg.header.seq;
+                localCameraInfo.header.stamp = currMsg.header.stamp;
+                localCameraInfo.header.frame_id = currMsg.header.frame_id;
+                _cameraInfoPublisher->publish(localCameraInfo);
             }
+            opMsgs.pop_front();
         }
-
-        if(mainSubCount > 0) {
-            _rosPublisher->publish(currMsg);
-        }
-
-        if(infoSubCount > 0) {
-            // if (_isImageMessage){
-            //     _camInfoFrameId = curr.header.frame_id
-            // }
-            auto localCameraInfo = _camInfoManager->getCameraInfo();
-            localCameraInfo.header = currMsg.header;
-            _cameraInfoPublisher->publish(localCameraInfo);
-        }
-        opMsgs.pop_front();
     }
 }
 

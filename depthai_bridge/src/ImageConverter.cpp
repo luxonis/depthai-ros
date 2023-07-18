@@ -113,9 +113,9 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<
         tstamp = inData->getTimestamp(_offset);
     ImageMsgs::Image outImageMsg;
     StdMsgs::Header header;
-    header.seq = (uint32_t)inData->getSequenceNum();
-    header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
     header.frame_id = _frameName;
+
+    header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
 
     if(planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end()) {
         cv::Mat mat, output;
