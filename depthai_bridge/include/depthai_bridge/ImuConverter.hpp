@@ -108,14 +108,14 @@ class ImuConverter {
             }
 
             if(_syncMode == ImuSyncMethod::LINEAR_INTERPOLATE_ACCEL) {
-                if(accelHist.size() < 3) {
+                if(accelHist.size() < 3 && gyroHist.size() && rotationHist.size() && magnHist.size()) {
                     continue;
                 } else {
                     interpolate(accelHist, gyroHist, rotationHist, magnHist, imuMsgs);
                 }
 
             } else if(_syncMode == ImuSyncMethod::LINEAR_INTERPOLATE_GYRO) {
-                if(gyroHist.size() < 3) {
+                if(gyroHist.size() < 3 && accelHist.size() && rotationHist.size() && magnHist.size()) {
                     continue;
                 } else {
                     interpolate(gyroHist, accelHist, rotationHist, magnHist, imuMsgs);
