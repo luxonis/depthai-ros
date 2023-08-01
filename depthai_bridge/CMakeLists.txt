@@ -37,6 +37,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(stereo_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(vision_msgs REQUIRED)
+find_package(spdlog REQUIRED)
 
 set(dependencies
   camera_info_manager
@@ -48,6 +49,7 @@ set(dependencies
   stereo_msgs
   std_msgs
   vision_msgs
+  spdlog
 )
 
 include_directories(
