@@ -98,6 +98,7 @@ dai_add_node_ros2(crop_control_service src/crop_control_service.cpp)
 dai_add_node_ros2(mobilenet_node src/mobilenet_publisher.cpp)
 dai_add_node_ros2(rgb_stereo_node src/rgb_stereo_node.cpp)
 dai_add_node_ros2(stereo_inertial_node src/stereo_inertial_publisher.cpp)
+dai_add_node_ros2(feature_tracker src/feature_tracker_publisher.cpp)
 dai_add_node_ros2(stereo_node src/stereo_publisher.cpp)
 dai_add_node_ros2(yolov4_spatial_node src/yolov4_spatial_publisher.cpp)
 
@@ -123,6 +124,7 @@ install(TARGETS
         stereo_inertial_node
         stereo_node
         yolov4_spatial_node
+        feature_tracker
         DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
