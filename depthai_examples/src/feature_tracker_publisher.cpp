@@ -21,12 +21,9 @@
 #include "depthai_bridge/TrackedFeaturesConverter.hpp"
 
 
-
-
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("feature_tracker");
-
 
     dai::Pipeline pipeline;
 
@@ -36,14 +33,11 @@ int main(int argc, char** argv) {
     auto featureTrackerLeft = pipeline.create<dai::node::FeatureTracker>();
     auto featureTrackerRight = pipeline.create<dai::node::FeatureTracker>();
 
-
     auto xoutTrackedFeaturesLeft = pipeline.create<dai::node::XLinkOut>();
     auto xoutTrackedFeaturesRight = pipeline.create<dai::node::XLinkOut>();
 
-
     xoutTrackedFeaturesLeft->setStreamName("trackedFeaturesLeft");
     xoutTrackedFeaturesRight->setStreamName("trackedFeaturesRight");
-
 
     // Properties
     monoLeft->setResolution(dai::MonoCameraProperties::SensorResolution::THE_720_P);
@@ -58,7 +52,6 @@ int main(int argc, char** argv) {
 
     monoRight->out.link(featureTrackerRight->inputImage);
     featureTrackerRight->outputFeatures.link(xoutTrackedFeaturesRight->input);
-
 
     // By default the least mount of resources are allocated
     // increasing it improves performance when optical flow is enabled
@@ -80,8 +73,6 @@ int main(int argc, char** argv) {
     dai::rosBridge::TrackedFeaturesConverter leftConverter(tfPrefix + "_left_camera_optical_frame", true);
 
     dai::rosBridge::TrackedFeaturesConverter rightConverter(tfPrefix + "_right_camera_optical_frame", true);
-
-
 
     dai::rosBridge::BridgePublisher<depthai_ros_msgs::msg::TrackedFeatures, dai::TrackedFeatures> featuresPubL(
         outputFeaturesLeftQueue,
