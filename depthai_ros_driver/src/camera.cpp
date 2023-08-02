@@ -3,7 +3,6 @@
 #include <fstream>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
-#include "bondcpp/bond.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai_ros_driver/pipeline/pipeline_generator.hpp"
@@ -27,10 +26,6 @@ void Camera::onConfigure() {
     stopSrv = this->create_service<Trigger>("~/stop_camera", std::bind(&Camera::stopCB, this, std::placeholders::_1, std::placeholders::_2));
     savePipelineSrv = this->create_service<Trigger>("~/save_pipeline", std::bind(&Camera::savePipelineCB, this, std::placeholders::_1, std::placeholders::_2));
     saveCalibSrv = this->create_service<Trigger>("~/save_calibration", std::bind(&Camera::saveCalibCB, this, std::placeholders::_1, std::placeholders::_2));
-    // if(ph->getParam<bool>("i_enable_bond")) {
-    //     std::unique_ptr<bond::Bond> bond = std::make_unique<bond::Bond>(this->get_name() + std::string("_bond"), this->get_name(), this->shared_from_this());
-    //     bond->start();
-    // }
     tfPub = std::make_unique<dai::ros::TFPublisher>(this, device->readCalibration());
     RCLCPP_INFO(this->get_logger(), "Camera ready!");
 }

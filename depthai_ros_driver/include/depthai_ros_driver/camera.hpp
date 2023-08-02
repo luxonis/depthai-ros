@@ -8,7 +8,6 @@
 #include "depthai_ros_driver/param_handlers/camera_param_handler.hpp"
 #include "rclcpp/node.hpp"
 #include "std_srvs/srv/trigger.hpp"
-#include "bondcpp/bond.hpp"
 #include "depthai_bridge/TFPublisher.hpp"
 
 namespace dai {
@@ -48,7 +47,6 @@ class Camera : public rclcpp::Node {
     std::shared_ptr<dai::Device> device;
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
     bool camRunning = false;
-    std::unique_ptr<bond::Bond> bond;
     std::unique_ptr<dai::ros::TFPublisher> tfPub;
 };
 }  // namespace depthai_ros_driver

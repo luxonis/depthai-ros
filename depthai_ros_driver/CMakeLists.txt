@@ -53,7 +53,6 @@ rclcpp
 rclcpp_components 
 std_srvs
 pluginlib
-bondcpp
 )
 
 

@@ -35,6 +35,19 @@ void CameraParamHandler::declareParams() {
     declareAndLogParam<std::string>("i_external_calibration_path", "");
     declareAndLogParam<int>("i_laser_dot_brightness", 800, getRangedIntDescriptor(0, 1200));
     declareAndLogParam<int>("i_floodlight_brightness", 0, getRangedIntDescriptor(0, 1500));
+    
+    declareAndLogParam<bool>("i_publish_tf_from_calibration", false);
+    declareAndLogParam<std::string>("i_camera_name", "oak");
+    declareAndLogParam<std::string>("i_camera_model", "OAK-D");
+    declareAndLogParam<std::string>("i_base_frame", "oak-d_frame");
+    declareAndLogParam<std::string>("i_parent_frame", "oak-d-base-frame");
+    declareAndLogParam<std::string>("i_cam_pos_x", "0.0");
+    declareAndLogParam<std::string>("i_cam_pos_y", "0.0");
+    declareAndLogParam<std::string>("i_cam_pos_z", "0.0");
+    declareAndLogParam<std::string>("i_cam_roll", "1.5708");
+    declareAndLogParam<std::string>("i_cam_pitch", "0.0");
+    declareAndLogParam<std::string>("i_cam_yaw", "1.5708");
+
 }
 dai::CameraControl CameraParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& /*params*/) {
     dai::CameraControl ctrl;
