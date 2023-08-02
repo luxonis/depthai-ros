@@ -26,7 +26,9 @@ void Camera::onConfigure() {
     stopSrv = this->create_service<Trigger>("~/stop_camera", std::bind(&Camera::stopCB, this, std::placeholders::_1, std::placeholders::_2));
     savePipelineSrv = this->create_service<Trigger>("~/save_pipeline", std::bind(&Camera::savePipelineCB, this, std::placeholders::_1, std::placeholders::_2));
     saveCalibSrv = this->create_service<Trigger>("~/save_calibration", std::bind(&Camera::saveCalibCB, this, std::placeholders::_1, std::placeholders::_2));
-    tfPub = std::make_unique<dai::ros::TFPublisher>(this, device->readCalibration());
+    if(ph->getParam<bool>("i_publish_tf_from_calibration")){
+        tfPub = std::make_unique<dai::ros::TFPublisher>(this, device->readCalibration(), ph->getParam<std::string>("i_tf_publisher_xacro_args"));
+    }
     RCLCPP_INFO(this->get_logger(), "Camera ready!");
 }
 
