@@ -66,7 +66,7 @@ void Segmentation::setupQueues(std::shared_ptr<dai::Device> device) {
         infoManager->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
                                                                 *imageConverter,
                                                                 device,
-                                                                dai::CameraBoardSocket::RGB,
+                                                                dai::CameraBoardSocket::CAM_A,
                                                                 imageManip->initialConfig.getResizeWidth(),
                                                                 imageManip->initialConfig.getResizeWidth()));
 
