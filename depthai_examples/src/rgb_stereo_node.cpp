@@ -48,9 +48,9 @@ dai::Pipeline createPipeline(bool lrcheck, bool extended, bool subpixel, int con
 
     // MonoCamera
     monoLeft->setResolution(monoResolution);
-    monoLeft->setBoardSocket(dai::CameraBoardSocket::LEFT);
+    monoLeft->setBoardSocket(dai::CameraBoardSocket::CAM_B);
     monoRight->setResolution(monoResolution);
-    monoRight->setBoardSocket(dai::CameraBoardSocket::RIGHT);
+    monoRight->setBoardSocket(dai::CameraBoardSocket::CAM_C);
 
     // StereoDepth
     stereo->initialConfig.setConfidenceThreshold(confidence);
@@ -60,7 +60,7 @@ dai::Pipeline createPipeline(bool lrcheck, bool extended, bool subpixel, int con
     stereo->setLeftRightCheck(lrcheck);
     stereo->setExtendedDisparity(extended);
     stereo->setSubpixel(subpixel);
-    // stereo->setDepthAlign(dai::CameraBoardSocket::RGB);
+    // stereo->setDepthAlign(dai::CameraBoardSocket::CAM_A);
     // // Link plugins CAM -> STEREO -> XLINK
     monoLeft->out.link(stereo->left);
     monoRight->out.link(stereo->right);
@@ -70,7 +70,7 @@ dai::Pipeline createPipeline(bool lrcheck, bool extended, bool subpixel, int con
     auto colorCam = pipeline.create<dai::node::ColorCamera>();
     auto xlinkOut = pipeline.create<dai::node::XLinkOut>();
     xlinkOut->setStreamName("video");
-    colorCam->setBoardSocket(dai::CameraBoardSocket::RGB);
+    colorCam->setBoardSocket(dai::CameraBoardSocket::CAM_A);
 
     colorCam->setResolution(dai::ColorCameraProperties::SensorResolution::THE_1080_P);
     colorCam->setInterleaved(true);
@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
     std::string color_uri = camera_param_uri + "/" + "color.yaml";
 
     dai::rosBridge::ImageConverter depthConverter(tfPrefix + "_right_camera_optical_frame", true);
-    auto rgbCameraInfo = depthConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RGB, 1280, 720);
+    auto rgbCameraInfo = depthConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_A, 1280, 720);
 
     dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame> depthPublish(stereoQueue,
                                                                                     pnh,

@@ -93,7 +93,7 @@ class StereoNodelet : public nodelet::Nodelet {
         }
 
         leftConverter = std::make_unique<dai::rosBridge::ImageConverter>(tfPrefix + "_left_camera_optical_frame", true);
-        auto leftCameraInfo = leftConverter->calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::LEFT, monoWidth, monoHeight);
+        auto leftCameraInfo = leftConverter->calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_B, monoWidth, monoHeight);
 
         leftPublish = std::make_unique<dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame>>(
             leftQueue,
@@ -108,7 +108,7 @@ class StereoNodelet : public nodelet::Nodelet {
         leftPublish->addPublisherCallback();
 
         rightConverter = std::make_unique<dai::rosBridge::ImageConverter>(tfPrefix + "_right_camera_optical_frame", true);
-        auto rightCameraInfo = rightConverter->calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RIGHT, monoWidth, monoHeight);
+        auto rightCameraInfo = rightConverter->calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_C, monoWidth, monoHeight);
 
         rightPublish = std::make_unique<dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame>>(
             rightQueue,
@@ -187,9 +187,9 @@ class StereoNodelet : public nodelet::Nodelet {
 
         // MonoCamera
         monoLeft->setResolution(monoResolution);
-        monoLeft->setBoardSocket(dai::CameraBoardSocket::LEFT);
+        monoLeft->setBoardSocket(dai::CameraBoardSocket::CAM_B);
         monoRight->setResolution(monoResolution);
-        monoRight->setBoardSocket(dai::CameraBoardSocket::RIGHT);
+        monoRight->setBoardSocket(dai::CameraBoardSocket::CAM_C);
 
         // int maxDisp = 96;
         // if (extended) maxDisp *= 2;

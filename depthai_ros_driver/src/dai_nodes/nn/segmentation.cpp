@@ -63,7 +63,7 @@ void Segmentation::setupQueues(std::shared_ptr<dai::Device> device) {
         imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), getName()), "/" + getName());
         infoManager->setCameraInfo(sensor_helpers::getCalibInfo(
-            *imageConverter, device, dai::CameraBoardSocket::RGB, imageManip->initialConfig.getResizeWidth(), imageManip->initialConfig.getResizeWidth()));
+            *imageConverter, device, dai::CameraBoardSocket::CAM_A, imageManip->initialConfig.getResizeWidth(), imageManip->initialConfig.getResizeWidth()));
 
         ptPub = it.advertiseCamera(getName() + "/passthrough/image_raw", 1);
         ptQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager));
