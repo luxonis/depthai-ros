@@ -109,10 +109,9 @@ class ImuConverter {
                 if(accelHist.size() < 3) {
                     continue;
                 } else {
-                    if(_enable_rotation){
-                    interpolate(accelHist, gyroHist, rotationHist, magnHist, imuMsgs);
-                    }
-                    else{
+                    if(_enable_rotation) {
+                        interpolate(accelHist, gyroHist, rotationHist, magnHist, imuMsgs);
+                    } else {
                         interpolate(accelHist, gyroHist, imuMsgs);
                     }
                 }
@@ -121,10 +120,9 @@ class ImuConverter {
                 if(gyroHist.size() < 3) {
                     continue;
                 } else {
-                    if(_enable_rotation){
-                    interpolate(gyroHist, accelHist, rotationHist, magnHist, imuMsgs);
-                    }
-                    else{
+                    if(_enable_rotation) {
+                        interpolate(gyroHist, accelHist, rotationHist, magnHist, imuMsgs);
+                    } else {
                         interpolate(gyroHist, accelHist, imuMsgs);
                     }
                 }

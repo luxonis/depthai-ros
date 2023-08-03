@@ -126,12 +126,11 @@ void ImuConverter::toRosDaiMsg(std::shared_ptr<dai::IMUData> inData, std::deque<
                 tstamp = accel.getTimestampDevice();
             else
                 tstamp = accel.getTimestamp();
-            if(_enable_rotation){
+            if(_enable_rotation) {
                 auto rot = inData->packets[i].rotationVector;
                 auto magn = inData->packets[i].magneticField;
                 CreateUnitMessage(accel, gyro, rot, magn, msg, tstamp);
-            }
-            else{
+            } else {
                 CreateUnitMessage(accel, gyro, msg, tstamp);
             }
             outImuMsgs.push_back(msg);
