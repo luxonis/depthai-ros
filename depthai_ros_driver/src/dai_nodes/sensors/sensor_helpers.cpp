@@ -114,15 +114,9 @@ void imgCB(const std::string& /*name*/,
            image_transport::CameraPublisher& pub,
            std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager) {
     auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
-    std::deque<sensor_msgs::msg::Image> deq;
     auto info = infoManager->getCameraInfo();
-    converter.toRosMsg(img, deq);
-    while(deq.size() > 0) {
-        auto currMsg = deq.front();
-        info.header = currMsg.header;
-        pub.publish(currMsg, info);
-        deq.pop_front();
-    }
+    pub.publish(converter.convertData(img), info);
+    
 }
 sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
                                           dai::ros::ImageConverter& converter,

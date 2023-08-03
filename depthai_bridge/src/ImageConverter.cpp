@@ -101,8 +101,8 @@ void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData
     return;
 }
 
-void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs) {
-    if(_updateRosBaseTimeOnToRosMsg) {
+ImageMsgs::Image ImageConverter::convertData(std::shared_ptr<dai::ImgFrame> inData){
+        if(_updateRosBaseTimeOnToRosMsg) {
         updateRosBaseTime();
     }
     std::chrono::_V2::steady_clock::time_point tstamp;
@@ -142,22 +142,20 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<
         switch(inData->getType()) {
             case dai::RawImgFrame::Type::RGB888p: {
                 cv::Size s(inData->getWidth(), inData->getHeight());
-                std::vector<cv::Mat> channels;
-                // RGB
-                channels.push_back(cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 2));
-                channels.push_back(cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 1));
-                channels.push_back(cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 0));
-                cv::merge(channels, output);
+                cv::Mat m1 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 2);
+                cv::Mat m2 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 1);
+                cv::Mat m3 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 0);
+                cv::Mat channels[3] = {m1, m2, m3};
+                cv::merge(channels, 3, output);
             } break;
 
             case dai::RawImgFrame::Type::BGR888p: {
                 cv::Size s(inData->getWidth(), inData->getHeight());
-                std::vector<cv::Mat> channels;
-                // BGR
-                channels.push_back(cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 0));
-                channels.push_back(cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 1));
-                channels.push_back(cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 2));
-                cv::merge(channels, output);
+                cv::Mat m1 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 0);
+                cv::Mat m2 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 1);
+                cv::Mat m3 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 2);
+                cv::Mat channels[3] = {m1, m2, m3};
+                cv::merge(channels, 3, output);
             } break;
 
             case dai::RawImgFrame::Type::YUV420p:
@@ -188,19 +186,33 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<
             outImageMsg.is_bigendian = true;
 
         size_t size = inData->getData().size();
-        outImageMsg.data.resize(size);
-        unsigned char* imageMsgDataPtr = reinterpret_cast<unsigned char*>(&outImageMsg.data[0]);
-        unsigned char* daiImgData = reinterpret_cast<unsigned char*>(inData->getData().data());
-
-        // TODO(Sachin): Try using assign since it is a vector
-        // img->data.assign(packet.data->cbegin(), packet.data->cend());
-        memcpy(imageMsgDataPtr, daiImgData, size);
+        outImageMsg.data.reserve(size);
+        outImageMsg.data = std::move(inData->getData());
     }
+    return outImageMsg;
+}
+
+void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs) {
+    auto outImageMsg = convertData(inData);
     outImageMsgs.push_back(outImageMsg);
     return;
 }
 
-// TODO(sachin): Not tested
+ImagePtr ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
+    std::deque<ImageMsgs::Image> msgQueue;
+    toRosMsg(inData, msgQueue);
+    auto msg = msgQueue.front();
+
+    ImagePtr ptr = std::make_shared<ImageMsgs::Image>(msg);
+    return ptr;
+}
+
+
+void ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData, std::unique_ptr<ImageMsgs::Image>& imageMsg){
+    // auto msg = convertData(inData);
+    // imageMsg.reset(new msg);
+}
+
 void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outData) {
     std::unordered_map<dai::RawImgFrame::Type, std::string>::iterator revEncodingIter;
     if(_daiInterleaved) {
@@ -247,14 +259,6 @@ void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outD
     outData.setType(revEncodingIter->first);
 }
 
-ImagePtr ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
-    std::deque<ImageMsgs::Image> msgQueue;
-    toRosMsg(inData, msgQueue);
-    auto msg = msgQueue.front();
-
-    ImagePtr ptr = std::make_shared<ImageMsgs::Image>(msg);
-    return ptr;
-}
 
 void ImageConverter::planarToInterleaved(const std::vector<uint8_t>& srcData, std::vector<uint8_t>& destData, int w, int h, int numPlanes, int bpp) {
     if(numPlanes == 3) {

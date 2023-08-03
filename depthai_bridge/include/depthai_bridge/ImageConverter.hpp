@@ -61,7 +61,9 @@ class ImageConverter {
                                const sensor_msgs::msg::CameraInfo& info);
 
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs);
+    ImageMsgs::Image convertData(std::shared_ptr<dai::ImgFrame> inData);
     ImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
+    void toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData, std::unique_ptr<ImageMsgs::Image>& imageMsg);
 
     void toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outData);
 
