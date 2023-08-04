@@ -74,7 +74,8 @@ class Detection : public BaseNode {
                                                                     height));
 
             ptPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/passthrough/image_raw");
-            ptQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager));
+            ptQ->addCallback(
+                std::bind(sensor_helpers::imgCBIT, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager, false, false));
         }
     };
     void link(dai::Node::Input in, int /*linkType*/) override {

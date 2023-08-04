@@ -131,6 +131,9 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     if(declareAndLogParam<bool>("i_fsync_trigger", false)) {
         colorCam->initialControl.setExternalTrigger(declareAndLogParam<int>("i_num_frames_burst", 1), declareAndLogParam<int>("i_num_frames_discard", 0));
     }
+    if(declareAndLogParam<bool>("i_set_isp3a_fps", false)) {
+        colorCam->setIsp3aFps(declareAndLogParam<int>("i_isp3a_fps", 15));
+    }
 }
 dai::CameraControl SensorParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& params) {
     dai::CameraControl ctrl;

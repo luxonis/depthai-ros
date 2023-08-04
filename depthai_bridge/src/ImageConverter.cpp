@@ -40,10 +40,10 @@ void ImageConverter::updateRosBaseTime() {
     updateBaseTime(_steadyBaseTime, _rosBaseTime, _totalNsChange);
 }
 
-void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData,
-                                           std::deque<ImageMsgs::Image>& outImageMsgs,
-                                           dai::RawImgFrame::Type type,
-                                           const sensor_msgs::msg::CameraInfo& info) {
+ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> inData,
+                                                bool fromBitStream,
+                                                bool dispToDepth,
+                                                const sensor_msgs::msg::CameraInfo& info) {
     if(_updateRosBaseTimeOnToRosMsg) {
         updateRosBaseTime();
     }
@@ -52,69 +52,56 @@ void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData
         tstamp = inData->getTimestampDevice();
     else
         tstamp = inData->getTimestamp();
-
-    ImageMsgs::Image outImageMsg;
-    StdMsgs::Header header;
-    header.frame_id = _frameName;
-    header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
-    std::string encoding;
-    int decodeFlags;
-    cv::Mat output;
-    switch(type) {
-        case dai::RawImgFrame::Type::BGR888i: {
-            encoding = sensor_msgs::image_encodings::BGR8;
-            decodeFlags = cv::IMREAD_COLOR;
-            break;
-        }
-        case dai::RawImgFrame::Type::GRAY8: {
-            encoding = sensor_msgs::image_encodings::MONO8;
-            decodeFlags = cv::IMREAD_GRAYSCALE;
-            break;
-        }
-        case dai::RawImgFrame::Type::RAW8: {
-            encoding = sensor_msgs::image_encodings::TYPE_16UC1;
-            decodeFlags = cv::IMREAD_GRAYSCALE;
-            break;
-        }
-        default: {
-            throw(std::runtime_error("Converted type not supported!"));
-        }
-    }
-
-    output = cv::imdecode(cv::Mat(1, inData->getData().size(), CV_8UC1, inData->getData().data()), decodeFlags);
-
-    // converting disparity
-    if(type == dai::RawImgFrame::Type::RAW8) {
-        auto factor = (info.k[0] * info.p[3]);
-        cv::Mat depthOut = cv::Mat(cv::Size(output.cols, output.rows), CV_16UC1);
-        depthOut.forEach<short>([&output, &factor](short& pixel, const int* position) -> void {
-            auto disp = output.at<int8_t>(position);
-            if(disp == 0)
-                pixel = 0;
-            else
-                pixel = factor / disp;
-        });
-        output = depthOut.clone();
-    }
-    cv_bridge::CvImage(header, encoding, output).toImageMsg(outImageMsg);
-    outImageMsgs.push_back(outImageMsg);
-    return;
-}
-
-ImageMsgs::Image ImageConverter::convertData(std::shared_ptr<dai::ImgFrame> inData){
-        if(_updateRosBaseTimeOnToRosMsg) {
-        updateRosBaseTime();
-    }
-    std::chrono::_V2::steady_clock::time_point tstamp;
-    if(_getBaseDeviceTimestamp)
-        tstamp = inData->getTimestampDevice();
-    else
-        tstamp = inData->getTimestamp();
     ImageMsgs::Image outImageMsg;
     StdMsgs::Header header;
     header.frame_id = _frameName;
 
     header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
+
+    if(fromBitStream) {
+        std::string encoding;
+        int decodeFlags;
+        cv::Mat output;
+        auto type = inData->getType();
+        switch(type) {
+            case dai::RawImgFrame::Type::BGR888i: {
+                encoding = sensor_msgs::image_encodings::BGR8;
+                decodeFlags = cv::IMREAD_COLOR;
+                break;
+            }
+            case dai::RawImgFrame::Type::GRAY8: {
+                encoding = sensor_msgs::image_encodings::MONO8;
+                decodeFlags = cv::IMREAD_GRAYSCALE;
+                break;
+            }
+            case dai::RawImgFrame::Type::RAW8: {
+                encoding = sensor_msgs::image_encodings::TYPE_16UC1;
+                decodeFlags = cv::IMREAD_GRAYSCALE;
+                break;
+            }
+            default: {
+                throw(std::runtime_error("Converted type not supported!"));
+            }
+        }
+
+        output = cv::imdecode(cv::Mat(1, inData->getData().size(), CV_8UC1, inData->getData().data()), decodeFlags);
+
+        // converting disparity
+        if(dispToDepth) {
+            auto factor = (info.k[0] * info.p[3]);
+            cv::Mat depthOut = cv::Mat(cv::Size(output.cols, output.rows), CV_16UC1);
+            depthOut.forEach<short>([&output, &factor](short& pixel, const int* position) -> void {
+                auto disp = output.at<int8_t>(position);
+                if(disp == 0)
+                    pixel = 0;
+                else
+                    pixel = factor / disp;
+            });
+            output = depthOut.clone();
+        }
+        cv_bridge::CvImage(header, encoding, output).toImageMsg(outImageMsg);
+        return outImageMsg;
+    }
 
     if(planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end()) {
         // cv::Mat inImg = inData->getCvFrame();
@@ -193,24 +180,16 @@ ImageMsgs::Image ImageConverter::convertData(std::shared_ptr<dai::ImgFrame> inDa
 }
 
 void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs) {
-    auto outImageMsg = convertData(inData);
+    auto outImageMsg = toRosMsgRawPtr(inData);
     outImageMsgs.push_back(outImageMsg);
     return;
 }
 
 ImagePtr ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
-    std::deque<ImageMsgs::Image> msgQueue;
-    toRosMsg(inData, msgQueue);
-    auto msg = msgQueue.front();
+    auto msg = toRosMsgRawPtr(inData);
 
     ImagePtr ptr = std::make_shared<ImageMsgs::Image>(msg);
     return ptr;
-}
-
-
-void ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData, std::unique_ptr<ImageMsgs::Image>& imageMsg){
-    // auto msg = convertData(inData);
-    // imageMsg.reset(new msg);
 }
 
 void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outData) {
@@ -258,7 +237,6 @@ void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outD
     outData.setHeight(inMsg.height);
     outData.setType(revEncodingIter->first);
 }
-
 
 void ImageConverter::planarToInterleaved(const std::vector<uint8_t>& srcData, std::vector<uint8_t>& destData, int w, int h, int numPlanes, int bpp) {
     if(numPlanes == 3) {

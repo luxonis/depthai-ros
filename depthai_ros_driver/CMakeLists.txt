@@ -116,6 +116,8 @@ target_link_libraries(
   ${COMMON_LIB_NAME}
 )
 
+add_executable(ipc_test src/ipc_test.cpp)
+target_link_libraries(ipc_test ${PROJECT_NAME})
 
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::Camera")
 pluginlib_export_plugin_description_file(${PROJECT_NAME} plugins.xml)
@@ -126,7 +128,7 @@ ament_export_libraries(${PROJECT_NAME})
 ament_export_dependencies(${COMMON_DEPS} ${SENSOR_DEPS} ${NN_DEPS} ${CAM_DEPS})
 
 install(DIRECTORY launch config DESTINATION share/${PROJECT_NAME})
-
+install(TARGETS ipc_test DESTINATION lib/${PROJECT_NAME})
 install(TARGETS ${PROJECT_NAME}  ${SENSOR_LIB_NAME}
 ${NN_LIB_NAME}
 ${COMMON_LIB_NAME}
