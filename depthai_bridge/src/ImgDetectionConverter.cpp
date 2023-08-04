@@ -34,7 +34,8 @@ void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetDa
 
     VisionMsgs::Detection2DArray opDetectionMsg;
 
-    opDetectionMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
+    // header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp); RAE doesn't output correct time
+    opDetectionMsg.header.stamp = rclcpp::Clock().now();
     opDetectionMsg.header.frame_id = _frameName;
     opDetectionMsg.detections.resize(inNetData->detections.size());
 
@@ -61,21 +62,12 @@ void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetDa
 
         opDetectionMsg.detections[i].results.resize(1);
 
-#if defined(IS_GALACTIC) || defined(IS_HUMBLE)
         opDetectionMsg.detections[i].id = std::to_string(inNetData->detections[i].label);
         opDetectionMsg.detections[i].results[0].hypothesis.class_id = std::to_string(inNetData->detections[i].label);
         opDetectionMsg.detections[i].results[0].hypothesis.score = inNetData->detections[i].confidence;
-#elif IS_ROS2
-        opDetectionMsg.detections[i].results[0].id = std::to_string(inNetData->detections[i].label);
-        opDetectionMsg.detections[i].results[0].score = inNetData->detections[i].confidence;
-#endif
-#ifdef IS_HUMBLE
         opDetectionMsg.detections[i].bbox.center.position.x = xCenter;
         opDetectionMsg.detections[i].bbox.center.position.y = yCenter;
-#else
-        opDetectionMsg.detections[i].bbox.center.x = xCenter;
-        opDetectionMsg.detections[i].bbox.center.y = yCenter;
-#endif
+
         opDetectionMsg.detections[i].bbox.size_x = xSize;
         opDetectionMsg.detections[i].bbox.size_y = ySize;
     }

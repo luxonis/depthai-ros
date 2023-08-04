@@ -38,6 +38,7 @@ Stereo::Stereo(const std::string& daiNodeName,
     right->link(stereoCamNode->right);
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
 }
+
 Stereo::~Stereo() = default;
 void Stereo::setNames() {
     stereoQName = getName() + "_stereo";
@@ -247,8 +248,30 @@ void Stereo::closeQueues() {
     }
 }
 
-void Stereo::link(dai::Node::Input in, int /*linkType*/) {
-    stereoCamNode->depth.link(in);
+void Stereo::link(dai::Node::Input in, int linkType) {
+    if(linkType == static_cast<int>(link_types::StereoLinkType::depth)) {
+        stereoCamNode->depth.link(in);
+    } else {
+        if(linkType == static_cast<int>(link_types::StereoLinkType::left)) {
+            left->link(in);
+        } else if(linkType == static_cast<int>(link_types::StereoLinkType::left_isp)) {
+            left->link(in, static_cast<int>(link_types::RGBLinkType::isp));
+        } else if(linkType == static_cast<int>(link_types::StereoLinkType::left_preview)) {
+            left->link(in, static_cast<int>(link_types::RGBLinkType::preview));
+        }
+
+        else if(linkType == static_cast<int>(link_types::StereoLinkType::right)) {
+            right->link(in);
+        } else if(linkType == static_cast<int>(link_types::StereoLinkType::right_isp)) {
+            right->link(in, static_cast<int>(link_types::RGBLinkType::isp));
+        } else if(linkType == static_cast<int>(link_types::StereoLinkType::right_preview)) {
+            right->link(in, static_cast<int>(link_types::RGBLinkType::preview));
+        }
+
+        else {
+            throw std::runtime_error("Wrong link type specified!");
+        }
+    }
 }
 
 dai::Node::Input Stereo::getInput(int linkType) {

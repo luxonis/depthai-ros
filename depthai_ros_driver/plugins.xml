@@ -17,4 +17,7 @@
     <class type="depthai_ros_driver::pipeline_gen::CamArray" base_class_type="depthai_ros_driver::pipeline_gen::BasePipeline">
         <description>CamArray Pipeline.</description>
     </class>
+    <class type="depthai_ros_driver::pipeline_gen::Rae" base_class_type="depthai_ros_driver::pipeline_gen::BasePipeline">
+        <description>Rae Pipeline.</description>
+    </class>
 </library>

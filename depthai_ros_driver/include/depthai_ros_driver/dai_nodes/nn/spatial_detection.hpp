@@ -44,12 +44,12 @@ class SpatialDetection : public BaseNode {
     };
     void setupQueues(std::shared_ptr<dai::Device> device) override {
         nnQ = device->getOutputQueue(nnQName, ph->getParam<int>("i_max_q_size"), false);
-        auto tfPrefix = getTFPrefix("rgb");
+        auto tfPrefix = getTFPrefix("right_front");
         int width;
         int height;
         if(ph->getParam<bool>("i_disable_resize")) {
-            width = getROSNode()->get_parameter("rgb.i_preview_size").as_int();
-            height = getROSNode()->get_parameter("rgb.i_preview_size").as_int();
+            width = getROSNode()->get_parameter("right_front.i_preview_size").as_int();
+            height = getROSNode()->get_parameter("right_front.i_preview_size").as_int();
         } else {
             width = imageManip->initialConfig.getResizeConfig().width;
             height = imageManip->initialConfig.getResizeConfig().height;
@@ -81,7 +81,7 @@ class SpatialDetection : public BaseNode {
         }
 
         if(ph->getParam<bool>("i_enable_passthrough_depth")) {
-            dai::CameraBoardSocket socket = static_cast<dai::CameraBoardSocket>(getROSNode()->get_parameter("stereo.i_board_socket_id").as_int());
+            dai::CameraBoardSocket socket = static_cast<dai::CameraBoardSocket>(getROSNode()->get_parameter("stereo_front.i_board_socket_id").as_int());
             if(!getROSNode()->get_parameter("stereo.i_align_depth").as_bool()) {
                 tfPrefix = getTFPrefix("right");
             };
@@ -94,8 +94,8 @@ class SpatialDetection : public BaseNode {
                                                                        *ptDepthImageConverter,
                                                                        device,
                                                                        socket,
-                                                                       getROSNode()->get_parameter("stereo.i_width").as_int(),
-                                                                       getROSNode()->get_parameter("stereo.i_height").as_int()));
+                                                                       getROSNode()->get_parameter("stereo_front.i_width").as_int(),
+                                                                       getROSNode()->get_parameter("stereo_front.i_height").as_int()));
 
             ptDepthPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/passthrough_depth/image_raw");
             ptDepthQ->addCallback(std::bind(sensor_helpers::imgCBIT,

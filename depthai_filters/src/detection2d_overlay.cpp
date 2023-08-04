@@ -20,7 +20,6 @@ void Detection2DOverlay::onInit() {
 void Detection2DOverlay::overlayCB(const sensor_msgs::msg::Image::ConstSharedPtr& preview,
                                    const vision_msgs::msg::Detection2DArray::ConstSharedPtr& detections) {
     cv::Mat previewMat = utils::msgToMat(this->get_logger(), preview, sensor_msgs::image_encodings::BGR8);
-
     auto blue = cv::Scalar(255, 0, 0);
 
     for(auto& detection : detections->detections) {

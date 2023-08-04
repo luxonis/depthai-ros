@@ -63,6 +63,10 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
 }
 SensorWrapper::~SensorWrapper() = default;
 
+int SensorWrapper::getSocket(){
+    return socketID;
+}
+
 sensor_helpers::ImageSensor SensorWrapper::getSensorData() {
     return sensorData;
 }

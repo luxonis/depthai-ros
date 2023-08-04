@@ -66,11 +66,11 @@ void ImageSensor::getSizeFromResolution(const dai::ColorCameraProperties::Sensor
             height = 6000;
             break;
         }
-        case dai::ColorCameraProperties::SensorResolution::THE_1440X1080: {
-            width = 1440;
-            height = 1080;
-            break;
-        }
+        // case dai::ColorCameraProperties::SensorResolution::THE_1440X1080: {
+        //     width = 1440;
+        //     height = 1080;
+        //     break;
+        // }
         default: {
             throw std::runtime_error("Resolution not supported!");
         }

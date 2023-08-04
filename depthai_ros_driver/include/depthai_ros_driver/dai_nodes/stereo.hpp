@@ -42,7 +42,7 @@ class StereoParamHandler;
 
 namespace dai_nodes {
 namespace link_types {
-enum class StereoLinkType { left, right };
+enum class StereoLinkType { depth, left, left_isp, left_preview, right, right_isp, right_preview};
 };
 
 struct StereoSensorInfo {
