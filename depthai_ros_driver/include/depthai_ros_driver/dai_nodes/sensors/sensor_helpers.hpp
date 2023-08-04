@@ -49,6 +49,7 @@ void imgCBIT(const std::string& /*name*/,
              dai::ros::ImageConverter& converter,
              image_transport::CameraPublisher& pub,
              std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
+             rclcpp::Node* node,
              bool fromBitStream = false,
              bool dispToDepth = false);
 
@@ -58,6 +59,7 @@ void imgCBPtr(const std::string& /*name*/,
               rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr imgPub,
               rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr infoPub,
               std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
+              rclcpp::Node* node,
               bool fromBitStream = false,
               bool dispToDepth = false);
 

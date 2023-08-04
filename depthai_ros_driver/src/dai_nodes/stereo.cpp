@@ -110,6 +110,7 @@ void Stereo::setupLeftRectQueue(std::shared_ptr<dai::Device> device) {
                                          leftRectPub,
                                          leftRectInfoPub,
                                          leftRectIM,
+                                         getROSNode(),
                                          ph->getParam<bool>("i_left_rect_low_bandwidth"),
                                          false));
     } else {
@@ -120,6 +121,7 @@ void Stereo::setupLeftRectQueue(std::shared_ptr<dai::Device> device) {
                                          *leftRectConv,
                                          leftRectPubIT,
                                          leftRectIM,
+                                         getROSNode(),
                                          ph->getParam<bool>("i_left_rect_low_bandwidth"),
                                          false));
     }
@@ -149,6 +151,7 @@ void Stereo::setupRightRectQueue(std::shared_ptr<dai::Device> device) {
                                           rightRectPub,
                                           rightRectInfoPub,
                                           rightRectIM,
+                                          getROSNode(),
                                           ph->getParam<bool>("i_right_rect_low_bandwidth"),
                                           false));
     } else {
@@ -159,6 +162,7 @@ void Stereo::setupRightRectQueue(std::shared_ptr<dai::Device> device) {
                                           *rightRectConv,
                                           rightRectPubIT,
                                           rightRectIM,
+                                          getROSNode(),
                                           ph->getParam<bool>("i_right_rect_low_bandwidth"),
                                           false));
     }
@@ -199,6 +203,7 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
                                        stereoPub,
                                        stereoInfoPub,
                                        stereoIM,
+                                       getROSNode(),
                                        ph->getParam<bool>("i_low_bandwidth"),
                                        !ph->getParam<bool>("i_output_disparity")));
     } else {
@@ -209,6 +214,7 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
                                        *stereoConv,
                                        stereoPubIT,
                                        stereoIM,
+                                       getROSNode(),
                                        ph->getParam<bool>("i_low_bandwidth"),
                                        !ph->getParam<bool>("i_output_disparity")));
     }

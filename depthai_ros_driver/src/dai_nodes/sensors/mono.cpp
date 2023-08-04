@@ -84,6 +84,7 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
                                          monoPub,
                                          infoPub,
                                          infoManager,
+                                         getROSNode(),
                                          ph->getParam<bool>("i_low_bandwidth"),
                                          false));
 
@@ -95,6 +96,7 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
                                          *imageConverter,
                                          monoPubIT,
                                          infoManager,
+                                         getROSNode(),
                                          ph->getParam<bool>("i_low_bandwidth"),
                                          false));
         }

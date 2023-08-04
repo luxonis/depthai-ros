@@ -96,6 +96,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
                                           rgbPub,
                                           rgbInfoPub,
                                           infoManager,
+                                          getROSNode(),
                                           ph->getParam<bool>("i_low_bandwidth"),
                                           false));
 
@@ -107,6 +108,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
                                           *imageConverter,
                                           rgbPubIT,
                                           infoManager,
+                                          getROSNode(),
                                           ph->getParam<bool>("i_low_bandwidth"),
                                           false));
         }
@@ -133,7 +135,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
             RCLCPP_DEBUG(getROSNode()->get_logger(), "Enabling intra_process communication!");
             previewPubIT = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/preview/image_raw");
             previewQ->addCallback(std::bind(
-                sensor_helpers::imgCBIT, std::placeholders::_1, std::placeholders::_2, *imageConverter, previewPubIT, previewInfoManager, false, false));
+                sensor_helpers::imgCBIT, std::placeholders::_1, std::placeholders::_2, *imageConverter, previewPubIT, previewInfoManager, getROSNode(), false, false));
         } else {
             previewPub = getROSNode()->create_publisher<sensor_msgs::msg::Image>("~/" + getName() + "/preview/image_raw", 10);
             previewInfoPub = getROSNode()->create_publisher<sensor_msgs::msg::CameraInfo>("~/" + getName() + "/preview/camera_info", 10);
@@ -144,6 +146,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
                                             previewPub,
                                             previewInfoPub,
                                             previewInfoManager,
+                                            getROSNode(),
                                             false,
                                             false));
         }
