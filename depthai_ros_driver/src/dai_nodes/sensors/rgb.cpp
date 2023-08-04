@@ -20,7 +20,7 @@ namespace dai_nodes {
 RGB::RGB(const std::string& daiNodeName,
          rclcpp::Node* node,
          std::shared_ptr<dai::Pipeline> pipeline,
-         dai::CameraBoardSocket socket = dai::CameraBoardSocket::RGB,
+         dai::CameraBoardSocket socket = dai::CameraBoardSocket::CAM_A,
          sensor_helpers::ImageSensor sensor = {"IMX378", {"12mp", "4k"}, true},
          bool publish = true)
     : BaseNode(daiNodeName, node, pipeline) {
@@ -73,6 +73,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
             getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
         imageConverter =
             std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
+        imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
         if(ph->getParam<std::string>("i_calibration_file").empty()) {
             infoManager->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
                                                                     *imageConverter,
@@ -83,27 +84,43 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         } else {
             infoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
         }
-        rgbPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
         colorQ = device->getOutputQueue(ispQName, ph->getParam<int>("i_max_q_size"), false);
-        if(ph->getParam<bool>("i_low_bandwidth")) {
-            colorQ->addCallback(std::bind(sensor_helpers::compressedImgCB,
+        if(getROSNode()->get_node_options().use_intra_process_comms()) {
+            RCLCPP_DEBUG(getROSNode()->get_logger(), "Enabling intra_process communication!");
+            rgbPub = getROSNode()->create_publisher<sensor_msgs::msg::Image>("~/" + getName() + "/image_raw", 10);
+            rgbInfoPub = getROSNode()->create_publisher<sensor_msgs::msg::CameraInfo>("~/" + getName() + "/camera_info", 10);
+            colorQ->addCallback(std::bind(sensor_helpers::imgCBPtr,
                                           std::placeholders::_1,
                                           std::placeholders::_2,
                                           *imageConverter,
                                           rgbPub,
+                                          rgbInfoPub,
                                           infoManager,
-                                          dai::RawImgFrame::Type::BGR888i));
+                                          getROSNode(),
+                                          ph->getParam<bool>("i_low_bandwidth"),
+                                          false));
+
         } else {
-            colorQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, rgbPub, infoManager));
+            rgbPubIT = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
+            colorQ->addCallback(std::bind(sensor_helpers::imgCBIT,
+                                          std::placeholders::_1,
+                                          std::placeholders::_2,
+                                          *imageConverter,
+                                          rgbPubIT,
+                                          infoManager,
+                                          getROSNode(),
+                                          ph->getParam<bool>("i_low_bandwidth"),
+                                          false));
         }
     }
     if(ph->getParam<bool>("i_enable_preview")) {
         previewQ = device->getOutputQueue(previewQName, ph->getParam<int>("i_max_q_size"), false);
-        previewPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/preview/image_raw");
+
         previewInfoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
             getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + previewQName).get(), previewQName);
         auto tfPrefix = getTFPrefix(getName());
         imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
+        imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
         if(ph->getParam<std::string>("i_calibration_file").empty()) {
             previewInfoManager->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
                                                                            *imageConverter,
@@ -114,7 +131,25 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         } else {
             infoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
         }
-        previewQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, previewPub, previewInfoManager));
+        if(getROSNode()->get_node_options().use_intra_process_comms()) {
+            RCLCPP_DEBUG(getROSNode()->get_logger(), "Enabling intra_process communication!");
+            previewPubIT = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/preview/image_raw");
+            previewQ->addCallback(std::bind(
+                sensor_helpers::imgCBIT, std::placeholders::_1, std::placeholders::_2, *imageConverter, previewPubIT, previewInfoManager, getROSNode(), false, false));
+        } else {
+            previewPub = getROSNode()->create_publisher<sensor_msgs::msg::Image>("~/" + getName() + "/preview/image_raw", 10);
+            previewInfoPub = getROSNode()->create_publisher<sensor_msgs::msg::CameraInfo>("~/" + getName() + "/preview/camera_info", 10);
+            previewQ->addCallback(std::bind(sensor_helpers::imgCBPtr,
+                                            std::placeholders::_1,
+                                            std::placeholders::_2,
+                                            *imageConverter,
+                                            previewPub,
+                                            previewInfoPub,
+                                            previewInfoManager,
+                                            getROSNode(),
+                                            false,
+                                            false));
+        }
     };
     controlQ = device->getInputQueue(controlQName);
 }

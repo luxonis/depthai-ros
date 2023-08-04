@@ -74,6 +74,8 @@ enum LogLevel { DEBUG, INFO, WARN, ERROR, FATAL };
 
 #define DEPTHAI_ROS_FATAL_STREAM_ONCE(loggerName, args) DEPTHAI_ROS_LOG_STREAM(loggerName, dai::ros::LogLevel::FATAL, true, args)
 
+static const int64_t ZERO_TIME_DELTA_NS{100};
+
 inline rclcpp::Time getFrameTime(rclcpp::Time rclBaseTime,
                                  std::chrono::time_point<std::chrono::steady_clock> steadyBaseTime,
                                  std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration> currTimePoint) {
@@ -84,18 +86,22 @@ inline rclcpp::Time getFrameTime(rclcpp::Time rclBaseTime,
     return rclStamp;
 }
 
-template <typename T>
-T lerp(const T& a, const T& b, const double t) {
-    return a * (1.0 - t) + b * t;
-}
-
-template <typename T>
-T lerpImu(const T& a, const T& b, const double t) {
-    T res;
-    res.x = lerp(a.x, b.x, t);
-    res.y = lerp(a.y, b.y, t);
-    res.z = lerp(a.z, b.z, t);
-    return res;
+inline void updateBaseTime(std::chrono::time_point<std::chrono::steady_clock> steadyBaseTime, rclcpp::Time rclBaseTime, int64_t& totalNsChange) {
+    rclcpp::Time currentRosTime = rclcpp::Clock().now();
+    std::chrono::time_point<std::chrono::steady_clock> currentSteadyTime = std::chrono::steady_clock::now();
+    // In nanoseconds
+    auto expectedOffset = std::chrono::duration_cast<std::chrono::nanoseconds>(currentSteadyTime - steadyBaseTime).count();
+    uint64_t previousBaseTimeNs = rclBaseTime.nanoseconds();
+    rclBaseTime = rclcpp::Time(currentRosTime.nanoseconds() - expectedOffset);
+    uint64_t newBaseTimeNs = rclBaseTime.nanoseconds();
+    int64_t diff = static_cast<int64_t>(newBaseTimeNs - previousBaseTimeNs);
+    totalNsChange += diff;
+    if(::abs(diff) > ZERO_TIME_DELTA_NS) {
+        // Has been updated
+        DEPTHAI_ROS_DEBUG_STREAM("ROS BASE TIME CHANGE: ",
+                                 "ROS base time changed by " << std::to_string(diff) << " ns. Total change: " << std::to_string(totalNsChange)
+                                                             << " ns. New time: " << std::to_string(rclBaseTime.nanoseconds()) << " ns.");
+    }
 }
 
 }  // namespace ros

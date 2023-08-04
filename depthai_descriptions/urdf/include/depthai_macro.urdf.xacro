@@ -24,7 +24,6 @@
       <xacro:property name="imu_y" value="0" />
     </xacro:if>
 
-
     <!-- base_link of the sensor-->
     <link name="${base_frame}"/>
 

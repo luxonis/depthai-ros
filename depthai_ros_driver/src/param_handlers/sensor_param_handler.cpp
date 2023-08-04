@@ -26,6 +26,12 @@ void SensorParamHandler::declareCommonParams() {
     declareAndLogParam<bool>("i_disable_node", false);
     declareAndLogParam<bool>("i_get_base_device_timestamp", false);
     declareAndLogParam<int>("i_board_socket_id", 0);
+    declareAndLogParam<bool>("i_update_ros_base_time_on_ros_msg", false);
+    fSyncModeMap = {
+        {"OFF", dai::CameraControl::FrameSyncMode::OFF},
+        {"OUTPUT", dai::CameraControl::FrameSyncMode::OUTPUT},
+        {"INPUT", dai::CameraControl::FrameSyncMode::INPUT},
+    };
 }
 
 void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> monoCam,
@@ -49,8 +55,14 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> mo
     size_t iso = declareAndLogParam("r_iso", 800, getRangedIntDescriptor(100, 1600));
     size_t exposure = declareAndLogParam("r_exposure", 1000, getRangedIntDescriptor(1, 33000));
 
-    if(declareAndLogParam("r_set_man_exposure", false)) {
+    if(declareAndLogParam<bool>("r_set_man_exposure", false)) {
         monoCam->initialControl.setManualExposure(exposure, iso);
+    }
+    if(declareAndLogParam<bool>("i_fsync_continuous", false)) {
+        monoCam->initialControl.setFrameSyncMode(utils::getValFromMap(declareAndLogParam<std::string>("i_fsync_mode", "INPUT"), fSyncModeMap));
+    }
+    if(declareAndLogParam<bool>("i_fsync_trigger", false)) {
+        monoCam->initialControl.setExternalTrigger(declareAndLogParam<int>("i_num_frames_burst", 1), declareAndLogParam<int>("i_num_frames_discard", 0));
     }
 }
 void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> colorCam,
@@ -67,7 +79,8 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
                         {"5MP", dai::ColorCameraProperties::SensorResolution::THE_5_MP},
                         {"4000x3000", dai::ColorCameraProperties::SensorResolution::THE_4000X3000},
                         {"5312X6000", dai::ColorCameraProperties::SensorResolution::THE_5312X6000},
-                        {"48_MP", dai::ColorCameraProperties::SensorResolution::THE_48_MP}};
+                        {"48_MP", dai::ColorCameraProperties::SensorResolution::THE_48_MP},
+                        {"1440X1080", dai::ColorCameraProperties::SensorResolution::THE_1440X1080}};
     declareAndLogParam<bool>("i_publish_topic", publish);
     declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket));
     declareAndLogParam<bool>("i_output_isp", true);
@@ -111,6 +124,15 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     }
     if(declareAndLogParam("r_set_man_whitebalance", false)) {
         colorCam->initialControl.setManualWhiteBalance(whitebalance);
+    }
+    if(declareAndLogParam<bool>("i_fsync_continuous", false)) {
+        colorCam->initialControl.setFrameSyncMode(utils::getValFromMap(declareAndLogParam<std::string>("i_fsync_mode", "INPUT"), fSyncModeMap));
+    }
+    if(declareAndLogParam<bool>("i_fsync_trigger", false)) {
+        colorCam->initialControl.setExternalTrigger(declareAndLogParam<int>("i_num_frames_burst", 1), declareAndLogParam<int>("i_num_frames_discard", 0));
+    }
+    if(declareAndLogParam<bool>("i_set_isp3a_fps", false)) {
+        colorCam->setIsp3aFps(declareAndLogParam<int>("i_isp3a_fps", 15));
     }
 }
 dai::CameraControl SensorParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& params) {

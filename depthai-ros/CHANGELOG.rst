@@ -2,12 +2,29 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.7.1 (2023-03-29)
+2.7.4 (2023-06-26)
+-------------------
+* ROS time update
+* Minor bugfixes
 
-* Add custom output size option
+2.7.3 (2023-06-16)
+-------------------
+* Pipeline generation as a plugin
+* Fixed bounding box generation issue
+* Stereo rectified streams publishing
+* Camera trigger mechanisms
+* Brightness filter
+
+2.7.2 (2023-05-08)
+-------------------
+* IMU improvements
+
+2.7.1 (2023-03-29)
+-------------------
+* Add custom output size option for streams
 
 2.7.0 (2023-03-28)
-
+-------------------
 * Added depthai_descriptions package
 * Added depthai_filters package
 * XLinkIn option for image subscription
@@ -15,31 +32,31 @@ Changelog for package depthai-ros
 * Bugfixes
 
 2.6.4 (2023-02-23)
-___________
+-------------------
 * Fix sensor name detection
 * Enable subpixel mode
 * Update camera start/stop services
 
 2.6.3 (2023-02-10)
-___________
+-------------------
 * Camera calibration updates
 * Option to connect to the device via USB port id
 
 2.6.2 (2023-02-01)
-___________
+-------------------
 * Fixed timestamp in SpatialDetector
 * Updated topic names in stereo_inertial_node
 
 2.6.1 (2023-01-11)
-___________
+-------------------
 * Update docker image building
 
 2.6.0 (2023-01-11)
-___________
+-------------------
 * Added depthai_ros_driver package
 
 2.5.3 (2022-08-21)
------------
+-------------------
 * Updated release version
 * Contributors: Sachin
 

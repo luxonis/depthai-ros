@@ -1,8 +1,10 @@
 #pragma once
 
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
+#include "depthai_ros_msgs/msg/imu_with_magnetic_field.hpp"
 #include "rclcpp/publisher.hpp"
 #include "sensor_msgs/msg/imu.hpp"
+#include "sensor_msgs/msg/magnetic_field.hpp"
 
 namespace dai {
 class Pipeline;
@@ -31,7 +33,7 @@ namespace dai_nodes {
 
 class Imu : public BaseNode {
    public:
-    explicit Imu(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
+    explicit Imu(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device);
     ~Imu();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
@@ -42,8 +44,12 @@ class Imu : public BaseNode {
 
    private:
     std::unique_ptr<dai::ros::ImuConverter> imuConverter;
-    void imuQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
-    rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imuPub;
+    void imuRosQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
+    void imuDaiRosQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
+    void imuMagQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
+    rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr rosImuPub;
+    rclcpp::Publisher<sensor_msgs::msg::MagneticField>::SharedPtr magPub;
+    rclcpp::Publisher<depthai_ros_msgs::msg::ImuWithMagneticField>::SharedPtr daiImuPub;
     std::shared_ptr<dai::node::IMU> imuNode;
     std::unique_ptr<param_handlers::ImuParamHandler> ph;
     std::shared_ptr<dai::DataOutputQueue> imuQ;
