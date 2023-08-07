@@ -64,7 +64,7 @@ class Detection : public BaseNode {
             imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
             imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
             infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), getName()), "/" + getName());
-            infoManager->setCameraInfo(sensor_helpers::getCalibInfo(*imageConverter, device, dai::CameraBoardSocket::RGB, width, height));
+            infoManager->setCameraInfo(sensor_helpers::getCalibInfo(*imageConverter, device, dai::CameraBoardSocket::CAM_A, width, height));
 
             ptPub = it.advertiseCamera(getName() + "/passthrough/image_raw", 1);
             ptQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager));

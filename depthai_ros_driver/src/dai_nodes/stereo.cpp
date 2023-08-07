@@ -156,6 +156,9 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
                                              ph->getParam<int>("i_height"));
     auto calibHandler = device->readCalibration();
     info.P[3] = calibHandler.getBaselineDistance() * 10.0;  // baseline in mm
+    for(auto& d : info.D) {
+        d = 0.0;
+    }
     stereoIM->setCameraInfo(info);
 
     if(ph->getParam<bool>("i_low_bandwidth")) {

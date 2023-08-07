@@ -109,14 +109,22 @@ class ImuConverter {
                 if(accelHist.size() < 3) {
                     continue;
                 } else {
-                    interpolate(accelHist, gyroHist, rotationHist, magnHist, imuMsgs);
+                    if(_enable_rotation) {
+                        interpolate(accelHist, gyroHist, rotationHist, magnHist, imuMsgs);
+                    } else {
+                        interpolate(accelHist, gyroHist, imuMsgs);
+                    }
                 }
 
             } else if(_syncMode == ImuSyncMethod::LINEAR_INTERPOLATE_GYRO) {
                 if(gyroHist.size() < 3) {
                     continue;
                 } else {
-                    interpolate(gyroHist, accelHist, rotationHist, magnHist, imuMsgs);
+                    if(_enable_rotation) {
+                        interpolate(gyroHist, accelHist, rotationHist, magnHist, imuMsgs);
+                    } else {
+                        interpolate(gyroHist, accelHist, imuMsgs);
+                    }
                 }
             }
         }
@@ -155,6 +163,67 @@ class ImuConverter {
         msg.header.frame_id = _frameName;
 
         msg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, timestamp);
+    }
+
+    template <typename I, typename S, typename M>
+    void CreateUnitMessage(I first, S second, M& msg, std::chrono::_V2::steady_clock::time_point timestamp) {
+        fillImuMsg(first, msg);
+        fillImuMsg(second, msg);
+
+        msg.header.frame_id = _frameName;
+
+        msg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, timestamp);
+    }
+
+    template <typename I, typename S, typename M>
+    void interpolate(std::deque<I>& interpolated, std::deque<S>& second, std::deque<M>& imuMsgs) {
+        I interp0, interp1;
+        S currSecond;
+        interp0.sequence = -1;
+        while(interpolated.size()) {
+            if(interp0.sequence == -1) {
+                interp0 = interpolated.front();
+                interpolated.pop_front();
+            } else {
+                interp1 = interpolated.front();
+                interpolated.pop_front();
+                // remove std::milli to get in seconds
+                std::chrono::duration<double, std::milli> duration_ms = interp1.timestamp.get() - interp0.timestamp.get();
+                double dt = duration_ms.count();
+                while(second.size()) {
+                    currSecond = second.front();
+                    if(currSecond.timestamp.get() > interp0.timestamp.get() && currSecond.timestamp.get() <= interp1.timestamp.get()) {
+                        // remove std::milli to get in seconds
+                        std::chrono::duration<double, std::milli> diff = currSecond.timestamp.get() - interp0.timestamp.get();
+                        const double alpha = diff.count() / dt;
+                        I interp = lerpImu(interp0, interp1, alpha);
+                        M msg;
+                        std::chrono::_V2::steady_clock::time_point tstamp;
+                        if(_getBaseDeviceTimestamp)
+                            tstamp = currSecond.getTimestampDevice();
+                        else
+                            tstamp = currSecond.getTimestamp();
+                        CreateUnitMessage(interp, currSecond, msg, tstamp);
+                        imuMsgs.push_back(msg);
+                        second.pop_front();
+                    } else if(currSecond.timestamp.get() > interp1.timestamp.get()) {
+                        interp0 = interp1;
+                        if(interpolated.size()) {
+                            interp1 = interpolated.front();
+                            interpolated.pop_front();
+                            duration_ms = interp1.timestamp.get() - interp0.timestamp.get();
+                            dt = duration_ms.count();
+                        } else {
+                            break;
+                        }
+                    } else {
+                        second.pop_front();
+                    }
+                }
+                interp0 = interp1;
+            }
+        }
+        interpolated.push_back(interp0);
     }
 
     template <typename I, typename S, typename T, typename F, typename M>

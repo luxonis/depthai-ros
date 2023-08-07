@@ -97,10 +97,10 @@ std::tuple<dai::Pipeline, int, int> createPipeline(bool enableDepth,
 
     // MonoCamera
     monoLeft->setResolution(monoResolution);
-    monoLeft->setBoardSocket(dai::CameraBoardSocket::LEFT);
+    monoLeft->setBoardSocket(dai::CameraBoardSocket::CAM_B);
     monoLeft->setFps(stereo_fps);
     monoRight->setResolution(monoResolution);
-    monoRight->setBoardSocket(dai::CameraBoardSocket::RIGHT);
+    monoRight->setBoardSocket(dai::CameraBoardSocket::CAM_C);
     monoRight->setFps(stereo_fps);
 
     // StereoDepth
@@ -110,7 +110,7 @@ std::tuple<dai::Pipeline, int, int> createPipeline(bool enableDepth,
     stereo->setLeftRightCheck(lrcheck);
     stereo->setExtendedDisparity(extended);
     stereo->setSubpixel(subpixel);
-    if(enableDepth && depth_aligned) stereo->setDepthAlign(dai::CameraBoardSocket::RGB);
+    if(enableDepth && depth_aligned) stereo->setDepthAlign(dai::CameraBoardSocket::CAM_A);
 
     // Imu
     imu->enableIMUSensor(dai::IMUSensor::ACCELEROMETER_RAW, 500);
@@ -123,7 +123,7 @@ std::tuple<dai::Pipeline, int, int> createPipeline(bool enableDepth,
         auto camRgb = pipeline.create<dai::node::ColorCamera>();
         auto xoutRgb = pipeline.create<dai::node::XLinkOut>();
         xoutRgb->setStreamName("rgb");
-        camRgb->setBoardSocket(dai::CameraBoardSocket::RGB);
+        camRgb->setBoardSocket(dai::CameraBoardSocket::CAM_A);
         camRgb->setFps(stereo_fps);
         dai::node::ColorCamera::Properties::SensorResolution rgbResolution;
 
@@ -494,10 +494,10 @@ int main(int argc, char** argv) {
         rgbConverter.setUpdateRosBaseTimeOnToRosMsg();
     }
     if(enableDepth) {
-        auto rightCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RIGHT, width, height);
+        auto rightCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_C, width, height);
 
         auto depthCameraInfo =
-            depth_aligned ? rgbConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RGB, width, height) : rightCameraInfo;
+            depth_aligned ? rgbConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_A, width, height) : rightCameraInfo;
 
         auto depthconverter = depth_aligned ? rgbConverter : rightconverter;
         dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame> depthPublish(
@@ -515,7 +515,7 @@ int main(int argc, char** argv) {
         depthPublish.addPublisherCallback();
 
         if(depth_aligned) {
-            auto rgbCameraInfo = rgbConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RGB, width, height);
+            auto rgbCameraInfo = rgbConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_A, width, height);
             auto imgQueue = device->getOutputQueue("rgb", 30, false);
             dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame> rgbPublish(
                 imgQueue,
@@ -530,7 +530,7 @@ int main(int argc, char** argv) {
             if(enableSpatialDetection) {
                 auto previewQueue = device->getOutputQueue("preview", 30, false);
                 auto detectionQueue = device->getOutputQueue("detections", 30, false);
-                auto previewCameraInfo = rgbConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RGB, previewWidth, previewHeight);
+                auto previewCameraInfo = rgbConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_A, previewWidth, previewHeight);
 
                 dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame> previewPublish(
                     previewQueue,
@@ -555,8 +555,8 @@ int main(int argc, char** argv) {
 
             ros::spin();
         } else {
-            auto leftCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::LEFT, width, height);
-            auto rightCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RIGHT, width, height);
+            auto leftCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_B, width, height);
+            auto rightCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_C, width, height);
 
             auto leftQueue = device->getOutputQueue("left", 30, false);
             auto rightQueue = device->getOutputQueue("right", 30, false);
@@ -584,9 +584,9 @@ int main(int argc, char** argv) {
         std::string tfSuffix = depth_aligned ? "_rgb_camera_optical_frame" : "_right_camera_optical_frame";
         dai::rosBridge::DisparityConverter dispConverter(tfPrefix + tfSuffix, 880, 7.5, 20, 2000);  // TODO(sachin): undo hardcoding of baseline
 
-        auto rightCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RIGHT, width, height);
+        auto rightCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_C, width, height);
         auto disparityCameraInfo =
-            depth_aligned ? rgbConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RGB, width, height) : rightCameraInfo;
+            depth_aligned ? rgbConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_A, width, height) : rightCameraInfo;
         auto depthconverter = depth_aligned ? rgbConverter : rightconverter;
         dai::rosBridge::BridgePublisher<stereo_msgs::DisparityImage, dai::ImgFrame> dispPublish(
             stereoQueue,
@@ -599,7 +599,7 @@ int main(int argc, char** argv) {
         dispPublish.addPublisherCallback();
 
         if(depth_aligned) {
-            auto rgbCameraInfo = rgbConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RGB, width, height);
+            auto rgbCameraInfo = rgbConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_A, width, height);
             auto imgQueue = device->getOutputQueue("rgb", 30, false);
             dai::rosBridge::ImageConverter rgbConverter(tfPrefix + "_rgb_camera_optical_frame", false);
             dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame> rgbPublish(
@@ -615,7 +615,7 @@ int main(int argc, char** argv) {
             if(enableSpatialDetection) {
                 auto previewQueue = device->getOutputQueue("preview", 30, false);
                 auto detectionQueue = device->getOutputQueue("detections", 30, false);
-                auto previewCameraInfo = rgbConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RGB, previewWidth, previewHeight);
+                auto previewCameraInfo = rgbConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_A, previewWidth, previewHeight);
 
                 dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame> previewPublish(
                     previewQueue,
@@ -640,8 +640,8 @@ int main(int argc, char** argv) {
 
             ros::spin();
         } else {
-            auto leftCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::LEFT, width, height);
-            auto rightCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RIGHT, width, height);
+            auto leftCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_B, width, height);
+            auto rightCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_C, width, height);
 
             auto leftQueue = device->getOutputQueue("left", 30, false);
             auto rightQueue = device->getOutputQueue("right", 30, false);

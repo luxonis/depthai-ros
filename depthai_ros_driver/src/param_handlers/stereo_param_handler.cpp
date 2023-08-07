@@ -39,14 +39,14 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     stereo->setLeftRightCheck(getParam<bool>("i_lr_check"));
     int width = 1280;
     int height = 720;
-    dai::CameraBoardSocket socket = dai::CameraBoardSocket::RGB;
+    dai::CameraBoardSocket socket = dai::CameraBoardSocket::CAM_A;
     if(getParam<bool>("i_align_depth")) {
         width = getOtherNodeParam("rgb", "i_width", width);
         height = getOtherNodeParam("rgb", "i_height", height);
     } else {
         width = getOtherNodeParam(rightName, "i_width", width);
         height = getOtherNodeParam(rightName, "i_height", height);
-        socket = dai::CameraBoardSocket::RIGHT;
+        socket = dai::CameraBoardSocket::CAM_C;
     }
     stereo->setDepthAlign(socket);
     setParam<int>("i_width", width);

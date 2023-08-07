@@ -54,8 +54,8 @@ class Stereo : public BaseNode {
                     ros::NodeHandle node,
                     std::shared_ptr<dai::Pipeline> pipeline,
                     std::shared_ptr<dai::Device> device,
-                    StereoSensorInfo leftInfo = StereoSensorInfo{"left", dai::CameraBoardSocket::LEFT},
-                    StereoSensorInfo rightInfo = StereoSensorInfo{"right", dai::CameraBoardSocket::RIGHT});
+                    StereoSensorInfo leftInfo = StereoSensorInfo{"left", dai::CameraBoardSocket::CAM_B},
+                    StereoSensorInfo rightInfo = StereoSensorInfo{"right", dai::CameraBoardSocket::CAM_C});
     ~Stereo();
     void updateParams(parametersConfig& config) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;

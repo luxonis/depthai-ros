@@ -100,8 +100,8 @@ int main() {
     }
 
     // Properties
-    monoRight->setBoardSocket(dai::CameraBoardSocket::RIGHT);
-    monoLeft->setBoardSocket(dai::CameraBoardSocket::LEFT);
+    monoRight->setBoardSocket(dai::CameraBoardSocket::CAM_C);
+    monoLeft->setBoardSocket(dai::CameraBoardSocket::CAM_B);
     monoRight->setResolution(monoRes);
     monoLeft->setResolution(monoRes);
 
@@ -137,7 +137,7 @@ int main() {
 
     dai::rosBridge::ImageConverter depthConverter(cameraName + "_right_camera_optical_frame", true);
     // TODO(sachin): Modify the calibration based on crop from service
-    auto rightCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RIGHT, monoWidth, monoHeight);
+    auto rightCameraInfo = converter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_C, monoWidth, monoHeight);
 
     dai::rosBridge::BridgePublisher<sensor_msgs::Image, dai::ImgFrame> depthPublish(depthQueue,
                                                                                     pnh,

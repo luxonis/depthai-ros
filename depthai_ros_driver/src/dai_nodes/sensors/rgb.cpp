@@ -20,7 +20,7 @@ namespace dai_nodes {
 RGB::RGB(const std::string& daiNodeName,
          ros::NodeHandle node,
          std::shared_ptr<dai::Pipeline> pipeline,
-         dai::CameraBoardSocket socket = dai::CameraBoardSocket::RGB,
+         dai::CameraBoardSocket socket = dai::CameraBoardSocket::CAM_A,
          sensor_helpers::ImageSensor sensor = {"IMX378", {"12mp", "4k"}, true},
          bool publish = true)
     : BaseNode(daiNodeName, node, pipeline), it(node) {
