@@ -16,7 +16,6 @@ def launch_setup(context, *args, **kwargs):
 
     depthai_prefix = get_package_share_directory("depthai_ros_driver")
     params_file = os.path.join(depthai_prefix, "config", "multicam_example.yaml")
-    # put mx_ids here
     cams = ["oak_d_w", "oak_d_lite"]
     nodes = []
     i=0.0
