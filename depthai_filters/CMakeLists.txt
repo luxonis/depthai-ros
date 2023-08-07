@@ -18,6 +18,7 @@ ament_auto_add_library(
   src/segmentation_overlay.cpp
   src/spatial_bb.cpp
   src/wls_filter.cpp
+  src/feature_tracker_overlay
   src/utils.cpp
 )
 ament_target_dependencies(${PROJECT_NAME} ${DEPENDENCIES})
@@ -29,6 +30,7 @@ rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::Detection2DOv
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::SegmentationOverlay")
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::WLSFilter")
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::SpatialBB")
+rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::FeatureTrackerOverlay")
 ament_export_include_directories(include)
 install(DIRECTORY launch config DESTINATION share/${PROJECT_NAME})
 install(
