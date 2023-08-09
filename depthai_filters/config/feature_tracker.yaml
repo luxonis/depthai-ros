@@ -4,9 +4,9 @@
       i_nn_type: none
     rgb:
       i_enable_feature_tracker: true
-    left:
-      i_publish_topic: true
-      i_enable_feature_tracker: true
-    right:
-      i_publish_topic: true
-      i_enable_feature_tracker: true
+    # left:
+    #   i_publish_topic: true
+    #   i_enable_feature_tracker: true
+    # right:
+    #   i_publish_topic: true
+    #   i_enable_feature_tracker: true

@@ -59,8 +59,6 @@ void FeatureTrackerOverlay::trackFeaturePath(std::vector<depthai_ros_msgs::msg::
     trackedIDs = newTrackedIDs;
 }
 void FeatureTrackerOverlay::drawFeatures(cv::Mat& img) {
-
-
     for(auto& featurePath : trackedFeaturesPath) {
         std::deque<geometry_msgs::msg::Point>& path = featurePath.second;
         unsigned int j = 0;
