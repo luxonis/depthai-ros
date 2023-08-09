@@ -175,7 +175,8 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
 
         size_t size = inData->getData().size();
         outImageMsg.data.reserve(size);
-        outImageMsg.data = std::move(inData->getData());
+
+        outImageMsg.data.assign(inData->getData().begin(), inData->getData().end());
     }
     return outImageMsg;
 }
