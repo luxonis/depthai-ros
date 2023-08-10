@@ -67,7 +67,6 @@ def launch_setup(context, *args, **kwargs):
                     )
             ],
             arguments=['--ros-args', '--log-level', log_level],
-            prefix=["perf record -g --call-graph dwarf --output=perf.out.node_name.data --"],
             output="both",
         ),
 

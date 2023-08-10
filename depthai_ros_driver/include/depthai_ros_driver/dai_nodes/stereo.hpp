@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "depthai-shared/common/CameraBoardSocket.hpp"
+#include "depthai-shared/common/CameraFeatures.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
@@ -45,19 +46,14 @@ namespace link_types {
 enum class StereoLinkType { left, right };
 };
 
-struct StereoSensorInfo {
-    std::string name;
-    dai::CameraBoardSocket socket;
-};
-
 class Stereo : public BaseNode {
    public:
     explicit Stereo(const std::string& daiNodeName,
                     rclcpp::Node* node,
                     std::shared_ptr<dai::Pipeline> pipeline,
                     std::shared_ptr<dai::Device> device,
-                    StereoSensorInfo leftInfo = StereoSensorInfo{"left", dai::CameraBoardSocket::CAM_B},
-                    StereoSensorInfo rightInfo = StereoSensorInfo{"right", dai::CameraBoardSocket::CAM_C});
+                    dai::CameraBoardSocket leftSocket = dai::CameraBoardSocket::CAM_B,
+                    dai::CameraBoardSocket rightSocket = dai::CameraBoardSocket::CAM_C);
     ~Stereo();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
@@ -84,7 +80,7 @@ class Stereo : public BaseNode {
     std::shared_ptr<dai::DataOutputQueue> stereoQ, leftRectQ, rightRectQ;
     std::shared_ptr<dai::node::XLinkOut> xoutStereo, xoutLeftRect, xoutRightRect;
     std::string stereoQName, leftRectQName, rightRectQName;
-    StereoSensorInfo leftSensInfo, rightSensInfo;
+    dai::CameraFeatures leftSensInfo, rightSensInfo;
 };
 
 }  // namespace dai_nodes

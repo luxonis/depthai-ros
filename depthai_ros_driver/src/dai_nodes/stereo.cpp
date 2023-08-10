@@ -22,17 +22,25 @@ Stereo::Stereo(const std::string& daiNodeName,
                rclcpp::Node* node,
                std::shared_ptr<dai::Pipeline> pipeline,
                std::shared_ptr<dai::Device> device,
-               StereoSensorInfo leftInfo,
-               StereoSensorInfo rightInfo)
-    : BaseNode(daiNodeName, node, pipeline), leftSensInfo(leftInfo), rightSensInfo(rightInfo) {
+               dai::CameraBoardSocket leftSocket,
+               dai::CameraBoardSocket rightSocket)
+    : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
+    for(auto f : device->getConnectedCameraFeatures()) {
+        if(f.socket == leftSocket) {
+            leftSensInfo = f;
+        } else if(f.socket == rightSocket) {
+            rightSensInfo = f;
+        } else {
+            continue;
+        }
+    }
     stereoCamNode = pipeline->create<dai::node::StereoDepth>();
-    left = std::make_unique<SensorWrapper>(leftInfo.name, node, pipeline, device, leftInfo.socket, false);
-    right = std::make_unique<SensorWrapper>(rightInfo.name, node, pipeline, device, rightInfo.socket, false);
-
+    left = std::make_unique<SensorWrapper>(leftSensInfo.name, node, pipeline, device, leftSensInfo.socket, false);
+    right = std::make_unique<SensorWrapper>(rightSensInfo.name, node, pipeline, device, rightSensInfo.socket, false);
     ph = std::make_unique<param_handlers::StereoParamHandler>(node, daiNodeName);
-    ph->declareParams(stereoCamNode, rightInfo.name);
+    ph->declareParams(stereoCamNode, rightSensInfo.name);
     setXinXout(pipeline);
     left->link(stereoCamNode->left);
     right->link(stereoCamNode->right);
