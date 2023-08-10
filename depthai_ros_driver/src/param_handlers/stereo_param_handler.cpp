@@ -57,7 +57,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     stereo->setLeftRightCheck(declareAndLogParam<bool>("i_lr_check", true));
     int width = 1280;
     int height = 720;
-    dai::CameraBoardSocket socket = dai::CameraBoardSocket::RIGHT;
+    dai::CameraBoardSocket socket = dai::CameraBoardSocket::CAM_C;
     if(declareAndLogParam<bool>("i_align_depth", true)) {
         try {
             width = getROSNode()->get_parameter("rgb.i_width").as_int();
