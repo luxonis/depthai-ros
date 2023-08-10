@@ -32,7 +32,7 @@ Stereo::Stereo(const std::string& daiNodeName,
     right = std::make_unique<SensorWrapper>(rightInfo.name, node, pipeline, device, rightInfo.socket, false);
 
     ph = std::make_unique<param_handlers::StereoParamHandler>(node, daiNodeName);
-    ph->declareParams(stereoCamNode, rightInfo.name);
+    ph->declareParams(stereoCamNode, leftInfo.name, rightInfo.name);
     setXinXout(pipeline);
     left->link(stereoCamNode->left);
     right->link(stereoCamNode->right);
@@ -144,7 +144,7 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     stereoQ = device->getOutputQueue(stereoQName, ph->getParam<int>("i_max_q_size"), false);
     std::string tfPrefix;
     if(ph->getParam<bool>("i_align_depth")) {
-        tfPrefix = getTFPrefix("rgb");
+        tfPrefix = getTFPrefix(ph->getParam<std::string>("i_socket_name"));
     } else {
         tfPrefix = getTFPrefix(rightSensInfo.name);
     }
