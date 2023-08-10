@@ -28,11 +28,7 @@ class FeatureTrackerParamHandler : public BaseParamHandler {
     ~FeatureTrackerParamHandler();
     void declareParams(std::shared_ptr<dai::node::FeatureTracker> featureTracker);
     dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;
-    std::unordered_map<std::string, dai::FeatureTrackerConfig::MotionEstimator::Type> motionEstMap{
-        {"LUCAS_KANADE_OPTICAL_FLOW", dai::FeatureTrackerConfig::MotionEstimator::Type::LUCAS_KANADE_OPTICAL_FLOW},
-        {"HW_MOTION_ESTIMATION", dai::FeatureTrackerConfig::MotionEstimator::Type::HW_MOTION_ESTIMATION}
-
-    };
+    std::unordered_map<std::string, dai::FeatureTrackerConfig::MotionEstimator::Type> motionEstMap;
 };
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver
