@@ -31,22 +31,6 @@ def launch_setup(context, *args, **kwargs):
                         remappings=[('rgb/preview/image_raw', name+'/rgb/image_raw'),
                                     ('feature_tracker/tracked_features', name+'/rgb_feature_tracker/tracked_features'),
                                     ('overlay', 'overlay_rgb')]
-                    ),
-                    ComposableNode(
-                        package="depthai_filters",
-                        name="feature_overlay_left",
-                        plugin="depthai_filters::FeatureTrackerOverlay",
-                        remappings=[('rgb/preview/image_raw', name+'/left/image_raw'),
-                                    ('feature_tracker/tracked_features', name+'/left_feature_tracker/tracked_features'),
-                                    ('overlay', 'overlay_left')]
-                    ),
-                    ComposableNode(
-                        package="depthai_filters",
-                        name="feature_overlay_right",
-                        plugin="depthai_filters::FeatureTrackerOverlay",
-                        remappings=[('rgb/preview/image_raw', name+'/right/image_raw'),
-                                    ('feature_tracker/tracked_features', name+'/right_feature_tracker/tracked_features'),
-                                    ('overlay', 'overlay_right')]
                     )
             ],
         ),
