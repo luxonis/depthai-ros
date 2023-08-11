@@ -1,7 +1,7 @@
 #include "depthai_ros_driver/dai_nodes/stereo.hpp"
 
 #include "camera_info_manager/camera_info_manager.hpp"
-#include "cv_bridge/cv_bridge.h"
+#include "cv_bridge/cv_bridge.hpp"
 #include "depthai/device/DataQueue.hpp"
 #include "depthai/device/DeviceBase.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
