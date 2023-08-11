@@ -33,6 +33,13 @@ void SensorParamHandler::declareCommonParams() {
         {"OUTPUT", dai::CameraControl::FrameSyncMode::OUTPUT},
         {"INPUT", dai::CameraControl::FrameSyncMode::INPUT},
     };
+    cameraImageOrientationMap = {
+        {"NORMAL", dai::CameraImageOrientation::NORMAL},
+        {"ROTATE_180_DEG", dai::CameraImageOrientation::ROTATE_180_DEG},
+        {"AUTO", dai::CameraImageOrientation::AUTO},
+        {"HORIZONTAL_MIRROR", dai::CameraImageOrientation::HORIZONTAL_MIRROR},
+        {"VERTICAL_FLIP", dai::CameraImageOrientation::VERTICAL_FLIP},
+    };
 }
 
 void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> monoCam,
@@ -65,6 +72,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> mo
     if(declareAndLogParam<bool>("i_fsync_trigger", false)) {
         monoCam->initialControl.setExternalTrigger(declareAndLogParam<int>("i_num_frames_burst", 1), declareAndLogParam<int>("i_num_frames_discard", 0));
     }
+    monoCam->setImageOrientation(utils::getValFromMap(declareAndLogParam<std::string>("i_sensor_img_orientation", "NORMAL"), cameraImageOrientationMap));
 }
 void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> colorCam,
                                        dai::CameraBoardSocket socket,
@@ -132,6 +140,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     if(declareAndLogParam<bool>("i_fsync_trigger", false)) {
         colorCam->initialControl.setExternalTrigger(declareAndLogParam<int>("i_num_frames_burst", 1), declareAndLogParam<int>("i_num_frames_discard", 0));
     }
+    colorCam->setImageOrientation(utils::getValFromMap(declareAndLogParam<std::string>("i_sensor_img_orientation", "NORMAL"), cameraImageOrientationMap));
 }
 dai::CameraControl SensorParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& params) {
     dai::CameraControl ctrl;
