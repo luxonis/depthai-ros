@@ -13,10 +13,7 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-FeatureTracker::FeatureTracker(const std::string& daiNodeName,
-                               rclcpp::Node* node,
-                               std::shared_ptr<dai::Pipeline> pipeline,
-                               std::shared_ptr<dai::Device> device)
+FeatureTracker::FeatureTracker(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device)
     : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     getParentName(daiNodeName);
@@ -29,7 +26,7 @@ FeatureTracker::FeatureTracker(const std::string& daiNodeName,
 }
 FeatureTracker::~FeatureTracker() = default;
 
-void FeatureTracker::getParentName(const std::string& fullName){
+void FeatureTracker::getParentName(const std::string& fullName) {
     auto endIdx = fullName.find("_");
     parentName = fullName.substr(0, endIdx);
 }
@@ -75,7 +72,7 @@ void FeatureTracker::link(dai::Node::Input in, int /*linkType*/) {
     featureNode->outputFeatures.link(in);
 }
 
-dai::Node::Input FeatureTracker::getInput(int /*linkType*/){
+dai::Node::Input FeatureTracker::getInput(int /*linkType*/) {
     return featureNode->inputImage;
 }
 

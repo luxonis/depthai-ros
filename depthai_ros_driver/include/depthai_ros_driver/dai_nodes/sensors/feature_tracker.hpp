@@ -31,10 +31,7 @@ namespace dai_nodes {
 
 class FeatureTracker : public BaseNode {
    public:
-    explicit FeatureTracker(const std::string& daiNodeName,
-                            rclcpp::Node* node,
-                            std::shared_ptr<dai::Pipeline> pipeline,
-                            std::shared_ptr<dai::Device> device);
+    explicit FeatureTracker(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device);
     ~FeatureTracker();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;

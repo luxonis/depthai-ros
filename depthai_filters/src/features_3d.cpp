@@ -23,9 +23,9 @@ void Features3D::onInit() {
 }
 float Features3D::getDepthAt(int x, int y, const sensor_msgs::msg::Image::ConstSharedPtr& depth_image) {
     // Assuming depth image is of encoding type 16UC1 (16-bit depth, unsigned)
-    int row_step = depth_image->step; // bytes per row
+    int row_step = depth_image->step;        // bytes per row
     int pixel_index = y * row_step + x * 2;  // 2 bytes per pixel for 16-bit image
-    
+
     // Get the 16-bit depth value
     uint16_t depth_raw = *(uint16_t*)(&depth_image->data[pixel_index]);
 

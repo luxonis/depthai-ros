@@ -1,5 +1,6 @@
 #pragma once
 
+#include "cv_bridge/cv_bridge.h"
 #include "depthai_ros_msgs/msg/tracked_features.hpp"
 #include "geometry_msgs/msg/point.hpp"
 #include "message_filters/subscriber.h"
@@ -7,7 +8,6 @@
 #include "message_filters/synchronizer.h"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/image.hpp"
-#include "cv_bridge/cv_bridge.h"
 
 namespace depthai_filters {
 

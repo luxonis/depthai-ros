@@ -4,9 +4,9 @@
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/XLinkIn.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/feature_tracker.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/mono.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/rgb.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/feature_tracker.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
 #include "rclcpp/node.hpp"
@@ -59,8 +59,8 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
             sensorNode = std::make_unique<Mono>(daiNodeName, node, pipeline, socket, (*sensorIt), publish);
         }
     }
-    if(ph->getParam<bool>("i_enable_feature_tracker")){
-        featureTrackerNode = std::make_unique<FeatureTracker>(daiNodeName+std::string("_feature_tracker"), node, pipeline, device);
+    if(ph->getParam<bool>("i_enable_feature_tracker")) {
+        featureTrackerNode = std::make_unique<FeatureTracker>(daiNodeName + std::string("_feature_tracker"), node, pipeline, device);
         sensorNode->link(featureTrackerNode->getInput());
     }
     RCLCPP_DEBUG(node->get_logger(), "Base node %s created", daiNodeName.c_str());
@@ -93,7 +93,7 @@ void SensorWrapper::setupQueues(std::shared_ptr<dai::Device> device) {
     if(!ph->getParam<bool>("i_disable_node")) {
         sensorNode->setupQueues(device);
     }
-    if(ph->getParam<bool>("i_enable_feature_tracker")){
+    if(ph->getParam<bool>("i_enable_feature_tracker")) {
         featureTrackerNode->setupQueues(device);
     }
 }
@@ -104,7 +104,7 @@ void SensorWrapper::closeQueues() {
     if(!ph->getParam<bool>("i_disable_node")) {
         sensorNode->closeQueues();
     }
-    if(ph->getParam<bool>("i_enable_feature_tracker")){
+    if(ph->getParam<bool>("i_enable_feature_tracker")) {
         featureTrackerNode->closeQueues();
     }
 }

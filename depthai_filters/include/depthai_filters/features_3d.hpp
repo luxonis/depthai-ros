@@ -1,5 +1,6 @@
 #pragma once
 
+#include "depthai_ros_msgs/msg/tracked_features.hpp"
 #include "message_filters/subscriber.h"
 #include "message_filters/sync_policies/approximate_time.h"
 #include "message_filters/synchronizer.h"
@@ -7,7 +8,6 @@
 #include "sensor_msgs/msg/camera_info.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
-#include "depthai_ros_msgs/msg/tracked_features.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
 
 namespace depthai_filters {

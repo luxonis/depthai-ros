@@ -10,13 +10,11 @@ namespace param_handlers {
 FeatureTrackerParamHandler::FeatureTrackerParamHandler(rclcpp::Node* node, const std::string& name) : BaseParamHandler(node, name) {}
 FeatureTrackerParamHandler::~FeatureTrackerParamHandler() = default;
 void FeatureTrackerParamHandler::declareParams(std::shared_ptr<dai::node::FeatureTracker> featureTracker) {
-   
     declareAndLogParam<bool>("i_get_base_device_timestamp", false);
 
     featureTracker->setHardwareResources(declareAndLogParam<int>("i_num_shaves", 2), declareAndLogParam<int>("i_num_memory_slices", 2));
-    motionEstMap = {
-        {"LUCAS_KANADE_OPTICAL_FLOW", dai::FeatureTrackerConfig::MotionEstimator::Type::LUCAS_KANADE_OPTICAL_FLOW},
-        {"HW_MOTION_ESTIMATION", dai::FeatureTrackerConfig::MotionEstimator::Type::HW_MOTION_ESTIMATION}
+    motionEstMap = {{"LUCAS_KANADE_OPTICAL_FLOW", dai::FeatureTrackerConfig::MotionEstimator::Type::LUCAS_KANADE_OPTICAL_FLOW},
+                    {"HW_MOTION_ESTIMATION", dai::FeatureTrackerConfig::MotionEstimator::Type::HW_MOTION_ESTIMATION}
 
     };
     auto config = featureTracker->initialConfig.get();

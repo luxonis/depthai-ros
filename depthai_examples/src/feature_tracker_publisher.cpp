@@ -20,7 +20,6 @@
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_bridge/TrackedFeaturesConverter.hpp"
 
-
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("feature_tracker");
@@ -48,7 +47,6 @@ int main(int argc, char** argv) {
     // Linking
     monoLeft->out.link(featureTrackerLeft->inputImage);
     featureTrackerLeft->outputFeatures.link(xoutTrackedFeaturesLeft->input);
-
 
     monoRight->out.link(featureTrackerRight->inputImage);
     featureTrackerRight->outputFeatures.link(xoutTrackedFeaturesRight->input);

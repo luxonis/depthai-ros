@@ -5,8 +5,8 @@
 #include <vector>
 
 #include "depthai/pipeline/datatype/CameraControl.hpp"
-#include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
 #include "depthai/pipeline/datatype/FeatureTrackerConfig.hpp"
+#include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
 
 namespace dai {
 namespace node {
