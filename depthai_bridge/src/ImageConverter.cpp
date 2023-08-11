@@ -40,10 +40,8 @@ void ImageConverter::updateRosBaseTime() {
     updateBaseTime(_steadyBaseTime, _rosBaseTime, _totalNsChange);
 }
 
-ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> inData,
-                                                bool fromBitStream,
-                                                bool dispToDepth,
-                                                const sensor_msgs::msg::CameraInfo& info) {
+ImageMsgs::Image ImageConverter::toRosMsgRawPtr(
+    std::shared_ptr<dai::ImgFrame> inData, bool fromBitStream, bool dispToDepth, dai::RawImgFrame::Type type, const sensor_msgs::msg::CameraInfo& info) {
     if(_updateRosBaseTimeOnToRosMsg) {
         updateRosBaseTime();
     }
@@ -61,37 +59,41 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
     if(fromBitStream) {
         std::string encoding;
         int decodeFlags;
+        int channels;
         cv::Mat output;
-        auto type = inData->getType();
         switch(type) {
             case dai::RawImgFrame::Type::BGR888i: {
                 encoding = sensor_msgs::image_encodings::BGR8;
                 decodeFlags = cv::IMREAD_COLOR;
+                channels = CV_8UC3;
                 break;
             }
             case dai::RawImgFrame::Type::GRAY8: {
                 encoding = sensor_msgs::image_encodings::MONO8;
                 decodeFlags = cv::IMREAD_GRAYSCALE;
+                channels = CV_8UC1;
                 break;
             }
             case dai::RawImgFrame::Type::RAW8: {
                 encoding = sensor_msgs::image_encodings::TYPE_16UC1;
-                decodeFlags = cv::IMREAD_GRAYSCALE;
+                decodeFlags = cv::IMREAD_ANYDEPTH;
+                channels = CV_16UC1;
                 break;
             }
             default: {
+                std::cout << static_cast<int>(type) << std::endl;
                 throw(std::runtime_error("Converted type not supported!"));
             }
         }
 
-        output = cv::imdecode(cv::Mat(1, inData->getData().size(), CV_8UC1, inData->getData().data()), decodeFlags);
+        output = cv::imdecode(cv::Mat(inData->getData()), decodeFlags);
 
         // converting disparity
         if(dispToDepth) {
-            auto factor = (info.k[0] * info.p[3]);
+            auto factor = std::abs(info.p[3]) * 10000;
             cv::Mat depthOut = cv::Mat(cv::Size(output.cols, output.rows), CV_16UC1);
-            depthOut.forEach<short>([&output, &factor](short& pixel, const int* position) -> void {
-                auto disp = output.at<int8_t>(position);
+            depthOut.forEach<uint16_t>([&output, &factor](uint16_t& pixel, const int* position) -> void {
+                auto disp = output.at<uint8_t>(position);
                 if(disp == 0)
                     pixel = 0;
                 else
@@ -199,7 +201,7 @@ void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outD
             return pair.second == inMsg.encoding;
         });
         if(revEncodingIter == encodingEnumMap.end())
-            std::runtime_error(
+            throw std::runtime_error(
                 "Unable to find DAI encoding for the corresponding "
                 "sensor_msgs::image.encoding stream");
 
@@ -254,7 +256,7 @@ void ImageConverter::planarToInterleaved(const std::vector<uint8_t>& srcData, st
             destData[i * 3 + 2] = r;
         }
     } else {
-        std::runtime_error(
+        throw std::runtime_error(
             "If you encounter the scenario where you need this "
             "please create an issue on github");
     }
@@ -282,7 +284,7 @@ void ImageConverter::interleavedToPlanar(const std::vector<uint8_t>& srcData, st
         //     destData[i*3+2] = r;
         // }
     } else {
-        std::runtime_error(
+        throw std::runtime_error(
             "If you encounter the scenario where you need this "
             "please create an issue on github");
     }
@@ -296,7 +298,7 @@ cv::Mat ImageConverter::rosMsgtoCvMat(ImageMsgs::Image& inMsg) {
         cv::cvtColor(nv_frame, rgb, cv::COLOR_YUV2BGR_NV12);
         return rgb;
     } else {
-        std::runtime_error("This frature is still WIP");
+        throw std::runtime_error("This frature is still WIP");
         return rgb;
     }
 }

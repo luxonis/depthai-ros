@@ -59,6 +59,7 @@ class ImageConverter {
     ImageMsgs::Image toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> inData,
                                     bool fromBitStream = false,
                                     bool dispToDepth = false,
+                                    dai::RawImgFrame::Type type = dai::RawImgFrame::Type::BGR888i,
                                     const sensor_msgs::msg::CameraInfo& info = sensor_msgs::msg::CameraInfo());
     ImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
 

@@ -44,16 +44,24 @@ struct ImageSensor {
 };
 extern std::vector<ImageSensor> availableSensors;
 
-void imgCBIT(const std::string& /*name*/,
-             const std::shared_ptr<dai::ADatatype>& data,
-             dai::ros::ImageConverter& converter,
-             image_transport::CameraPublisher& pub,
-             std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
-             rclcpp::Node* node,
-             bool fromBitStream = false,
-             bool dispToDepth = false);
+void basicCameraPub(const std::string& /*name*/,
+                    const std::shared_ptr<dai::ADatatype>& data,
+                    dai::ros::ImageConverter& converter,
+                    image_transport::CameraPublisher& pub,
+                    std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
+                    rclcpp::Node* node);
 
-void imgCBPtr(const std::string& /*name*/,
+void cameraPub(const std::string& /*name*/,
+               const std::shared_ptr<dai::ADatatype>& data,
+               dai::ros::ImageConverter& converter,
+               image_transport::CameraPublisher& pub,
+               std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
+               rclcpp::Node* node,
+               bool fromBitStream = false,
+               bool dispToDepth = false,
+               dai::RawImgFrame::Type type = dai::RawImgFrame::Type::BGR888i);
+
+void splitPub(const std::string& /*name*/,
               const std::shared_ptr<dai::ADatatype>& data,
               dai::ros::ImageConverter& converter,
               rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr imgPub,
@@ -61,7 +69,8 @@ void imgCBPtr(const std::string& /*name*/,
               std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
               rclcpp::Node* node,
               bool fromBitStream = false,
-              bool dispToDepth = false);
+              bool dispToDepth = false,
+              dai::RawImgFrame::Type type = dai::RawImgFrame::Type::BGR888i);
 
 sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
                                           dai::ros::ImageConverter& converter,
