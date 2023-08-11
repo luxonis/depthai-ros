@@ -1,7 +1,7 @@
 #include "depthai_ros_driver/dai_nodes/stereo.hpp"
 
 #include "camera_info_manager/camera_info_manager.hpp"
-#include "cv_bridge/cv_bridge.h"
+#include "cv_bridge/cv_bridge.hpp"
 #include "depthai/device/DataQueue.hpp"
 #include "depthai/device/DeviceBase.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
@@ -161,6 +161,9 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
                                              ph->getParam<int>("i_height"));
     auto calibHandler = device->readCalibration();
     info.p[3] = calibHandler.getBaselineDistance() * 10.0;  // baseline in mm
+    for(auto& d : info.d) {
+        d = 0.0;
+    }
     stereoIM->setCameraInfo(info);
 
     if(ph->getParam<bool>("i_low_bandwidth")) {

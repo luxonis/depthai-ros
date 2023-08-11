@@ -1,6 +1,6 @@
 #include "depthai_filters/segmentation_overlay.hpp"
 
-#include "cv_bridge/cv_bridge.h"
+#include "cv_bridge/cv_bridge.hpp"
 #include "depthai_filters/utils.hpp"
 
 namespace depthai_filters {
