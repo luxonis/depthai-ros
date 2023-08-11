@@ -60,7 +60,7 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
         }
     }
     if(ph->getParam<bool>("i_enable_feature_tracker")) {
-        featureTrackerNode = std::make_unique<FeatureTracker>(daiNodeName + std::string("_feature_tracker"), node, pipeline, device);
+        featureTrackerNode = std::make_unique<FeatureTracker>(daiNodeName + std::string("_feature_tracker"), node, pipeline);
         sensorNode->link(featureTrackerNode->getInput());
     }
     RCLCPP_DEBUG(node->get_logger(), "Base node %s created", daiNodeName.c_str());

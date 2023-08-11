@@ -13,7 +13,7 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-FeatureTracker::FeatureTracker(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device)
+FeatureTracker::FeatureTracker(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline)
     : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     getParentName(daiNodeName);
