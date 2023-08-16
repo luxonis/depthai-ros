@@ -9,6 +9,7 @@
 #include "depthai/pipeline/node/VideoEncoder.hpp"
 #include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/feature_tracker.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
 #include "depthai_ros_driver/param_handlers/stereo_param_handler.hpp"
@@ -83,6 +84,17 @@ void Stereo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
         } else {
             stereoCamNode->rectifiedRight.link(xoutRightRect->input);
         }
+    }
+
+    if(ph->getParam<bool>("i_left_rect_enable_feature_tracker")) {
+        featureTrackerLeftR = std::make_unique<FeatureTracker>(leftSensInfo.name + std::string("_rect_feature_tracker"), getROSNode(), pipeline);
+
+        stereoCamNode->rectifiedLeft.link(featureTrackerLeftR->getInput());
+    }
+
+    if(ph->getParam<bool>("i_right_rect_enable_feature_tracker")) {
+        featureTrackerRightR = std::make_unique<FeatureTracker>(rightSensInfo.name + std::string("_rect_feature_tracker"), getROSNode(), pipeline);
+        stereoCamNode->rectifiedRight.link(featureTrackerRightR->getInput());
     }
 }
 
@@ -200,6 +212,12 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_publish_right_rect")) {
         setupRightRectQueue(device);
     }
+    if(ph->getParam<bool>("i_left_rect_enable_feature_tracker")) {
+        featureTrackerLeftR->setupQueues(device);
+    }
+    if(ph->getParam<bool>("i_right_rect_enable_feature_tracker")) {
+        featureTrackerRightR->setupQueues(device);
+    }
 }
 void Stereo::closeQueues() {
     left->closeQueues();
@@ -212,6 +230,12 @@ void Stereo::closeQueues() {
     }
     if(ph->getParam<bool>("i_publish_right_rect")) {
         rightRectQ->close();
+    }
+    if(ph->getParam<bool>("i_left_rect_enable_feature_tracker")) {
+        featureTrackerLeftR->closeQueues();
+    }
+    if(ph->getParam<bool>("i_right_rect_enable_feature_tracker")) {
+        featureTrackerRightR->closeQueues();
     }
 }
 
