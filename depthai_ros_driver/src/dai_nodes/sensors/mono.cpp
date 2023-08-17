@@ -56,12 +56,10 @@ void Mono::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 
 void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_publish_topic")) {
-        monoQ = device->getOutputQueue(monoQName, ph->getParam<int>("i_max_q_size"), false);
         auto tfPrefix = getTFPrefix(getName());
         imageConverter =
             std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
         imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
-        monoPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
             getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
         if(ph->getParam<std::string>("i_calibration_file").empty()) {
@@ -74,16 +72,35 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
         } else {
             infoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
         }
-        if(ph->getParam<bool>("i_low_bandwidth")) {
-            monoQ->addCallback(std::bind(sensor_helpers::compressedImgCB,
+        monoQ = device->getOutputQueue(monoQName, ph->getParam<int>("i_max_q_size"), false);
+        if(getROSNode()->get_node_options().use_intra_process_comms()) {
+            RCLCPP_DEBUG(getROSNode()->get_logger(), "Enabling intra_process communication!");
+            monoPub = getROSNode()->create_publisher<sensor_msgs::msg::Image>("~/" + getName() + "/image_raw", 10);
+            infoPub = getROSNode()->create_publisher<sensor_msgs::msg::CameraInfo>("~/" + getName() + "/camera_info", 10);
+            monoQ->addCallback(std::bind(sensor_helpers::splitPub,
                                          std::placeholders::_1,
                                          std::placeholders::_2,
                                          *imageConverter,
                                          monoPub,
+                                         infoPub,
                                          infoManager,
+                                         getROSNode(),
+                                         ph->getParam<bool>("i_low_bandwidth"),
+                                         false,
                                          dai::RawImgFrame::Type::GRAY8));
+
         } else {
-            monoQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, monoPub, infoManager));
+            monoPubIT = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
+            monoQ->addCallback(std::bind(sensor_helpers::cameraPub,
+                                         std::placeholders::_1,
+                                         std::placeholders::_2,
+                                         *imageConverter,
+                                         monoPubIT,
+                                         infoManager,
+                                         getROSNode(),
+                                         ph->getParam<bool>("i_low_bandwidth"),
+                                         false,
+                                         dai::RawImgFrame::Type::GRAY8));
         }
     }
     controlQ = device->getInputQueue(controlQName);

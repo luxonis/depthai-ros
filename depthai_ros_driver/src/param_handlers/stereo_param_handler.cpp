@@ -86,12 +86,14 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     }
     stereo->setOutputSize(declareAndLogParam<int>("i_width", width), declareAndLogParam<int>("i_height", height));
     stereo->setDefaultProfilePreset(depthPresetMap.at(declareAndLogParam<std::string>("i_depth_preset", "HIGH_ACCURACY")));
-    stereo->enableDistortionCorrection(declareAndLogParam<bool>("i_enable_distortion_correction", true));
+    if(declareAndLogParam<bool>("i_enable_distortion_correction", false)) {
+        stereo->enableDistortionCorrection(true);
+    }
 
     stereo->initialConfig.setBilateralFilterSigma(declareAndLogParam<int>("i_bilateral_sigma", 0));
     stereo->initialConfig.setLeftRightCheckThreshold(declareAndLogParam<int>("i_lrc_threshold", 10));
     stereo->initialConfig.setMedianFilter(static_cast<dai::MedianFilter>(declareAndLogParam<int>("i_depth_filter_size", 5)));
-    stereo->initialConfig.setConfidenceThreshold(declareAndLogParam<int>("i_stereo_conf_threshold", 255));
+    stereo->initialConfig.setConfidenceThreshold(declareAndLogParam<int>("i_stereo_conf_threshold", 240));
     if(declareAndLogParam<bool>("i_subpixel", false)) {
         stereo->initialConfig.setSubpixel(true);
         stereo->initialConfig.setSubpixelFractionalBits(declareAndLogParam<int>("i_subpixel_fractional_bits", 3));

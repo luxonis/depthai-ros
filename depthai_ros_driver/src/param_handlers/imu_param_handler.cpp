@@ -38,7 +38,7 @@ void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const s
     }
     imu->enableIMUSensor(dai::IMUSensor::ACCELEROMETER_RAW, declareAndLogParam<int>("i_acc_freq", 400));
     imu->enableIMUSensor(dai::IMUSensor::GYROSCOPE_RAW, declareAndLogParam<int>("i_gyro_freq", 400));
-    imu->setBatchReportThreshold(declareAndLogParam<int>("i_batch_report_threshold", 1));
+    imu->setBatchReportThreshold(declareAndLogParam<int>("i_batch_report_threshold", 5));
     imu->setMaxBatchReports(declareAndLogParam<int>("i_max_batch_reports", 10));
 }
 

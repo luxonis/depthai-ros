@@ -40,68 +40,8 @@ void ImageConverter::updateRosBaseTime() {
     updateBaseTime(_steadyBaseTime, _rosBaseTime, _totalNsChange);
 }
 
-void ImageConverter::toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData,
-                                           std::deque<ImageMsgs::Image>& outImageMsgs,
-                                           dai::RawImgFrame::Type type,
-                                           const sensor_msgs::msg::CameraInfo& info) {
-    if(_updateRosBaseTimeOnToRosMsg) {
-        updateRosBaseTime();
-    }
-    std::chrono::_V2::steady_clock::time_point tstamp;
-    if(_getBaseDeviceTimestamp)
-        tstamp = inData->getTimestampDevice();
-    else
-        tstamp = inData->getTimestamp();
-
-    ImageMsgs::Image outImageMsg;
-    StdMsgs::Header header;
-    header.frame_id = _frameName;
-    header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
-    std::string encoding;
-    int decodeFlags;
-    cv::Mat output;
-    switch(type) {
-        case dai::RawImgFrame::Type::BGR888i: {
-            encoding = sensor_msgs::image_encodings::BGR8;
-            decodeFlags = cv::IMREAD_COLOR;
-            break;
-        }
-        case dai::RawImgFrame::Type::GRAY8: {
-            encoding = sensor_msgs::image_encodings::MONO8;
-            decodeFlags = cv::IMREAD_GRAYSCALE;
-            break;
-        }
-        case dai::RawImgFrame::Type::RAW8: {
-            encoding = sensor_msgs::image_encodings::TYPE_16UC1;
-            decodeFlags = cv::IMREAD_GRAYSCALE;
-            break;
-        }
-        default: {
-            throw(std::runtime_error("Converted type not supported!"));
-        }
-    }
-
-    output = cv::imdecode(cv::Mat(1, inData->getData().size(), CV_8UC1, inData->getData().data()), decodeFlags);
-
-    // converting disparity
-    if(type == dai::RawImgFrame::Type::RAW8) {
-        auto factor = (info.k[0] * info.p[3]);
-        cv::Mat depthOut = cv::Mat(cv::Size(output.cols, output.rows), CV_16UC1);
-        depthOut.forEach<short>([&output, &factor](short& pixel, const int* position) -> void {
-            auto disp = output.at<int8_t>(position);
-            if(disp == 0)
-                pixel = 0;
-            else
-                pixel = factor / disp;
-        });
-        output = depthOut.clone();
-    }
-    cv_bridge::CvImage(header, encoding, output).toImageMsg(outImageMsg);
-    outImageMsgs.push_back(outImageMsg);
-    return;
-}
-
-void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs) {
+ImageMsgs::Image ImageConverter::toRosMsgRawPtr(
+    std::shared_ptr<dai::ImgFrame> inData, bool fromBitStream, bool dispToDepth, dai::RawImgFrame::Type type, const sensor_msgs::msg::CameraInfo& info) {
     if(_updateRosBaseTimeOnToRosMsg) {
         updateRosBaseTime();
     }
@@ -115,6 +55,55 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<
     header.frame_id = _frameName;
 
     header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
+
+    if(fromBitStream) {
+        std::string encoding;
+        int decodeFlags;
+        int channels;
+        cv::Mat output;
+        switch(type) {
+            case dai::RawImgFrame::Type::BGR888i: {
+                encoding = sensor_msgs::image_encodings::BGR8;
+                decodeFlags = cv::IMREAD_COLOR;
+                channels = CV_8UC3;
+                break;
+            }
+            case dai::RawImgFrame::Type::GRAY8: {
+                encoding = sensor_msgs::image_encodings::MONO8;
+                decodeFlags = cv::IMREAD_GRAYSCALE;
+                channels = CV_8UC1;
+                break;
+            }
+            case dai::RawImgFrame::Type::RAW8: {
+                encoding = sensor_msgs::image_encodings::TYPE_16UC1;
+                decodeFlags = cv::IMREAD_ANYDEPTH;
+                channels = CV_16UC1;
+                break;
+            }
+            default: {
+                std::cout << static_cast<int>(type) << std::endl;
+                throw(std::runtime_error("Converted type not supported!"));
+            }
+        }
+
+        output = cv::imdecode(cv::Mat(inData->getData()), decodeFlags);
+
+        // converting disparity
+        if(dispToDepth) {
+            auto factor = std::abs(info.p[3]) * 10000;
+            cv::Mat depthOut = cv::Mat(cv::Size(output.cols, output.rows), CV_16UC1);
+            depthOut.forEach<uint16_t>([&output, &factor](uint16_t& pixel, const int* position) -> void {
+                auto disp = output.at<uint8_t>(position);
+                if(disp == 0)
+                    pixel = 0;
+                else
+                    pixel = factor / disp;
+            });
+            output = depthOut.clone();
+        }
+        cv_bridge::CvImage(header, encoding, output).toImageMsg(outImageMsg);
+        return outImageMsg;
+    }
 
     if(planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end()) {
         // cv::Mat inImg = inData->getCvFrame();
@@ -186,14 +175,25 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<
             outImageMsg.is_bigendian = true;
 
         size_t size = inData->getData().size();
-        outImageMsg.data.resize(size);
-        outImageMsg.data = inData->getData();
+        outImageMsg.data.reserve(size);
+        outImageMsg.data = std::move(inData->getData());
     }
+    return outImageMsg;
+}
+
+void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs) {
+    auto outImageMsg = toRosMsgRawPtr(inData);
     outImageMsgs.push_back(outImageMsg);
     return;
 }
 
-// TODO(sachin): Not tested
+ImagePtr ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
+    auto msg = toRosMsgRawPtr(inData);
+
+    ImagePtr ptr = std::make_shared<ImageMsgs::Image>(msg);
+    return ptr;
+}
+
 void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outData) {
     std::unordered_map<dai::RawImgFrame::Type, std::string>::iterator revEncodingIter;
     if(_daiInterleaved) {
@@ -201,7 +201,7 @@ void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outD
             return pair.second == inMsg.encoding;
         });
         if(revEncodingIter == encodingEnumMap.end())
-            std::runtime_error(
+            throw std::runtime_error(
                 "Unable to find DAI encoding for the corresponding "
                 "sensor_msgs::image.encoding stream");
 
@@ -240,15 +240,6 @@ void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outD
     outData.setType(revEncodingIter->first);
 }
 
-ImagePtr ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
-    std::deque<ImageMsgs::Image> msgQueue;
-    toRosMsg(inData, msgQueue);
-    auto msg = msgQueue.front();
-
-    ImagePtr ptr = std::make_shared<ImageMsgs::Image>(msg);
-    return ptr;
-}
-
 void ImageConverter::planarToInterleaved(const std::vector<uint8_t>& srcData, std::vector<uint8_t>& destData, int w, int h, int numPlanes, int bpp) {
     if(numPlanes == 3) {
         // optimization (cache)
@@ -265,7 +256,7 @@ void ImageConverter::planarToInterleaved(const std::vector<uint8_t>& srcData, st
             destData[i * 3 + 2] = r;
         }
     } else {
-        std::runtime_error(
+        throw std::runtime_error(
             "If you encounter the scenario where you need this "
             "please create an issue on github");
     }
@@ -293,7 +284,7 @@ void ImageConverter::interleavedToPlanar(const std::vector<uint8_t>& srcData, st
         //     destData[i*3+2] = r;
         // }
     } else {
-        std::runtime_error(
+        throw std::runtime_error(
             "If you encounter the scenario where you need this "
             "please create an issue on github");
     }
@@ -307,7 +298,7 @@ cv::Mat ImageConverter::rosMsgtoCvMat(ImageMsgs::Image& inMsg) {
         cv::cvtColor(nv_frame, rgb, cv::COLOR_YUV2BGR_NV12);
         return rgb;
     } else {
-        std::runtime_error("This frature is still WIP");
+        throw std::runtime_error("This frature is still WIP");
         return rgb;
     }
 }

@@ -118,7 +118,6 @@ target_link_libraries(
   ${COMMON_LIB_NAME}
 )
 
-
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::Camera")
 pluginlib_export_plugin_description_file(${PROJECT_NAME} plugins.xml)
 ament_export_include_directories(include)

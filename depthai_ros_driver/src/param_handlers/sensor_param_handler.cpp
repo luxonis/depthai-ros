@@ -72,6 +72,9 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> mo
     if(declareAndLogParam<bool>("i_fsync_trigger", false)) {
         monoCam->initialControl.setExternalTrigger(declareAndLogParam<int>("i_num_frames_burst", 1), declareAndLogParam<int>("i_num_frames_discard", 0));
     }
+    if(declareAndLogParam<bool>("i_set_isp3a_fps", false)) {
+        monoCam->setIsp3aFps(declareAndLogParam<int>("i_isp3a_fps", 10));
+    }
     monoCam->setImageOrientation(utils::getValFromMap(declareAndLogParam<std::string>("i_sensor_img_orientation", "NORMAL"), cameraImageOrientationMap));
 }
 void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> colorCam,
@@ -139,6 +142,9 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     }
     if(declareAndLogParam<bool>("i_fsync_trigger", false)) {
         colorCam->initialControl.setExternalTrigger(declareAndLogParam<int>("i_num_frames_burst", 1), declareAndLogParam<int>("i_num_frames_discard", 0));
+    }
+    if(declareAndLogParam<bool>("i_set_isp3a_fps", true)) {
+        colorCam->setIsp3aFps(declareAndLogParam<int>("i_isp3a_fps", 10));
     }
     colorCam->setImageOrientation(utils::getValFromMap(declareAndLogParam<std::string>("i_sensor_img_orientation", "NORMAL"), cameraImageOrientationMap));
 }
