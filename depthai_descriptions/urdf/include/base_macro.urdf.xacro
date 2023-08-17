@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<robot name="base"
+    xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <xacro:macro name="base" params="camera_name camera_model parent base_frame 
+                                           cam_pos_x cam_pos_y cam_pos_z 
+                                           cam_roll cam_pitch cam_yaw r:=0.8 g:=0.8 b:=0.8 a:=0.8">
+        <!-- base_link of the sensor-->
+        <link name="${base_frame}"/>
+        <xacro:property name="M_PI" value="3.1415926535897931" />
+        <xacro:property name="model" value="${camera_model}" />
+
+        <joint name="${camera_name}_center_joint" type="fixed">
+            <parent link="${parent}"/>
+            <child link="${base_frame}"/>
+            <origin xyz="${cam_pos_x} ${cam_pos_y} ${cam_pos_z}" rpy="${cam_roll} ${cam_pitch} ${cam_yaw}" />
+        </joint>
+
+        <!-- device Center -->
+        <link name="${camera_name}_model_origin">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <mesh filename="package://depthai_descriptions/urdf/models/${model}.stl" />
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}"/>
+                </material>
+            </visual>
+        </link>
+
+        <joint name="${camera_name}_model_origin_joint" type="fixed">
+            <parent link="${base_frame}"/>
+            <child link="${camera_name}_model_origin"/>
+            <origin xyz="0 0 0" rpy="1.5708 0 1.5708" />
+        </joint>
+    </xacro:macro>
+</robot>

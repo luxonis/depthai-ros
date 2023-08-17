@@ -28,9 +28,9 @@ TFPublisher::TFPublisher(rclcpp::Node* node, dai::CalibrationHandler handler, co
         auto extrinsics = cam[1]["extrinsics"];
 
         ts.transform.rotation = quatFromRotM(extrinsics["rotationMatrix"]);
-        ts.transform.translation = transFromExtr(extrinsics["translation"])
+        ts.transform.translation = transFromExtr(extrinsics["translation"]);
 
-            std::string name = socketNameMap.at(cam[0]);
+        std::string name = socketNameMap.at(cam[0]);
         ts.child_frame_id = node->get_name() + std::string("_") + name + std::string("_camera_frame");
 
         // check if the camera is at the end of the chain
@@ -58,7 +58,7 @@ TFPublisher::TFPublisher(rclcpp::Node* node, dai::CalibrationHandler handler, co
     ts.header.stamp = node->get_clock()->now();
     auto imuExtr = json["imuExtrinsics"];
     if(imuExtr["toCameraSocket"] != -1) {
-        ts.header.frame_id = node->get_name() + std::string("_") + socketNameMap.at(extrinsics["toCameraSocket"]) + std::string("_camera_frame");
+        ts.header.frame_id = node->get_name() + std::string("_") + socketNameMap.at(imuExtr["toCameraSocket"]) + std::string("_camera_frame");
     } else {
         ts.header.frame_id = node->get_name();
         ts.transform.rotation.w = 1.0;
@@ -70,17 +70,16 @@ TFPublisher::TFPublisher(rclcpp::Node* node, dai::CalibrationHandler handler, co
 
     ts.transform.rotation = quatFromRotM(imuExtr["rotationMatrix"]);
     ts.transform.translation = transFromExtr(imuExtr["translation"]);
+    tfPub->sendTransform(ts);
 }
 
-geometry_msgs::msg::Vector3 transFromExtr(nlohmann::json translation) {
+geometry_msgs::msg::Vector3 TFPublisher::transFromExtr(nlohmann::json translation) {
     geometry_msgs::msg::Vector3 trans;
     // optical coordinates to ROS
-    trans.x = translation["y"];
-    trans.x /= -100.0;
-    trans.y = translation["x"];
-    trans.y /= -100.0;
-    trans.z = translation["z"];
-    trans.z /= 100.0;
+    trans.x = translation["y"].get<double>() / -100.0;
+    trans.y = translation["x"].get<double>() / -100.0;
+    trans.z = translation["z"].get<double>() / 100.0;
+    return trans;
 }
 geometry_msgs::msg::Quaternion TFPublisher::quatFromRotM(nlohmann::json rotMatrix) {
     tf2::Matrix3x3 m(rotMatrix[0][0],
@@ -102,7 +101,7 @@ geometry_msgs::msg::Quaternion TFPublisher::quatFromRotM(nlohmann::json rotMatri
 }
 std::string TFPublisher::getXacro(const std::string& xacroArgs) {
     auto path = ament_index_cpp::get_package_share_directory("depthai_descriptions");
-    std::string cmd = "xacro /workspaces/ros_2/src/depthai-ros/depthai_descriptions/urdf/depthai_descr.urdf.xacro ";
+    std::string cmd = "xacro /workspaces/ros_2/src/depthai-ros/depthai_descriptions/urdf/base_descr.urdf.xacro ";
     cmd += xacroArgs;
     std::array<char, 128> buffer;
     std::string result;

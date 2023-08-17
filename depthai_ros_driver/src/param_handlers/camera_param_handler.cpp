@@ -38,8 +38,8 @@ void CameraParamHandler::declareParams() {
 
     declareAndLogParam<bool>("i_publish_tf_from_calibration", true);
     declareAndLogParam<std::string>("i_tf_publisher_xacro_args",
-                                    "camera_name:=oak camera_model:=OAK-D base_frame:=oak-d_frame parent_frame:=map cam_pos_x:=0.0 cam_pos_y:=0.0 "
-                                    "cam_pos_z:=0.0 cam_roll:=1.5708 cam_pitch:=0.0 cam_yaw:=1.5708");
+                                    "camera_name:=oak camera_model:=OAK-D base_frame:=oak parent_frame:=oak-d-base-frame cam_pos_x:=0.0 cam_pos_y:=0.0 "
+                                    "cam_pos_z:=0.0 cam_roll:=0.0 cam_pitch:=0.0 cam_yaw:=0.0");
 }
 dai::CameraControl CameraParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& /*params*/) {
     dai::CameraControl ctrl;
