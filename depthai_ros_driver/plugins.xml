@@ -17,4 +17,7 @@
     <class type="depthai_ros_driver::pipeline_gen::CamArray" base_class_type="depthai_ros_driver::pipeline_gen::BasePipeline">
         <description>CamArray Pipeline.</description>
     </class>
+    <class type="depthai_ros_driver::pipeline_gen::StereoToF" base_class_type="depthai_ros_driver::pipeline_gen::BasePipeline">
+        <description>Stereo + ToF Pipeline.</description>
+    </class>
 </library>

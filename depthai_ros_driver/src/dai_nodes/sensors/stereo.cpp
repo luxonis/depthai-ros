@@ -1,4 +1,4 @@
-#include "depthai_ros_driver/dai_nodes/stereo.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/stereo.hpp"
 
 #include "camera_info_manager/camera_info_manager.hpp"
 #include "cv_bridge/cv_bridge.h"

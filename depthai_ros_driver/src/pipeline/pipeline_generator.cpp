@@ -35,6 +35,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
         daiNodes = pipelinePlugin->createPipeline(node, device, pipeline, nnType);
     } catch(pluginlib::PluginlibException& ex) {
         RCLCPP_ERROR(node->get_logger(), "The plugin failed to load for some reason. Error: %s\n", ex.what());
+        throw std::runtime_error("Plugin loading failed.");
     }
 
     if(enableImu) {

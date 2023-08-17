@@ -69,6 +69,7 @@ add_library(
   src/param_handlers/nn_param_handler.cpp
   src/param_handlers/sensor_param_handler.cpp
   src/param_handlers/stereo_param_handler.cpp
+  src/param_handlers/tof_param_handler.cpp
 )
 
 ament_target_dependencies(${COMMON_LIB_NAME} ${COMMON_DEPS})
@@ -80,7 +81,8 @@ add_library(
   src/dai_nodes/sensors/rgb.cpp
   src/dai_nodes/sensors/mono.cpp
   src/dai_nodes/sensors/sensor_wrapper.cpp
-  src/dai_nodes/stereo.cpp
+  src/dai_nodes/sensors/stereo.cpp
+  src/dai_nodes/sensors/tof.cpp
 )
 
 ament_target_dependencies(${SENSOR_LIB_NAME} ${SENSOR_DEPS})

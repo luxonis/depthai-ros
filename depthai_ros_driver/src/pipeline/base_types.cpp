@@ -9,7 +9,8 @@
 #include "depthai_ros_driver/dai_nodes/sensors/imu.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
-#include "depthai_ros_driver/dai_nodes/stereo.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/stereo.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/tof.hpp"
 #include "depthai_ros_driver/pipeline/base_pipeline.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/node.hpp"
@@ -142,6 +143,17 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> CamArray::createPipeline(rclcp
     };
     return daiNodes;
 }
+std::vector<std::unique_ptr<dai_nodes::BaseNode>> StereoToF::createPipeline(rclcpp::Node* node,
+                                                                            std::shared_ptr<dai::Device> device,
+                                                                            std::shared_ptr<dai::Pipeline> pipeline,
+                                                                            const std::string& /*nnType*/) {
+    std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
+    auto tof = std::make_unique<dai_nodes::ToF>("tof", node, pipeline);
+    auto stereo = std::make_unique<dai_nodes::Stereo>("stereo", node, pipeline, device);
+    daiNodes.push_back(std::move(tof));
+    daiNodes.push_back(std::move(stereo));
+    return daiNodes;
+}
 }  // namespace pipeline_gen
 }  // namespace depthai_ros_driver
 
@@ -153,3 +165,4 @@ PLUGINLIB_EXPORT_CLASS(depthai_ros_driver::pipeline_gen::RGBStereo, depthai_ros_
 PLUGINLIB_EXPORT_CLASS(depthai_ros_driver::pipeline_gen::Stereo, depthai_ros_driver::pipeline_gen::BasePipeline)
 PLUGINLIB_EXPORT_CLASS(depthai_ros_driver::pipeline_gen::Depth, depthai_ros_driver::pipeline_gen::BasePipeline)
 PLUGINLIB_EXPORT_CLASS(depthai_ros_driver::pipeline_gen::CamArray, depthai_ros_driver::pipeline_gen::BasePipeline)
+PLUGINLIB_EXPORT_CLASS(depthai_ros_driver::pipeline_gen::StereoToF, depthai_ros_driver::pipeline_gen::BasePipeline)
