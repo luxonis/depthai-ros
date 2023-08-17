@@ -131,7 +131,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
                                                                            ph->getParam<int>("i_preview_size"),
                                                                            ph->getParam<int>("i_preview_size")));
         } else {
-            infoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
+            previewInfoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
         }
         if(getROSNode()->get_node_options().use_intra_process_comms()) {
             RCLCPP_DEBUG(getROSNode()->get_logger(), "Enabling intra_process communication!");
