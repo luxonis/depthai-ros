@@ -27,6 +27,7 @@ void SensorParamHandler::declareCommonParams() {
     declareAndLogParam<bool>("i_get_base_device_timestamp", false);
     declareAndLogParam<int>("i_board_socket_id", 0);
     declareAndLogParam<bool>("i_update_ros_base_time_on_ros_msg", false);
+    declareAndLogParam<bool>("i_enable_feature_tracker", false);
     fSyncModeMap = {
         {"OFF", dai::CameraControl::FrameSyncMode::OFF},
         {"OUTPUT", dai::CameraControl::FrameSyncMode::OUTPUT},

@@ -18,6 +18,7 @@
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
   <depend>visualization_msgs</depend>
+  <depend>depthai_ros_msgs</depend>
 
   <export>
     <build_type>ament_cmake</build_type>
