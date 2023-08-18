@@ -37,9 +37,16 @@ void CameraParamHandler::declareParams() {
     declareAndLogParam<int>("i_floodlight_brightness", 0, getRangedIntDescriptor(0, 1500));
 
     declareAndLogParam<bool>("i_publish_tf_from_calibration", true);
-    declareAndLogParam<std::string>("i_tf_publisher_xacro_args",
-                                    "camera_name:=oak camera_model:=OAK-D base_frame:=oak parent_frame:=oak-d-base-frame cam_pos_x:=0.0 cam_pos_y:=0.0 "
-                                    "cam_pos_z:=0.0 cam_roll:=0.0 cam_pitch:=0.0 cam_yaw:=0.0");
+    declareAndLogParam<std::string>("i_tf_camera_name", getROSNode()->get_name());
+    declareAndLogParam<std::string>("i_tf_camera_model", "");
+    declareAndLogParam<std::string>("i_tf_base_frame", "oak");
+    declareAndLogParam<std::string>("i_tf_parent_frame", "oak-d-base-frame");
+    declareAndLogParam<std::string>("i_tf_cam_pos_x", "0.0");
+    declareAndLogParam<std::string>("i_tf_cam_pos_y", "0.0");
+    declareAndLogParam<std::string>("i_tf_cam_pos_z", "0.0");
+    declareAndLogParam<std::string>("i_tf_cam_roll", "0.0");
+    declareAndLogParam<std::string>("i_tf_cam_pitch", "0.0");
+    declareAndLogParam<std::string>("i_tf_cam_yaw", "0.0");
 }
 dai::CameraControl CameraParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& /*params*/) {
     dai::CameraControl ctrl;
