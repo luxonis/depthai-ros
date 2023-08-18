@@ -29,6 +29,7 @@ def launch_setup(context, *args, **kwargs):
     cam_roll     = LaunchConfiguration('cam_roll',      default = '0.0')
     cam_pitch    = LaunchConfiguration('cam_pitch',     default = '0.0')
     cam_yaw      = LaunchConfiguration('cam_yaw',       default = '0.0')
+    use_composition = LaunchConfiguration('rsp_use_composition', default='true')
     
     return [
             Node(
@@ -51,7 +52,8 @@ def launch_setup(context, *args, **kwargs):
                               'cam_pos_z': cam_pos_z,
                               'cam_roll': cam_roll,
                               'cam_pitch': cam_pitch,
-                              'cam_yaw': cam_yaw}.items()),
+                              'cam_yaw': cam_yaw,
+                              'use_composition': use_composition}.items()),
 
         ComposableNodeContainer(
             name=name+"_container",
@@ -87,7 +89,8 @@ def generate_launch_description():
         DeclareLaunchArgument("cam_yaw", default_value="0.0"),
         DeclareLaunchArgument("params_file", default_value=os.path.join(depthai_prefix, 'config', 'camera.yaml')),
         DeclareLaunchArgument("use_rviz", default_value='false'),
-        DeclareLaunchArgument("rviz_config", default_value=os.path.join(depthai_prefix, "config", "rviz", "rgbd.rviz"))
+        DeclareLaunchArgument("rviz_config", default_value=os.path.join(depthai_prefix, "config", "rviz", "rgbd.rviz")),
+        DeclareLaunchArgument("rsp_use_composition", default_value='true')
     ]
 
     return LaunchDescription(
