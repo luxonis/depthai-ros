@@ -201,7 +201,7 @@ void Stereo::setupRightRectQueue(std::shared_ptr<dai::Device> device) {
 void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     std::string tfPrefix;
     if(ph->getParam<bool>("i_align_depth")) {
-        tfPrefix = getTFPrefix("rgb");
+        tfPrefix = getFrameNameFromSocket(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")), device->getConnectedCameraFeatures());
     } else {
         tfPrefix = getTFPrefix(rightSensInfo.name);
     }

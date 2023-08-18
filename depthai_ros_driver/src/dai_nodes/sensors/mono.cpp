@@ -56,7 +56,7 @@ void Mono::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 
 void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_publish_topic")) {
-        auto tfPrefix = getTFPrefix(getName());
+                auto tfPrefix = getFrameNameFromSocket(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")), device->getConnectedCameraFeatures());
         imageConverter =
             std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
         imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
