@@ -30,7 +30,7 @@ class NNWrapper : public BaseNode {
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(dai::Node::Input in, int linkType = 0) override;
-    dai::Node::Input getInput(int linkType = 0) override;
+    dai::Node::Input& getInput(int linkType = 0) override;
     virtual void setNames() override;
     virtual void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;

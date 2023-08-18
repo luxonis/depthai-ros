@@ -75,13 +75,13 @@ class Detection : public BaseNode {
 
             ptPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/passthrough/image_raw");
             ptQ->addCallback(
-                std::bind(sensor_helpers::imgCBIT, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager, getROSNode(), false, false));
+                std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager, getROSNode()));
         }
     };
     void link(dai::Node::Input in, int /*linkType*/) override {
         detectionNode->out.link(in);
     };
-    dai::Node::Input getInput(int /*linkType*/) override {
+    dai::Node::Input& getInput(int /*linkType*/) override {
         if(ph->getParam<bool>("i_disable_resize")) {
             return detectionNode->input;
         }

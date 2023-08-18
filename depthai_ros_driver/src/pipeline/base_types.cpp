@@ -147,19 +147,10 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> Rae::createPipeline(rclcpp::No
                                                                       std::shared_ptr<dai::Pipeline> pipeline,
                                                                       const std::string& nnType) {
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
-    auto stereo_front = std::make_unique<dai_nodes::Stereo>("stereo_front",
-                                                            node,
-                                                            pipeline,
-                                                            device,
-                                                            dai_nodes::StereoSensorInfo{"left_front", dai::CameraBoardSocket::CAM_B},
-                                                            dai_nodes::StereoSensorInfo{"right_front", dai::CameraBoardSocket::CAM_C});
-    auto stereo_back = std::make_unique<dai_nodes::Stereo>("stereo_back",
-                                                           node,
-                                                           pipeline,
-                                                           device,
-                                                           dai_nodes::StereoSensorInfo{"left_back", dai::CameraBoardSocket::CAM_D},
-                                                           dai_nodes::StereoSensorInfo{"right_back", dai::CameraBoardSocket::CAM_E});
-
+    auto stereo_front =
+        std::make_unique<dai_nodes::Stereo>("stereo_front", node, pipeline, device, dai::CameraBoardSocket::CAM_B, dai::CameraBoardSocket::CAM_C);
+    auto stereo_back =
+        std::make_unique<dai_nodes::Stereo>("stereo_back", node, pipeline, device, dai::CameraBoardSocket::CAM_D, dai::CameraBoardSocket::CAM_E);
 
     std::string nTypeUpCase = utils::getUpperCaseStr(nnType);
     auto nType = utils::getValFromMap(nTypeUpCase, nnTypeMap);

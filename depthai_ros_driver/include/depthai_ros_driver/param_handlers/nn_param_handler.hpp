@@ -66,9 +66,9 @@ class NNParamHandler : public BaseParamHandler {
 
     template <typename T>
     void setSpatialParams(std::shared_ptr<T> nn) {
-        // nn->setBoundingBoxScaleFactor(0.5);
-        // nn->setDepthLowerThreshold(100);
-        // nn->setDepthUpperThreshold(10000);
+        nn->setBoundingBoxScaleFactor(0.5);
+        nn->setDepthLowerThreshold(100);
+        nn->setDepthUpperThreshold(10000);
     }
 
     template <typename T>

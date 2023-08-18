@@ -76,8 +76,8 @@ class SpatialDetection : public BaseNode {
                                                                   height));
 
             ptPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/passthrough/image_raw");
-            ptQ->addCallback(std::bind(
-                sensor_helpers::imgCBIT, std::placeholders::_1, std::placeholders::_2, *ptImageConverter, ptPub, ptInfoMan, getROSNode(), false, false));
+            ptQ->addCallback(
+                std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *ptImageConverter, ptPub, ptInfoMan, getROSNode()));
         }
 
         if(ph->getParam<bool>("i_enable_passthrough_depth")) {
@@ -98,21 +98,19 @@ class SpatialDetection : public BaseNode {
                                                                        getROSNode()->get_parameter("stereo_front.i_height").as_int()));
 
             ptDepthPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/passthrough_depth/image_raw");
-            ptDepthQ->addCallback(std::bind(sensor_helpers::imgCBIT,
+            ptDepthQ->addCallback(std::bind(sensor_helpers::basicCameraPub,
                                             std::placeholders::_1,
                                             std::placeholders::_2,
                                             *ptDepthImageConverter,
                                             ptDepthPub,
                                             ptDepthInfoMan,
-                                            getROSNode(),
-                                            false,
-                                            false));
+                                            getROSNode()));
         }
     };
     void link(dai::Node::Input in, int /*linkType = 0*/) override {
         spatialNode->out.link(in);
     };
-    dai::Node::Input getInput(int linkType = 0) override {
+    dai::Node::Input& getInput(int linkType = 0) override {
         if(linkType == static_cast<int>(nn_helpers::link_types::SpatialNNLinkType::input)) {
             if(ph->getParam<bool>("i_disable_resize")) {
                 return spatialNode->input;

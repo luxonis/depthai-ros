@@ -26,7 +26,7 @@ std::string BaseNode::getName() {
 std::string BaseNode::getTFPrefix(const std::string& frameName) {
     return std::string(getROSNode()->get_name()) + "_" + frameName;
 }
-dai::Node::Input BaseNode::getInput(int /*linkType = 0*/) {
+dai::Node::Input& BaseNode::getInput(int /*linkType = 0*/) {
     throw(std::runtime_error("getInput() not implemented"));
 };
 }  // namespace dai_nodes

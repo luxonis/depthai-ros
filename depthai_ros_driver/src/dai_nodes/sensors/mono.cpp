@@ -77,7 +77,7 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
             RCLCPP_DEBUG(getROSNode()->get_logger(), "Enabling intra_process communication!");
             monoPub = getROSNode()->create_publisher<sensor_msgs::msg::Image>("~/" + getName() + "/image_raw", 10);
             infoPub = getROSNode()->create_publisher<sensor_msgs::msg::CameraInfo>("~/" + getName() + "/camera_info", 10);
-            monoQ->addCallback(std::bind(sensor_helpers::imgCBPtr,
+            monoQ->addCallback(std::bind(sensor_helpers::splitPub,
                                          std::placeholders::_1,
                                          std::placeholders::_2,
                                          *imageConverter,
@@ -86,11 +86,12 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
                                          infoManager,
                                          getROSNode(),
                                          ph->getParam<bool>("i_low_bandwidth"),
-                                         false));
+                                         false,
+                                         dai::RawImgFrame::Type::GRAY8));
 
         } else {
             monoPubIT = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
-            monoQ->addCallback(std::bind(sensor_helpers::imgCBIT,
+            monoQ->addCallback(std::bind(sensor_helpers::cameraPub,
                                          std::placeholders::_1,
                                          std::placeholders::_2,
                                          *imageConverter,
@@ -98,7 +99,8 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
                                          infoManager,
                                          getROSNode(),
                                          ph->getParam<bool>("i_low_bandwidth"),
-                                         false));
+                                         false,
+                                         dai::RawImgFrame::Type::GRAY8));
         }
     }
     controlQ = device->getInputQueue(controlQName);

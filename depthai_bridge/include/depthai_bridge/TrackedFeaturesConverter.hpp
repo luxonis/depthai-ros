@@ -3,9 +3,9 @@
 #include <deque>
 #include <memory>
 #include <string>
-#include <depthai_ros_msgs/msg/tracked_features.hpp>
 
 #include "depthai/pipeline/datatype/TrackedFeatures.hpp"
+#include "depthai_ros_msgs/msg/tracked_features.hpp"
 #include "rclcpp/time.hpp"
 
 namespace dai {
@@ -47,8 +47,6 @@ class TrackedFeaturesConverter {
     // Whether to update the ROS base time on each message conversion
     bool _updateRosBaseTimeOnToRosMsg{false};
 };
-
-
 
 }  // namespace ros
 

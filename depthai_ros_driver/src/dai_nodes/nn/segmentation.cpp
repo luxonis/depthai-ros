@@ -66,13 +66,13 @@ void Segmentation::setupQueues(std::shared_ptr<dai::Device> device) {
         infoManager->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
                                                                 *imageConverter,
                                                                 device,
-                                                                static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")),
+                                                                dai::CameraBoardSocket::CAM_A,
                                                                 imageManip->initialConfig.getResizeWidth(),
                                                                 imageManip->initialConfig.getResizeWidth()));
 
         ptPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/passthrough/image_raw");
         ptQ->addCallback(
-            std::bind(sensor_helpers::imgCBIT, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager, getROSNode(), false, false));
+            std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager, getROSNode()));
     }
 }
 
@@ -121,7 +121,7 @@ void Segmentation::link(dai::Node::Input in, int /*linkType*/) {
     segNode->out.link(in);
 }
 
-dai::Node::Input Segmentation::getInput(int /*linkType*/) {
+dai::Node::Input& Segmentation::getInput(int /*linkType*/) {
     if(ph->getParam<bool>("i_disable_resize")) {
         return segNode->input;
     }
