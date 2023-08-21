@@ -99,8 +99,10 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     declareAndLogParam<bool>("i_enable_preview", false);
     colorCam->setBoardSocket(socket);
     colorCam->setFps(declareAndLogParam<double>("i_fps", 30.0));
-    size_t preview_size = declareAndLogParam<int>("i_preview_size", 300);
-    colorCam->setPreviewSize(preview_size, preview_size);
+    int preview_size = declareAndLogParam<int>("i_preview_size", 300);
+    int preview_width = declareAndLogParam<int>("i_preview_width", preview_size);
+    int preview_height = declareAndLogParam<int>("i_preview_height", preview_size);
+    colorCam->setPreviewSize(preview_width, preview_height);
     auto resolution = utils::getValFromMap(declareAndLogParam<std::string>("i_resolution", "1080"), rgbResolutionMap);
     int width, height;
     colorCam->setResolution(resolution);
@@ -143,7 +145,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     if(declareAndLogParam<bool>("i_fsync_trigger", false)) {
         colorCam->initialControl.setExternalTrigger(declareAndLogParam<int>("i_num_frames_burst", 1), declareAndLogParam<int>("i_num_frames_discard", 0));
     }
-    if(declareAndLogParam<bool>("i_set_isp3a_fps", true)) {
+    if(declareAndLogParam<bool>("i_set_isp3a_fps", false)) {
         colorCam->setIsp3aFps(declareAndLogParam<int>("i_isp3a_fps", 10));
     }
     colorCam->setImageOrientation(utils::getValFromMap(declareAndLogParam<std::string>("i_sensor_img_orientation", "NORMAL"), cameraImageOrientationMap));
