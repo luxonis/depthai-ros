@@ -165,8 +165,7 @@ void Camera::startDevice() {
                             throw std::runtime_error("Device is already booted in different process.");
                         }
                     } else {
-                        RCLCPP_INFO(this->get_logger(), "Device info: MXID: %s, Name: %s", info.getMxId().c_str(), info.name.c_str());
-                        throw std::runtime_error("Unable to connect to the device, check if parameters match with given info.");
+                        RCLCPP_INFO(this->get_logger(), "Ignoring device info: MXID: %s, Name: %s", info.getMxId().c_str(), info.name.c_str());
                     }
                 }
             }
