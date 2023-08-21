@@ -159,7 +159,7 @@ void Camera::startDevice() {
                     } else if(!usb_id.empty() && info.name == usb_id) {
                         RCLCPP_INFO(this->get_logger(), "Connecting to the camera using USB ID: %s", usb_id.c_str());
                         if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
-                            device = std::make_shared<dai::Device>(info);
+                            device = std::make_shared<dai::Device>(info, speed);
                             camRunning = true;
                         } else if(info.state == X_LINK_BOOTED) {
                             throw std::runtime_error("Device is already booted in different process.");
