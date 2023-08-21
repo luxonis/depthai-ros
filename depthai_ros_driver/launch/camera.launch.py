@@ -106,7 +106,7 @@ def generate_launch_description():
         DeclareLaunchArgument("params_file", default_value=os.path.join(depthai_prefix, 'config', 'camera.yaml')),
         DeclareLaunchArgument("use_rviz", default_value='false'),
         DeclareLaunchArgument("rviz_config", default_value=os.path.join(depthai_prefix, "config", "rviz", "rgbd.rviz")),
-        DeclareLaunchArgument("rsp_use_composition", default_value='true')
+        DeclareLaunchArgument("rsp_use_composition", default_value='true'),
         DeclareLaunchArgument("use_gdb", default_value='false'),
         DeclareLaunchArgument("use_valgrind", default_value='false'),
         DeclareLaunchArgument("use_perf", default_value='false')
