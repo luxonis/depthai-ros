@@ -47,6 +47,7 @@ void CameraParamHandler::declareParams() {
     declareAndLogParam<std::string>("i_tf_cam_roll", "0.0");
     declareAndLogParam<std::string>("i_tf_cam_pitch", "0.0");
     declareAndLogParam<std::string>("i_tf_cam_yaw", "0.0");
+    declareAndLogParam<std::string>("i_tf_imu_from_descr", "true");
 }
 dai::CameraControl CameraParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& /*params*/) {
     dai::CameraControl ctrl;

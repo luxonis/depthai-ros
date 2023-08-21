@@ -46,7 +46,8 @@ void Camera::onConfigure() {
                                                         ph->getParam<std::string>("i_tf_cam_pos_z"),
                                                         ph->getParam<std::string>("i_tf_cam_roll"),
                                                         ph->getParam<std::string>("i_tf_cam_pitch"),
-                                                        ph->getParam<std::string>("i_tf_cam_yaw"));
+                                                        ph->getParam<std::string>("i_tf_cam_yaw"),
+                                                        ph->getParam<std::string>("i_tf_imu_from_descr"));
     }
     RCLCPP_INFO(this->get_logger(), "Camera ready!");
 }

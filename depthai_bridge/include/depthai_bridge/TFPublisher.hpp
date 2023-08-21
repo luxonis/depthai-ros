@@ -24,7 +24,8 @@ class TFPublisher {
                          const std::string& camPosZ,
                          const std::string& camRoll,
                          const std::string& camPitch,
-                         const std::string& camYaw);
+                         const std::string& camYaw,
+                         const std::string& imuFromDescr);
     std::string getURDF();
     geometry_msgs::msg::Quaternion quatFromRotM(nlohmann::json rotMatrix);
     geometry_msgs::msg::Vector3 transFromExtr(nlohmann::json translation);
@@ -48,6 +49,7 @@ class TFPublisher {
     std::string _camRoll;
     std::string _camPitch;
     std::string _camYaw;
+    std::string _imuFromDescr;
     std::vector<dai::CameraFeatures> _camFeatures;
     rclcpp::Logger _logger;
 };

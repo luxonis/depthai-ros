@@ -32,7 +32,8 @@ TFPublisher::TFPublisher(rclcpp::Node* node,
                          const std::string& camPosZ,
                          const std::string& camRoll,
                          const std::string& camPitch,
-                         const std::string& camYaw)
+                         const std::string& camYaw,
+                         const std::string& imuFromDescr)
     : _camName(camName),
       _camModel(camModel),
       _baseFrame(baseFrame),
@@ -44,17 +45,19 @@ TFPublisher::TFPublisher(rclcpp::Node* node,
       _camPitch(camPitch),
       _camYaw(camYaw),
       _camFeatures(camFeatures),
+      _imuFromDescr(imuFromDescr),
       _logger(node->get_logger()) {
-
     _tfPub = std::make_shared<tf2_ros::StaticTransformBroadcaster>(node);
-    
+
     _paramClient = std::make_unique<rclcpp::AsyncParametersClient>(node, _camName + std::string("_state_publisher"));
 
     auto json = calHandler.eepromToJson();
     auto camData = json["cameraData"];
     publishDescription();
     publishCamTransforms(camData, node);
-    publishImuTransform(json, node);
+    if(_imuFromDescr != "true") {
+        publishImuTransform(json, node);
+    }
 }
 
 void TFPublisher::publishDescription() {
@@ -106,15 +109,16 @@ void TFPublisher::publishImuTransform(nlohmann::json json, rclcpp::Node* node) {
         ts.header.frame_id = _baseFrame + std::string("_") + getCamSocketName(imuExtr["toCameraSocket"].get<int>()) + std::string("_camera_frame");
     } else {
         ts.header.frame_id = _baseFrame;
-        ts.transform.rotation.w = 1.0;
-        ts.transform.rotation.x = 0.0;
-        ts.transform.rotation.y = 0.0;
-        ts.transform.rotation.z = 0.0;
     }
     ts.child_frame_id = _baseFrame + std::string("_imu_frame");
 
     ts.transform.rotation = quatFromRotM(imuExtr["rotationMatrix"]);
     ts.transform.translation = transFromExtr(imuExtr["translation"]);
+    bool zeroTrans = ts.transform.translation.x == 0 && ts.transform.translation.y == 0 && ts.transform.translation.z == 0;
+    bool zeroRot = ts.transform.rotation.w == 1 && ts.transform.rotation.x == 0 && ts.transform.rotation.y == 0 && ts.transform.rotation.z == 0;
+    if(zeroTrans || zeroRot) {
+        RCLCPP_WARN(_logger, "IMU extrinsics appear to be default. Check if the IMU is calibrated.");
+    }
     _tfPub->sendTransform(ts);
 }
 
@@ -122,10 +126,9 @@ std::string TFPublisher::getCamSocketName(int socketNum) {
     std::string name;
     for(auto& cam : _camFeatures) {
         if(cam.socket == static_cast<dai::CameraBoardSocket>(socketNum)) {
-            if(cam.name == "color"){
+            if(cam.name == "color") {
                 name = "rgb";
-            }
-            else{
+            } else {
                 name = cam.name;
             }
             return name;
@@ -194,6 +197,8 @@ std::string TFPublisher::prepareXacroArgs() {
     xacroArgs += " cam_roll:=" + _camRoll;
     xacroArgs += " cam_pitch:=" + _camPitch;
     xacroArgs += " cam_yaw:=" + _camYaw;
+    xacroArgs += " has_imu:=" + _imuFromDescr;
+    RCLCPP_INFO(_logger, "Xacro args: %s", xacroArgs.c_str());
     return xacroArgs;
 }
 std::string TFPublisher::getURDF() {
