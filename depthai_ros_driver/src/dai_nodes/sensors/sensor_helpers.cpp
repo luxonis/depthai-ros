@@ -98,7 +98,7 @@ void basicCameraPub(const std::string& /*name*/,
                     image_transport::CameraPublisher& pub,
                     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
                     rclcpp::Node* node) {
-    if(node->count_subscribers(pub.getTopic()) > 0) {
+    if(rclcpp::ok() && node->count_subscribers(pub.getTopic()) > 0) {
         auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
         auto info = infoManager->getCameraInfo();
         auto rawMsg = converter.toRosMsgRawPtr(img);
@@ -116,7 +116,7 @@ void cameraPub(const std::string& /*name*/,
                bool fromBitStream,
                bool dispToDepth,
                dai::RawImgFrame::Type type) {
-    if(node->count_subscribers(pub.getTopic()) > 0) {
+    if(rclcpp::ok() && node->count_subscribers(pub.getTopic()) > 0) {
         auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
         auto info = infoManager->getCameraInfo();
         auto rawMsg = converter.toRosMsgRawPtr(img, fromBitStream, dispToDepth, type, info);
@@ -135,7 +135,7 @@ void splitPub(const std::string& /*name*/,
               bool fromBitStream,
               bool dispToDepth,
               dai::RawImgFrame::Type type) {
-    if(node->count_subscribers(imgPub->get_topic_name()) > 0 && node->count_subscribers(infoPub->get_topic_name()) > 0) {
+    if(rclcpp::ok() && node->count_subscribers(imgPub->get_topic_name()) > 0 && node->count_subscribers(infoPub->get_topic_name()) > 0) {
         auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
         auto info = infoManager->getCameraInfo();
         auto rawMsg = converter.toRosMsgRawPtr(img, fromBitStream, dispToDepth, type, info);
