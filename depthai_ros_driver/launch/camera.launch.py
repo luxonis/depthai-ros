@@ -15,6 +15,8 @@ def launch_setup(context, *args, **kwargs):
     if(context.environment.get('DEPTHAI_DEBUG')=='1'):
         log_level='debug'
 
+    
+
     urdf_launch_dir = os.path.join(get_package_share_directory('depthai_descriptions'), 'launch')
     
     params_file = LaunchConfiguration("params_file")
@@ -31,6 +33,18 @@ def launch_setup(context, *args, **kwargs):
     cam_yaw      = LaunchConfiguration('cam_yaw',       default = '0.0')
     use_composition = LaunchConfiguration('rsp_use_composition', default='true')
     
+    use_gdb      = LaunchConfiguration('use_gdb',       default = 'false')
+    use_valgrind = LaunchConfiguration('use_valgrind',  default = 'false')
+    use_perf     = LaunchConfiguration('use_perf',      default = 'false')
+
+    launch_prefix = ''
+
+    if (LaunchConfiguration('use_gdb').perform(context) == 'true'):
+        launch_prefix += "gdb -ex run --args "
+    if (LaunchConfiguration('use_valgrind').perform(context) == 'true'):
+        launch_prefix += "valgrind --tool=callgrind"
+    if (LaunchConfiguration('use_perf').perform(context) == 'true'):
+        launch_prefix += "perf record -g --call-graph dwarf --output=perf.out.node_name.data --"
     return [
             Node(
                 condition=IfCondition(LaunchConfiguration("use_rviz").perform(context)),
@@ -69,6 +83,7 @@ def launch_setup(context, *args, **kwargs):
                     )
             ],
             arguments=['--ros-args', '--log-level', log_level],
+            prefix=[launch_prefix],
             output="both",
         ),
 
@@ -81,6 +96,7 @@ def generate_launch_description():
     declared_arguments = [
         DeclareLaunchArgument("name", default_value="oak"),
         DeclareLaunchArgument("parent_frame", default_value="oak-d-base-frame"),
+        DeclareLaunchArgument("camera_model", default_value="OAK-D"),
         DeclareLaunchArgument("cam_pos_x", default_value="0.0"),
         DeclareLaunchArgument("cam_pos_y", default_value="0.0"),
         DeclareLaunchArgument("cam_pos_z", default_value="0.0"),
@@ -91,6 +107,9 @@ def generate_launch_description():
         DeclareLaunchArgument("use_rviz", default_value='false'),
         DeclareLaunchArgument("rviz_config", default_value=os.path.join(depthai_prefix, "config", "rviz", "rgbd.rviz")),
         DeclareLaunchArgument("rsp_use_composition", default_value='true')
+        DeclareLaunchArgument("use_gdb", default_value='false'),
+        DeclareLaunchArgument("use_valgrind", default_value='false'),
+        DeclareLaunchArgument("use_perf", default_value='false')
     ]
 
     return LaunchDescription(
