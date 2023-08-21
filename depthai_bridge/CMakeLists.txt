@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-project(depthai_bridge VERSION 2.7.4 LANGUAGES CXX C)
+project(depthai_bridge VERSION 2.7.5 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -62,6 +62,7 @@ file(GLOB LIB_SRC
 "src/ImgDetectionConverter.cpp"
 "src/SpatialDetectionConverter.cpp"
 "src/ImuConverter.cpp"
+"src/TrackedFeaturesConverter.cpp"
 )
 
 add_library(${PROJECT_NAME} SHARED ${LIB_SRC})

@@ -97,8 +97,6 @@ void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<Imu
         for(int i = 0; i < inData->packets.size(); ++i) {
             auto accel = inData->packets[i].acceleroMeter;
             auto gyro = inData->packets[i].gyroscope;
-            auto rot = inData->packets[i].rotationVector;
-            auto magn = inData->packets[i].magneticField;
             ImuMsgs::Imu msg;
             std::chrono::_V2::steady_clock::time_point tstamp;
             if(_getBaseDeviceTimestamp)
@@ -106,7 +104,8 @@ void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<Imu
             else
                 tstamp = accel.getTimestamp();
 
-            CreateUnitMessage(accel, gyro, rot, magn, msg, tstamp);
+            CreateUnitMessage(accel, gyro, msg, tstamp);
+
             outImuMsgs.push_back(msg);
         }
     }

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(depthai_ros_driver VERSION 2.7.4)
+project(depthai_ros_driver VERSION 2.7.5)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_BUILD_SHARED_LIBS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -69,6 +69,7 @@ add_library(
   src/param_handlers/imu_param_handler.cpp
   src/param_handlers/nn_param_handler.cpp
   src/param_handlers/sensor_param_handler.cpp
+  src/param_handlers/feature_tracker_param_handler.cpp
   src/param_handlers/stereo_param_handler.cpp
 )
 
@@ -80,6 +81,7 @@ add_library(
   src/dai_nodes/sensors/imu.cpp
   src/dai_nodes/sensors/rgb.cpp
   src/dai_nodes/sensors/mono.cpp
+  src/dai_nodes/sensors/feature_tracker.cpp
   src/dai_nodes/sensors/sensor_wrapper.cpp
   src/dai_nodes/stereo.cpp
 )
@@ -116,7 +118,6 @@ target_link_libraries(
   ${NN_LIB_NAME}
   ${COMMON_LIB_NAME}
 )
-
 
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::Camera")
 pluginlib_export_plugin_description_file(${PROJECT_NAME} plugins.xml)
