@@ -47,6 +47,23 @@
             <xacro:property name="imu_y" value="0" />
         </xacro:if>
 
+        <xacro:if value="${model == 'OAK-D-PRO'}">
+            <xacro:property name="imu_offset_x" value="-0.008" />
+            <xacro:property name="imu_offset_y" value="-0.037945" />
+            <xacro:property name="imu_offset_z" value="-0.00079" />
+            <xacro:property name="imu_r" value="{M_PI}" />
+            <xacro:property name="imu_p" value="${M_PI/2}" />
+            <xacro:property name="imu_y" value="0" />
+        </xacro:if>
+
+        <xacro:if value"${model == 'OAK-D-POE'}">
+            <xacro:property name="imu_offset_x" value="-0.008" />
+            <xacro:property name="imu_offset_y" value="-0.04" />
+            <xacro:property name="imu_offset_z" value="-0.020265" />
+            <xacro:property name="imu_r" value="{M_PI}" />
+            <xacro:property name="imu_p" value="${M_PI/2}" />
+            <xacro:property name="imu_y" value="0" />
+        </xacro:if>
 
         <xacro:if value="${has_imu}">
             <link name="${camera_name}_imu_frame" />
