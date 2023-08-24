@@ -33,7 +33,7 @@ rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::WLSFilter")
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::SpatialBB")
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::FeatureTrackerOverlay")
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::Features3D")
-ament_export_include_directories(include)
+
 install(DIRECTORY launch config DESTINATION share/${PROJECT_NAME})
 install(
   TARGETS

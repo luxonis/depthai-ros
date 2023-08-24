@@ -15,6 +15,7 @@ Camera::Camera(const rclcpp::NodeOptions& options) : rclcpp::Node("camera", opti
     ph->declareParams();
     onConfigure();
 }
+Camera::~Camera() = default;
 void Camera::onConfigure() {
     getDeviceType();
     createPipeline();
@@ -26,7 +27,7 @@ void Camera::onConfigure() {
     stopSrv = this->create_service<Trigger>("~/stop_camera", std::bind(&Camera::stopCB, this, std::placeholders::_1, std::placeholders::_2));
     savePipelineSrv = this->create_service<Trigger>("~/save_pipeline", std::bind(&Camera::savePipelineCB, this, std::placeholders::_1, std::placeholders::_2));
     saveCalibSrv = this->create_service<Trigger>("~/save_calibration", std::bind(&Camera::saveCalibCB, this, std::placeholders::_1, std::placeholders::_2));
-    
+
     // If model name not set get one from the device
     std::string camModel = ph->getParam<std::string>("i_tf_camera_model");
     if(camModel.empty()) {
@@ -149,7 +150,7 @@ void Camera::setupQueues() {
 
 void Camera::startDevice() {
     rclcpp::Rate r(1.0);
-    while(!camRunning) {
+    while(rclcpp::ok() && !camRunning) {
         auto mxid = ph->getParam<std::string>("i_mx_id");
         auto ip = ph->getParam<std::string>("i_ip");
         auto usb_id = ph->getParam<std::string>("i_usb_port_id");
