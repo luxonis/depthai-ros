@@ -119,9 +119,9 @@ void Stereo::setupLeftRectQueue(std::shared_ptr<dai::Device> device) {
                                              leftSensInfo.socket,
                                              ph->getOtherNodeParam<int>(leftSensInfo.name, "i_width"),
                                              ph->getOtherNodeParam<int>(leftSensInfo.name, "i_height"));
-    for(auto& d : info.d) {
-        d = 0.0;
-    }
+    // for(auto& d : info.d) {
+    //     d = 0.0;
+    // }
     leftRectIM->setCameraInfo(info);
     leftRectQ = device->getOutputQueue(leftRectQName, ph->getOtherNodeParam<int>(leftSensInfo.name, "i_max_q_size"), false);
     if(getROSNode()->get_node_options().use_intra_process_comms()) {
@@ -165,9 +165,9 @@ void Stereo::setupRightRectQueue(std::shared_ptr<dai::Device> device) {
                                              rightSensInfo.socket,
                                              ph->getOtherNodeParam<int>(rightSensInfo.name, "i_width"),
                                              ph->getOtherNodeParam<int>(rightSensInfo.name, "i_height"));
-    for(auto& d : info.d) {
-        d = 0.0;
-    }
+    // for(auto& d : info.d) {
+    //     d = 0.0;
+    // }
     rightRectIM->setCameraInfo(info);
     rightRectQ = device->getOutputQueue(rightRectQName, ph->getOtherNodeParam<int>(rightSensInfo.name, "i_max_q_size"), false);
     if(getROSNode()->get_node_options().use_intra_process_comms()) {
@@ -217,13 +217,13 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
                                              ph->getParam<int>("i_width"),
                                              ph->getParam<int>("i_height"));
     auto calibHandler = device->readCalibration();
-    for(auto& d : info.d) {
-        d = 0.0;
-    }
-    for(auto& r : info.r) {
-        r = 0.0;
-    }
-    info.r[0] = info.r[4] = info.r[8] = 1.0;
+    // for(auto& d : info.d) {
+    //     d = 0.0;
+    // }
+    // for(auto& r : info.r) {
+    //     r = 0.0;
+    // }
+    // info.r[0] = info.r[4] = info.r[8] = 1.0;
     stereoIM->setCameraInfo(info);
     stereoQ = device->getOutputQueue(stereoQName, ph->getParam<int>("i_max_q_size"), false);
     if(getROSNode()->get_node_options().use_intra_process_comms()) {
