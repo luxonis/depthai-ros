@@ -1,4 +1,3 @@
-#include <exception>
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "diagnostic_updater/diagnostic_updater.hpp"
 #include "depthai/pipeline/datatype/SystemInformation.hpp"
@@ -20,11 +19,6 @@ class TimerBase;
 
 namespace depthai_ros_driver {
 
-struct DataPollException : public std::exception {
-    const char* what() const throw() {
-        return "Data poll exception";
-    }
-};
 
 namespace dai_nodes {
     class SysLogger : public BaseNode {
