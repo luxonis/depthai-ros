@@ -38,10 +38,17 @@ class Camera : public rclcpp::Node {
     std::unique_ptr<param_handlers::CameraParamHandler> ph;
     rclcpp::Service<Trigger>::SharedPtr startSrv, stopSrv, savePipelineSrv, saveCalibSrv;
     rclcpp::Subscription<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagSub;
+    /*
+    * Closes all the queues, clears the configured BaseNodes, stops the pipeline and resets the device.
+    */
     void stop();
+    /*
+    * Runs onConfigure();
+    */
     void start();
     void restart();
     void diagCB(const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg);
+    
     void startCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res);
     void stopCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res);
     void saveCalibCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res);
