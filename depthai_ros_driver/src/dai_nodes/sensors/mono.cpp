@@ -73,7 +73,7 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
             infoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
         }
         monoQ = device->getOutputQueue(monoQName, ph->getParam<int>("i_max_q_size"), false);
-        if(getROSNode()->get_node_options().use_intra_process_comms()) {
+        if(ipcEnabled()) {
             RCLCPP_DEBUG(getROSNode()->get_logger(), "Enabling intra_process communication!");
             monoPub = getROSNode()->create_publisher<sensor_msgs::msg::Image>("~/" + getName() + "/image_raw", 10);
             infoPub = getROSNode()->create_publisher<sensor_msgs::msg::CameraInfo>("~/" + getName() + "/camera_info", 10);

@@ -34,10 +34,12 @@ class BaseNode {
     rclcpp::Node* getROSNode();
     std::string getName();
     std::string getTFPrefix(const std::string& frameName = "");
+    bool ipcEnabled();
 
    private:
     rclcpp::Node* baseNode;
     std::string baseDAINodeName;
+    bool intraProcessEnabled;
 };
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

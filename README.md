@@ -150,6 +150,8 @@ Additionally you can set `i.output_isp: false` to use `video` output and set cus
 #### Setting Stereo parameters
 ![](docs/param_stereo.gif)
 
+You can enable rectified Stereo streams by setting, for example in the case of right stream `i_publish_right_rect: true`. You can also set `i_publish_synced_rect_pair: true` to get both images with the same timestamps.
+
 #### Feature Tracker
 
 Each sensor node (and rectified streams from Stereo node) has the option to add FeatureTracker node, which publishes `depthai_ros_msgs/msg/TrackedFeatures` messages.
