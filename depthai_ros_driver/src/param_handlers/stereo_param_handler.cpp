@@ -2,6 +2,7 @@
 
 #include "depthai/pipeline/datatype/StereoDepthConfig.hpp"
 #include "depthai/pipeline/node/StereoDepth.hpp"
+#include "depthai-shared/common/CameraFeatures.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/logger.hpp"
 #include "rclcpp/node.hpp"
@@ -37,7 +38,7 @@ StereoParamHandler::StereoParamHandler(rclcpp::Node* node, const std::string& na
 }
 
 StereoParamHandler::~StereoParamHandler() = default;
-void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> stereo, const std::string& leftName, const std::string& rightName) {
+void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> stereo, const std::vector<dai::CameraFeatures>& camFeatures) {
     declareAndLogParam<int>("i_max_q_size", 30);
     declareAndLogParam<bool>("i_low_bandwidth", false);
     declareAndLogParam<int>("i_low_bandwidth_quality", 50);
@@ -59,20 +60,10 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     stereo->setLeftRightCheck(declareAndLogParam<bool>("i_lr_check", true));
     int width = 1280;
     int height = 720;
-    auto socket = static_cast<dai::CameraBoardSocket>(declareAndLogParam<int>("i_board_socket_id", static_cast<int>(dai::CameraBoardSocket::CAM_C)));
+    auto socket = static_cast<dai::CameraBoardSocket>(declareAndLogParam<int>("i_board_socket_id", static_cast<int>(dai::CameraBoardSocket::CAM_A)));
     std::string socketName;
     if(declareAndLogParam<bool>("i_align_depth", true)) {
-        if(socket == dai::CameraBoardSocket::CAM_A) {
-            socketName = "rgb";
-        } else if(socket == dai::CameraBoardSocket::CAM_B || socket == dai::CameraBoardSocket::CAM_D) {
-            socketName = leftName;
-        } else if(socket == dai::CameraBoardSocket::CAM_C || socket == dai::CameraBoardSocket::CAM_E) {
-            socketName = rightName;
-        } else {
-            RCLCPP_ERROR(
-                getROSNode()->get_logger(), "Unknown socket value %d. Please contact developers on Github to investigate the issue.", static_cast<int>(socket));
-            throw std::runtime_error("Unknown socket value. Please contact developers on Github to investigate the issue.");
-        }
+        socketName = utils::getSocketName(socket, camFeatures);
         try {
             width = getROSNode()->get_parameter(socketName + ".i_width").as_int();
             height = getROSNode()->get_parameter(socketName + ".i_height").as_int();
