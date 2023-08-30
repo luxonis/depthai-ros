@@ -170,7 +170,9 @@ bool TFPublisher::modelNameAvailable() {
     struct dirent* ent;
     if((dir = opendir(path.c_str())) != NULL) {
         while((ent = readdir(dir)) != NULL) {
-            if(std::string(ent->d_name) == _camModel) {
+            auto name = std::string(ent->d_name);
+            RCLCPP_DEBUG(_logger, "Found model: %s", name.c_str());
+            if(name == _camModel + ".stl") {
                 return true;
             }
         }
@@ -183,12 +185,15 @@ bool TFPublisher::modelNameAvailable() {
 
 std::string TFPublisher::prepareXacroArgs() {
     if(!modelNameAvailable()) {
-        RCLCPP_ERROR(_logger, "Model name %s not found in depthai_descriptions package. Using default model: OAK-D", _camModel.c_str());
+        RCLCPP_ERROR(
+            _logger,
+            "Model name %s not found in depthai_descriptions package. If camera model is autodetected, please notify developers. Using default model: OAK-D",
+            _camModel.c_str());
         _camModel = "OAK-D";
     }
 
-    std::string xacroArgs = "cam_name:=" + _camName;
-    xacroArgs += " cam_model:=" + _camModel;
+    std::string xacroArgs = "camera_name:=" + _camName;
+    xacroArgs += " camera_model:=" + _camModel;
     xacroArgs += " base_frame:=" + _baseFrame;
     xacroArgs += " parent_frame:=" + _parentFrame;
     xacroArgs += " cam_pos_x:=" + _camPosX;
@@ -198,7 +203,7 @@ std::string TFPublisher::prepareXacroArgs() {
     xacroArgs += " cam_pitch:=" + _camPitch;
     xacroArgs += " cam_yaw:=" + _camYaw;
     xacroArgs += " has_imu:=" + _imuFromDescr;
-    RCLCPP_INFO(_logger, "Xacro args: %s", xacroArgs.c_str());
+    RCLCPP_DEBUG(_logger, "Xacro args: %s", xacroArgs.c_str());
     return xacroArgs;
 }
 std::string TFPublisher::getURDF() {
