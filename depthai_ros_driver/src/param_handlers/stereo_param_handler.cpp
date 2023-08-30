@@ -49,10 +49,12 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<bool>("i_publish_left_rect", false);
     declareAndLogParam<bool>("i_left_rect_low_bandwidth", false);
     declareAndLogParam<int>("i_left_rect_low_bandwidth_quality", 50);
+    declareAndLogParam<bool>("i_left_rect_enable_feature_tracker", false);
 
     declareAndLogParam<bool>("i_publish_right_rect", false);
     declareAndLogParam<bool>("i_right_rect_low_bandwidth", false);
     declareAndLogParam<int>("i_right_rect_low_bandwidth_quality", 50);
+    declareAndLogParam<bool>("i_right_rect_enable_feature_tracker", false);
 
     stereo->setLeftRightCheck(declareAndLogParam<bool>("i_lr_check", true));
     int width = 1280;
@@ -86,17 +88,22 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     }
     stereo->setOutputSize(declareAndLogParam<int>("i_width", width), declareAndLogParam<int>("i_height", height));
     stereo->setDefaultProfilePreset(depthPresetMap.at(declareAndLogParam<std::string>("i_depth_preset", "HIGH_ACCURACY")));
-    stereo->enableDistortionCorrection(declareAndLogParam<bool>("i_enable_distortion_correction", true));
+    if(declareAndLogParam<bool>("i_enable_distortion_correction", false)) {
+        stereo->enableDistortionCorrection(true);
+    }
 
     stereo->initialConfig.setBilateralFilterSigma(declareAndLogParam<int>("i_bilateral_sigma", 0));
     stereo->initialConfig.setLeftRightCheckThreshold(declareAndLogParam<int>("i_lrc_threshold", 10));
     stereo->initialConfig.setMedianFilter(static_cast<dai::MedianFilter>(declareAndLogParam<int>("i_depth_filter_size", 5)));
-    stereo->initialConfig.setConfidenceThreshold(declareAndLogParam<int>("i_stereo_conf_threshold", 255));
+    stereo->initialConfig.setConfidenceThreshold(declareAndLogParam<int>("i_stereo_conf_threshold", 240));
     if(declareAndLogParam<bool>("i_subpixel", false)) {
         stereo->initialConfig.setSubpixel(true);
         stereo->initialConfig.setSubpixelFractionalBits(declareAndLogParam<int>("i_subpixel_fractional_bits", 3));
     }
     stereo->setRectifyEdgeFillColor(declareAndLogParam<int>("i_rectify_edge_fill_color", 0));
+    if(declareAndLogParam<bool>("i_enable_alpha_scaling", false)){
+        stereo->setAlphaScaling(declareAndLogParam<float>("i_alpha_scaling", 0.0));
+    }
     auto config = stereo->initialConfig.get();
     config.costMatching.disparityWidth = utils::getValFromMap(declareAndLogParam<std::string>("i_disparity_width", "DISPARITY_96"), disparityWidthMap);
     stereo->setExtendedDisparity(declareAndLogParam<bool>("i_extended_disp", false));
@@ -111,6 +118,9 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     config.postProcessing.speckleFilter.enable = declareAndLogParam<bool>("i_enable_speckle_filter", false);
     if(config.postProcessing.speckleFilter.enable) {
         config.postProcessing.speckleFilter.speckleRange = declareAndLogParam<int>("i_speckle_filter_speckle_range", 50);
+    }
+    if(declareAndLogParam<bool>("i_enable_disparity_shift", false)){
+        config.algorithmControl.disparityShift = declareAndLogParam<int>("i_disparity_shift", 0);
     }
     config.postProcessing.spatialFilter.enable = declareAndLogParam<bool>("i_enable_spatial_filter", false);
     if(config.postProcessing.spatialFilter.enable) {

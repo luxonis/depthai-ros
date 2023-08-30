@@ -17,6 +17,7 @@ You can develop your ROS applications in following ways:
 Supported ROS versions:
 - Noetic
 - Humble
+- Iron
 
 For usage check out respective git branches.
 
@@ -149,6 +150,11 @@ Additionally you can set `i.output_isp: false` to use `video` output and set cus
 #### Setting Stereo parameters
 ![](docs/param_stereo.gif)
 
+#### Feature Tracker
+
+Each sensor node (and rectified streams from Stereo node) has the option to add FeatureTracker node, which publishes `depthai_ros_msgs/msg/TrackedFeatures` messages.
+To enable features on, for example rgb node, set `rgb: i_enable_feature_tracker: true`. To enable publishing on rectified streams, set for example `stereo: i_left_rect_enable_feature_tracker`
+
 #### Setting IMU parameters
 Parameters:
 * `i_acc_freq: 400` - Accelerometer sensor frequency
@@ -259,6 +265,9 @@ Available filters:
 `ros2 launch depthai_filters example_seg_overlay.launch.py`
 - WLS filter - stereo depth filter that smooths out overall depth image based on disparity data. It subscribes to `stereo/image_raw` and `left/image raw` topics. Parameters needed to enable it - `left.i_publish_topic`, `stereo.i_output_disparity`
 an example can be seen by running  `ros2 launch depthai_filters example_wls_filter.launch.py`
+- SpatialBB - publishes bounding boxes as 3D line Markers based on spatial detections coming from driver node
+- FeatureTrackerOverlay - publishes Tracked Features overlay based on features and images coming from the driver
+- Features3D - uses depth image to republish features as 3D pointcloud
 
 
 ### Using external sources for NN inference or Stereo Depth

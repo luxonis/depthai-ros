@@ -62,6 +62,7 @@ file(GLOB LIB_SRC
 "src/ImgDetectionConverter.cpp"
 "src/SpatialDetectionConverter.cpp"
 "src/ImuConverter.cpp"
+"src/TrackedFeaturesConverter.cpp"
 )
 
 add_library(${PROJECT_NAME} SHARED ${LIB_SRC})

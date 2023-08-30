@@ -43,6 +43,7 @@ class SensorParamHandler : public BaseParamHandler {
     std::unordered_map<std::string, dai::MonoCameraProperties::SensorResolution> monoResolutionMap;
     std::unordered_map<std::string, dai::ColorCameraProperties::SensorResolution> rgbResolutionMap;
     std::unordered_map<std::string, dai::CameraControl::FrameSyncMode> fSyncModeMap;
+    std::unordered_map<std::string, dai::CameraImageOrientation> cameraImageOrientationMap;
 };
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver

@@ -55,12 +55,12 @@ class ImageConverter {
         _updateRosBaseTimeOnToRosMsg = update;
     }
 
-    void toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData,
-                               std::deque<ImageMsgs::Image>& outImageMsgs,
-                               dai::RawImgFrame::Type type,
-                               const sensor_msgs::msg::CameraInfo& info);
-
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs);
+    ImageMsgs::Image toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> inData,
+                                    bool fromBitStream = false,
+                                    bool dispToDepth = false,
+                                    dai::RawImgFrame::Type type = dai::RawImgFrame::Type::BGR888i,
+                                    const sensor_msgs::msg::CameraInfo& info = sensor_msgs::msg::CameraInfo());
     ImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
 
     void toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outData);
