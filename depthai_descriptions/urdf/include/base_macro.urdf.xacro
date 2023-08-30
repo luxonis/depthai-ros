@@ -42,27 +42,27 @@
             <xacro:property name="imu_offset_x" value="0.0" />
             <xacro:property name="imu_offset_y" value="-0.015" />
             <xacro:property name="imu_offset_z" value="-0.013662" />
-            <xacro:property name="imu_r" value="0" />
-            <xacro:property name="imu_p" value="1.5708" />
-            <xacro:property name="imu_y" value="0" />
+            <xacro:property name="imu_r" value="0.0" />
+            <xacro:property name="imu_p" value="${M_PI/2.0}" />
+            <xacro:property name="imu_y" value="0.0" />
         </xacro:if>
 
         <xacro:if value="${model == 'OAK-D-PRO'}">
             <xacro:property name="imu_offset_x" value="-0.008" />
             <xacro:property name="imu_offset_y" value="-0.037945" />
             <xacro:property name="imu_offset_z" value="-0.00079" />
-            <xacro:property name="imu_r" value="{M_PI}" />
-            <xacro:property name="imu_p" value="${M_PI/2}" />
-            <xacro:property name="imu_y" value="0" />
+            <xacro:property name="imu_r" value="${M_PI}" />
+            <xacro:property name="imu_p" value="${M_PI/2.0}" />
+            <xacro:property name="imu_y" value="0.0" />
         </xacro:if>
 
-        <xacro:if value"${model == 'OAK-D-POE'}">
+        <xacro:if value="${model == 'OAK-D-POE'}">
             <xacro:property name="imu_offset_x" value="-0.008" />
             <xacro:property name="imu_offset_y" value="-0.04" />
             <xacro:property name="imu_offset_z" value="-0.020265" />
-            <xacro:property name="imu_r" value="{M_PI}" />
-            <xacro:property name="imu_p" value="${M_PI/2}" />
-            <xacro:property name="imu_y" value="0" />
+            <xacro:property name="imu_r" value="${M_PI}" />
+            <xacro:property name="imu_p" value="${M_PI/2.0}" />
+            <xacro:property name="imu_y" value="0.0" />
         </xacro:if>
 
         <xacro:if value="${has_imu}">
