@@ -141,6 +141,29 @@ This runs your camera as a ROS2 Component and gives you the ability to customize
 Paramerers that begin with `r_` can be freely modified during runtime, for example with rqt. 
 Parameters that begin with `i_` are set when camera is initializing, to change them you have to call `stop` and `start` services. This can be used to hot swap NNs during runtime, changing resolutions, etc. Below you can see some examples:
 
+
+#### Publishing TFs from extrinsics
+
+By default, camera transforms are published from default URDF descriptions based on CAD models. This can be overriden by using TFPublisher class from `depthai_bridge`, which based on Device's camera calibration data republishes the description with updated information. To enable this behavior in `depthai_ros_driver`, you can use following parameters:
+- `camera.i_publish_tf_from_calibration` - setting this to true launches TFPublisher
+
+Then you can set following arguments:
+- `camera.i_tf_camera_name` - if not set, defaults to the node name
+- `camera.i_tf_camera_model` - if not set, it will be automatically detected. If the node is unable to detect STL file for the camera it is set to `OAK-D`. To explicitly set it in `camera.launch.py`, set `override_cam_model:=true`
+- `camera.i_tf_base_frame`
+- `camera.i_tf_parent_frame`
+- `camera.i_tf_cam_pos_x`
+- `camera.i_tf_cam_pos_y`
+- `camera.i_tf_cam_pos_z`
+- `camera.i_tf_cam_roll`
+- `camera.i_tf_cam_pitch`
+- `camera.i_tf_cam_yaw`
+
+When using `camera.launch.py`, you can set `pass_tf_args_as_params:=true` so that TF arguments are used to fill those parameters. For example 
+
+**NOTE ON IMU EXTRINSICS**
+If your camera has uncalibrated IMU, a warning will be shown, and IMU will be published with zero rotation and translation. You can override this behavior by setting `camera.i_tf_imu_from_descr`: true. This will publish default IMU extrinsics from URDF based on camera model.
+
 #### Setting RGB parameters
 
 By default RGB camera outputs `ISP` frame. To set custom width and height of output image, you can set `i_isp_num` and `i_isp_den` which scale image dimensions (2 and 3 by default, so from 1920x1080 to 1280x720), note for RGBD alignment to work resulting width and height must be divisible by 16. 

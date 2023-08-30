@@ -32,6 +32,30 @@ def launch_setup(context, *args, **kwargs):
     cam_pitch    = LaunchConfiguration('cam_pitch',     default = '0.0')
     cam_yaw      = LaunchConfiguration('cam_yaw',       default = '0.0')
     use_composition = LaunchConfiguration('rsp_use_composition', default='true')
+    imu_from_descr = LaunchConfiguration('imu_from_descr', default='false')
+    pass_tf_args_as_params = LaunchConfiguration('pass_tf_args_as_params', default='false')
+    override_cam_model = LaunchConfiguration('override_cam_model', default='false')
+
+    tf_params = {}
+    if(pass_tf_args_as_params.perform(context) == 'true'):
+        cam_model = ''
+        if override_cam_model.perform(context) == 'true':
+            cam_model = camera_model.perform(context)
+        tf_params = {'camera': {
+            'i_publish_tf_from_calibration': True,
+            'i_tf_tf_prefix': name,
+            'i_tf_camera_model': cam_model,
+            'i_tf_base_frame': name,
+            'i_tf_parent_frame': parent_frame.perform(context),
+            'i_tf_cam_pos_x': cam_pos_x.perform(context),
+            'i_tf_cam_pos_y': cam_pos_y.perform(context),
+            'i_tf_cam_pos_z': cam_pos_z.perform(context),
+            'i_tf_cam_roll': cam_roll.perform(context),
+            'i_tf_cam_pitch': cam_pitch.perform(context),
+            'i_tf_cam_yaw': cam_yaw.perform(context),
+            'i_tf_imu_from_descr': imu_from_descr.perform(context),
+        }
+        }
     
     use_gdb      = LaunchConfiguration('use_gdb',       default = 'false')
     use_valgrind = LaunchConfiguration('use_valgrind',  default = 'false')
@@ -39,11 +63,11 @@ def launch_setup(context, *args, **kwargs):
 
     launch_prefix = ''
 
-    if (LaunchConfiguration('use_gdb').perform(context) == 'true'):
+    if (use_gdb.perform(context) == 'true'):
         launch_prefix += "gdb -ex run --args "
-    if (LaunchConfiguration('use_valgrind').perform(context) == 'true'):
+    if (use_valgrind.perform(context) == 'true'):
         launch_prefix += "valgrind --tool=callgrind"
-    if (LaunchConfiguration('use_perf').perform(context) == 'true'):
+    if (use_perf.perform(context) == 'true'):
         launch_prefix += "perf record -g --call-graph dwarf --output=perf.out.node_name.data --"
     return [
             Node(
@@ -79,7 +103,7 @@ def launch_setup(context, *args, **kwargs):
                         package="depthai_ros_driver",
                         plugin="depthai_ros_driver::Camera",
                         name=name,
-                        parameters=[params_file],
+                        parameters=[params_file, tf_params],
                     )
             ],
             arguments=['--ros-args', '--log-level', log_level],
@@ -107,6 +131,9 @@ def generate_launch_description():
         DeclareLaunchArgument("use_rviz", default_value='false'),
         DeclareLaunchArgument("rviz_config", default_value=os.path.join(depthai_prefix, "config", "rviz", "rgbd.rviz")),
         DeclareLaunchArgument("rsp_use_composition", default_value='true'),
+        DeclareLaunchArgument("pass_tf_args_as_params", default_value='false', description='Enables TF publishing from camera calibration file.'),
+        DeclareLaunchArgument("imu_from_descr", default_value='false', description='Enables IMU publishing from URDF.'),
+        DeclareLaunchArgument("override_cam_model", default_value='false', description='Overrides camera model from calibration file.'),
         DeclareLaunchArgument("use_gdb", default_value='false'),
         DeclareLaunchArgument("use_valgrind", default_value='false'),
         DeclareLaunchArgument("use_perf", default_value='false')
