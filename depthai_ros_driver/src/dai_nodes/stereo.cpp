@@ -41,7 +41,7 @@ Stereo::Stereo(const std::string& daiNodeName,
     left = std::make_unique<SensorWrapper>(leftSensInfo.name, node, pipeline, device, leftSensInfo.socket, false);
     right = std::make_unique<SensorWrapper>(rightSensInfo.name, node, pipeline, device, rightSensInfo.socket, false);
     ph = std::make_unique<param_handlers::StereoParamHandler>(node, daiNodeName);
-    ph->declareParams(stereoCamNode, leftInfo.name, rightInfo.name);
+    ph->declareParams(stereoCamNode, leftSensInfo.name, rightSensInfo.name);
     setXinXout(pipeline);
     left->link(stereoCamNode->left);
     right->link(stereoCamNode->right);
