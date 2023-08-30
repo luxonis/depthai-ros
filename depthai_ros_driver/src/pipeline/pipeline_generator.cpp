@@ -3,6 +3,7 @@
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/imu.hpp"
+#include "depthai_ros_driver/dai_nodes/sys_logger.hpp"
 #include "depthai_ros_driver/pipeline/base_pipeline.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "pluginlib/class_loader.hpp"
@@ -45,7 +46,8 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
             daiNodes.push_back(std::move(imu));
         }
     }
-
+    auto sysLogger = std::make_unique<dai_nodes::SysLogger>("sys_logger", node, pipeline);
+    daiNodes.push_back(std::move(sysLogger));
     RCLCPP_INFO(node->get_logger(), "Finished setting up pipeline.");
     return daiNodes;
 }
