@@ -285,9 +285,9 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
         setupRightRectQueue(device);
     }
     if(ph->getParam<bool>("i_publish_synced_rect_pair")) {
-        auto timerPeriod = std::chrono::milliseconds(int(1000.0 / ph->getOtherNodeParam<double>(leftSensInfo.name, "i_fps")));
-        RCLCPP_INFO(getROSNode()->get_logger(), "Setting up stereo pair sync timer with period %d ms", timerPeriod.count());
-        syncTimer = getROSNode()->create_wall_timer(timerPeriod, std::bind(&Stereo::syncTimerCB, this));
+        int timerPeriod = 1000.0 / ph->getOtherNodeParam<double>(leftSensInfo.name, "i_fps");
+        RCLCPP_INFO(getROSNode()->get_logger(), "Setting up stereo pair sync timer with period %d ms based on left sensor FPS.", timerPeriod);
+        syncTimer = getROSNode()->create_wall_timer(std::chrono::milliseconds(timerPeriod), std::bind(&Stereo::syncTimerCB, this));
     }
     if(ph->getParam<bool>("i_left_rect_enable_feature_tracker")) {
         featureTrackerLeftR->setupQueues(device);
