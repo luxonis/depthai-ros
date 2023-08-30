@@ -168,6 +168,7 @@ bool TFPublisher::modelNameAvailable() {
     std::string path = ament_index_cpp::get_package_share_directory("depthai_descriptions") + "/urdf/models/";
     DIR* dir;
     struct dirent* ent;
+    convertModelName();
     if((dir = opendir(path.c_str())) != NULL) {
         while((ent = readdir(dir)) != NULL) {
             auto name = std::string(ent->d_name);
@@ -203,9 +204,31 @@ std::string TFPublisher::prepareXacroArgs() {
     xacroArgs += " cam_pitch:=" + _camPitch;
     xacroArgs += " cam_yaw:=" + _camYaw;
     xacroArgs += " has_imu:=" + _imuFromDescr;
-    RCLCPP_DEBUG(_logger, "Xacro args: %s", xacroArgs.c_str());
+    RCLCPP_INFO(_logger, "Xacro args: %s", xacroArgs.c_str());
     return xacroArgs;
 }
+
+void TFPublisher::convertModelName() {
+    if(_camModel.find("OAK-D-PRO-POE") != std::string::npos || _camModel.find("OAK-D-PRO-W-POE") != std::string::npos
+       || _camModel.find("OAK-D-S2-POE") != std::string::npos) {
+        _camModel = "OAK-D-POE";
+    } else if(_camModel.find("OAK-D-LITE") != std::string::npos) {
+        _camModel = "OAK-D-LITE";
+    } else if(_camModel.find("OAK-D-S2") != std::string::npos) {
+        _camModel = "OAK-D-S2";
+    } else if(_camModel.find("OAK-D-PRO-W") != std::string::npos) {
+        _camModel = "OAK-D-PRO-W";
+    } else if(_camModel.find("OAK-D-PRO") != std::string::npos) {
+        _camModel = "OAK-D-PRO";
+    } else if(_camModel.find("OAK-D-POE")) {
+        _camModel = "OAK-D-POE";
+    } else if(_camModel.find("OAK-D") != std::string::npos) {
+        _camModel = "OAK-D";
+    } else {
+        RCLCPP_WARN(_logger, "Unable to match model name: %s to available model family.", _camModel.c_str());
+    }
+}
+
 std::string TFPublisher::getURDF() {
     auto args = prepareXacroArgs();
     auto path = ament_index_cpp::get_package_share_directory("depthai_descriptions");

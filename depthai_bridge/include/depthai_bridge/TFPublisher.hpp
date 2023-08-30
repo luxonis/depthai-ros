@@ -31,6 +31,7 @@ class TFPublisher {
     geometry_msgs::msg::Vector3 transFromExtr(nlohmann::json translation);
 
    private:
+    void convertModelName();
     std::string prepareXacroArgs();
     void publishDescription();
     void publishCamTransforms(nlohmann::json camData, rclcpp::Node* node);
