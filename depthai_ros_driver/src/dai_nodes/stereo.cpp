@@ -150,7 +150,6 @@ void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
                                      pub,
                                      infoPub,
                                      im,
-                                     getROSNode(),
                                      ph->getParam<bool>(isLeft ? "i_left_rect_low_bandwidth" : "i_right_rect_low_bandwidth"),
                                      false,
                                      dai::RawImgFrame::Type::GRAY8));
@@ -164,7 +163,6 @@ void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
                                      *conv,
                                      pubIT,
                                      im,
-                                     getROSNode(),
                                      ph->getParam<bool>(isLeft ? "i_left_rect_low_bandwidth" : "i_right_rect_low_bandwidth"),
                                      false,
                                      dai::RawImgFrame::Type::GRAY8));
@@ -220,7 +218,6 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
                                        stereoPub,
                                        stereoInfoPub,
                                        stereoIM,
-                                       getROSNode(),
                                        ph->getParam<bool>("i_low_bandwidth"),
                                        !ph->getParam<bool>("i_output_disparity"),
                                        dai::RawImgFrame::Type::RAW8));
@@ -232,7 +229,6 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
                                        *stereoConv,
                                        stereoPubIT,
                                        stereoIM,
-                                       getROSNode(),
                                        ph->getParam<bool>("i_low_bandwidth"),
                                        !ph->getParam<bool>("i_output_disparity"),
                                        dai::RawImgFrame::Type::RAW8));
@@ -246,9 +242,7 @@ void Stereo::syncTimerCB() {
         RCLCPP_WARN(getROSNode()->get_logger(), "Left and right rectified frames are not synchronized!");
     } else {
         if(ipcEnabled() && rclcpp::ok()
-           && (getROSNode()->count_subscribers(leftRectPub->get_topic_name()) > 0 || getROSNode()->count_subscribers(leftRectInfoPub->get_topic_name()) > 0
-               || getROSNode()->count_subscribers(rightRectPub->get_topic_name()) > 0
-               || getROSNode()->count_subscribers(rightRectInfoPub->get_topic_name()) > 0)) {
+           && (sensor_helpers::detectSubscription(leftRectPub, leftRectInfoPub) || sensor_helpers::detectSubscription(rightRectPub, rightRectInfoPub))) {
             auto leftInfo = leftRectIM->getCameraInfo();
             auto leftRawMsg = leftRectConv->toRosMsgRawPtr(left);
             leftInfo.header = leftRawMsg.header;
@@ -264,8 +258,7 @@ void Stereo::syncTimerCB() {
             leftRectInfoPub->publish(std::move(leftInfoMsg));
             rightRectPub->publish(std::move(rightMsg));
             rightRectInfoPub->publish(std::move(rightInfoMsg));
-        } else if(!ipcEnabled() && rclcpp::ok()
-                  && (getROSNode()->count_subscribers(leftRectPubIT.getTopic()) > 0 || getROSNode()->count_subscribers(rightRectPubIT.getTopic()) > 0)) {
+        } else if(!ipcEnabled() && rclcpp::ok() && (leftRectPubIT.getNumSubscribers() > 0 || rightRectPubIT.getNumSubscribers() > 0)) {
             auto leftInfo = leftRectIM->getCameraInfo();
             auto leftRawMsg = leftRectConv->toRosMsgRawPtr(left);
             leftInfo.header = leftRawMsg.header;
