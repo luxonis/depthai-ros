@@ -111,13 +111,11 @@ void cameraPub(const std::string& /*name*/,
                dai::ros::ImageConverter& converter,
                image_transport::CameraPublisher& pub,
                std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
-               bool fromBitStream,
-               bool dispToDepth,
-               dai::RawImgFrame::Type type) {
-    if(rclcpp::ok() && (pub.getNumSubscribers() > 0)) {
+               bool lazyPub) {
+    if(rclcpp::ok() && (!lazyPub || pub.getNumSubscribers() > 0)) {
         auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
         auto info = infoManager->getCameraInfo();
-        auto rawMsg = converter.toRosMsgRawPtr(img, fromBitStream, dispToDepth, type, info);
+        auto rawMsg = converter.toRosMsgRawPtr(img, info);
         info.header = rawMsg.header;
         pub.publish(rawMsg, info);
     }
@@ -129,13 +127,11 @@ void splitPub(const std::string& /*name*/,
               rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr imgPub,
               rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr infoPub,
               std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
-              bool fromBitStream,
-              bool dispToDepth,
-              dai::RawImgFrame::Type type) {
-    if(rclcpp::ok() && detectSubscription(imgPub, infoPub)) {
+              bool lazyPub) {
+    if(rclcpp::ok() && (!lazyPub || detectSubscription(imgPub, infoPub))) {
         auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
         auto info = infoManager->getCameraInfo();
-        auto rawMsg = converter.toRosMsgRawPtr(img, fromBitStream, dispToDepth, type, info);
+        auto rawMsg = converter.toRosMsgRawPtr(img, info);
         info.header = rawMsg.header;
         sensor_msgs::msg::CameraInfo::UniquePtr infoMsg = std::make_unique<sensor_msgs::msg::CameraInfo>(info);
         sensor_msgs::msg::Image::UniquePtr msg = std::make_unique<sensor_msgs::msg::Image>(rawMsg);

@@ -74,6 +74,10 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         imageConverter =
             std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
         imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
+        if(ph->getParam<bool>("i_low_bandwidth")){
+            RCLCPP_INFO(getROSNode()->get_logger(), "Low bandwidth mode enabled");
+            imageConverter->convertFromBitstream(dai::RawImgFrame::Type::BGR888i);
+        }
         if(ph->getParam<std::string>("i_calibration_file").empty()) {
             infoManager->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
                                                                     *imageConverter,
@@ -86,7 +90,6 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         }
         colorQ = device->getOutputQueue(ispQName, ph->getParam<int>("i_max_q_size"), false);
         if(ipcEnabled()) {
-            RCLCPP_DEBUG(getROSNode()->get_logger(), "Enabling intra_process communication!");
             rgbPub = getROSNode()->create_publisher<sensor_msgs::msg::Image>("~/" + getName() + "/image_raw", 10);
             rgbInfoPub = getROSNode()->create_publisher<sensor_msgs::msg::CameraInfo>("~/" + getName() + "/camera_info", 10);
             colorQ->addCallback(std::bind(sensor_helpers::splitPub,
@@ -96,9 +99,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
                                           rgbPub,
                                           rgbInfoPub,
                                           infoManager,
-                                          ph->getParam<bool>("i_low_bandwidth"),
-                                          false,
-                                          dai::RawImgFrame::Type::BGR888i));
+                                          ph->getParam<bool>("i_enable_lazy_publisher")));
 
         } else {
             rgbPubIT = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
@@ -108,9 +109,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
                                           *imageConverter,
                                           rgbPubIT,
                                           infoManager,
-                                          ph->getParam<bool>("i_low_bandwidth"),
-                                          false,
-                                          dai::RawImgFrame::Type::BGR888i));
+                                          ph->getParam<bool>("i_enable_lazy_publisher")));
         }
     }
     if(ph->getParam<bool>("i_enable_preview")) {
@@ -132,7 +131,6 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
             previewInfoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
         }
         if(ipcEnabled()) {
-            RCLCPP_DEBUG(getROSNode()->get_logger(), "Enabling intra_process communication!");
             previewPubIT = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/preview/image_raw");
             previewQ->addCallback(std::bind(
                 sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *imageConverter, previewPubIT, previewInfoManager));
@@ -146,9 +144,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
                                             previewPub,
                                             previewInfoPub,
                                             previewInfoManager,
-                                            false,
-                                            false,
-                                            dai::RawImgFrame::Type::BGR888i));
+                                            ph->getParam<bool>("i_enable_lazy_publisher")));
         }
     };
     controlQ = device->getInputQueue(controlQName);

@@ -57,6 +57,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<bool>("i_right_rect_low_bandwidth", false);
     declareAndLogParam<int>("i_right_rect_low_bandwidth_quality", 50);
     declareAndLogParam<bool>("i_right_rect_enable_feature_tracker", false);
+    declareAndLogParam<bool>("i_enable_lazy_publisher", true);
 
     stereo->setLeftRightCheck(declareAndLogParam<bool>("i_lr_check", true));
     int width = 1280;
