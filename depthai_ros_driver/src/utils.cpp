@@ -1,4 +1,5 @@
 #include "depthai_ros_driver/utils.hpp"
+
 #include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai-shared/common/CameraFeatures.hpp"
 namespace depthai_ros_driver {
@@ -12,10 +13,9 @@ std::string getSocketName(dai::CameraBoardSocket socket, std::vector<dai::Camera
     std::string name;
     for(auto& cam : camFeatures) {
         if(cam.socket == socket) {
-            if(cam.name == "color"){
+            if(cam.name == "color") {
                 name = "rgb";
-            }
-            else{
+            } else {
                 name = cam.name;
             }
             return name;

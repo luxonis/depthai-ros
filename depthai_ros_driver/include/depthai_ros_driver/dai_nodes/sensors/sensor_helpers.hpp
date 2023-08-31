@@ -44,7 +44,6 @@ struct ImageSensor {
 };
 extern std::vector<ImageSensor> availableSensors;
 
-
 void basicCameraPub(const std::string& /*name*/,
                     const std::shared_ptr<dai::ADatatype>& data,
                     dai::ros::ImageConverter& converter,
@@ -75,7 +74,8 @@ sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
 std::shared_ptr<dai::node::VideoEncoder> createEncoder(std::shared_ptr<dai::Pipeline> pipeline,
                                                        int quality,
                                                        dai::VideoEncoderProperties::Profile profile = dai::VideoEncoderProperties::Profile::MJPEG);
-bool detectSubscription(const rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr& pub, const rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr& infoPub);
+bool detectSubscription(const rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr& pub,
+                        const rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr& infoPub);
 }  // namespace sensor_helpers
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

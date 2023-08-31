@@ -40,7 +40,6 @@ void ImageConverter::updateRosBaseTime() {
     updateBaseTime(_steadyBaseTime, _rosBaseTime, _totalNsChange);
 }
 
-
 void ImageConverter::convertFromBitstream(dai::RawImgFrame::Type srcType) {
     _fromBitstream = true;
     _srcType = srcType;
@@ -51,9 +50,7 @@ void ImageConverter::convertDispToDepth() {
     _convertDispToDepth = true;
 }
 
-
-ImageMsgs::Image ImageConverter::toRosMsgRawPtr(
-    std::shared_ptr<dai::ImgFrame> inData, const sensor_msgs::msg::CameraInfo& info) {
+ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> inData, const sensor_msgs::msg::CameraInfo& info) {
     if(_updateRosBaseTimeOnToRosMsg) {
         updateRosBaseTime();
     }

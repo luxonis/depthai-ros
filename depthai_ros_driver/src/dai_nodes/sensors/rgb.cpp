@@ -74,7 +74,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         imageConverter =
             std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
         imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
-        if(ph->getParam<bool>("i_low_bandwidth")){
+        if(ph->getParam<bool>("i_low_bandwidth")) {
             RCLCPP_INFO(getROSNode()->get_logger(), "Low bandwidth mode enabled");
             imageConverter->convertFromBitstream(dai::RawImgFrame::Type::BGR888i);
         }
@@ -132,8 +132,8 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         }
         if(ipcEnabled()) {
             previewPubIT = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/preview/image_raw");
-            previewQ->addCallback(std::bind(
-                sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *imageConverter, previewPubIT, previewInfoManager));
+            previewQ->addCallback(
+                std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *imageConverter, previewPubIT, previewInfoManager));
         } else {
             previewPub = getROSNode()->create_publisher<sensor_msgs::msg::Image>("~/" + getName() + "/preview/image_raw", 10);
             previewInfoPub = getROSNode()->create_publisher<sensor_msgs::msg::CameraInfo>("~/" + getName() + "/preview/camera_info", 10);

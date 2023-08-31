@@ -59,8 +59,7 @@ class ImageConverter {
     void convertDispToDepth();
 
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs);
-    ImageMsgs::Image toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> inData,
-                                    const sensor_msgs::msg::CameraInfo& info = sensor_msgs::msg::CameraInfo());
+    ImageMsgs::Image toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> inData, const sensor_msgs::msg::CameraInfo& info = sensor_msgs::msg::CameraInfo());
     ImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
 
     void toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outData);

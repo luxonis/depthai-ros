@@ -60,7 +60,7 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
         imageConverter =
             std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
         imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
-        if(ph->getParam<bool>("i_low_bandwidth")){
+        if(ph->getParam<bool>("i_low_bandwidth")) {
             imageConverter->convertFromBitstream(dai::RawImgFrame::Type::GRAY8);
         }
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(

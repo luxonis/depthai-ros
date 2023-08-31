@@ -121,7 +121,7 @@ void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
     conv = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
     conv->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
     bool lowBandwidth = ph->getParam<bool>(isLeft ? "i_left_rect_low_bandwidth" : "i_right_rect_low_bandwidth");
-    if(lowBandwidth){
+    if(lowBandwidth) {
         conv->convertFromBitstream(dai::RawImgFrame::Type::GRAY8);
     }
 
@@ -161,13 +161,8 @@ void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
     } else {
         pubIT = image_transport::create_camera_publisher(getROSNode(), "~/" + sensorInfo.name + "/image_rect");
         if(addCallback) {
-            q->addCallback(std::bind(sensor_helpers::cameraPub,
-                                     std::placeholders::_1,
-                                     std::placeholders::_2,
-                                     *conv,
-                                     pubIT,
-                                     im,
-                                     ph->getParam<bool>("i_enable_lazy_publisher")));
+            q->addCallback(std::bind(
+                sensor_helpers::cameraPub, std::placeholders::_1, std::placeholders::_2, *conv, pubIT, im, ph->getParam<bool>("i_enable_lazy_publisher")));
         }
     }
 }
@@ -189,7 +184,7 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     }
     stereoConv = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
     stereoConv->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
-    if(ph->getParam<bool>("i_low_bandwidth")){
+    if(ph->getParam<bool>("i_low_bandwidth")) {
         stereoConv->convertFromBitstream(dai::RawImgFrame::Type::RAW8);
         RCLCPP_INFO(getROSNode()->get_logger(), "Setting stereo low bandwidth mode");
     }
@@ -249,7 +244,8 @@ void Stereo::syncTimerCB() {
     } else {
         bool lazyPub = ph->getParam<bool>("i_enable_lazy_publisher");
         if(ipcEnabled() && rclcpp::ok()
-           && (!lazyPub || sensor_helpers::detectSubscription(leftRectPub, leftRectInfoPub) || sensor_helpers::detectSubscription(rightRectPub, rightRectInfoPub))) {
+           && (!lazyPub || sensor_helpers::detectSubscription(leftRectPub, leftRectInfoPub)
+               || sensor_helpers::detectSubscription(rightRectPub, rightRectInfoPub))) {
             auto leftInfo = leftRectIM->getCameraInfo();
             auto leftRawMsg = leftRectConv->toRosMsgRawPtr(left);
             leftInfo.header = leftRawMsg.header;
@@ -266,43 +262,6 @@ void Stereo::syncTimerCB() {
             rightRectPub->publish(std::move(rightMsg));
             rightRectInfoPub->publish(std::move(rightInfoMsg));
         } else if(!ipcEnabled() && rclcpp::ok() && (!lazyPub || leftRectPubIT.getNumSubscribers() > 0 || rightRectPubIT.getNumSubscribers() > 0)) {
-            auto leftInfo = leftRectIM->getCameraInfo();
-            auto leftRawMsg = leftRectConv->toRosMsgRawPtr(left);
-            leftInfo.header = leftRawMsg.header;
-            auto rightInfo = rightRectIM->getCameraInfo();
-            auto rightRawMsg = rightRectConv->toRosMsgRawPtr(right);
-            rightRawMsg.header.stamp = leftRawMsg.header.stamp;
-            rightInfo.header = rightRawMsg.header;
-            leftRectPubIT.publish(leftRawMsg, leftInfo);
-            rightRectPubIT.publish(rightRawMsg, rightInfo);
-        }
-    }
-}
-
-void Stereo::syncTimerCB() {
-    auto left = leftRectQ->get<dai::ImgFrame>();
-    auto right = rightRectQ->get<dai::ImgFrame>();
-    if(left->getSequenceNum() != right->getSequenceNum()) {
-        RCLCPP_WARN(getROSNode()->get_logger(), "Left and right rectified frames are not synchronized!");
-    } else {
-        if(ipcEnabled() && rclcpp::ok()
-           && (sensor_helpers::detectSubscription(leftRectPub, leftRectInfoPub) || sensor_helpers::detectSubscription(rightRectPub, rightRectInfoPub))) {
-            auto leftInfo = leftRectIM->getCameraInfo();
-            auto leftRawMsg = leftRectConv->toRosMsgRawPtr(left);
-            leftInfo.header = leftRawMsg.header;
-            auto rightInfo = rightRectIM->getCameraInfo();
-            auto rightRawMsg = rightRectConv->toRosMsgRawPtr(right);
-            rightRawMsg.header.stamp = leftRawMsg.header.stamp;
-            rightInfo.header = rightRawMsg.header;
-            sensor_msgs::msg::CameraInfo::UniquePtr leftInfoMsg = std::make_unique<sensor_msgs::msg::CameraInfo>(leftInfo);
-            sensor_msgs::msg::Image::UniquePtr leftMsg = std::make_unique<sensor_msgs::msg::Image>(leftRawMsg);
-            sensor_msgs::msg::CameraInfo::UniquePtr rightInfoMsg = std::make_unique<sensor_msgs::msg::CameraInfo>(rightInfo);
-            sensor_msgs::msg::Image::UniquePtr rightMsg = std::make_unique<sensor_msgs::msg::Image>(rightRawMsg);
-            leftRectPub->publish(std::move(leftMsg));
-            leftRectInfoPub->publish(std::move(leftInfoMsg));
-            rightRectPub->publish(std::move(rightMsg));
-            rightRectInfoPub->publish(std::move(rightInfoMsg));
-        } else if(!ipcEnabled() && rclcpp::ok() && (leftRectPubIT.getNumSubscribers() > 0 || rightRectPubIT.getNumSubscribers() > 0)) {
             auto leftInfo = leftRectIM->getCameraInfo();
             auto leftRawMsg = leftRectConv->toRosMsgRawPtr(left);
             leftInfo.header = leftRawMsg.header;

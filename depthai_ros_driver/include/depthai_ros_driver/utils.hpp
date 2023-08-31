@@ -4,13 +4,13 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 namespace dai {
 enum class CameraBoardSocket;
 struct CameraFeatures;
-}
+}  // namespace dai
 
 namespace depthai_ros_driver {
 namespace utils {
