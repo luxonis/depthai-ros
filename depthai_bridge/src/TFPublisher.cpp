@@ -216,11 +216,11 @@ void TFPublisher::convertModelName() {
        || _camModel.find("OAK-D-S2-POE") != std::string::npos) {
         _camModel = "OAK-D-POE";
     } else if(_camModel.find("OAK-D-LITE") != std::string::npos) {
-        _camModel = "OAK-D-LITE";
+        _camModel = "OAK-D-PRO";
     } else if(_camModel.find("OAK-D-S2") != std::string::npos) {
-        _camModel = "OAK-D-S2";
+        _camModel = "OAK-D-PRO";
     } else if(_camModel.find("OAK-D-PRO-W") != std::string::npos) {
-        _camModel = "OAK-D-PRO-W";
+        _camModel = "OAK-D-PRO";
     } else if(_camModel.find("OAK-D-PRO") != std::string::npos) {
         _camModel = "OAK-D-PRO";
     } else if(_camModel.find("OAK-D-POE")) {
