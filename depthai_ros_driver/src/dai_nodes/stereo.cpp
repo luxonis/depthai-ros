@@ -279,6 +279,43 @@ void Stereo::syncTimerCB() {
     }
 }
 
+void Stereo::syncTimerCB() {
+    auto left = leftRectQ->get<dai::ImgFrame>();
+    auto right = rightRectQ->get<dai::ImgFrame>();
+    if(left->getSequenceNum() != right->getSequenceNum()) {
+        RCLCPP_WARN(getROSNode()->get_logger(), "Left and right rectified frames are not synchronized!");
+    } else {
+        if(ipcEnabled() && rclcpp::ok()
+           && (sensor_helpers::detectSubscription(leftRectPub, leftRectInfoPub) || sensor_helpers::detectSubscription(rightRectPub, rightRectInfoPub))) {
+            auto leftInfo = leftRectIM->getCameraInfo();
+            auto leftRawMsg = leftRectConv->toRosMsgRawPtr(left);
+            leftInfo.header = leftRawMsg.header;
+            auto rightInfo = rightRectIM->getCameraInfo();
+            auto rightRawMsg = rightRectConv->toRosMsgRawPtr(right);
+            rightRawMsg.header.stamp = leftRawMsg.header.stamp;
+            rightInfo.header = rightRawMsg.header;
+            sensor_msgs::msg::CameraInfo::UniquePtr leftInfoMsg = std::make_unique<sensor_msgs::msg::CameraInfo>(leftInfo);
+            sensor_msgs::msg::Image::UniquePtr leftMsg = std::make_unique<sensor_msgs::msg::Image>(leftRawMsg);
+            sensor_msgs::msg::CameraInfo::UniquePtr rightInfoMsg = std::make_unique<sensor_msgs::msg::CameraInfo>(rightInfo);
+            sensor_msgs::msg::Image::UniquePtr rightMsg = std::make_unique<sensor_msgs::msg::Image>(rightRawMsg);
+            leftRectPub->publish(std::move(leftMsg));
+            leftRectInfoPub->publish(std::move(leftInfoMsg));
+            rightRectPub->publish(std::move(rightMsg));
+            rightRectInfoPub->publish(std::move(rightInfoMsg));
+        } else if(!ipcEnabled() && rclcpp::ok() && (leftRectPubIT.getNumSubscribers() > 0 || rightRectPubIT.getNumSubscribers() > 0)) {
+            auto leftInfo = leftRectIM->getCameraInfo();
+            auto leftRawMsg = leftRectConv->toRosMsgRawPtr(left);
+            leftInfo.header = leftRawMsg.header;
+            auto rightInfo = rightRectIM->getCameraInfo();
+            auto rightRawMsg = rightRectConv->toRosMsgRawPtr(right);
+            rightRawMsg.header.stamp = leftRawMsg.header.stamp;
+            rightInfo.header = rightRawMsg.header;
+            leftRectPubIT.publish(leftRawMsg, leftInfo);
+            rightRectPubIT.publish(rightRawMsg, rightInfo);
+        }
+    }
+}
+
 void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
     left->setupQueues(device);
     right->setupQueues(device);
