@@ -40,8 +40,20 @@ void ImageConverter::updateRosBaseTime() {
     updateBaseTime(_steadyBaseTime, _rosBaseTime, _totalNsChange);
 }
 
+
+void ImageConverter::convertFromBitstream(dai::RawImgFrame::Type srcType) {
+    _fromBitstream = true;
+    _srcType = srcType;
+    std::cout << static_cast<int>(_srcType) << std::endl;
+}
+
+void ImageConverter::convertDispToDepth() {
+    _convertDispToDepth = true;
+}
+
+
 ImageMsgs::Image ImageConverter::toRosMsgRawPtr(
-    std::shared_ptr<dai::ImgFrame> inData, bool fromBitStream, bool dispToDepth, dai::RawImgFrame::Type type, const sensor_msgs::msg::CameraInfo& info) {
+    std::shared_ptr<dai::ImgFrame> inData, const sensor_msgs::msg::CameraInfo& info) {
     if(_updateRosBaseTimeOnToRosMsg) {
         updateRosBaseTime();
     }
@@ -56,12 +68,12 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(
 
     header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
 
-    if(fromBitStream) {
+    if(_fromBitstream) {
         std::string encoding;
         int decodeFlags;
         int channels;
         cv::Mat output;
-        switch(type) {
+        switch(_srcType) {
             case dai::RawImgFrame::Type::BGR888i: {
                 encoding = sensor_msgs::image_encodings::BGR8;
                 decodeFlags = cv::IMREAD_COLOR;
@@ -81,7 +93,7 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(
                 break;
             }
             default: {
-                std::cout << static_cast<int>(type) << std::endl;
+                std::cout << _frameName << static_cast<int>(_srcType) << std::endl;
                 throw(std::runtime_error("Converted type not supported!"));
             }
         }
@@ -89,7 +101,7 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(
         output = cv::imdecode(cv::Mat(inData->getData()), decodeFlags);
 
         // converting disparity
-        if(dispToDepth) {
+        if(_convertDispToDepth) {
             auto factor = std::abs(info.p[3]) * 10000;
             cv::Mat depthOut = cv::Mat(cv::Size(output.cols, output.rows), CV_16UC1);
             depthOut.forEach<uint16_t>([&output, &factor](uint16_t& pixel, const int* position) -> void {
