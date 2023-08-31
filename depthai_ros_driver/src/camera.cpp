@@ -7,6 +7,7 @@
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai_bridge/TFPublisher.hpp"
 #include "depthai_ros_driver/pipeline/pipeline_generator.hpp"
+#include "diagnostic_msgs/msg/diagnostic_status.hpp"
 
 namespace depthai_ros_driver {
 
@@ -50,7 +51,54 @@ void Camera::onConfigure() {
                                                         ph->getParam<std::string>("i_tf_cam_yaw"),
                                                         ph->getParam<std::string>("i_tf_imu_from_descr"));
     }
+    diagSub = this->create_subscription<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10, std::bind(&Camera::diagCB, this, std::placeholders::_1));
     RCLCPP_INFO(this->get_logger(), "Camera ready!");
+}
+
+void Camera::diagCB(const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg) {
+    for(const auto& status : msg->status) {
+        if(status.name == get_name() + std::string(": sys_logger")) {
+            if(status.level == diagnostic_msgs::msg::DiagnosticStatus::ERROR) {
+                RCLCPP_ERROR(this->get_logger(), "Camera diagnostics error: %s", status.message.c_str());
+                restart();
+            }
+        }
+    }
+}
+
+void Camera::start() {
+    RCLCPP_INFO(this->get_logger(), "Starting camera.");
+    if(!camRunning) {
+        onConfigure();
+    } else {
+        RCLCPP_INFO(this->get_logger(), "Camera already running!.");
+    }
+}
+
+void Camera::stop() {
+    RCLCPP_INFO(this->get_logger(), "Stopping camera.");
+    if(camRunning) {
+        for(const auto& node : daiNodes) {
+            node->closeQueues();
+        }
+        daiNodes.clear();
+        device.reset();
+        pipeline.reset();
+        camRunning = false;
+    } else {
+        RCLCPP_INFO(this->get_logger(), "Camera already stopped!");
+    }
+}
+
+void Camera::restart() {
+    RCLCPP_ERROR(this->get_logger(), "Restarting camera");
+    stop();
+    start();
+    if(camRunning) {
+        return;
+    } else {
+        RCLCPP_ERROR(this->get_logger(), "Restarting camera failed.");
+    }
 }
 
 void Camera::saveCalib() {
@@ -88,27 +136,11 @@ void Camera::savePipelineCB(const Trigger::Request::SharedPtr /*req*/, Trigger::
 }
 
 void Camera::startCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res) {
-    RCLCPP_INFO(this->get_logger(), "Starting camera.");
-    if(!camRunning) {
-        onConfigure();
-    } else {
-        RCLCPP_INFO(this->get_logger(), "Camera already running!.");
-    }
+    start();
     res->success = true;
 }
 void Camera::stopCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res) {
-    RCLCPP_INFO(this->get_logger(), "Stopping camera.");
-    if(camRunning) {
-        for(const auto& node : daiNodes) {
-            node->closeQueues();
-        }
-        daiNodes.clear();
-        device.reset();
-        pipeline.reset();
-        camRunning = false;
-    } else {
-        RCLCPP_INFO(this->get_logger(), "Camera already stopped!");
-    }
+    stop();
     res->success = true;
 }
 void Camera::getDeviceType() {

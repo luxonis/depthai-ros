@@ -60,6 +60,9 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
         imageConverter =
             std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
         imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
+        if(ph->getParam<bool>("i_low_bandwidth")) {
+            imageConverter->convertFromBitstream(dai::RawImgFrame::Type::GRAY8);
+        }
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
             getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
         if(ph->getParam<std::string>("i_calibration_file").empty()) {
@@ -73,7 +76,7 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
             infoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
         }
         monoQ = device->getOutputQueue(monoQName, ph->getParam<int>("i_max_q_size"), false);
-        if(getROSNode()->get_node_options().use_intra_process_comms()) {
+        if(ipcEnabled()) {
             RCLCPP_DEBUG(getROSNode()->get_logger(), "Enabling intra_process communication!");
             monoPub = getROSNode()->create_publisher<sensor_msgs::msg::Image>("~/" + getName() + "/image_raw", 10);
             infoPub = getROSNode()->create_publisher<sensor_msgs::msg::CameraInfo>("~/" + getName() + "/camera_info", 10);
@@ -84,10 +87,7 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
                                          monoPub,
                                          infoPub,
                                          infoManager,
-                                         getROSNode(),
-                                         ph->getParam<bool>("i_low_bandwidth"),
-                                         false,
-                                         dai::RawImgFrame::Type::GRAY8));
+                                         ph->getParam<bool>("i_enable_lazy_publisher")));
 
         } else {
             monoPubIT = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
@@ -97,10 +97,7 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
                                          *imageConverter,
                                          monoPubIT,
                                          infoManager,
-                                         getROSNode(),
-                                         ph->getParam<bool>("i_low_bandwidth"),
-                                         false,
-                                         dai::RawImgFrame::Type::GRAY8));
+                                         ph->getParam<bool>("i_enable_lazy_publisher")));
         }
     }
     controlQ = device->getInputQueue(controlQName);

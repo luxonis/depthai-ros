@@ -30,8 +30,8 @@ class BaseNode {
    */
     BaseNode(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
     virtual ~BaseNode();
-    virtual void updateParams(const std::vector<rclcpp::Parameter>& params) = 0;
-    virtual void link(dai::Node::Input in, int linkType = 0) = 0;
+    virtual void updateParams(const std::vector<rclcpp::Parameter>& params);
+    virtual void link(dai::Node::Input in, int linkType = 0);
     virtual dai::Node::Input getInput(int linkType = 0);
     virtual void setupQueues(std::shared_ptr<dai::Device> device) = 0;
     /*
@@ -66,10 +66,12 @@ class BaseNode {
         * @param[in]  frameName  The frame name
     */
     std::string getTFPrefix(const std::string& frameName = "");
-    std::string getFrameNameFromSocket(dai::CameraBoardSocket socket, std::vector<dai::CameraFeatures> camFeatures);
+    bool ipcEnabled();
+
    private:
     rclcpp::Node* baseNode;
     std::string baseDAINodeName;
+    bool intraProcessEnabled;
 };
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver
