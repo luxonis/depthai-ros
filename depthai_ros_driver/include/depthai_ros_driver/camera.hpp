@@ -6,9 +6,9 @@
 
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/param_handlers/camera_param_handler.hpp"
+#include "diagnostic_msgs/msg/diagnostic_array.hpp"
 #include "rclcpp/node.hpp"
 #include "std_srvs/srv/trigger.hpp"
-#include "diagnostic_msgs/msg/diagnostic_array.hpp"
 
 namespace dai {
 class Pipeline;
@@ -39,16 +39,16 @@ class Camera : public rclcpp::Node {
     rclcpp::Service<Trigger>::SharedPtr startSrv, stopSrv, savePipelineSrv, saveCalibSrv;
     rclcpp::Subscription<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagSub;
     /*
-    * Closes all the queues, clears the configured BaseNodes, stops the pipeline and resets the device.
-    */
+     * Closes all the queues, clears the configured BaseNodes, stops the pipeline and resets the device.
+     */
     void stop();
     /*
-    * Runs onConfigure();
-    */
+     * Runs onConfigure();
+     */
     void start();
     void restart();
     void diagCB(const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg);
-    
+
     void startCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res);
     void stopCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res);
     void saveCalibCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res);
@@ -58,6 +58,5 @@ class Camera : public rclcpp::Node {
     std::shared_ptr<dai::Device> device;
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
     bool camRunning = false;
-
 };
 }  // namespace depthai_ros_driver

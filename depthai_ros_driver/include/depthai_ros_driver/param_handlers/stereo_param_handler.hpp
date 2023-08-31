@@ -9,8 +9,8 @@
 #include "depthai/pipeline/node/StereoDepth.hpp"
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
 
-namespace dai{
-    class CameraFeatures;
+namespace dai {
+class CameraFeatures;
 }
 
 namespace rclcpp {

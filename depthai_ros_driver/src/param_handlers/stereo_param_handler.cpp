@@ -1,8 +1,8 @@
 #include "depthai_ros_driver/param_handlers/stereo_param_handler.hpp"
 
+#include "depthai-shared/common/CameraFeatures.hpp"
 #include "depthai/pipeline/datatype/StereoDepthConfig.hpp"
 #include "depthai/pipeline/node/StereoDepth.hpp"
-#include "depthai-shared/common/CameraFeatures.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/logger.hpp"
 #include "rclcpp/node.hpp"
@@ -57,6 +57,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<bool>("i_right_rect_low_bandwidth", false);
     declareAndLogParam<int>("i_right_rect_low_bandwidth_quality", 50);
     declareAndLogParam<bool>("i_right_rect_enable_feature_tracker", false);
+    declareAndLogParam<bool>("i_enable_lazy_publisher", true);
 
     stereo->setLeftRightCheck(declareAndLogParam<bool>("i_lr_check", true));
     int width = 1280;
@@ -95,7 +96,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
         stereo->initialConfig.setSubpixelFractionalBits(declareAndLogParam<int>("i_subpixel_fractional_bits", 3));
     }
     stereo->setRectifyEdgeFillColor(declareAndLogParam<int>("i_rectify_edge_fill_color", 0));
-    if(declareAndLogParam<bool>("i_enable_alpha_scaling", false)){
+    if(declareAndLogParam<bool>("i_enable_alpha_scaling", false)) {
         stereo->setAlphaScaling(declareAndLogParam<float>("i_alpha_scaling", 0.0));
     }
     auto config = stereo->initialConfig.get();
@@ -113,7 +114,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     if(config.postProcessing.speckleFilter.enable) {
         config.postProcessing.speckleFilter.speckleRange = declareAndLogParam<int>("i_speckle_filter_speckle_range", 50);
     }
-    if(declareAndLogParam<bool>("i_enable_disparity_shift", false)){
+    if(declareAndLogParam<bool>("i_enable_disparity_shift", false)) {
         config.algorithmControl.disparityShift = declareAndLogParam<int>("i_disparity_shift", 0);
     }
     config.postProcessing.spatialFilter.enable = declareAndLogParam<bool>("i_enable_spatial_filter", false);
@@ -137,7 +138,8 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
         config.postProcessing.decimationFilter.decimationFactor = declareAndLogParam<int>("i_decimation_filter_decimation_factor", 1);
         int decimatedWidth = width / config.postProcessing.decimationFilter.decimationFactor;
         int decimatedHeight = height / config.postProcessing.decimationFilter.decimationFactor;
-        RCLCPP_INFO(getROSNode()->get_logger(), "Decimation filter enabled with decimation factor %d. Previous width and height: %d x %d, after decimation: %d x %d",
+        RCLCPP_INFO(getROSNode()->get_logger(),
+                    "Decimation filter enabled with decimation factor %d. Previous width and height: %d x %d, after decimation: %d x %d",
                     config.postProcessing.decimationFilter.decimationFactor,
                     width,
                     height,

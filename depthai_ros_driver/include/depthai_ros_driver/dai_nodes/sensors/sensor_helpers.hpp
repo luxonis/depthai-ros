@@ -55,9 +55,7 @@ void cameraPub(const std::string& /*name*/,
                dai::ros::ImageConverter& converter,
                image_transport::CameraPublisher& pub,
                std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
-               bool fromBitStream = false,
-               bool dispToDepth = false,
-               dai::RawImgFrame::Type type = dai::RawImgFrame::Type::BGR888i);
+               bool lazyPub = true);
 
 void splitPub(const std::string& /*name*/,
               const std::shared_ptr<dai::ADatatype>& data,
@@ -65,9 +63,7 @@ void splitPub(const std::string& /*name*/,
               rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr imgPub,
               rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr infoPub,
               std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
-              bool fromBitStream = false,
-              bool dispToDepth = false,
-              dai::RawImgFrame::Type type = dai::RawImgFrame::Type::BGR888i);
+              bool lazyPub = true);
 
 sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
                                           dai::ros::ImageConverter& converter,
@@ -78,7 +74,8 @@ sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
 std::shared_ptr<dai::node::VideoEncoder> createEncoder(std::shared_ptr<dai::Pipeline> pipeline,
                                                        int quality,
                                                        dai::VideoEncoderProperties::Profile profile = dai::VideoEncoderProperties::Profile::MJPEG);
-bool detectSubscription(const rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr& pub, const rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr& infoPub);
+bool detectSubscription(const rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr& pub,
+                        const rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr& infoPub);
 }  // namespace sensor_helpers
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver
