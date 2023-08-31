@@ -33,7 +33,9 @@ TFPublisher::TFPublisher(rclcpp::Node* node,
                          const std::string& camRoll,
                          const std::string& camPitch,
                          const std::string& camYaw,
-                         const std::string& imuFromDescr)
+                         const std::string& imuFromDescr,
+                         const std::string& customURDFLocation,
+                         const std::string& customXacroArgs)
     : _camName(camName),
       _camModel(camModel),
       _baseFrame(baseFrame),
@@ -46,6 +48,8 @@ TFPublisher::TFPublisher(rclcpp::Node* node,
       _camYaw(camYaw),
       _camFeatures(camFeatures),
       _imuFromDescr(imuFromDescr),
+      _customURDFLocation(customURDFLocation),
+      _customXacroArgs(customXacroArgs),
       _logger(node->get_logger()) {
     _tfPub = std::make_shared<tf2_ros::StaticTransformBroadcaster>(node);
 
@@ -185,7 +189,7 @@ bool TFPublisher::modelNameAvailable() {
 }
 
 std::string TFPublisher::prepareXacroArgs() {
-    if(!modelNameAvailable()) {
+    if(!_customURDFLocation.empty() || !modelNameAvailable()) {
         RCLCPP_ERROR(
             _logger,
             "Model name %s not found in depthai_descriptions package. If camera model is autodetected, please notify developers. Using default model: OAK-D",
@@ -204,7 +208,6 @@ std::string TFPublisher::prepareXacroArgs() {
     xacroArgs += " cam_pitch:=" + _camPitch;
     xacroArgs += " cam_yaw:=" + _camYaw;
     xacroArgs += " has_imu:=" + _imuFromDescr;
-    RCLCPP_INFO(_logger, "Xacro args: %s", xacroArgs.c_str());
     return xacroArgs;
 }
 
@@ -230,9 +233,19 @@ void TFPublisher::convertModelName() {
 }
 
 std::string TFPublisher::getURDF() {
-    auto args = prepareXacroArgs();
-    auto path = ament_index_cpp::get_package_share_directory("depthai_descriptions");
-    std::string cmd = "xacro " + path + "/urdf/base_descr.urdf.xacro " + args;
+    std::string args, path;
+    if(_customXacroArgs.empty()) {
+        args = prepareXacroArgs();
+    } else {
+        args = _customXacroArgs;
+    }
+    if(_customURDFLocation.empty()) {
+        path = ament_index_cpp::get_package_share_directory("depthai_descriptions") + "/urdf/base_descr.urdf.xacro ";
+    } else {
+        path = _customURDFLocation + " ";
+    }
+    std::string cmd = "xacro " + path + args;
+    RCLCPP_DEBUG(_logger, "Xacro command: %s", cmd.c_str());
     std::array<char, 128> buffer;
     std::string result;
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);

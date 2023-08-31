@@ -159,7 +159,9 @@ Then you can set following arguments:
 - `camera.i_tf_cam_pitch`
 - `camera.i_tf_cam_yaw`
 
-When using `camera.launch.py`, you can set `pass_tf_args_as_params:=true` so that TF arguments are used to fill those parameters. For example 
+When using `camera.launch.py`, you can set `pass_tf_args_as_params:=true` so that TF arguments are used to fill those parameters. For example `ros2 launch depthai_ros_driver camera.launch.py pass_tf_args_as_params:=true parent_frame:=map cam_pos_x:=1.0 imu_from_descr:=true`
+
+It is also possible to set custom URDF path (for now only absolute path works) and custom xacro arguments using `camera.i_tf_custom_urdf_path` and `camera.i_tf_custom_xacro_args`. Please note that robot_state_publisher must be running.
 
 **NOTE ON IMU EXTRINSICS**
 If your camera has uncalibrated IMU, a warning will be shown, and IMU will be published with zero rotation and translation. You can override this behavior by setting `camera.i_tf_imu_from_descr`: true. This will publish default IMU extrinsics from URDF based on camera model.

@@ -33,21 +33,7 @@ bool BaseNode::ipcEnabled() {
 std::string BaseNode::getTFPrefix(const std::string& frameName) {
     return std::string(getROSNode()->get_name()) + "_" + frameName;
 }
-std::string BaseNode::getFrameNameFromSocket(dai::CameraBoardSocket socket, std::vector<dai::CameraFeatures> camFeatures) {
-    std::string name;
-    for(auto& cam : camFeatures) {
-        if(cam.socket == socket) {
-            if(cam.name == "color"){
-                name = "rgb";
-            }
-            else{
-                name = cam.name;
-            }
-            return getTFPrefix(name);
-        }
-    }
-    throw std::runtime_error("Camera socket not found");
-}
+
 dai::Node::Input BaseNode::getInput(int /*linkType = 0*/) {
     throw(std::runtime_error("getInput() not implemented"));
 };
