@@ -72,7 +72,7 @@ void Segmentation::setupQueues(std::shared_ptr<dai::Device> device) {
 
         ptPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/passthrough/image_raw");
         ptQ->addCallback(
-            std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager, getROSNode()));
+            std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager));
     }
 }
 

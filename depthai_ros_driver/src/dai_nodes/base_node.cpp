@@ -9,6 +9,7 @@ namespace dai_nodes {
 BaseNode::BaseNode(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> /*pipeline*/) {
     setNodeName(daiNodeName);
     setROSNodePointer(node);
+    intraProcessEnabled = node->get_node_options().use_intra_process_comms();
 };
 BaseNode::~BaseNode() = default;
 void BaseNode::setNodeName(const std::string& daiNodeName) {
@@ -23,6 +24,11 @@ rclcpp::Node* BaseNode::getROSNode() {
 std::string BaseNode::getName() {
     return baseDAINodeName;
 };
+
+bool BaseNode::ipcEnabled() {
+    return intraProcessEnabled;
+}
+
 std::string BaseNode::getTFPrefix(const std::string& frameName) {
     return std::string(getROSNode()->get_name()) + "_" + frameName;
 }

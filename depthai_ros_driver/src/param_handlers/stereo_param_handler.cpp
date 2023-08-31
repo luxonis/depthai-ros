@@ -47,6 +47,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<bool>("i_update_ros_base_time_on_ros_msg", false);
     declareAndLogParam<bool>("i_publish_topic", true);
 
+    declareAndLogParam<bool>("i_publish_synced_rect_pair", false);
     declareAndLogParam<bool>("i_publish_left_rect", false);
     declareAndLogParam<bool>("i_left_rect_low_bandwidth", false);
     declareAndLogParam<int>("i_left_rect_low_bandwidth_quality", 50);
@@ -77,7 +78,9 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     if(declareAndLogParam<bool>("i_set_input_size", false)) {
         stereo->setInputResolution(declareAndLogParam<int>("i_input_width", 1280), declareAndLogParam<int>("i_input_height", 720));
     }
-    stereo->setOutputSize(declareAndLogParam<int>("i_width", width), declareAndLogParam<int>("i_height", height));
+    width = declareAndLogParam<int>("i_width", width);
+    height = declareAndLogParam<int>("i_height", height);
+    stereo->setOutputSize(width, height);
     stereo->setDefaultProfilePreset(depthPresetMap.at(declareAndLogParam<std::string>("i_depth_preset", "HIGH_ACCURACY")));
     if(declareAndLogParam<bool>("i_enable_distortion_correction", false)) {
         stereo->enableDistortionCorrection(true);
@@ -132,6 +135,17 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
         config.postProcessing.decimationFilter.decimationMode =
             utils::getValFromMap(declareAndLogParam<std::string>("i_decimation_filter_decimation_mode", "PIXEL_SKIPPING"), decimationModeMap);
         config.postProcessing.decimationFilter.decimationFactor = declareAndLogParam<int>("i_decimation_filter_decimation_factor", 1);
+        int decimatedWidth = width / config.postProcessing.decimationFilter.decimationFactor;
+        int decimatedHeight = height / config.postProcessing.decimationFilter.decimationFactor;
+        RCLCPP_INFO(getROSNode()->get_logger(), "Decimation filter enabled with decimation factor %d. Previous width and height: %d x %d, after decimation: %d x %d",
+                    config.postProcessing.decimationFilter.decimationFactor,
+                    width,
+                    height,
+                    decimatedWidth,
+                    decimatedHeight);
+        stereo->setOutputSize(decimatedWidth, decimatedHeight);
+        declareAndLogParam("i_width", decimatedWidth, true);
+        declareAndLogParam("i_height", decimatedHeight, true);
     }
     stereo->initialConfig.set(config);
 }
