@@ -124,7 +124,11 @@ void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
     if(lowBandwidth) {
         conv->convertFromBitstream(dai::RawImgFrame::Type::GRAY8);
     }
-
+    bool addOffset = ph->getParam<bool>(isLeft ? "i_left_rect_add_exposure_offset" : "i_right_rect_add_exposure_offset");
+    if(addOffset) {
+        auto offset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>(isLeft ? "i_left_rect_exposure_offset" : "i_right_rect_exposure_offset"));
+        conv->addExposureOffset(offset);
+    }
     im = std::make_shared<camera_info_manager::CameraInfoManager>(
         getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + sensorInfo.name).get(), "/rect");
 
@@ -191,6 +195,10 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     if(!ph->getParam<bool>("i_output_disparity")) {
         stereoConv->convertDispToDepth();
         RCLCPP_INFO(getROSNode()->get_logger(), "Setting stereo output to depth");
+    }
+    if(ph->getParam<bool>("i_add_exposure_offset")) {
+        auto offset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
+        stereoConv->addExposureOffset(offset);
     }
     stereoIM = std::make_shared<camera_info_manager::CameraInfoManager>(
         getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());

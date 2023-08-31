@@ -80,6 +80,11 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
             RCLCPP_INFO(getROSNode()->get_logger(), "Low bandwidth mode enabled");
             imageConverter->convertFromBitstream(dai::RawImgFrame::Type::BGR888i);
         }
+        if(ph->getParam<bool>("i_add_exposure_offset")) {
+            auto offset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
+            imageConverter->addExposureOffset(offset);
+        }
+
         if(ph->getParam<std::string>("i_calibration_file").empty()) {
             infoManager->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
                                                                     *imageConverter,
