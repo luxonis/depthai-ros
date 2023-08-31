@@ -28,7 +28,8 @@ Stereo::Stereo(const std::string& daiNodeName,
     : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
-    for(auto f : device->getConnectedCameraFeatures()) {
+    auto features = device->getConnectedCameraFeatures();
+    for(auto f : features) {
         if(f.socket == leftSocket) {
             leftSensInfo = f;
         } else if(f.socket == rightSocket) {
@@ -41,7 +42,7 @@ Stereo::Stereo(const std::string& daiNodeName,
     left = std::make_unique<SensorWrapper>(leftSensInfo.name, node, pipeline, device, leftSensInfo.socket, false);
     right = std::make_unique<SensorWrapper>(rightSensInfo.name, node, pipeline, device, rightSensInfo.socket, false);
     ph = std::make_unique<param_handlers::StereoParamHandler>(node, daiNodeName);
-    ph->declareParams(stereoCamNode, rightSensInfo.name);
+    ph->declareParams(stereoCamNode, features);
     setXinXout(pipeline);
     left->link(stereoCamNode->left);
     right->link(stereoCamNode->right);
@@ -201,7 +202,7 @@ void Stereo::setupRightRectQueue(std::shared_ptr<dai::Device> device) {
 void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     std::string tfPrefix;
     if(ph->getParam<bool>("i_align_depth")) {
-        tfPrefix = getTFPrefix("rgb");
+        tfPrefix = getTFPrefix(ph->getParam<std::string>("i_socket_name"));
     } else {
         tfPrefix = getTFPrefix(rightSensInfo.name);
     }

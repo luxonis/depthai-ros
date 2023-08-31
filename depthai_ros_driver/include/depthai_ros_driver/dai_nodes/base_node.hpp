@@ -4,10 +4,12 @@
 #include <string>
 
 #include "depthai/pipeline/Node.hpp"
+#include "depthai-shared/common/CameraBoardSocket.hpp"
 
 namespace dai {
 class Pipeline;
 class Device;
+class CameraFeatures;
 }  // namespace dai
 
 namespace rclcpp {
@@ -34,7 +36,7 @@ class BaseNode {
     rclcpp::Node* getROSNode();
     std::string getName();
     std::string getTFPrefix(const std::string& frameName = "");
-
+    std::string getFrameNameFromSocket(dai::CameraBoardSocket socket, std::vector<dai::CameraFeatures> camFeatures);
    private:
     rclcpp::Node* baseNode;
     std::string baseDAINodeName;
