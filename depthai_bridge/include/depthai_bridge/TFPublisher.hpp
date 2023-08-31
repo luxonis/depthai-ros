@@ -55,14 +55,14 @@ class TFPublisher {
      */
     void publishCamTransforms(nlohmann::json camData, rclcpp::Node* node);
     /*
-        * @brief Publish IMU transform based on calibration data.
-        * Frame name is based on IMU name and uses following convention: [base_frame]_imu_frame.
-        * If IMU extrinsics are not set, warning is printed out and imu frame is published with zero translation and rotation.
-    */
+     * @brief Publish IMU transform based on calibration data.
+     * Frame name is based on IMU name and uses following convention: [base_frame]_imu_frame.
+     * If IMU extrinsics are not set, warning is printed out and imu frame is published with zero translation and rotation.
+     */
     void publishImuTransform(nlohmann::json json, rclcpp::Node* node);
     /*
-    * @brief Check if model STL file is available in depthai_descriptions package.
-    */
+     * @brief Check if model STL file is available in depthai_descriptions package.
+     */
     bool modelNameAvailable();
     std::string getCamSocketName(int socketNum);
     std::unique_ptr<rclcpp::AsyncParametersClient> _paramClient;

@@ -91,37 +91,37 @@ class Detection : public BaseNode {
         }
     };
     /*
-        * @brief      Links the input of the DetectionNetwork node to the output of the ImageManip node.
-        *
-        * @param[in]  in        The input of the DetectionNetwork node
-        * @param[in]  linkType  The link type (not used)
-    */
+     * @brief      Links the input of the DetectionNetwork node to the output of the ImageManip node.
+     *
+     * @param[in]  in        The input of the DetectionNetwork node
+     * @param[in]  linkType  The link type (not used)
+     */
     void link(dai::Node::Input in, int /*linkType*/) override {
         detectionNode->out.link(in);
     };
     /*
-        * @brief      Gets the input of the DetectionNetwork node.
-        *
-        * @param[in]  linkType  The link type (not used)
-        *
-        * @return     The input of the DetectionNetwork node.
-    */
+     * @brief      Gets the input of the DetectionNetwork node.
+     *
+     * @param[in]  linkType  The link type (not used)
+     *
+     * @return     The input of the DetectionNetwork node.
+     */
     dai::Node::Input getInput(int /*linkType*/) override {
         if(ph->getParam<bool>("i_disable_resize")) {
             return detectionNode->input;
         }
         return imageManip->inputImage;
     };
-    
+
     void setNames() override {
         nnQName = getName() + "_nn";
         ptQName = getName() + "_pt";
     };
     /*
-        * @brief      Sets the XLinkOut for the DetectionNetwork node and the ImageManip node. Additionally enables the passthrough.
-        *
-        * @param      pipeline  The pipeline
-    */
+     * @brief      Sets the XLinkOut for the DetectionNetwork node and the ImageManip node. Additionally enables the passthrough.
+     *
+     * @param      pipeline  The pipeline
+     */
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override {
         xoutNN = pipeline->create<dai::node::XLinkOut>();
         xoutNN->setStreamName(nnQName);
@@ -133,26 +133,26 @@ class Detection : public BaseNode {
         }
     };
     /*
-        * @brief      Closes the queues for the DetectionNetwork node and the passthrough.
-    */
+     * @brief      Closes the queues for the DetectionNetwork node and the passthrough.
+     */
     void closeQueues() override {
         nnQ->close();
         if(ph->getParam<bool>("i_enable_passthrough")) {
             ptQ->close();
         }
     };
-    
+
     void updateParams(const std::vector<rclcpp::Parameter>& params) override {
         ph->setRuntimeParams(params);
     };
 
    private:
-   /*
-        * @brief      Callback for the DetectionNetwork node. Converts the ImgDetections to Detection2DArray and publishes it.
-        *
-        * @param[in]  name  The name of the stream
-        * @param[in]  data  The DAI data
-   */
+    /*
+     * @brief      Callback for the DetectionNetwork node. Converts the ImgDetections to Detection2DArray and publishes it.
+     *
+     * @param[in]  name  The name of the stream
+     * @param[in]  data  The DAI data
+     */
     void detectionCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
         auto inDet = std::dynamic_pointer_cast<dai::ImgDetections>(data);
         std::deque<vision_msgs::msg::Detection2DArray> deq;

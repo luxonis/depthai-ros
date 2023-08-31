@@ -56,13 +56,13 @@ class Camera : public rclcpp::Node {
      */
     void savePipeline();
     /*
-        * @brief Saves calibration data to a json file.
-    */
+     * @brief Saves calibration data to a json file.
+     */
     void saveCalib();
     /*
-        * @brief Loads calibration data from a path.
-        * @param path Path to the calibration file.
-    */
+     * @brief Loads calibration data from a path.
+     * @param path Path to the calibration file.
+     */
     void loadCalib(const std::string& path);
     rcl_interfaces::msg::SetParametersResult parameterCB(const std::vector<rclcpp::Parameter>& params);
     OnSetParametersCallbackHandle::SharedPtr paramCBHandle;

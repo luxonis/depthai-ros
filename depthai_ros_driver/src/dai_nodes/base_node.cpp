@@ -1,8 +1,8 @@
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 
+#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
-#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {

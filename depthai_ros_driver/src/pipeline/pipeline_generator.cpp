@@ -52,7 +52,6 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
     return daiNodes;
 }
 
-
 PipelineType PipelineGenerator::validatePipeline(rclcpp::Node* node, PipelineType type, int sensorNum) {
     if(sensorNum == 1) {
         if(type != PipelineType::RGB) {
