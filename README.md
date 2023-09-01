@@ -181,7 +181,7 @@ You can enable rectified Stereo streams by setting, for example in the case of r
 
 ##### Custom Sensor sockets
 
-Configuration of which sensors are used for computing stereo pair can be done either programatically, by specifying them in a constructor of a Stereo node (for example when building a custom pipeline), or via parameters - `stereo.i_left_socket_id`/`stereo.i_right_socket_id`. 
+Configuration of which sensors are used for computing stereo pair can be done either programatically, by specifying them in a constructor of a Stereo node (for example when building a custom pipeline), or via parameters - `stereo.i_left_socket_id`/`stereo.i_right_socket_id`. Please note that currently if you want to use rgb/center socket instead of one of the given pairs you will need to build a custom pipeline for that.
 
 #### Feature Tracker
 
