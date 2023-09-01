@@ -3,7 +3,6 @@
 #include <memory>
 #include <string>
 
-#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai/pipeline/Node.hpp"
 
 namespace dai {
