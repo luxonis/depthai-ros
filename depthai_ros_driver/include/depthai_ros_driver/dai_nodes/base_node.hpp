@@ -8,7 +8,6 @@
 namespace dai {
 class Pipeline;
 class Device;
-class CameraFeatures;
 }  // namespace dai
 
 namespace rclcpp {
