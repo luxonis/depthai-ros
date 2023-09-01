@@ -179,6 +179,10 @@ When setting `stereo.i_align_depth: true`, stereo output is aligned to board soc
 
 You can enable rectified Stereo streams by setting, for example in the case of right stream `i_publish_right_rect: true`. You can also set `i_publish_synced_rect_pair: true` to get both images with the same timestamps.
 
+##### Custom Sensor sockets
+
+Configuration of which sensors are used for computing stereo pair can be done either programatically, by specifying them in a constructor of a Stereo node (for example when building a custom pipeline), or via parameters - `stereo.i_left_socket_id`/`stereo.i_right_socket_id`. 
+
 #### Feature Tracker
 
 Each sensor node (and rectified streams from Stereo node) has the option to add FeatureTracker node, which publishes `depthai_ros_msgs/msg/TrackedFeatures` messages.
