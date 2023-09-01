@@ -44,8 +44,6 @@ struct ImageSensor {
 };
 extern std::vector<ImageSensor> availableSensors;
 
-extern std::unordered_map<std::string, dai::ColorCameraProperties::SensorResolution> stringToColorResMap;
-
 void basicCameraPub(const std::string& /*name*/,
                     const std::shared_ptr<dai::ADatatype>& data,
                     dai::ros::ImageConverter& converter,
