@@ -1,5 +1,6 @@
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 
+#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "rclcpp/node.hpp"
@@ -32,6 +33,7 @@ bool BaseNode::ipcEnabled() {
 std::string BaseNode::getTFPrefix(const std::string& frameName) {
     return std::string(getROSNode()->get_name()) + "_" + frameName;
 }
+
 dai::Node::Input BaseNode::getInput(int /*linkType = 0*/) {
     throw(std::runtime_error("getInput() not implemented"));
 };

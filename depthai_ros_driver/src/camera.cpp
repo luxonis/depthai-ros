@@ -5,6 +5,7 @@
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
+#include "depthai_bridge/TFPublisher.hpp"
 #include "depthai_ros_driver/pipeline/pipeline_generator.hpp"
 #include "diagnostic_msgs/msg/diagnostic_status.hpp"
 
@@ -15,6 +16,7 @@ Camera::Camera(const rclcpp::NodeOptions& options) : rclcpp::Node("camera", opti
     ph->declareParams();
     onConfigure();
 }
+Camera::~Camera() = default;
 void Camera::onConfigure() {
     getDeviceType();
     createPipeline();
@@ -26,6 +28,31 @@ void Camera::onConfigure() {
     stopSrv = this->create_service<Trigger>("~/stop_camera", std::bind(&Camera::stopCB, this, std::placeholders::_1, std::placeholders::_2));
     savePipelineSrv = this->create_service<Trigger>("~/save_pipeline", std::bind(&Camera::savePipelineCB, this, std::placeholders::_1, std::placeholders::_2));
     saveCalibSrv = this->create_service<Trigger>("~/save_calibration", std::bind(&Camera::saveCalibCB, this, std::placeholders::_1, std::placeholders::_2));
+
+    // If model name not set get one from the device
+    std::string camModel = ph->getParam<std::string>("i_tf_camera_model");
+    if(camModel.empty()) {
+        camModel = device->getDeviceName();
+    }
+
+    if(ph->getParam<bool>("i_publish_tf_from_calibration")) {
+        tfPub = std::make_unique<dai::ros::TFPublisher>(this,
+                                                        device->readCalibration(),
+                                                        device->getConnectedCameraFeatures(),
+                                                        ph->getParam<std::string>("i_tf_camera_name"),
+                                                        camModel,
+                                                        ph->getParam<std::string>("i_tf_base_frame"),
+                                                        ph->getParam<std::string>("i_tf_parent_frame"),
+                                                        ph->getParam<std::string>("i_tf_cam_pos_x"),
+                                                        ph->getParam<std::string>("i_tf_cam_pos_y"),
+                                                        ph->getParam<std::string>("i_tf_cam_pos_z"),
+                                                        ph->getParam<std::string>("i_tf_cam_roll"),
+                                                        ph->getParam<std::string>("i_tf_cam_pitch"),
+                                                        ph->getParam<std::string>("i_tf_cam_yaw"),
+                                                        ph->getParam<std::string>("i_tf_imu_from_descr"),
+                                                        ph->getParam<std::string>("i_tf_custom_urdf_location"),
+                                                        ph->getParam<std::string>("i_tf_custom_xacro_args"));
+    }
     diagSub = this->create_subscription<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10, std::bind(&Camera::diagCB, this, std::placeholders::_1));
     RCLCPP_INFO(this->get_logger(), "Camera ready!");
 }
@@ -157,7 +184,7 @@ void Camera::setupQueues() {
 
 void Camera::startDevice() {
     rclcpp::Rate r(1.0);
-    while(!camRunning) {
+    while(rclcpp::ok() && !camRunning) {
         auto mxid = ph->getParam<std::string>("i_mx_id");
         auto ip = ph->getParam<std::string>("i_ip");
         auto usb_id = ph->getParam<std::string>("i_usb_port_id");

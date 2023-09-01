@@ -11,6 +11,7 @@
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
+#include "depthai_ros_driver/utils.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/node.hpp"
@@ -68,7 +69,8 @@ void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 
 void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_publish_topic")) {
-        auto tfPrefix = getTFPrefix(getName());
+        auto tfPrefix = getTFPrefix(
+            utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")), device->getConnectedCameraFeatures()));
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
             getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
         imageConverter =

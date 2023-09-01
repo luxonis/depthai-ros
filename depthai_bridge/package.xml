@@ -25,6 +25,7 @@
   <depend>std_msgs</depend>
   <depend>stereo_msgs</depend>
   <depend>vision_msgs</depend>
+  <depend>tf2_ros</depend>
 
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>xacro</exec_depend>

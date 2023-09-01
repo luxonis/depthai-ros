@@ -23,7 +23,28 @@ enum class PipelineType { RGB, RGBD, RGBStereo, Stereo, Depth, CamArray };
 class PipelineGenerator {
    public:
     ~PipelineGenerator() = default;
+    /*
+     * @brief      Validates the pipeline type. If the pipeline type is not valid for the number of sensors, it will be changed to the default type.
+     *
+     * @param      node       The node
+     * @param[in]  type       The type
+     * @param[in]  sensorNum  The sensor number
+     *
+     * @return     The validated pipeline type.
+     */
     PipelineType validatePipeline(rclcpp::Node* node, PipelineType type, int sensorNum);
+    /*
+     * @brief      Creates the pipeline by using a plugin. Plugin types need to be of type depthai_ros_driver::pipeline_gen::BasePipeline.
+     *
+     * @param      node          The node
+     * @param      device        The device
+     * @param      pipeline      The pipeline
+     * @param[in]  pipelineType  The pipeline type name (plugin name or one of the default types)
+     * @param[in]  nnType        The neural network type (none, rgb, spatial)
+     * @param[in]  enableImu     Indicates if IMU is enabled
+     *
+     * @return     Vector BaseNodes created.
+     */
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> createPipeline(rclcpp::Node* node,
                                                                      std::shared_ptr<dai::Device> device,
                                                                      std::shared_ptr<dai::Pipeline> pipeline,
