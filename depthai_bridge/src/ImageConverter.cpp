@@ -43,7 +43,6 @@ void ImageConverter::updateRosBaseTime() {
 void ImageConverter::convertFromBitstream(dai::RawImgFrame::Type srcType) {
     _fromBitstream = true;
     _srcType = srcType;
-    std::cout << static_cast<int>(_srcType) << std::endl;
 }
 
 void ImageConverter::convertDispToDepth() {

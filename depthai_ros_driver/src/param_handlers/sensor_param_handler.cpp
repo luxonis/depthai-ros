@@ -84,17 +84,17 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
                                        dai::CameraBoardSocket socket,
                                        dai_nodes::sensor_helpers::ImageSensor sensor,
                                        bool publish) {
-    rgbResolutionMap = {{"720", dai::ColorCameraProperties::SensorResolution::THE_720_P},
-                        {"1080", dai::ColorCameraProperties::SensorResolution::THE_1080_P},
-                        {"4K", dai::ColorCameraProperties::SensorResolution::THE_4_K},
-                        {"12MP", dai::ColorCameraProperties::SensorResolution::THE_12_MP},
-                        {"13MP", dai::ColorCameraProperties::SensorResolution::THE_13_MP},
-                        {"800", dai::ColorCameraProperties::SensorResolution::THE_800_P},
-                        {"1200", dai::ColorCameraProperties::SensorResolution::THE_1200_P},
+    rgbResolutionMap = {{"720p", dai::ColorCameraProperties::SensorResolution::THE_720_P},
+                        {"1080p", dai::ColorCameraProperties::SensorResolution::THE_1080_P},
+                        {"4k", dai::ColorCameraProperties::SensorResolution::THE_4_K},
+                        {"12mp", dai::ColorCameraProperties::SensorResolution::THE_12_MP},
+                        {"13mp", dai::ColorCameraProperties::SensorResolution::THE_13_MP},
+                        {"800p", dai::ColorCameraProperties::SensorResolution::THE_800_P},
+                        {"1200p", dai::ColorCameraProperties::SensorResolution::THE_1200_P},
                         {"5MP", dai::ColorCameraProperties::SensorResolution::THE_5_MP},
                         {"4000x3000", dai::ColorCameraProperties::SensorResolution::THE_4000X3000},
                         {"5312X6000", dai::ColorCameraProperties::SensorResolution::THE_5312X6000},
-                        {"48_MP", dai::ColorCameraProperties::SensorResolution::THE_48_MP},
+                        {"48mp", dai::ColorCameraProperties::SensorResolution::THE_48_MP},
                         {"1440X1080", dai::ColorCameraProperties::SensorResolution::THE_1440X1080}};
     declareAndLogParam<bool>("i_publish_topic", publish);
     declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket));
@@ -106,10 +106,21 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     int preview_width = declareAndLogParam<int>("i_preview_width", preview_size);
     int preview_height = declareAndLogParam<int>("i_preview_height", preview_size);
     colorCam->setPreviewSize(preview_width, preview_height);
-    auto resolution = utils::getValFromMap(declareAndLogParam<std::string>("i_resolution", "1080"), rgbResolutionMap);
-    int width, height;
-    colorCam->setResolution(resolution);
-    sensor.getSizeFromResolution(colorCam->getResolution(), width, height);
+    auto resString = declareAndLogParam<std::string>("i_resolution", sensor.defaultResolution);
+
+    // if resolution not in allowed resolutions, use default
+    if(std::find(sensor.allowedResolutions.begin(), sensor.allowedResolutions.end(), resString) == sensor.allowedResolutions.end()) {
+        RCLCPP_WARN(getROSNode()->get_logger(),
+                    "Resolution %s not supported by sensor %s. Using default resolution %s",
+                    resString.c_str(),
+                    sensor.name.c_str(),
+                    sensor.defaultResolution.c_str());
+        resString = sensor.defaultResolution;
+    }
+
+    int width = colorCam->getResolutionWidth();
+    int height = colorCam->getResolutionHeight();
+    colorCam->setResolution(utils::getValFromMap(resString, rgbResolutionMap));
 
     colorCam->setInterleaved(declareAndLogParam<bool>("i_interleaved", false));
     if(declareAndLogParam<bool>("i_set_isp_scale", true)) {

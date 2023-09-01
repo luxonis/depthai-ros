@@ -35,9 +35,24 @@ StereoParamHandler::StereoParamHandler(rclcpp::Node* node, const std::string& na
         {"VALID_1_IN_LAST_8", dai::StereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::VALID_1_IN_LAST_8},
         {"PERSISTENCY_INDEFINITELY", dai::StereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::PERSISTENCY_INDEFINITELY},
     };
+    declareAndLogParam<int>("i_left_socket_id", static_cast<int>(dai::CameraBoardSocket::CAM_B));
+    declareAndLogParam<int>("i_right_socket_id", static_cast<int>(dai::CameraBoardSocket::CAM_C));
 }
 
 StereoParamHandler::~StereoParamHandler() = default;
+
+void StereoParamHandler::updateSocketsFromParams(dai::CameraBoardSocket& left, dai::CameraBoardSocket& right) {
+    int newLeftS = declareAndLogParam<int>("i_left_socket_id", static_cast<int>(left));
+    int newRightS = declareAndLogParam<int>("i_right_socket_id", static_cast<int>(right));
+    if(newLeftS != static_cast<int>(left) || newRightS != static_cast<int>(right)) {
+        RCLCPP_WARN(getROSNode()->get_logger(), "Left or right socket changed, updating stereo node");
+        RCLCPP_WARN(getROSNode()->get_logger(), "Old left socket: %d, new left socket: %d", static_cast<int>(left), newLeftS);
+        RCLCPP_WARN(getROSNode()->get_logger(), "Old right socket: %d, new right socket: %d", static_cast<int>(right), newRightS);
+    }
+    left = static_cast<dai::CameraBoardSocket>(newLeftS);
+    right = static_cast<dai::CameraBoardSocket>(newRightS);
+}
+
 void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> stereo, const std::vector<dai::CameraFeatures>& camFeatures) {
     declareAndLogParam<int>("i_max_q_size", 30);
     declareAndLogParam<bool>("i_low_bandwidth", false);

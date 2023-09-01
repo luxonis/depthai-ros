@@ -38,11 +38,13 @@ enum class RGBLinkType { video, isp, preview };
 namespace sensor_helpers {
 struct ImageSensor {
     std::string name;
+    std::string defaultResolution;
     std::vector<std::string> allowedResolutions;
     bool color;
-    void getSizeFromResolution(const dai::ColorCameraProperties::SensorResolution& res, int& width, int& height);
 };
 extern std::vector<ImageSensor> availableSensors;
+
+extern std::unordered_map<std::string, dai::ColorCameraProperties::SensorResolution> stringToColorResMap;
 
 void basicCameraPub(const std::string& /*name*/,
                     const std::shared_ptr<dai::ADatatype>& data,
