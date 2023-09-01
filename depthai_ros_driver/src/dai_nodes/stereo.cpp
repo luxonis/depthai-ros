@@ -28,6 +28,8 @@ Stereo::Stereo(const std::string& daiNodeName,
     : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
+    ph = std::make_unique<param_handlers::StereoParamHandler>(node, daiNodeName);
+    ph->updateSocketsFromParams(leftSocket, rightSocket);
     auto features = device->getConnectedCameraFeatures();
     for(auto f : features) {
         if(f.socket == leftSocket) {
@@ -41,7 +43,6 @@ Stereo::Stereo(const std::string& daiNodeName,
     stereoCamNode = pipeline->create<dai::node::StereoDepth>();
     left = std::make_unique<SensorWrapper>(leftSensInfo.name, node, pipeline, device, leftSensInfo.socket, false);
     right = std::make_unique<SensorWrapper>(rightSensInfo.name, node, pipeline, device, rightSensInfo.socket, false);
-    ph = std::make_unique<param_handlers::StereoParamHandler>(node, daiNodeName);
     ph->declareParams(stereoCamNode, features);
     setXinXout(pipeline);
     left->link(stereoCamNode->left);
@@ -124,7 +125,11 @@ void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
     if(lowBandwidth) {
         conv->convertFromBitstream(dai::RawImgFrame::Type::GRAY8);
     }
-
+    bool addOffset = ph->getParam<bool>(isLeft ? "i_left_rect_add_exposure_offset" : "i_right_rect_add_exposure_offset");
+    if(addOffset) {
+        auto offset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>(isLeft ? "i_left_rect_exposure_offset" : "i_right_rect_exposure_offset"));
+        conv->addExposureOffset(offset);
+    }
     im = std::make_shared<camera_info_manager::CameraInfoManager>(
         getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + sensorInfo.name).get(), "/rect");
 
@@ -186,11 +191,13 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     stereoConv->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
     if(ph->getParam<bool>("i_low_bandwidth")) {
         stereoConv->convertFromBitstream(dai::RawImgFrame::Type::RAW8);
-        RCLCPP_INFO(getROSNode()->get_logger(), "Setting stereo low bandwidth mode");
     }
     if(!ph->getParam<bool>("i_output_disparity")) {
         stereoConv->convertDispToDepth();
-        RCLCPP_INFO(getROSNode()->get_logger(), "Setting stereo output to depth");
+    }
+    if(ph->getParam<bool>("i_add_exposure_offset")) {
+        auto offset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
+        stereoConv->addExposureOffset(offset);
     }
     stereoIM = std::make_shared<camera_info_manager::CameraInfoManager>(
         getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());

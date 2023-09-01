@@ -22,7 +22,7 @@ RGB::RGB(const std::string& daiNodeName,
          rclcpp::Node* node,
          std::shared_ptr<dai::Pipeline> pipeline,
          dai::CameraBoardSocket socket = dai::CameraBoardSocket::CAM_A,
-         sensor_helpers::ImageSensor sensor = {"IMX378", {"12mp", "4k"}, true},
+         sensor_helpers::ImageSensor sensor = {"IMX378", "4k", {"12mp", "4k"}, true},
          bool publish = true)
     : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
@@ -77,9 +77,13 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
             std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
         imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
         if(ph->getParam<bool>("i_low_bandwidth")) {
-            RCLCPP_INFO(getROSNode()->get_logger(), "Low bandwidth mode enabled");
             imageConverter->convertFromBitstream(dai::RawImgFrame::Type::BGR888i);
         }
+        if(ph->getParam<bool>("i_add_exposure_offset")) {
+            auto offset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
+            imageConverter->addExposureOffset(offset);
+        }
+
         if(ph->getParam<std::string>("i_calibration_file").empty()) {
             infoManager->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
                                                                     *imageConverter,

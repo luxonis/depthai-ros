@@ -13,7 +13,7 @@ std::string getSocketName(dai::CameraBoardSocket socket, std::vector<dai::Camera
     std::string name;
     for(auto& cam : camFeatures) {
         if(cam.socket == socket) {
-            if(cam.name == "color") {
+            if(cam.name == "color" || cam.name == "center") {
                 name = "rgb";
             } else {
                 name = cam.name;

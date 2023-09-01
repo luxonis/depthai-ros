@@ -43,11 +43,15 @@ void ImageConverter::updateRosBaseTime() {
 void ImageConverter::convertFromBitstream(dai::RawImgFrame::Type srcType) {
     _fromBitstream = true;
     _srcType = srcType;
-    std::cout << static_cast<int>(_srcType) << std::endl;
 }
 
 void ImageConverter::convertDispToDepth() {
     _convertDispToDepth = true;
+}
+
+void ImageConverter::addExposureOffset(dai::CameraExposureOffset& offset) {
+    _expOffset = offset;
+    _addExpOffset = true;
 }
 
 ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> inData, const sensor_msgs::msg::CameraInfo& info) {
@@ -56,7 +60,12 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
     }
     std::chrono::_V2::steady_clock::time_point tstamp;
     if(_getBaseDeviceTimestamp)
-        tstamp = inData->getTimestampDevice();
+        if(_addExpOffset)
+            tstamp = inData->getTimestampDevice(_expOffset);
+        else
+            tstamp = inData->getTimestampDevice();
+    else if(_addExpOffset)
+        tstamp = inData->getTimestamp(_expOffset);
     else
         tstamp = inData->getTimestamp();
     ImageMsgs::Image outImageMsg;

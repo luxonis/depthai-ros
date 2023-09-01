@@ -66,6 +66,10 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
         if(ph->getParam<bool>("i_low_bandwidth")) {
             imageConverter->convertFromBitstream(dai::RawImgFrame::Type::GRAY8);
         }
+        if(ph->getParam<bool>("i_add_exposure_offset")) {
+            auto offset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
+            imageConverter->addExposureOffset(offset);
+        }
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
             getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
         if(ph->getParam<std::string>("i_calibration_file").empty()) {

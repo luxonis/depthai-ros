@@ -56,6 +56,7 @@ class ImageConverter {
     }
 
     void convertFromBitstream(dai::RawImgFrame::Type srcType);
+    void addExposureOffset(dai::CameraExposureOffset& offset);
     void convertDispToDepth();
 
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs);
@@ -97,6 +98,8 @@ class ImageConverter {
     dai::RawImgFrame::Type _srcType;
     bool _fromBitstream = false;
     bool _convertDispToDepth = false;
+    bool _addExpOffset = false;
+    dai::CameraExposureOffset _expOffset;
 };
 
 }  // namespace ros

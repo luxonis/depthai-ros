@@ -130,7 +130,7 @@ std::string TFPublisher::getCamSocketName(int socketNum) {
     std::string name;
     for(auto& cam : _camFeatures) {
         if(cam.socket == static_cast<dai::CameraBoardSocket>(socketNum)) {
-            if(cam.name == "color") {
+            if(cam.name == "color" || cam.name == "center") {
                 name = "rgb";
             } else {
                 name = cam.name;
