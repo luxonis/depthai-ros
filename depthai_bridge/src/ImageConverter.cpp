@@ -192,8 +192,8 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
             outImageMsg.data.reserve(size);
             outImageMsg.data = std::move(inData->getData());
         }
-        return outImageMsg;
     }
+    return outImageMsg;
 }
 
 void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs) {

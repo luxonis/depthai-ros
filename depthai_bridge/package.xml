@@ -26,6 +26,8 @@
   <depend>stereo_msgs</depend>
   <depend>vision_msgs</depend>
   <depend>tf2_ros</depend>
+  <depend>urdf</depend>
+  <depend>robot_state_publisher</depend>
 
   <export>
       <build_type>catkin</build_type>
