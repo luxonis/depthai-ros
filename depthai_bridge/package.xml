@@ -25,6 +25,7 @@
   <depend>std_msgs</depend>
   <depend>stereo_msgs</depend>
   <depend>vision_msgs</depend>
+  <depend>tf2_ros</depend>
 
   <export>
       <build_type>catkin</build_type>

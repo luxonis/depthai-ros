@@ -31,6 +31,8 @@ add_message_files (
   SpatialDetection.msg
   SpatialDetectionArray.msg
   ImuWithMagneticField.msg
+  TrackedFeature.msg
+  TrackedFeatures.msg
 )
 
 ## Generate services in the 'srv' folder
