@@ -66,7 +66,7 @@ void Segmentation::setupQueues(std::shared_ptr<dai::Device> device) {
             *imageConverter, device, dai::CameraBoardSocket::CAM_A, imageManip->initialConfig.getResizeWidth(), imageManip->initialConfig.getResizeWidth()));
 
         ptPub = it.advertiseCamera(getName() + "/passthrough/image_raw", 1);
-        ptQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager));
+        ptQ->addCallback(std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager));
     }
 }
 

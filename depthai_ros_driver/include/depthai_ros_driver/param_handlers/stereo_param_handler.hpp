@@ -10,6 +10,9 @@
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
 #include "depthai_ros_driver/parametersConfig.h"
 
+namespace dai {
+class CameraFeatures;
+}
 namespace ros {
 class NodeHandle;
 }  // namespace ros
@@ -20,8 +23,9 @@ class StereoParamHandler : public BaseParamHandler {
    public:
     explicit StereoParamHandler(ros::NodeHandle node, const std::string& name);
     ~StereoParamHandler();
-    void declareParams(std::shared_ptr<dai::node::StereoDepth> stereo, const std::string& rightName);
+    void declareParams(std::shared_ptr<dai::node::StereoDepth> stereo, const std::vector<dai::CameraFeatures>& camFeatures);
     dai::CameraControl setRuntimeParams(parametersConfig& config) override;
+    void updateSocketsFromParams(dai::CameraBoardSocket& left, dai::CameraBoardSocket& right);
 
    private:
     std::unordered_map<std::string, dai::node::StereoDepth::PresetMode> depthPresetMap;

@@ -68,6 +68,37 @@ class BaseParamHandler {
     ros::NodeHandle getROSNode() {
         return baseNode;
     }
+
+    template <typename T>
+    T declareAndLogParam(const std::string& paramName, const std::vector<T>& value, bool override = false) {
+        std::string fullName = baseName + "_" + paramName;
+        if(baseNode.hasParam(fullName)) {
+            if(override) {
+                baseNode.setParam(value);
+            }
+            return getParam<T>(paramName);
+        } else {
+            T val = baseNode.setParam(fullName, value);
+            logParam(fullName, val);
+            return val;
+        }
+    }
+
+    template <typename T>
+    T declareAndLogParam(const std::string& paramName, T value, bool override = false) {
+        std::string fullName = baseName + "_" + paramName;
+        if(baseNode.hasParam(fullName)) {
+            if(override) {
+                baseNode.setParam(fullName, value);
+            }
+            return getParam<T>(paramName);
+        } else {
+            baseNode.setParam(fullName, value);
+            logParam(fullName, value);
+            return value;
+        }
+    }
+
     template <typename T>
     inline void logParam(const std::string& name, T value) {
         std::stringstream ss;

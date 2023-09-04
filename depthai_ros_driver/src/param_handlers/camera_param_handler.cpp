@@ -31,6 +31,21 @@ void CameraParamHandler::declareParams() {
     getParam<std::string>("i_ip");
     getParam<int>("i_laser_dot_brightness");
     getParam<int>("i_floodlight_brightness");
+
+    getParam<bool>("i_publish_tf_from_calibration");
+    getParam<std::string>("i_tf_camera_name");
+    getParam<std::string>("i_tf_camera_model");
+    getParam<std::string>("i_tf_base_frame");
+    getParam<std::string>("i_tf_parent_frame");
+    getParam<std::string>("i_tf_cam_pos_x");
+    getParam<std::string>("i_tf_cam_pos_y");
+    getParam<std::string>("i_tf_cam_pos_z");
+    getParam<std::string>("i_tf_cam_roll");
+    getParam<std::string>("i_tf_cam_pitch");
+    getParam<std::string>("i_tf_cam_yaw");
+    getParam<std::string>("i_tf_imu_from_descr");
+    getParam<std::string>("i_tf_custom_urdf_location");
+    getParam<std::string>("i_tf_custom_xacro_args");
 }
 dai::CameraControl CameraParamHandler::setRuntimeParams(parametersConfig& /*config*/) {
     dai::CameraControl ctrl;

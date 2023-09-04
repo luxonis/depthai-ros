@@ -70,7 +70,7 @@ class SpatialDetection : public BaseNode {
             ptInfoMan->setCameraInfo(sensor_helpers::getCalibInfo(*ptImageConverter, device, dai::CameraBoardSocket::CAM_A, width, height));
 
             ptPub = it.advertiseCamera(getName() + "/passthrough/image_raw", 1);
-            ptQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *ptImageConverter, ptPub, ptInfoMan));
+            ptQ->addCallback(std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *ptImageConverter, ptPub, ptInfoMan));
         }
 
         if(ph->getParam<bool>("i_enable_passthrough_depth")) {
@@ -91,7 +91,7 @@ class SpatialDetection : public BaseNode {
 
             ptDepthPub = it.advertiseCamera(getName() + "/passthrough_depth/image_raw", 1);
             ptDepthQ->addCallback(
-                std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *ptDepthImageConverter, ptDepthPub, ptDepthInfoMan));
+                std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *ptDepthImageConverter, ptDepthPub, ptDepthInfoMan));
         }
     };
     void link(dai::Node::Input in, int /*linkType = 0*/) override {
