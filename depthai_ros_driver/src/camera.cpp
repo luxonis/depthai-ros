@@ -49,13 +49,15 @@ void Camera::onInit() {
                                                         ph->getParam<std::string>("i_tf_custom_urdf_location"),
                                                         ph->getParam<std::string>("i_tf_custom_xacro_args"));
     }
-    diagSub =pNH.subscribe("diagnostics", 1, &Camera::diagCB, this);
+    diagSub =pNH.subscribe("/diagnostics", 1, &Camera::diagCB, this);
 
 }
 
 void Camera::diagCB(const diagnostic_msgs::DiagnosticArray::ConstPtr& msg) {
     for(const auto& status : msg->status) {
-        if(status.name == pNH.getNamespace() + std::string(": sys_logger")) {
+        std::string nodeletName= pNH.getNamespace()+"_nodelet_manager";
+        nodeletName.erase(nodeletName.begin());
+        if(status.name == nodeletName + std::string(": sys_logger")) {
             if(status.level == diagnostic_msgs::DiagnosticStatus::ERROR) {
                 ROS_ERROR("Camera diagnostics error: %s", status.message.c_str());
                 restart();

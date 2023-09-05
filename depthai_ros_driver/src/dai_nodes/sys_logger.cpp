@@ -31,9 +31,13 @@ void SysLogger::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 
 void SysLogger::setupQueues(std::shared_ptr<dai::Device> device) {
     loggerQ = device->getOutputQueue(loggerQName, 8, false);
-    updater = std::make_shared<diagnostic_updater::Updater>(getROSNode());
+    updater.reset(new diagnostic_updater::Updater());
     updater->setHardwareID(getROSNode().getNamespace() + std::string("_") + device->getMxId() + std::string("_") + device->getDeviceName());
     updater->add("sys_logger", std::bind(&SysLogger::produceDiagnostics, this, std::placeholders::_1));
+    timer = getROSNode().createTimer(ros::Duration(1.0), std::bind(&SysLogger::timerCB, this));
+}
+void SysLogger::timerCB() {
+    updater->update();
 }
 
 void SysLogger::closeQueues() {

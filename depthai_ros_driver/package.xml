@@ -33,6 +33,7 @@
   <depend>depthai_examples</depend>
   <depend>nodelet</depend>
   <depend>pluginlib</depend>
+  <depend>diagnostic_updater</depend>
 
   <export>
     <nodelet plugin="${prefix}/nodelet_plugins.xml" />

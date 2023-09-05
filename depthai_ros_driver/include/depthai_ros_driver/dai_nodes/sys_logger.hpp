@@ -26,6 +26,7 @@ class SysLogger : public BaseNode {
     void closeQueues() override;
 
    private:
+    void timerCB();
     std::string sysInfoToString(const dai::SystemInformation& sysInfo);
     void produceDiagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat);
     std::shared_ptr<diagnostic_updater::Updater> updater;
@@ -33,6 +34,7 @@ class SysLogger : public BaseNode {
     std::shared_ptr<dai::node::SystemLogger> sysNode;
     std::shared_ptr<dai::DataOutputQueue> loggerQ;
     std::string loggerQName;
+    ros::Timer timer;
 };
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver
