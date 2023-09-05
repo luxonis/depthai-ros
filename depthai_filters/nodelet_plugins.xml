@@ -19,4 +19,14 @@
   Spatial Bounding Box publisher.
     </description>
   </class>
+  <class name="depthai_filters/FeatureTrackerOverlay" type="depthai_filters::FeatureTrackerOverlay" base_class_type="nodelet::Nodelet">
+    <description>
+    2D Overlay for tracked features
+    </description>
+  </class>
+  <class name="depthai_filters/Features3D" type="depthai_filters::Features3D" base_class_type="nodelet::Nodelet">
+    <description>
+    3D Features (PCL) publisher
+    </description>
+  </class>
 </library>

@@ -21,7 +21,7 @@
   <depend>nodelet</depend>
   <depend>libopencv-dev</depend>
   <depend>visualization_msgs</depend>
-
+  <depend>depthai_ros_msgs</depend>
 
   <export>
     <nodelet plugin="${prefix}/nodelet_plugins.xml" />

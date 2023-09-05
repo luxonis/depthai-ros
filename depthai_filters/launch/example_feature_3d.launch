@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="params_file" default="$(find depthai_filters)/config/feature_tracker.yaml"/>
+
+    <arg name="name" default="oak" />
+
+    <include file="$(find depthai_ros_driver)/launch/rgbd_pcl.launch">
+        <arg name="name" value="$(arg name)"/>
+        <arg name="rectify_rgb" value="true"/>
+        <arg name="params_file" value="$(arg params_file)"/>
+    </include>
+
+    <node name="features_3d" pkg="nodelet" type="nodelet" output="screen" required="true" args="load depthai_filters/Features3D $(arg  name)_nodelet_manager">
+        <remap from="/stereo/image_raw" to="$(arg name)/stereo/image_raw"/>
+        <remap from="/stereo/camera_info" to="$(arg name)/stereo/camera_info"/>
+        <remap from="/feature_tracker/tracked_features" to="$(arg name)/rgb_feature_tracker/tracked_features"/>
+    </node>
+</launch>
