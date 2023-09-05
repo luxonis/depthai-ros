@@ -119,79 +119,78 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
         }
         cv_bridge::CvImage(header, encoding, output).toImageMsg(outImageMsg);
         return outImageMsg;
+    }
+    if(planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end()) {
+        cv::Mat mat, output;
+        cv::Size size = {0, 0};
+        int type = 0;
+        switch(inData->getType()) {
+            case dai::RawImgFrame::Type::BGR888p:
+            case dai::RawImgFrame::Type::RGB888p:
+                size = cv::Size(inData->getWidth(), inData->getHeight());
+                type = CV_8UC3;
+                break;
+            case dai::RawImgFrame::Type::YUV420p:
+            case dai::RawImgFrame::Type::NV12:
+                size = cv::Size(inData->getWidth(), inData->getHeight() * 3 / 2);
+                type = CV_8UC1;
+                break;
 
-        if(planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end()) {
-            cv::Mat mat, output;
-            cv::Size size = {0, 0};
-            int type = 0;
-            switch(inData->getType()) {
-                case dai::RawImgFrame::Type::BGR888p:
-                case dai::RawImgFrame::Type::RGB888p:
-                    size = cv::Size(inData->getWidth(), inData->getHeight());
-                    type = CV_8UC3;
-                    break;
-                case dai::RawImgFrame::Type::YUV420p:
-                case dai::RawImgFrame::Type::NV12:
-                    size = cv::Size(inData->getWidth(), inData->getHeight() * 3 / 2);
-                    type = CV_8UC1;
-                    break;
-
-                default:
-                    throw std::runtime_error("Invalid dataType inputs..");
-                    break;
-            }
-            mat = cv::Mat(size, type, inData->getData().data());
-
-            switch(inData->getType()) {
-                case dai::RawImgFrame::Type::RGB888p: {
-                    cv::Size s(inData->getWidth(), inData->getHeight());
-                    cv::Mat m1 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 2);
-                    cv::Mat m2 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 1);
-                    cv::Mat m3 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 0);
-                    cv::Mat channels[3] = {m1, m2, m3};
-                    cv::merge(channels, 3, output);
-                } break;
-
-                case dai::RawImgFrame::Type::BGR888p: {
-                    cv::Size s(inData->getWidth(), inData->getHeight());
-                    cv::Mat m1 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 0);
-                    cv::Mat m2 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 1);
-                    cv::Mat m3 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 2);
-                    cv::Mat channels[3] = {m1, m2, m3};
-                    cv::merge(channels, 3, output);
-                } break;
-
-                case dai::RawImgFrame::Type::YUV420p:
-                    cv::cvtColor(mat, output, cv::ColorConversionCodes::COLOR_YUV2BGR_IYUV);
-                    break;
-
-                case dai::RawImgFrame::Type::NV12:
-                    cv::cvtColor(mat, output, cv::ColorConversionCodes::COLOR_YUV2BGR_NV12);
-                    break;
-
-                default:
-                    output = mat.clone();
-                    break;
-            }
-            cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, output).toImageMsg(outImageMsg);
-
-        } else if(encodingEnumMap.find(inData->getType()) != encodingEnumMap.end()) {
-            // copying the data to ros msg
-            outImageMsg.header = header;
-            std::string temp_str(encodingEnumMap[inData->getType()]);
-            outImageMsg.encoding = temp_str;
-            outImageMsg.height = inData->getHeight();
-            outImageMsg.width = inData->getWidth();
-            outImageMsg.step = inData->getData().size() / inData->getHeight();
-            if(outImageMsg.encoding == "16UC1")
-                outImageMsg.is_bigendian = false;
-            else
-                outImageMsg.is_bigendian = true;
-
-            size_t size = inData->getData().size();
-            outImageMsg.data.reserve(size);
-            outImageMsg.data = std::move(inData->getData());
+            default:
+                throw std::runtime_error("Invalid dataType inputs..");
+                break;
         }
+        mat = cv::Mat(size, type, inData->getData().data());
+
+        switch(inData->getType()) {
+            case dai::RawImgFrame::Type::RGB888p: {
+                cv::Size s(inData->getWidth(), inData->getHeight());
+                cv::Mat m1 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 2);
+                cv::Mat m2 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 1);
+                cv::Mat m3 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 0);
+                cv::Mat channels[3] = {m1, m2, m3};
+                cv::merge(channels, 3, output);
+            } break;
+
+            case dai::RawImgFrame::Type::BGR888p: {
+                cv::Size s(inData->getWidth(), inData->getHeight());
+                cv::Mat m1 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 0);
+                cv::Mat m2 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 1);
+                cv::Mat m3 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 2);
+                cv::Mat channels[3] = {m1, m2, m3};
+                cv::merge(channels, 3, output);
+            } break;
+
+            case dai::RawImgFrame::Type::YUV420p:
+                cv::cvtColor(mat, output, cv::ColorConversionCodes::COLOR_YUV2BGR_IYUV);
+                break;
+
+            case dai::RawImgFrame::Type::NV12:
+                cv::cvtColor(mat, output, cv::ColorConversionCodes::COLOR_YUV2BGR_NV12);
+                break;
+
+            default:
+                output = mat.clone();
+                break;
+        }
+        cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, output).toImageMsg(outImageMsg);
+
+    } else if(encodingEnumMap.find(inData->getType()) != encodingEnumMap.end()) {
+        // copying the data to ros msg
+        outImageMsg.header = header;
+        std::string temp_str(encodingEnumMap[inData->getType()]);
+        outImageMsg.encoding = temp_str;
+        outImageMsg.height = inData->getHeight();
+        outImageMsg.width = inData->getWidth();
+        outImageMsg.step = inData->getData().size() / inData->getHeight();
+        if(outImageMsg.encoding == "16UC1")
+            outImageMsg.is_bigendian = false;
+        else
+            outImageMsg.is_bigendian = true;
+
+        size_t size = inData->getData().size();
+        outImageMsg.data.reserve(size);
+        outImageMsg.data = std::move(inData->getData());
     }
     return outImageMsg;
 }
