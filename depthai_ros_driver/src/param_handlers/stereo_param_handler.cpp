@@ -35,8 +35,6 @@ StereoParamHandler::StereoParamHandler(rclcpp::Node* node, const std::string& na
         {"VALID_1_IN_LAST_8", dai::StereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::VALID_1_IN_LAST_8},
         {"PERSISTENCY_INDEFINITELY", dai::StereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode::PERSISTENCY_INDEFINITELY},
     };
-    declareAndLogParam<int>("i_left_socket_id", static_cast<int>(dai::CameraBoardSocket::CAM_B));
-    declareAndLogParam<int>("i_right_socket_id", static_cast<int>(dai::CameraBoardSocket::CAM_C));
 }
 
 StereoParamHandler::~StereoParamHandler() = default;

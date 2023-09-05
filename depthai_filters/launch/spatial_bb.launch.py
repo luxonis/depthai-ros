@@ -28,10 +28,13 @@ def launch_setup(context, *args, **kwargs):
                     ComposableNode(
                         package="depthai_filters",
                         plugin="depthai_filters::SpatialBB",
+                        name="spatial_bb_node",
                         remappings=[
                                     ('stereo/camera_info', name+'/stereo/camera_info'),
                                     ('nn/spatial_detections', name+'/nn/spatial_detections'),
-                                    ('rgb/preview/image_raw', name+'/rgb/preview/image_raw')]
+                                    ('rgb/preview/image_raw', name+'/rgb/preview/image_raw'),
+                                    ],
+                        parameters=[params_file],
                     ),
             ],
         ),

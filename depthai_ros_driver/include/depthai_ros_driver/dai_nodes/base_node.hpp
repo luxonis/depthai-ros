@@ -3,13 +3,11 @@
 #include <memory>
 #include <string>
 
-#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai/pipeline/Node.hpp"
 
 namespace dai {
 class Pipeline;
 class Device;
-class CameraFeatures;
 }  // namespace dai
 
 namespace rclcpp {
