@@ -38,6 +38,13 @@ class NNParamHandler : public BaseParamHandler {
     std::string getConfigPath();
     template <typename T>
     void declareParams(std::shared_ptr<T> nn, std::shared_ptr<dai::node::ImageManip> imageManip) {
+        declareAndLogParam<bool>("i_disable_resize", false);
+        declareAndLogParam<bool>("i_enable_passthrough", false);
+        declareAndLogParam<bool>("i_enable_passthrough_depth", false);
+        declareAndLogParam<bool>("i_get_base_device_timestamp", false);
+        declareAndLogParam<bool>("i_update_ros_base_time_on_ros_msg", false);
+        declareAndLogParam<int>("i_max_q_size", 30);
+        auto nn_path = getParam<std::string>("i_nn_config_path");
         auto nnPath = getConfigPath();
         using json = nlohmann::json;
         std::ifstream f(nnPath);

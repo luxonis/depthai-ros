@@ -9,7 +9,7 @@ namespace param_handlers {
 FeatureTrackerParamHandler::FeatureTrackerParamHandler(ros::NodeHandle node, const std::string& name) : BaseParamHandler(node, name) {}
 FeatureTrackerParamHandler::~FeatureTrackerParamHandler() = default;
 void FeatureTrackerParamHandler::declareParams(std::shared_ptr<dai::node::FeatureTracker> featureTracker) {
-    getParam<bool>("i_get_base_device_timestamp", false);
+    declareAndLogParam<bool>("i_get_base_device_timestamp", false);
 
     featureTracker->setHardwareResources(declareAndLogParam<int>("i_num_shaves", 2), declareAndLogParam<int>("i_num_memory_slices", 2));
     motionEstMap = {{"LUCAS_KANADE_OPTICAL_FLOW", dai::FeatureTrackerConfig::MotionEstimator::Type::LUCAS_KANADE_OPTICAL_FLOW},
@@ -17,7 +17,7 @@ void FeatureTrackerParamHandler::declareParams(std::shared_ptr<dai::node::Featur
 
     };
     auto config = featureTracker->initialConfig.get();
-    config.motionEstimator.type = (motionEstMap.at(getParam<std::string>("i_motion_estimator", "LUCAS_KANADE_OPTICAL_FLOW")));
+    config.motionEstimator.type = (motionEstMap.at(declareAndLogParam<std::string>("i_motion_estimator", "LUCAS_KANADE_OPTICAL_FLOW")));
     featureTracker->initialConfig.set(config);
 }
 

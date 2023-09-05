@@ -24,7 +24,9 @@ NNParamHandler::NNParamHandler(ros::NodeHandle node, const std::string& name) : 
 NNParamHandler::~NNParamHandler() = default;
 std::string NNParamHandler::getConfigPath() {
     std::string configPath = ros::package::getPath("depthai_ros_driver") + "/config/nn/";
-    auto nnPath = getParam<std::string>("i_nn_config_path");
+    std::string default_nn_conf_name = "mobilenet.json";
+    std::string default_path = configPath + default_nn_conf_name;
+    auto nnPath = declareAndLogParam<std::string>("i_nn_config_path", default_path);
     if(nnPath == "depthai_ros_driver/yolo") {
         nnPath = configPath + "yolo.json";
     } else if(nnPath == "depthai_ros_driver/segmentation") {
@@ -52,6 +54,9 @@ nn::NNFamily NNParamHandler::getNNFamily() {
 void NNParamHandler::setNNParams(nlohmann::json data, std::shared_ptr<dai::node::NeuralNetwork> /*nn*/) {
     if(data["mappings"].contains("labels")) {
         labels = data["mappings"]["labels"].get<std::vector<std::string>>();
+        if(!labels.empty()) {
+            declareAndLogParam<std::vector<std::string>>("i_label_map", labels);
+        }
     }
 }
 
@@ -72,6 +77,9 @@ void NNParamHandler::setNNParams(nlohmann::json data, std::shared_ptr<dai::node:
     }
     if(data["mappings"].contains("labels")) {
         labels = data["mappings"]["labels"].get<std::vector<std::string>>();
+        if(!labels.empty()) {
+            declareAndLogParam<std::vector<std::string>>("i_label_map", labels);
+        }
     }
     setSpatialParams(nn);
 }
@@ -98,6 +106,9 @@ void NNParamHandler::setNNParams(nlohmann::json data, std::shared_ptr<dai::node:
     }
     if(data["mappings"].contains("labels")) {
         labels = data["mappings"]["labels"].get<std::vector<std::string>>();
+        if(!labels.empty()) {
+            declareAndLogParam<std::vector<std::string>>("i_label_map", labels);
+        }
     }
     if(data["nn_config"].contains("NN_specific_metadata")) {
         setYoloParams(data, nn);

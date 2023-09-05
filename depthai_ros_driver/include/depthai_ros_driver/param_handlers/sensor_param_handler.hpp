@@ -28,6 +28,7 @@ class SensorParamHandler : public BaseParamHandler {
    public:
     explicit SensorParamHandler(ros::NodeHandle node, const std::string& name);
     ~SensorParamHandler();
+    void declareCommonParams();
     void declareParams(std::shared_ptr<dai::node::MonoCamera> monoCam,
                        dai::CameraBoardSocket socket,
                        dai_nodes::sensor_helpers::ImageSensor sensor,

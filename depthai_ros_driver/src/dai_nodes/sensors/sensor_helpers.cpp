@@ -8,7 +8,7 @@
 namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace sensor_helpers {
-std::vector<ImageSensor> availableSensors{{"IMX378", "4k", {"12mp", "4k"}, true},
+std::vector<ImageSensor> availableSensors{{"IMX378", "1080p", {"12mp", "4k", "1080p"}, true},
                                           {"OV9282", "800p", {"800p", "720p", "400p"}, false},
                                           {"OV9782", "800p", {"800p", "720p", "400p"}, true},
                                           {"OV9281", "800p", {"800p", "720p", "400p"}, true},
