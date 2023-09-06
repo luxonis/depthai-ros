@@ -74,6 +74,7 @@ class BaseParamHandler {
 
     template <typename T>
     T declareAndLogParam(const std::string& paramName, const std::vector<T>& value, bool override = false) {
+        std::string fullName = getFullParamName(paramName);
         if(override || !baseNode.hasParam(fullName)) {
             return setParam(paramName, value);
         } else {
