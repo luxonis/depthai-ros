@@ -5,7 +5,7 @@
     <arg name="name" default="oak" />
     <arg name="rectify_rgb" default="false"/>
     <arg name="camera_model" default="OAK-D" />
-    <!-- 'zed' or 'zedm' -->
+
     <arg name="base_frame" default="oak-d_frame" />
     <arg name="parent_frame" default="oak-d-base-frame" />
 
