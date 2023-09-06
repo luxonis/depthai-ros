@@ -39,10 +39,9 @@ def launch_setup(context, *args, **kwargs):
                     package='depth_image_proc',
                     plugin='depth_image_proc::PointCloudXyziNode',
                     name='point_cloud_xyzi',
-
                     remappings=[('depth/image_rect', name+'/stereo/image_raw'),
-                                ('intensity/image_rect', name+'/right/image_raw'),
-                                ('intensity/camera_info', name+'/right/camera_info'),
+                                ('intensity/image_rect', name+'/right/image_rect'),
+                                ('intensity/camera_info', name+'/stereo/camera_info'),
                                 ('points', name+'/points')
                                 ]),
             ],

@@ -27,10 +27,21 @@ void SensorParamHandler::declareCommonParams() {
     declareAndLogParam<bool>("i_get_base_device_timestamp", false);
     declareAndLogParam<int>("i_board_socket_id", 0);
     declareAndLogParam<bool>("i_update_ros_base_time_on_ros_msg", false);
+    declareAndLogParam<bool>("i_enable_feature_tracker", false);
+    declareAndLogParam<bool>("i_enable_lazy_publisher", true);
+    declareAndLogParam<bool>("i_add_exposure_offset", false);
+    declareAndLogParam<int>("i_exposure_offset", 0);
     fSyncModeMap = {
         {"OFF", dai::CameraControl::FrameSyncMode::OFF},
         {"OUTPUT", dai::CameraControl::FrameSyncMode::OUTPUT},
         {"INPUT", dai::CameraControl::FrameSyncMode::INPUT},
+    };
+    cameraImageOrientationMap = {
+        {"NORMAL", dai::CameraImageOrientation::NORMAL},
+        {"ROTATE_180_DEG", dai::CameraImageOrientation::ROTATE_180_DEG},
+        {"AUTO", dai::CameraImageOrientation::AUTO},
+        {"HORIZONTAL_MIRROR", dai::CameraImageOrientation::HORIZONTAL_MIRROR},
+        {"VERTICAL_FLIP", dai::CameraImageOrientation::VERTICAL_FLIP},
     };
 }
 
@@ -64,22 +75,26 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> mo
     if(declareAndLogParam<bool>("i_fsync_trigger", false)) {
         monoCam->initialControl.setExternalTrigger(declareAndLogParam<int>("i_num_frames_burst", 1), declareAndLogParam<int>("i_num_frames_discard", 0));
     }
+    if(declareAndLogParam<bool>("i_set_isp3a_fps", false)) {
+        monoCam->setIsp3aFps(declareAndLogParam<int>("i_isp3a_fps", 10));
+    }
+    monoCam->setImageOrientation(utils::getValFromMap(declareAndLogParam<std::string>("i_sensor_img_orientation", "NORMAL"), cameraImageOrientationMap));
 }
 void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> colorCam,
                                        dai::CameraBoardSocket socket,
                                        dai_nodes::sensor_helpers::ImageSensor sensor,
                                        bool publish) {
-    rgbResolutionMap = {{"720", dai::ColorCameraProperties::SensorResolution::THE_720_P},
-                        {"1080", dai::ColorCameraProperties::SensorResolution::THE_1080_P},
-                        {"4K", dai::ColorCameraProperties::SensorResolution::THE_4_K},
-                        {"12MP", dai::ColorCameraProperties::SensorResolution::THE_12_MP},
-                        {"13MP", dai::ColorCameraProperties::SensorResolution::THE_13_MP},
-                        {"800", dai::ColorCameraProperties::SensorResolution::THE_800_P},
-                        {"1200", dai::ColorCameraProperties::SensorResolution::THE_1200_P},
+    rgbResolutionMap = {{"720p", dai::ColorCameraProperties::SensorResolution::THE_720_P},
+                        {"1080p", dai::ColorCameraProperties::SensorResolution::THE_1080_P},
+                        {"4k", dai::ColorCameraProperties::SensorResolution::THE_4_K},
+                        {"12mp", dai::ColorCameraProperties::SensorResolution::THE_12_MP},
+                        {"13mp", dai::ColorCameraProperties::SensorResolution::THE_13_MP},
+                        {"800p", dai::ColorCameraProperties::SensorResolution::THE_800_P},
+                        {"1200p", dai::ColorCameraProperties::SensorResolution::THE_1200_P},
                         {"5MP", dai::ColorCameraProperties::SensorResolution::THE_5_MP},
                         {"4000x3000", dai::ColorCameraProperties::SensorResolution::THE_4000X3000},
                         {"5312X6000", dai::ColorCameraProperties::SensorResolution::THE_5312X6000},
-                        {"48_MP", dai::ColorCameraProperties::SensorResolution::THE_48_MP},
+                        {"48mp", dai::ColorCameraProperties::SensorResolution::THE_48_MP},
                         {"1440X1080", dai::ColorCameraProperties::SensorResolution::THE_1440X1080}};
     declareAndLogParam<bool>("i_publish_topic", publish);
     declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket));
@@ -87,12 +102,25 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     declareAndLogParam<bool>("i_enable_preview", false);
     colorCam->setBoardSocket(socket);
     colorCam->setFps(declareAndLogParam<double>("i_fps", 30.0));
-    size_t preview_size = declareAndLogParam<int>("i_preview_size", 300);
-    colorCam->setPreviewSize(preview_size, preview_size);
-    auto resolution = utils::getValFromMap(declareAndLogParam<std::string>("i_resolution", "1080"), rgbResolutionMap);
-    int width, height;
-    colorCam->setResolution(resolution);
-    sensor.getSizeFromResolution(colorCam->getResolution(), width, height);
+    int preview_size = declareAndLogParam<int>("i_preview_size", 300);
+    int preview_width = declareAndLogParam<int>("i_preview_width", preview_size);
+    int preview_height = declareAndLogParam<int>("i_preview_height", preview_size);
+    colorCam->setPreviewSize(preview_width, preview_height);
+    auto resString = declareAndLogParam<std::string>("i_resolution", sensor.defaultResolution);
+
+    // if resolution not in allowed resolutions, use default
+    if(std::find(sensor.allowedResolutions.begin(), sensor.allowedResolutions.end(), resString) == sensor.allowedResolutions.end()) {
+        RCLCPP_WARN(getROSNode()->get_logger(),
+                    "Resolution %s not supported by sensor %s. Using default resolution %s",
+                    resString.c_str(),
+                    sensor.name.c_str(),
+                    sensor.defaultResolution.c_str());
+        resString = sensor.defaultResolution;
+    }
+
+    int width = colorCam->getResolutionWidth();
+    int height = colorCam->getResolutionHeight();
+    colorCam->setResolution(utils::getValFromMap(resString, rgbResolutionMap));
 
     colorCam->setInterleaved(declareAndLogParam<bool>("i_interleaved", false));
     if(declareAndLogParam<bool>("i_set_isp_scale", true)) {
@@ -131,6 +159,10 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     if(declareAndLogParam<bool>("i_fsync_trigger", false)) {
         colorCam->initialControl.setExternalTrigger(declareAndLogParam<int>("i_num_frames_burst", 1), declareAndLogParam<int>("i_num_frames_discard", 0));
     }
+    if(declareAndLogParam<bool>("i_set_isp3a_fps", false)) {
+        colorCam->setIsp3aFps(declareAndLogParam<int>("i_isp3a_fps", 10));
+    }
+    colorCam->setImageOrientation(utils::getValFromMap(declareAndLogParam<std::string>("i_sensor_img_orientation", "NORMAL"), cameraImageOrientationMap));
 }
 dai::CameraControl SensorParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& params) {
     dai::CameraControl ctrl;

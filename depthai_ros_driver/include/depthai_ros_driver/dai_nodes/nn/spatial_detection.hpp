@@ -76,7 +76,7 @@ class SpatialDetection : public BaseNode {
                                                                   height));
 
             ptPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/passthrough/image_raw");
-            ptQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *ptImageConverter, ptPub, ptInfoMan));
+            ptQ->addCallback(std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *ptImageConverter, ptPub, ptInfoMan));
         }
 
         if(ph->getParam<bool>("i_enable_passthrough_depth")) {
@@ -98,7 +98,7 @@ class SpatialDetection : public BaseNode {
 
             ptDepthPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/passthrough_depth/image_raw");
             ptDepthQ->addCallback(
-                std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *ptDepthImageConverter, ptDepthPub, ptDepthInfoMan));
+                std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *ptDepthImageConverter, ptDepthPub, ptDepthInfoMan));
         }
     };
     void link(dai::Node::Input in, int /*linkType = 0*/) override {

@@ -16,7 +16,6 @@ def launch_setup(context, *args, **kwargs):
 
     name = LaunchConfiguration('name').perform(context)
     rgb_topic_name = name+'/rgb/image_raw'
-    print(LaunchConfiguration('rectify_rgb').perform(context))
     if LaunchConfiguration('rectify_rgb').perform(context)=='true':
         rgb_topic_name = name +'/rgb/image_rect'
     return [

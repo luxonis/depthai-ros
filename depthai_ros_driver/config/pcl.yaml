@@ -2,8 +2,7 @@
   ros__parameters:
     camera:
       i_nn_type: none
-    right:
-      i_publish_topic: true
     stereo:
       i_align_depth: false
       i_subpixel: true
+      i_publish_right_rect: true
