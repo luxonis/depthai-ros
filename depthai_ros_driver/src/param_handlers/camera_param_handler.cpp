@@ -35,9 +35,8 @@ void CameraParamHandler::declareParams() {
     declareAndLogParam<std::string>("i_external_calibration_path", "");
     declareAndLogParam("i_laser_dot_brightness", 800, getRangedIntDescriptor(0, 1200));
     declareAndLogParam("i_floodlight_brightness", 0, getRangedIntDescriptor(0, 1500));
-
     declareAndLogParam<bool>("i_publish_tf_from_calibration", false);
-    declareAndLogParam<std::string>("i_tf_camera_name", getROSNode().getNamespace());
+    declareAndLogParam<std::string>("i_tf_camera_name", "oak");
     declareAndLogParam<std::string>("i_tf_camera_model", "");
     declareAndLogParam<std::string>("i_tf_base_frame", "oak");
     declareAndLogParam<std::string>("i_tf_parent_frame", "oak-d-base-frame");

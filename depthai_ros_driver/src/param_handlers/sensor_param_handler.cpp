@@ -49,17 +49,17 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> mo
                                        dai_nodes::sensor_helpers::ImageSensor,
                                        bool publish) {
     monoResolutionMap = {
-        {"400p", dai::MonoCameraProperties::SensorResolution::THE_400_P},
-        {"480p", dai::MonoCameraProperties::SensorResolution::THE_480_P},
-        {"720p", dai::MonoCameraProperties::SensorResolution::THE_720_P},
-        {"800p", dai::MonoCameraProperties::SensorResolution::THE_800_P},
-        {"1200p", dai::MonoCameraProperties::SensorResolution::THE_1200_P},
+        {"400", dai::MonoCameraProperties::SensorResolution::THE_400_P},
+        {"480", dai::MonoCameraProperties::SensorResolution::THE_480_P},
+        {"720", dai::MonoCameraProperties::SensorResolution::THE_720_P},
+        {"800", dai::MonoCameraProperties::SensorResolution::THE_800_P},
+        {"1200", dai::MonoCameraProperties::SensorResolution::THE_1200_P},
     };
     declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket), true);
     monoCam->setBoardSocket(socket);
     monoCam->setFps(declareAndLogParam<double>("i_fps", 30.0));
     declareAndLogParam<bool>("i_publish_topic", publish);
-    monoCam->setResolution(utils::getValFromMap(declareAndLogParam<std::string>("i_resolution", "720p"), monoResolutionMap));
+    monoCam->setResolution(utils::getValFromMap(declareAndLogParam<std::string>("i_resolution", "720"), monoResolutionMap));
     declareAndLogParam<int>("i_width", monoCam->getResolutionWidth());
     declareAndLogParam<int>("i_height", monoCam->getResolutionHeight());
     size_t iso = declareAndLogParam("r_iso", 800, getRangedIntDescriptor(100, 1600));
@@ -97,7 +97,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
                         {"48mp", dai::ColorCameraProperties::SensorResolution::THE_48_MP},
                         {"1440X1080", dai::ColorCameraProperties::SensorResolution::THE_1440X1080}};
     declareAndLogParam<bool>("i_publish_topic", publish);
-    declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket));
+    declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket), true);
     declareAndLogParam<bool>("i_output_isp", true);
     declareAndLogParam<bool>("i_enable_preview", false);
     colorCam->setBoardSocket(socket);
@@ -110,16 +110,14 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
 
     // if resolution not in allowed resolutions, use default
     if(std::find(sensor.allowedResolutions.begin(), sensor.allowedResolutions.end(), resString) == sensor.allowedResolutions.end()) {
-        ROS_WARN("Resolution %s not supported by sensor %s. Using default resolution %s",
-                    resString.c_str(),
-                    sensor.name.c_str(),
-                    sensor.defaultResolution.c_str());
+        ROS_WARN(
+            "Resolution %s not supported by sensor %s. Using default resolution %s", resString.c_str(), sensor.name.c_str(), sensor.defaultResolution.c_str());
         resString = sensor.defaultResolution;
     }
 
+    colorCam->setResolution(utils::getValFromMap(resString, rgbResolutionMap));
     int width = colorCam->getResolutionWidth();
     int height = colorCam->getResolutionHeight();
-    colorCam->setResolution(utils::getValFromMap(resString, rgbResolutionMap));
 
     colorCam->setInterleaved(declareAndLogParam<bool>("i_interleaved", false));
     if(declareAndLogParam<bool>("i_set_isp_scale", true)) {
@@ -134,7 +132,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
             err_stream << " which are not divisible by 16.\n";
             err_stream << "This will result in errors when aligning stereo to RGB. To fix that, either adjust i_num and i_den values";
             err_stream << " or set i_output_isp parameter to false and set i_width and i_height parameters accordingly.";
-            ROS_ERROR( err_stream.str().c_str());
+            ROS_ERROR(err_stream.str().c_str());
         }
     }
     colorCam->setVideoSize(declareAndLogParam<int>("i_width", width), declareAndLogParam<int>("i_height", height));

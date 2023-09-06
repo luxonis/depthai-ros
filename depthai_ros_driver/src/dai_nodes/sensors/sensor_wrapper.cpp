@@ -58,7 +58,7 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
             sensorNode = std::make_unique<Mono>(daiNodeName, node, pipeline, socket, (*sensorIt), publish);
         }
     }
-        if(ph->getParam<bool>("i_enable_feature_tracker")) {
+    if(ph->getParam<bool>("i_enable_feature_tracker")) {
         featureTrackerNode = std::make_unique<FeatureTracker>(daiNodeName + std::string("_feature_tracker"), node, pipeline);
         sensorNode->link(featureTrackerNode->getInput());
     }
@@ -93,7 +93,7 @@ void SensorWrapper::setupQueues(std::shared_ptr<dai::Device> device) {
     if(!ph->getParam<bool>("i_disable_node")) {
         sensorNode->setupQueues(device);
     }
-        if(ph->getParam<bool>("i_enable_feature_tracker")) {
+    if(ph->getParam<bool>("i_enable_feature_tracker")) {
         featureTrackerNode->setupQueues(device);
     }
 }
@@ -104,7 +104,7 @@ void SensorWrapper::closeQueues() {
     if(!ph->getParam<bool>("i_disable_node")) {
         sensorNode->closeQueues();
     }
-        if(ph->getParam<bool>("i_enable_feature_tracker")) {
+    if(ph->getParam<bool>("i_enable_feature_tracker")) {
         featureTrackerNode->closeQueues();
     }
 }

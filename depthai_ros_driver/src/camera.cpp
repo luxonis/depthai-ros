@@ -5,27 +5,27 @@
 
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
+#include "depthai_bridge/TFPublisher.hpp"
 #include "depthai_ros_driver/pipeline/pipeline_generator.hpp"
 #include "dynamic_reconfigure/server.h"
 #include "nodelet/nodelet.h"
 #include "pluginlib/class_list_macros.h"
-#include "depthai_bridge/TFPublisher.hpp"
 
 namespace depthai_ros_driver {
 
 void Camera::onInit() {
     pNH = getPrivateNodeHandle();
-    paramServer = std::make_shared<dynamic_reconfigure::Server<parametersConfig>>(pNH);
-    paramServer->setCallback(std::bind(&Camera::parameterCB, this, std::placeholders::_1, std::placeholders::_2));
     ph = std::make_unique<param_handlers::CameraParamHandler>(pNH, "camera");
     ph->declareParams();
+    paramServer = std::make_shared<dynamic_reconfigure::Server<parametersConfig>>(pNH);
+    paramServer->setCallback(std::bind(&Camera::parameterCB, this, std::placeholders::_1, std::placeholders::_2));
     onConfigure();
     startSrv = pNH.advertiseService("start_camera", &Camera::startCB, this);
     stopSrv = pNH.advertiseService("stop_camera", &Camera::stopCB, this);
     savePipelineSrv = pNH.advertiseService("save_pipeline", &Camera::startCB, this);
     saveCalibSrv = pNH.advertiseService("save_calibration", &Camera::stopCB, this);
 
-        // If model name not set get one from the device
+    // If model name not set get one from the device
     std::string camModel = ph->getParam<std::string>("i_tf_camera_model");
     if(camModel.empty()) {
         camModel = device->getDeviceName();
@@ -49,13 +49,12 @@ void Camera::onInit() {
                                                         ph->getParam<std::string>("i_tf_custom_urdf_location"),
                                                         ph->getParam<std::string>("i_tf_custom_xacro_args"));
     }
-    diagSub =pNH.subscribe("/diagnostics", 1, &Camera::diagCB, this);
-
+    diagSub = pNH.subscribe("/diagnostics", 1, &Camera::diagCB, this);
 }
 
 void Camera::diagCB(const diagnostic_msgs::DiagnosticArray::ConstPtr& msg) {
     for(const auto& status : msg->status) {
-        std::string nodeletName= pNH.getNamespace()+"_nodelet_manager";
+        std::string nodeletName = pNH.getNamespace() + "_nodelet_manager";
         nodeletName.erase(nodeletName.begin());
         if(status.name == nodeletName + std::string(": sys_logger")) {
             if(status.level == diagnostic_msgs::DiagnosticStatus::ERROR) {
@@ -67,16 +66,16 @@ void Camera::diagCB(const diagnostic_msgs::DiagnosticArray::ConstPtr& msg) {
 }
 
 void Camera::start() {
-    ROS_INFO( "Starting camera.");
+    ROS_INFO("Starting camera.");
     if(!camRunning) {
         onConfigure();
     } else {
-        ROS_INFO( "Camera already running!.");
+        ROS_INFO("Camera already running!.");
     }
 }
 
 void Camera::stop() {
-    ROS_INFO( "Stopping camera.");
+    ROS_INFO("Stopping camera.");
     if(camRunning) {
         for(const auto& node : daiNodes) {
             node->closeQueues();
@@ -86,12 +85,12 @@ void Camera::stop() {
         pipeline.reset();
         camRunning = false;
     } else {
-        ROS_INFO( "Camera already stopped!");
+        ROS_INFO("Camera already stopped!");
     }
 }
 
 void Camera::restart() {
-    ROS_INFO( "Restarting camera");
+    ROS_INFO("Restarting camera");
     stop();
     start();
     if(camRunning) {

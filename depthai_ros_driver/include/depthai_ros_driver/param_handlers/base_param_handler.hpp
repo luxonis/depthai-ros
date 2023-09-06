@@ -74,45 +74,37 @@ class BaseParamHandler {
 
     template <typename T>
     T declareAndLogParam(const std::string& paramName, const std::vector<T>& value, bool override = false) {
-        std::string fullName = getFullParamName(paramName);
-        if(baseNode.hasParam(fullName)) {
-            if(override) {
-                setParam(paramName, value);
-            }
-            return getParam<T>(paramName);
+        if(override || !baseNode.hasParam(fullName)) {
+            return setParam(paramName, value);
         } else {
-            setParam(paramName, value);
-            return value;
+            return getParam<T>(paramName);
         }
     }
 
     template <typename T>
     T declareAndLogParam(const std::string& paramName, T value, bool override = false) {
         std::string fullName = getFullParamName(paramName);
-        if(baseNode.hasParam(fullName)) {
-            if(override) {
-                setParam(paramName, value);
-            }
-            return getParam<T>(paramName);
+        if(override || !baseNode.hasParam(fullName)) {
+            return setParam(paramName, value);
         } else {
-            setParam(paramName, value);
-            return value;
+            return getParam<T>(paramName);
         }
     }
     int declareAndLogParam(const std::string& paramName, int value, std::pair<int, int> int_range, bool override = false) {
         std::string fullName = getFullParamName(paramName);
-        if(baseNode.hasParam(fullName)) {
-            if(override) {
-                setParam(paramName, value);
-            }
-            return getParam<int>(paramName);
-        } else {
+        if(override || !baseNode.hasParam(fullName)) {
             if(value < int_range.first || value > int_range.second) {
-                ROS_WARN("Param %s with value %d is out of range [%d, %d]", fullName.c_str(), value, int_range.first, int_range.second);
-                return int_range.first;
+                ROS_WARN("Param %s with value %d is out of range [%d, %d]. Setting value %d",
+                         fullName.c_str(),
+                         value,
+                         int_range.first,
+                         int_range.second,
+                         int_range.first);
+                value = int_range.first;
             }
-            setParam(paramName, value);
-            return value;
+            return setParam(paramName, value);
+        } else {
+            return getParam<int>(paramName);
         }
     }
 

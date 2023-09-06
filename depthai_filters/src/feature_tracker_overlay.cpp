@@ -14,8 +14,7 @@ void FeatureTrackerOverlay::onInit() {
     overlayPub = pNH.advertise<sensor_msgs::Image>("overlay", 10);
 }
 
-void FeatureTrackerOverlay::overlayCB(const sensor_msgs::ImageConstPtr& img,
-                                      const depthai_ros_msgs::TrackedFeaturesConstPtr& features) {
+void FeatureTrackerOverlay::overlayCB(const sensor_msgs::ImageConstPtr& img, const depthai_ros_msgs::TrackedFeaturesConstPtr& features) {
     cv::Mat imgMat = utils::msgToMat(img, sensor_msgs::image_encodings::BGR8);
     std::vector<depthai_ros_msgs::TrackedFeature> f = features->features;
     trackFeaturePath(f);

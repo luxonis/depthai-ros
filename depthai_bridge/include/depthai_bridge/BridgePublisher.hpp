@@ -226,7 +226,7 @@ void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDa
     }
     mainSubCount = _rosPublisher->getNumSubscribers();
 
-    if(!_lazyPublisher ||( mainSubCount > 0 || infoSubCount > 0)) {
+    if(!_lazyPublisher || (mainSubCount > 0 || infoSubCount > 0)) {
         _converter(inDataPtr, opMsgs);
 
         while(opMsgs.size()) {

@@ -60,6 +60,7 @@ void Stereo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     if(ph->getParam<bool>("i_publish_topic")) {
         xoutStereo = pipeline->create<dai::node::XLinkOut>();
         xoutStereo->setStreamName(stereoQName);
+        xoutStereo->input.setBlocking(false);
         if(ph->getParam<bool>("i_low_bandwidth")) {
             stereoEnc = sensor_helpers::createEncoder(pipeline, ph->getParam<int>("i_low_bandwidth_quality"));
             stereoCamNode->disparity.link(stereoEnc->input);
@@ -244,8 +245,7 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_publish_synced_rect_pair")) {
         int timerPeriod = 1000.0 / ph->getOtherNodeParam<double>(leftSensInfo.name, "i_fps");
         ROS_INFO("Setting up stereo pair sync timer with period %d ms based on left sensor FPS.", timerPeriod);
-        syncTimer =
-            std::make_shared<ros::Timer>(getROSNode().createTimer(ros::Duration(1.0/timerPeriod), std::bind(&Stereo::syncTimerCB, this)));
+        syncTimer = std::make_shared<ros::Timer>(getROSNode().createTimer(ros::Duration(1.0 / timerPeriod), std::bind(&Stereo::syncTimerCB, this)));
     }
     if(ph->getParam<bool>("i_left_rect_enable_feature_tracker")) {
         featureTrackerLeftR->setupQueues(device);

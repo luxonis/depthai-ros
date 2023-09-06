@@ -21,9 +21,12 @@
     <arg name="cam_yaw" default="0.0" />
     <!-- Orientation respect to base frame (i.e. "base_link) -->
 
+    <arg name="launch_prefix" default=""/>
+
+
     <rosparam file="$(arg params_file)" />
     <node pkg="rosservice" if="$(optenv DEPTHAI_DEBUG 0)" type="rosservice" name="set_log_level" args="call --wait /oak_nodelet_manager/set_logger_level 'ros.depthai_ros_driver' 'debug'" />
-    <include file="$(find depthai_descriptions)/launch/urdf.launch">
+    <!-- <include file="$(find depthai_descriptions)/launch/urdf.launch">
         <arg name="base_frame" value="$(arg  name)" />
         <arg name="parent_frame" value="$(arg  parent_frame)"/>
         <arg name="camera_model" value="$(arg  camera_model)"/>
@@ -34,9 +37,9 @@
         <arg name="cam_roll" value="$(arg  cam_roll)" />
         <arg name="cam_pitch" value="$(arg  cam_pitch)" />
         <arg name="cam_yaw" value="$(arg  cam_yaw)" />
-    </include>
+    </include> -->
 
-    <node pkg="nodelet" type="nodelet" name="$(arg  name)_nodelet_manager" args="manager" output="screen">
+    <node pkg="nodelet" type="nodelet" name="$(arg  name)_nodelet_manager"  launch-prefix="$(arg launch_prefix)" args="manager" output="screen">
         <remap from="/nodelet_manager/load_nodelet" to="$(arg name)/nodelet_manager/load_nodelet"/>
         <remap from="/nodelet_manager/unload_nodelet" to="$(arg name)/nodelet_manager/unload_nodelet"/>
         <remap from="/nodelet_manager/list" to="$(arg name)/nodelet_manager/list"/>

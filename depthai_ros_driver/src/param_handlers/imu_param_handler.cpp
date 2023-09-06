@@ -17,6 +17,7 @@ void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const s
     imuMessagetTypeMap = {
         {"IMU", imu::ImuMsgType::IMU}, {"IMU_WITH_MAG", imu::ImuMsgType::IMU_WITH_MAG}, {"IMU_WITH_MAG_SPLIT", imu::ImuMsgType::IMU_WITH_MAG_SPLIT}};
     declareAndLogParam<bool>("i_get_base_device_timestamp", false);
+    declareAndLogParam<int>("i_max_q_size", 30);
     declareAndLogParam<std::string>("i_message_type", "IMU");
     declareAndLogParam<std::string>("i_sync_method", "LINEAR_INTERPOLATE_ACCEL");
     declareAndLogParam<float>("i_acc_cov", 0.0);

@@ -24,7 +24,7 @@ class VideoEncoder;
 namespace ros {
 class ImageConverter;
 class Timer;
-}
+}  // namespace ros
 }  // namespace dai
 
 namespace camera_info_manager {

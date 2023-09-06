@@ -3,7 +3,6 @@
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_msgs/TrackedFeatures.h"
 
-
 namespace dai {
 class Pipeline;
 class Device;

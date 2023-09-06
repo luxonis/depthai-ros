@@ -8,7 +8,6 @@
 
 namespace depthai_filters {
 
-
 void Features3D::onInit() {
     auto pNH = getPrivateNodeHandle();
     depthSub.subscribe(pNH, "/stereo/image_raw", 1);
