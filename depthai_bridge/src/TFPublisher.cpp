@@ -15,11 +15,11 @@
 #include "kdl_parser/kdl_parser.hpp"
 #include "nlohmann/json.hpp"
 #include "ros/node_handle.h"
+#include "ros/package.h"
 #include "tf2/LinearMath/Matrix3x3.h"
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include "urdf/model.h"
-#include "ros/package.h"
 
 namespace dai {
 namespace ros {
@@ -57,14 +57,14 @@ TFPublisher::TFPublisher(::ros::NodeHandle node,
 
     auto json = calHandler.eepromToJson();
     auto camData = json["cameraData"];
-    publishDescription();
+    publishDescription(node);
     publishCamTransforms(camData, node);
     if(_imuFromDescr != "true") {
         publishImuTransform(json, node);
     }
 }
 
-void TFPublisher::publishDescription() {
+void TFPublisher::publishDescription(::ros::NodeHandle node) {
     auto urdf = getURDF();
     urdf::Model model;
     model.initString(urdf);
@@ -73,7 +73,9 @@ void TFPublisher::publishDescription() {
         ROS_ERROR("Failed to extract kdl tree from xml robot description");
         throw std::runtime_error("Failed to extract kdl tree from xml robot description");
     }
-    auto robotStatePub = std::make_shared<robot_state_publisher::RobotStatePublisher>(tree, model);
+    _rsp = std::make_shared<robot_state_publisher::RobotStatePublisher>(tree, model);
+    _rsp->publishFixedTransforms(true);
+    node.setParam("robot_description", urdf);
     ROS_INFO("Published URDF");
 }
 
@@ -128,6 +130,8 @@ void TFPublisher::publishImuTransform(nlohmann::json json, ::ros::NodeHandle nod
     bool zeroRot = ts.transform.rotation.w == 1 && ts.transform.rotation.x == 0 && ts.transform.rotation.y == 0 && ts.transform.rotation.z == 0;
     if(zeroTrans || zeroRot) {
         ROS_WARN("IMU extrinsics appear to be default. Check if the IMU is calibrated.");
+        ts.transform.rotation.w = 1.0;
+        ts.transform.rotation.x = 0.0;
     }
     _tfPub->sendTransform(ts);
 }
@@ -175,7 +179,7 @@ geometry_msgs::Quaternion TFPublisher::quatFromRotM(nlohmann::json rotMatrix) {
 }
 
 bool TFPublisher::modelNameAvailable() {
-    std::string path = ::ros::package::getPath("depthai_descriptions")+ "/urdf/models/";
+    std::string path = ::ros::package::getPath("depthai_descriptions") + "/urdf/models/";
     DIR* dir;
     struct dirent* ent;
     convertModelName();
@@ -245,7 +249,7 @@ std::string TFPublisher::getURDF() {
         args = _customXacroArgs;
     }
     if(_customURDFLocation.empty()) {
-        path = ::ros::package::getPath("depthai_descriptions") +"/urdf/base_descr.urdf.xacro ";
+        path = ::ros::package::getPath("depthai_descriptions") + "/urdf/base_descr.urdf.xacro ";
     } else {
         path = _customURDFLocation + " ";
     }

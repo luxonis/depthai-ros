@@ -4,9 +4,9 @@
 #include "geometry_msgs/Quaternion.h"
 #include "geometry_msgs/TransformStamped.h"
 #include "nlohmann/json.hpp"
+#include "robot_state_publisher/robot_state_publisher.h"
 #include "ros/node_handle.h"
 #include "tf2_ros/static_transform_broadcaster.h"
-#include "robot_state_publisher/robot_state_publisher.h"
 
 namespace dai {
 namespace ros {
@@ -47,7 +47,7 @@ class TFPublisher {
     /*
      * @brief Get URDF description and set it as a parameter for robot_state_publisher
      */
-    void publishDescription();
+    void publishDescription(::ros::NodeHandle node);
     /*
      * @brief Publish camera transforms ("standard" and optical) based on calibration data.
      * Frame names are based on socket names and use following convention: [base_frame]_[socket_name]_camera_frame and
