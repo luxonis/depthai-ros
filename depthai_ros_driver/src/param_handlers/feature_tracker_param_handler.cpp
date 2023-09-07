@@ -21,7 +21,7 @@ void FeatureTrackerParamHandler::declareParams(std::shared_ptr<dai::node::Featur
     featureTracker->initialConfig.set(config);
 }
 
-dai::CameraControl FeatureTrackerParamHandler::setRuntimeParams(parametersConfig& config) {
+dai::CameraControl FeatureTrackerParamHandler::setRuntimeParams(parametersConfig& /*config*/) {
     dai::CameraControl ctrl;
     return ctrl;
 }
