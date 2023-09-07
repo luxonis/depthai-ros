@@ -51,7 +51,7 @@ void BaseNode::link(dai::Node::Input /*in*/, int /*linkType = 0*/) {
     throw(std::runtime_error("link() not implemented"));
 }
 
-void BaseNode::updateParams(parametersConfig& config) {
+void BaseNode::updateParams(parametersConfig& /*config*/) {
     return;
 }
 }  // namespace dai_nodes
