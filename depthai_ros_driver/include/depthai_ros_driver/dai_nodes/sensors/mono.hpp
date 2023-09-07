@@ -4,6 +4,8 @@
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "image_transport/camera_publisher.h"
 #include "image_transport/image_transport.h"
+#include "sensor_msgs/CameraInfo.h"
+#include "sensor_msgs/Image.h"
 
 namespace dai {
 class Pipeline;
@@ -55,7 +57,7 @@ class Mono : public BaseNode {
    private:
     std::unique_ptr<dai::ros::ImageConverter> imageConverter;
     image_transport::ImageTransport it;
-    image_transport::CameraPublisher monoPub;
+    image_transport::CameraPublisher monoPubIT;
     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
     std::shared_ptr<dai::node::MonoCamera> monoCamNode;
     std::shared_ptr<dai::node::VideoEncoder> videoEnc;

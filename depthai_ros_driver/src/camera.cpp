@@ -5,6 +5,7 @@
 
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
+#include "depthai_bridge/TFPublisher.hpp"
 #include "depthai_ros_driver/pipeline/pipeline_generator.hpp"
 #include "dynamic_reconfigure/server.h"
 #include "nodelet/nodelet.h"
@@ -14,15 +15,89 @@ namespace depthai_ros_driver {
 
 void Camera::onInit() {
     pNH = getPrivateNodeHandle();
-    paramServer = std::make_shared<dynamic_reconfigure::Server<parametersConfig>>(pNH);
-    paramServer->setCallback(std::bind(&Camera::parameterCB, this, std::placeholders::_1, std::placeholders::_2));
     ph = std::make_unique<param_handlers::CameraParamHandler>(pNH, "camera");
     ph->declareParams();
+    paramServer = std::make_shared<dynamic_reconfigure::Server<parametersConfig>>(pNH);
+    paramServer->setCallback(std::bind(&Camera::parameterCB, this, std::placeholders::_1, std::placeholders::_2));
     onConfigure();
     startSrv = pNH.advertiseService("start_camera", &Camera::startCB, this);
     stopSrv = pNH.advertiseService("stop_camera", &Camera::stopCB, this);
     savePipelineSrv = pNH.advertiseService("save_pipeline", &Camera::startCB, this);
     saveCalibSrv = pNH.advertiseService("save_calibration", &Camera::stopCB, this);
+
+    // If model name not set get one from the device
+    std::string camModel = ph->getParam<std::string>("i_tf_camera_model");
+    if(camModel.empty()) {
+        camModel = device->getDeviceName();
+    }
+
+    if(ph->getParam<bool>("i_publish_tf_from_calibration")) {
+        tfPub = std::make_unique<dai::ros::TFPublisher>(pNH,
+                                                        device->readCalibration(),
+                                                        device->getConnectedCameraFeatures(),
+                                                        ph->getParam<std::string>("i_tf_camera_name"),
+                                                        camModel,
+                                                        ph->getParam<std::string>("i_tf_base_frame"),
+                                                        ph->getParam<std::string>("i_tf_parent_frame"),
+                                                        ph->getParam<std::string>("i_tf_cam_pos_x"),
+                                                        ph->getParam<std::string>("i_tf_cam_pos_y"),
+                                                        ph->getParam<std::string>("i_tf_cam_pos_z"),
+                                                        ph->getParam<std::string>("i_tf_cam_roll"),
+                                                        ph->getParam<std::string>("i_tf_cam_pitch"),
+                                                        ph->getParam<std::string>("i_tf_cam_yaw"),
+                                                        ph->getParam<std::string>("i_tf_imu_from_descr"),
+                                                        ph->getParam<std::string>("i_tf_custom_urdf_location"),
+                                                        ph->getParam<std::string>("i_tf_custom_xacro_args"));
+    }
+    diagSub = pNH.subscribe("/diagnostics", 1, &Camera::diagCB, this);
+}
+
+void Camera::diagCB(const diagnostic_msgs::DiagnosticArray::ConstPtr& msg) {
+    for(const auto& status : msg->status) {
+        std::string nodeletName = pNH.getNamespace() + "_nodelet_manager";
+        nodeletName.erase(nodeletName.begin());
+        if(status.name == nodeletName + std::string(": sys_logger")) {
+            if(status.level == diagnostic_msgs::DiagnosticStatus::ERROR) {
+                ROS_ERROR("Camera diagnostics error: %s", status.message.c_str());
+                restart();
+            }
+        }
+    }
+}
+
+void Camera::start() {
+    ROS_INFO("Starting camera.");
+    if(!camRunning) {
+        onConfigure();
+    } else {
+        ROS_INFO("Camera already running!.");
+    }
+}
+
+void Camera::stop() {
+    ROS_INFO("Stopping camera.");
+    if(camRunning) {
+        for(const auto& node : daiNodes) {
+            node->closeQueues();
+        }
+        daiNodes.clear();
+        device.reset();
+        pipeline.reset();
+        camRunning = false;
+    } else {
+        ROS_INFO("Camera already stopped!");
+    }
+}
+
+void Camera::restart() {
+    ROS_INFO("Restarting camera");
+    stop();
+    start();
+    if(camRunning) {
+        return;
+    } else {
+        ROS_ERROR("Restarting camera failed.");
+    }
 }
 
 void Camera::saveCalib() {
@@ -61,28 +136,12 @@ bool Camera::savePipelineCB(Trigger::Request& /*req*/, Trigger::Response& res) {
 }
 
 bool Camera::startCB(Trigger::Request& /*req*/, Trigger::Response& res) {
-    ROS_INFO("Starting camera!");
-    if(!camRunning) {
-        onConfigure();
-    } else {
-        ROS_INFO("Camera already running!.");
-    }
+    start();
     res.success = true;
     return true;
 }
 bool Camera::stopCB(Trigger::Request& /*req*/, Trigger::Response& res) {
-    ROS_INFO("Stopping camera!");
-    if(camRunning) {
-        for(const auto& node : daiNodes) {
-            node->closeQueues();
-        }
-        daiNodes.clear();
-        device.reset();
-        pipeline.reset();
-        camRunning = false;
-    } else {
-        ROS_INFO("Camera already stopped!");
-    }
+    stop();
     res.success = true;
     return true;
 }
@@ -192,14 +251,13 @@ void Camera::startDevice() {
                     } else if(!usb_id.empty() && info.name == usb_id) {
                         ROS_INFO("Connecting to the camera using USB ID: %s", usb_id.c_str());
                         if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
-                            device = std::make_shared<dai::Device>(info);
+                            device = std::make_shared<dai::Device>(info, speed);
                             camRunning = true;
                         } else if(info.state == X_LINK_BOOTED) {
                             throw std::runtime_error("Device is already booted in different process.");
                         }
                     } else {
-                        ROS_ERROR("Device info: MXID: %s, Name: %s", info.getMxId().c_str(), info.name.c_str());
-                        throw std::runtime_error("Unable to connect to the device, check if parameters match with given info.");
+                        ROS_INFO("Ignoring device info: MXID: %s, Name: %s", info.getMxId().c_str(), info.name.c_str());
                     }
                 }
             }

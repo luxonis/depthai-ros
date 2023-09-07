@@ -128,7 +128,7 @@ docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X1
 Will only start `stereo_inertial_node` launch file (you can try different commands).
 ### Running docker image on ROS2
 ``` bash
-docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai_ros roslaunch depthai_examples stereo_inertial_node.launch.py
+docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix depthai_ros ros2 launch depthai_examples stereo_inertial_node.launch.py
 ```
 
 

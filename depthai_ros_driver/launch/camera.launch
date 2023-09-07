@@ -1,10 +1,14 @@
 <?xml version="1.0"?>
 <launch>
 
+    <arg name="pass_tf_args_as_params" default="false" />
+    <arg name="imu_from_descr" default="false" />
+    <arg name="override_cam_model" default="false" />
+
     <arg name="name" default="oak" />
     <arg name="params_file" default="$(find depthai_ros_driver)/config/camera.yaml"/>
     <arg name="camera_model" default="OAK-D" />
-    <!-- 'zed' or 'zedm' -->
+
     <arg name="base_frame" default="oak-d_frame" />
     <arg name="parent_frame" default="oak-d-base-frame" />
 
@@ -21,9 +25,24 @@
     <arg name="cam_yaw" default="0.0" />
     <!-- Orientation respect to base frame (i.e. "base_link) -->
 
+    <param name="$(arg name)/camera_i_camera_model" value="$(arg camera_model)" if="$(arg override_cam_model)"/> 
+    <param name="$(arg name)/camera_i_base_frame" value="$(arg base_frame)"/>
+    <param name="$(arg name)/camera_i_parent_frame" value="$(arg parent_frame)"/>
+    <param name="$(arg name)/camera_i_cam_pos_x" value="$(arg cam_pos_x)"/>
+    <param name="$(arg name)/camera_i_cam_pos_y" value="$(arg cam_pos_y)"/>
+    <param name="$(arg name)/camera_i_cam_pos_z" value="$(arg cam_pos_z)"/>
+    <param name="$(arg name)/camera_i_cam_roll" value="$(arg cam_roll)"/>
+    <param name="$(arg name)/camera_i_cam_pitch" value="$(arg cam_pitch)"/>
+    <param name="$(arg name)/camera_i_cam_yaw" value="$(arg cam_yaw)"/>
+    <param name="$(arg name)/camera_i_imu_from_descr" value="$(arg imu_from_descr)"/>
+    <param name="$(arg name)/camera_i_publish_tf_from_calibration" value="$(arg pass_tf_args_as_params)"/>
+
+    <arg name="launch_prefix" default=""/>
+
+
     <rosparam file="$(arg params_file)" />
     <node pkg="rosservice" if="$(optenv DEPTHAI_DEBUG 0)" type="rosservice" name="set_log_level" args="call --wait /oak_nodelet_manager/set_logger_level 'ros.depthai_ros_driver' 'debug'" />
-    <include file="$(find depthai_descriptions)/launch/urdf.launch">
+    <include unless="$(arg pass_tf_args_as_params)" file="$(find depthai_descriptions)/launch/urdf.launch">
         <arg name="base_frame" value="$(arg  name)" />
         <arg name="parent_frame" value="$(arg  parent_frame)"/>
         <arg name="camera_model" value="$(arg  camera_model)"/>
@@ -36,7 +55,7 @@
         <arg name="cam_yaw" value="$(arg  cam_yaw)" />
     </include>
 
-    <node pkg="nodelet" type="nodelet" name="$(arg  name)_nodelet_manager" args="manager" output="screen">
+    <node pkg="nodelet" type="nodelet" name="$(arg  name)_nodelet_manager"  launch-prefix="$(arg launch_prefix)" args="manager" output="screen">
         <remap from="/nodelet_manager/load_nodelet" to="$(arg name)/nodelet_manager/load_nodelet"/>
         <remap from="/nodelet_manager/unload_nodelet" to="$(arg name)/nodelet_manager/unload_nodelet"/>
         <remap from="/nodelet_manager/list" to="$(arg name)/nodelet_manager/list"/>

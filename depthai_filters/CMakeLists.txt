@@ -22,7 +22,7 @@ endif()
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp dynamic_reconfigure message_filters sensor_msgs vision_msgs visualization_msgs cv_bridge image_transport nodelet)
+find_package(catkin REQUIRED COMPONENTS roscpp dynamic_reconfigure message_filters sensor_msgs vision_msgs visualization_msgs cv_bridge image_transport depthai_ros_msgs nodelet)
 
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
@@ -56,6 +56,8 @@ add_library(${PROJECT_NAME} SHARED
     src/segmentation_overlay.cpp
     src/wls_filter.cpp
     src/spatial_bb.cpp
+    src/feature_tracker_overlay.cpp
+    src/features_3d.cpp
     src/utils.cpp
 )
 

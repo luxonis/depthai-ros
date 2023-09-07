@@ -49,6 +49,8 @@ find_package(catkin REQUIRED COMPONENTS
   message_filters
   image_transport
   nodelet
+  diagnostic_updater
+  diagnostic_msgs
 )
 find_package(Threads REQUIRED)
 
@@ -74,7 +76,7 @@ catkin_package(
   ${SENSOR_LIB_NAME}
   ${NN_LIB_NAME}
   ${COMMON_LIB_NAME}
-  CATKIN_DEPENDS roscpp sensor_msgs std_msgs camera_info_manager depthai_bridge vision_msgs cv_bridge message_filters image_transport 
+  CATKIN_DEPENDS roscpp sensor_msgs std_msgs camera_info_manager depthai_bridge vision_msgs cv_bridge message_filters image_transport diagnostic_msgs diagnostic_updater
   DEPENDS
   OpenCV
 )
@@ -84,11 +86,13 @@ add_library(
   ${COMMON_LIB_NAME} SHARED
   src/utils.cpp
   src/dai_nodes/base_node.cpp
+  src/dai_nodes/sys_logger.cpp
   src/dai_nodes/sensors/sensor_helpers.cpp # TODO: Figure out different place for this 
   src/param_handlers/camera_param_handler.cpp
   src/param_handlers/imu_param_handler.cpp
   src/param_handlers/nn_param_handler.cpp
   src/param_handlers/sensor_param_handler.cpp
+  src/param_handlers/feature_tracker_param_handler.cpp
   src/param_handlers/stereo_param_handler.cpp
 )
 
@@ -110,6 +114,7 @@ add_library(
   src/dai_nodes/sensors/imu.cpp
   src/dai_nodes/sensors/rgb.cpp
   src/dai_nodes/sensors/mono.cpp
+  src/dai_nodes/sensors/feature_tracker.cpp
   src/dai_nodes/sensors/sensor_wrapper.cpp
   src/dai_nodes/stereo.cpp
 )

@@ -9,7 +9,9 @@
 #include "depthai/pipeline/node/XLinkIn.hpp"
 #include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
+#include "depthai_ros_driver/utils.hpp"
 #include "image_transport/camera_publisher.h"
 #include "image_transport/image_transport.h"
 #include "ros/node_handle.h"
@@ -57,10 +59,18 @@ void Mono::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_publish_topic")) {
         monoQ = device->getOutputQueue(monoQName, ph->getParam<int>("i_max_q_size"), false);
-        auto tfPrefix = getTFPrefix(getName());
+        auto tfPrefix = getTFPrefix(
+            utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")), device->getConnectedCameraFeatures()));
         imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
         imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
-        monoPub = it.advertiseCamera(getName() + "/image_raw", 1);
+        if(ph->getParam<bool>("i_low_bandwidth")) {
+            imageConverter->convertFromBitstream(dai::RawImgFrame::Type::GRAY8);
+        }
+        if(ph->getParam<bool>("i_add_exposure_offset")) {
+            auto offset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
+            imageConverter->addExposureOffset(offset);
+        }
+        monoPubIT = it.advertiseCamera(getName() + "/image_raw", 1);
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), getName()), "/" + getName());
         if(ph->getParam<std::string>("i_calibration_file").empty()) {
             infoManager->setCameraInfo(sensor_helpers::getCalibInfo(*imageConverter,
@@ -71,17 +81,13 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
         } else {
             infoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
         }
-        if(ph->getParam<bool>("i_low_bandwidth")) {
-            monoQ->addCallback(std::bind(sensor_helpers::compressedImgCB,
-                                         std::placeholders::_1,
-                                         std::placeholders::_2,
-                                         *imageConverter,
-                                         monoPub,
-                                         infoManager,
-                                         dai::RawImgFrame::Type::GRAY8));
-        } else {
-            monoQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, monoPub, infoManager));
-        }
+        monoQ->addCallback(std::bind(sensor_helpers::cameraPub,
+                                     std::placeholders::_1,
+                                     std::placeholders::_2,
+                                     *imageConverter,
+                                     monoPubIT,
+                                     infoManager,
+                                     ph->getParam<bool>("i_enable_lazy_publisher")));
     }
     controlQ = device->getInputQueue(controlQName);
 }

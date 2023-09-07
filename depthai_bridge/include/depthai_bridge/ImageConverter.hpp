@@ -47,10 +47,12 @@ class ImageConverter {
         _updateRosBaseTimeOnToRosMsg = update;
     }
 
-    void toRosMsgFromBitStream(std::shared_ptr<dai::ImgFrame> inData,
-                               std::deque<ImageMsgs::Image>& outImageMsgs,
-                               dai::RawImgFrame::Type type,
-                               const sensor_msgs::CameraInfo& info);
+    void convertFromBitstream(dai::RawImgFrame::Type srcType);
+
+    void addExposureOffset(dai::CameraExposureOffset& offset);
+    void convertDispToDepth();
+
+    ImageMsgs::Image toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> inData, const sensor_msgs::CameraInfo& info = sensor_msgs::CameraInfo());
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs);
     ImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
 
@@ -86,6 +88,11 @@ class ImageConverter {
     int64_t _totalNsChange{0};
     // Whether to update the ROS base time on each message conversion
     bool _updateRosBaseTimeOnToRosMsg{false};
+    dai::RawImgFrame::Type _srcType;
+    bool _fromBitstream = false;
+    bool _convertDispToDepth = false;
+    bool _addExpOffset = false;
+    dai::CameraExposureOffset _expOffset;
 };
 
 }  // namespace ros

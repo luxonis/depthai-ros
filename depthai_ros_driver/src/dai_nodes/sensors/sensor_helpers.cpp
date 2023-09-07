@@ -8,114 +8,46 @@
 namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace sensor_helpers {
-void ImageSensor::getSizeFromResolution(const dai::ColorCameraProperties::SensorResolution& res, int& width, int& height) {
-    switch(res) {
-        case dai::ColorCameraProperties::SensorResolution::THE_720_P: {
-            width = 1280;
-            height = 720;
-            break;
-        }
-        case dai::ColorCameraProperties::SensorResolution::THE_800_P: {
-            width = 1280;
-            height = 800;
-            break;
-        }
-        case dai::ColorCameraProperties::SensorResolution::THE_1080_P: {
-            width = 1920;
-            height = 1080;
-            break;
-        }
-        case dai::ColorCameraProperties::SensorResolution::THE_4_K: {
-            width = 3840;
-            height = 2160;
-            break;
-        }
-        case dai::ColorCameraProperties::SensorResolution::THE_12_MP: {
-            height = 4056;
-            width = 3040;
-            break;
-        }
-        case dai::ColorCameraProperties::SensorResolution::THE_1200_P: {
-            height = 1920;
-            width = 1200;
-            break;
-        }
-        case dai::ColorCameraProperties::SensorResolution::THE_5_MP: {
-            height = 2592;
-            width = 1944;
-            break;
-        }
-        case dai::ColorCameraProperties::SensorResolution::THE_13_MP: {
-            height = 4208;
-            width = 3120;
-            break;
-        }
-        case dai::ColorCameraProperties::SensorResolution::THE_4000X3000: {
-            height = 4000;
-            width = 3000;
-            break;
-        }
-        case dai::ColorCameraProperties::SensorResolution::THE_5312X6000: {
-            height = 5312;
-            width = 6000;
-            break;
-        }
-        case dai::ColorCameraProperties::SensorResolution::THE_48_MP: {
-            height = 8000;
-            width = 6000;
-            break;
-        }
-        default: {
-            throw std::runtime_error("Resolution not supported!");
-        }
+std::vector<ImageSensor> availableSensors{{"IMX378", "1080p", {"12mp", "4k", "1080p"}, true},
+                                          {"OV9282", "800p", {"800p", "720p", "400p"}, false},
+                                          {"OV9782", "800p", {"800p", "720p", "400p"}, true},
+                                          {"OV9281", "800p", {"800p", "720p", "400p"}, true},
+                                          {"IMX214", "1080p", {"13mp", "12mp", "4k", "1080p"}, true},
+                                          {"IMX412", "1080p", {"13mp", "12mp", "4k", "1080p"}, true},
+                                          {"OV7750", "480p", {"480p", "400p"}, false},
+                                          {"OV7251", "480p", {"480p", "400p"}, false},
+                                          {"IMX477", "1080p", {"12mp", "4k", "1080p"}, true},
+                                          {"IMX577", "1080p", {"12mp", "4k", "1080p"}, true},
+                                          {"AR0234", "1200p", {"1200p"}, true},
+                                          {"IMX582", "4k", {"48mp", "12mp", "4k"}, true},
+                                          {"LCM48", "4k", {"48mp", "12mp", "4k"}, true}};
+
+void basicCameraPub(const std::string& /*name*/,
+                    const std::shared_ptr<dai::ADatatype>& data,
+                    dai::ros::ImageConverter& converter,
+                    image_transport::CameraPublisher& pub,
+                    std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager) {
+    if(ros::ok() && (pub.getNumSubscribers() > 0)) {
+        auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
+        auto info = infoManager->getCameraInfo();
+        auto rawMsg = converter.toRosMsgRawPtr(img);
+        info.header = rawMsg.header;
+        pub.publish(rawMsg, info);
     }
 }
-std::vector<ImageSensor> availableSensors = {
-    {"IMX378", {"12mp", "4k"}, true},
-    {"OV9282", {"800P", "720p", "400p"}, false},
-    {"OV9782", {"800P", "720p", "400p"}, true},
-    {"OV9281", {"800P", "720p", "400p"}, true},
-    {"IMX214", {"13mp", "12mp", "4k", "1080p"}, true},
-    {"IMX412", {"13mp", "12mp", "4k", "1080p"}, true},
-    {"OV7750", {"480P", "400p"}, false},
-    {"OV7251", {"480P", "400p"}, false},
-    {"IMX477", {"12mp", "4k", "1080p"}, true},
-    {"IMX577", {"12mp", "4k", "1080p"}, true},
-    {"AR0234", {"1200P"}, true},
-    {"IMX582", {"48mp", "12mp", "4k"}, true},
-    {"LCM48", {"48mp", "12mp", "4k"}, true},
-};
-void compressedImgCB(const std::string& /*name*/,
-                     const std::shared_ptr<dai::ADatatype>& data,
-                     dai::ros::ImageConverter& converter,
-                     image_transport::CameraPublisher& pub,
-                     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
-                     dai::RawImgFrame::Type dataType) {
-    auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
-    std::deque<sensor_msgs::Image> deq;
-    auto info = infoManager->getCameraInfo();
-    converter.toRosMsgFromBitStream(img, deq, dataType, info);
-    while(deq.size() > 0) {
-        auto currMsg = deq.front();
-        info.header = currMsg.header;
-        pub.publish(currMsg, info);
-        deq.pop_front();
-    }
-}
-void imgCB(const std::string& /*name*/,
-           const std::shared_ptr<dai::ADatatype>& data,
-           dai::ros::ImageConverter& converter,
-           image_transport::CameraPublisher& pub,
-           std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager) {
-    auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
-    std::deque<sensor_msgs::Image> deq;
-    auto info = infoManager->getCameraInfo();
-    converter.toRosMsg(img, deq);
-    while(deq.size() > 0) {
-        auto currMsg = deq.front();
-        info.header = currMsg.header;
-        pub.publish(currMsg, info);
-        deq.pop_front();
+
+void cameraPub(const std::string& /*name*/,
+               const std::shared_ptr<dai::ADatatype>& data,
+               dai::ros::ImageConverter& converter,
+               image_transport::CameraPublisher& pub,
+               std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
+               bool lazyPub) {
+    if(ros::ok() && (!lazyPub || pub.getNumSubscribers() > 0)) {
+        auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
+        auto info = infoManager->getCameraInfo();
+        auto rawMsg = converter.toRosMsgRawPtr(img, info);
+        info.header = rawMsg.header;
+        pub.publish(rawMsg, info);
     }
 }
 sensor_msgs::CameraInfo getCalibInfo(

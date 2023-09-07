@@ -22,15 +22,33 @@ dai::UsbSpeed CameraParamHandler::getUSBSpeed() {
     return utils::getValFromMap(getParam<std::string>("i_usb_speed"), usbSpeedMap);
 }
 void CameraParamHandler::declareParams() {
-    getParam<std::string>("i_pipeline_type");
-    getParam<std::string>("i_nn_type");
-    getParam<bool>("i_enable_imu");
-    getParam<bool>("i_enable_ir");
-    getParam<std::string>("i_usb_speed");
-    getParam<std::string>("i_mx_id");
-    getParam<std::string>("i_ip");
-    getParam<int>("i_laser_dot_brightness");
-    getParam<int>("i_floodlight_brightness");
+    declareAndLogParam<std::string>("i_pipeline_type", "RGBD");
+    declareAndLogParam<std::string>("i_nn_type", "spatial");
+    declareAndLogParam<bool>("i_enable_imu", true);
+    declareAndLogParam<bool>("i_enable_ir", true);
+    declareAndLogParam<std::string>("i_usb_speed", "SUPER_PLUS");
+    declareAndLogParam<std::string>("i_mx_id", "");
+    declareAndLogParam<std::string>("i_ip", "");
+    declareAndLogParam<std::string>("i_usb_port_id", "");
+    declareAndLogParam<bool>("i_pipeline_dump", false);
+    declareAndLogParam<bool>("i_calibration_dump", false);
+    declareAndLogParam<std::string>("i_external_calibration_path", "");
+    declareAndLogParam("i_laser_dot_brightness", 800, getRangedIntDescriptor(0, 1200));
+    declareAndLogParam("i_floodlight_brightness", 0, getRangedIntDescriptor(0, 1500));
+    declareAndLogParam<bool>("i_publish_tf_from_calibration", false);
+    declareAndLogParam<std::string>("i_tf_camera_name", "oak");
+    declareAndLogParam<std::string>("i_tf_camera_model", "");
+    declareAndLogParam<std::string>("i_tf_base_frame", "oak");
+    declareAndLogParam<std::string>("i_tf_parent_frame", "oak-d-base-frame");
+    declareAndLogParam<std::string>("i_tf_cam_pos_x", "0.0");
+    declareAndLogParam<std::string>("i_tf_cam_pos_y", "0.0");
+    declareAndLogParam<std::string>("i_tf_cam_pos_z", "0.0");
+    declareAndLogParam<std::string>("i_tf_cam_roll", "0.0");
+    declareAndLogParam<std::string>("i_tf_cam_pitch", "0.0");
+    declareAndLogParam<std::string>("i_tf_cam_yaw", "0.0");
+    declareAndLogParam<std::string>("i_tf_imu_from_descr", "false");
+    declareAndLogParam<std::string>("i_tf_custom_urdf_location", "");
+    declareAndLogParam<std::string>("i_tf_custom_xacro_args", "");
 }
 dai::CameraControl CameraParamHandler::setRuntimeParams(parametersConfig& /*config*/) {
     dai::CameraControl ctrl;

@@ -11,6 +11,7 @@
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
+#include "depthai_ros_driver/utils.hpp"
 #include "image_transport/camera_publisher.h"
 #include "image_transport/image_transport.h"
 #include "ros/node_handle.h"
@@ -21,7 +22,7 @@ RGB::RGB(const std::string& daiNodeName,
          ros::NodeHandle node,
          std::shared_ptr<dai::Pipeline> pipeline,
          dai::CameraBoardSocket socket = dai::CameraBoardSocket::CAM_A,
-         sensor_helpers::ImageSensor sensor = {"IMX378", {"12mp", "4k"}, true},
+         sensor_helpers::ImageSensor sensor = {"IMX378", "4k", {"12mp", "4k"}, true},
          bool publish = true)
     : BaseNode(daiNodeName, node, pipeline), it(node) {
     ROS_DEBUG("Creating node %s", daiNodeName.c_str());
@@ -69,10 +70,18 @@ void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 
 void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_publish_topic")) {
-        auto tfPrefix = getTFPrefix(getName());
+        auto tfPrefix = getTFPrefix(
+            utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")), device->getConnectedCameraFeatures()));
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), getName()), "/" + getName());
         imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
         imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
+        if(ph->getParam<bool>("i_low_bandwidth")) {
+            imageConverter->convertFromBitstream(dai::RawImgFrame::Type::BGR888i);
+        }
+        if(ph->getParam<bool>("i_add_exposure_offset")) {
+            auto offset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
+            imageConverter->addExposureOffset(offset);
+        }
         if(ph->getParam<std::string>("i_calibration_file").empty()) {
             infoManager->setCameraInfo(sensor_helpers::getCalibInfo(*imageConverter,
                                                                     device,
@@ -82,23 +91,19 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         } else {
             infoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
         }
-        rgbPub = it.advertiseCamera(getName() + "/image_raw", 1);
+        rgbPubIT = it.advertiseCamera(getName() + "/image_raw", 1);
         colorQ = device->getOutputQueue(ispQName, ph->getParam<int>("i_max_q_size"), false);
-        if(ph->getParam<bool>("i_low_bandwidth")) {
-            colorQ->addCallback(std::bind(sensor_helpers::compressedImgCB,
-                                          std::placeholders::_1,
-                                          std::placeholders::_2,
-                                          *imageConverter,
-                                          rgbPub,
-                                          infoManager,
-                                          dai::RawImgFrame::Type::BGR888i));
-        } else {
-            colorQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, rgbPub, infoManager));
-        }
+        colorQ->addCallback(std::bind(sensor_helpers::cameraPub,
+                                      std::placeholders::_1,
+                                      std::placeholders::_2,
+                                      *imageConverter,
+                                      rgbPubIT,
+                                      infoManager,
+                                      ph->getParam<bool>("i_enable_lazy_publisher")));
     }
     if(ph->getParam<bool>("i_enable_preview")) {
         previewQ = device->getOutputQueue(previewQName, ph->getParam<int>("i_max_q_size"), false);
-        previewPub = it.advertiseCamera(getName() + "/preview/image_raw", 1);
+        previewPubIT = it.advertiseCamera(getName() + "/preview/image_raw", 1);
         previewInfoManager = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), "/" + previewQName), previewQName);
         auto tfPrefix = getTFPrefix(getName());
         imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
@@ -111,7 +116,8 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         } else {
             infoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
         }
-        previewQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, previewPub, previewInfoManager));
+        previewQ->addCallback(
+            std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *imageConverter, previewPubIT, previewInfoManager));
     };
     controlQ = device->getInputQueue(controlQName);
 }

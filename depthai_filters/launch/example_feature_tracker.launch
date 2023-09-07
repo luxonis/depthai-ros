@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="params_file" default="$(find depthai_filters)/config/feature_tracker.yaml"/>
+
+    <arg name="name" default="oak" />
+
+    <include file="$(find depthai_ros_driver)/launch/rgbd_pcl.launch">
+        <arg name="name" value="$(arg name)"/>
+        <arg name="rectify_rgb" value="true"/>
+        <arg name="params_file" value="$(arg params_file)"/>
+    </include>
+
+    <node name="feature_tracker_node" pkg="nodelet" type="nodelet" output="screen" required="true" args="load depthai_filters/FeatureTrackerOverlay $(arg  name)_nodelet_manager">
+        <remap from="/rgb/preview/image_raw" to="$(arg name)/rgb/image_raw"/>
+        <remap from="/feature_tracker/tracked_features" to="$(arg name)/rgb_feature_tracker/tracked_features"/>
+        <remap from="/overlay" to="$(arg name)/overlay_rgb"/>
+
+    </node>
+</launch>

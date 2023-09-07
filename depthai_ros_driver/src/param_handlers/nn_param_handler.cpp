@@ -24,7 +24,9 @@ NNParamHandler::NNParamHandler(ros::NodeHandle node, const std::string& name) : 
 NNParamHandler::~NNParamHandler() = default;
 std::string NNParamHandler::getConfigPath() {
     std::string configPath = ros::package::getPath("depthai_ros_driver") + "/config/nn/";
-    auto nnPath = getParam<std::string>("i_nn_config_path");
+    std::string default_nn_conf_name = "mobilenet.json";
+    std::string default_path = configPath + default_nn_conf_name;
+    auto nnPath = declareAndLogParam<std::string>("i_nn_config_path", default_path);
     if(nnPath == "depthai_ros_driver/yolo") {
         nnPath = configPath + "yolo.json";
     } else if(nnPath == "depthai_ros_driver/segmentation") {
@@ -52,6 +54,9 @@ nn::NNFamily NNParamHandler::getNNFamily() {
 void NNParamHandler::setNNParams(nlohmann::json data, std::shared_ptr<dai::node::NeuralNetwork> /*nn*/) {
     if(data["mappings"].contains("labels")) {
         labels = data["mappings"]["labels"].get<std::vector<std::string>>();
+        if(!labels.empty()) {
+            declareAndLogParam<std::vector<std::string>>("i_label_map", labels);
+        }
     }
 }
 
@@ -72,6 +77,9 @@ void NNParamHandler::setNNParams(nlohmann::json data, std::shared_ptr<dai::node:
     }
     if(data["mappings"].contains("labels")) {
         labels = data["mappings"]["labels"].get<std::vector<std::string>>();
+        if(!labels.empty()) {
+            declareAndLogParam<std::vector<std::string>>("i_label_map", labels);
+        }
     }
     setSpatialParams(nn);
 }
@@ -98,6 +106,9 @@ void NNParamHandler::setNNParams(nlohmann::json data, std::shared_ptr<dai::node:
     }
     if(data["mappings"].contains("labels")) {
         labels = data["mappings"]["labels"].get<std::vector<std::string>>();
+        if(!labels.empty()) {
+            declareAndLogParam<std::vector<std::string>>("i_label_map", labels);
+        }
     }
     if(data["nn_config"].contains("NN_specific_metadata")) {
         setYoloParams(data, nn);
@@ -107,11 +118,12 @@ void NNParamHandler::setNNParams(nlohmann::json data, std::shared_ptr<dai::node:
 void NNParamHandler::setImageManip(const std::string& model_path, std::shared_ptr<dai::node::ImageManip> imageManip) {
     auto blob = dai::OpenVINO::Blob(model_path);
     auto firstInfo = blob.networkInputs.begin();
-    auto inputSize = firstInfo->second.dims[0];
-
-    if(inputSize > 590) {
+    auto inputWidth = firstInfo->second.dims[0];
+    auto inputHeight = firstInfo->second.dims[1];
+    if(inputWidth > 590 || inputHeight > 590) {
         std::ostringstream stream;
-        stream << "Current network input size is too large to resize. Please set following parameters: rgb.i_preview_size: " << inputSize;
+        stream << "Current network input size is too large to resize. Please set following parameters: rgb.i_preview_width: " << inputWidth;
+        stream << ", rgb.i_preview_height: " << inputHeight;
         stream << " and nn.i_disable_resize to true";
         throw std::runtime_error(stream.str());
     }
@@ -119,8 +131,8 @@ void NNParamHandler::setImageManip(const std::string& model_path, std::shared_pt
     imageManip->inputImage.setBlocking(false);
     imageManip->inputImage.setQueueSize(8);
     imageManip->setKeepAspectRatio(false);
-    ROS_INFO("NN input size: %d x %d. Resizing input image in case of different dimensions.", inputSize, inputSize);
-    imageManip->initialConfig.setResize(inputSize, inputSize);
+    ROS_INFO("NN input size: %d x %d. Resizing input image in case of different dimensions.", inputWidth, inputHeight);
+    imageManip->initialConfig.setResize(inputWidth, inputHeight);
 }
 std::string NNParamHandler::getModelPath(const nlohmann::json& data) {
     std::string modelPath;

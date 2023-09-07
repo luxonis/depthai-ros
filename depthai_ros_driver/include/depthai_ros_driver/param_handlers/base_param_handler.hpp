@@ -5,6 +5,9 @@
 
 namespace depthai_ros_driver {
 namespace param_handlers {
+inline std::pair<int, int> getRangedIntDescriptor(uint16_t min, uint16_t max) {
+    return std::make_pair<int, int>(min, max);
+}
 
 class BaseParamHandler {
    public:
@@ -25,12 +28,6 @@ class BaseParamHandler {
         return value;
     }
     template <typename T>
-    T getOtherNodeParam(const std::string& daiNodeName, const std::string& paramName) {
-        T value;
-        baseNode.getParam(getFullParamName(daiNodeName, paramName), value);
-        return value;
-    }
-    template <typename T>
     T getParam(const std::string& paramName, T defaultVal) {
         T value;
         if(!baseNode.param<T>(getFullParamName(paramName), value, defaultVal)) {
@@ -38,6 +35,12 @@ class BaseParamHandler {
             value = defaultVal;
         }
         logParam(getFullParamName(paramName), value);
+        return value;
+    }
+    template <typename T>
+    T getOtherNodeParam(const std::string& daiNodeName, const std::string& paramName) {
+        T value;
+        baseNode.getParam(getFullParamName(daiNodeName, paramName), value);
         return value;
     }
     template <typename T>
@@ -56,11 +59,11 @@ class BaseParamHandler {
         return value;
     }
     std::string getFullParamName(const std::string& paramName) {
-        std::string name = std::string(baseNode.getNamespace()) + "/" + baseName + "_" + paramName;
+        std::string name = baseName + "_" + paramName;
         return name;
     }
     std::string getFullParamName(const std::string& daiNodeName, const std::string& paramName) {
-        std::string name = std::string(baseNode.getNamespace()) + "/" + daiNodeName + "_" + paramName;
+        std::string name = daiNodeName + "_" + paramName;
         return name;
     }
 
@@ -68,6 +71,44 @@ class BaseParamHandler {
     ros::NodeHandle getROSNode() {
         return baseNode;
     }
+
+    template <typename T>
+    T declareAndLogParam(const std::string& paramName, const std::vector<T>& value, bool override = false) {
+        std::string fullName = getFullParamName(paramName);
+        if(override || !baseNode.hasParam(fullName)) {
+            return setParam(paramName, value);
+        } else {
+            return getParam<T>(paramName);
+        }
+    }
+
+    template <typename T>
+    T declareAndLogParam(const std::string& paramName, T value, bool override = false) {
+        std::string fullName = getFullParamName(paramName);
+        if(override || !baseNode.hasParam(fullName)) {
+            return setParam(paramName, value);
+        } else {
+            return getParam<T>(paramName);
+        }
+    }
+    int declareAndLogParam(const std::string& paramName, int value, std::pair<int, int> int_range, bool override = false) {
+        std::string fullName = getFullParamName(paramName);
+        if(override || !baseNode.hasParam(fullName)) {
+            if(value < int_range.first || value > int_range.second) {
+                ROS_WARN("Param %s with value %d is out of range [%d, %d]. Setting value %d",
+                         fullName.c_str(),
+                         value,
+                         int_range.first,
+                         int_range.second,
+                         int_range.first);
+                value = int_range.first;
+            }
+            return setParam(paramName, value);
+        } else {
+            return getParam<int>(paramName);
+        }
+    }
+
     template <typename T>
     inline void logParam(const std::string& name, T value) {
         std::stringstream ss;
