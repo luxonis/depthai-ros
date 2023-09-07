@@ -2,6 +2,20 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.8.0 (2023-09-01)
+-------------------
+* Add camera image orientation param 
+* Performance update
+* Feature tracker
+* Handle USB speed when usb id is specified
+* Change misleading error to a clearer message
+* Watchdog 
+* Depth alignment update 
+* Synced stereo streams
+* Lazy Publishing 
+* Urdf loader
+* Add exposure offset
+
 2.7.5 (2023-08-07)
 -------------------
 * IMU sync fix
