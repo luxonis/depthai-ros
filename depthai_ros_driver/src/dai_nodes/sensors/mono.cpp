@@ -9,7 +9,9 @@
 #include "depthai/pipeline/node/XLinkIn.hpp"
 #include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
+#include "depthai_ros_driver/utils.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/node.hpp"
@@ -56,12 +58,18 @@ void Mono::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 
 void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_publish_topic")) {
-        monoQ = device->getOutputQueue(monoQName, ph->getParam<int>("i_max_q_size"), false);
-        auto tfPrefix = getTFPrefix(getName());
+        auto tfPrefix = getTFPrefix(
+            utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")), device->getConnectedCameraFeatures()));
         imageConverter =
             std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
         imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
-        monoPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
+        if(ph->getParam<bool>("i_low_bandwidth")) {
+            imageConverter->convertFromBitstream(dai::RawImgFrame::Type::GRAY8);
+        }
+        if(ph->getParam<bool>("i_add_exposure_offset")) {
+            auto offset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
+            imageConverter->addExposureOffset(offset);
+        }
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
             getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
         if(ph->getParam<std::string>("i_calibration_file").empty()) {
@@ -74,16 +82,29 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
         } else {
             infoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
         }
-        if(ph->getParam<bool>("i_low_bandwidth")) {
-            monoQ->addCallback(std::bind(sensor_helpers::compressedImgCB,
+        monoQ = device->getOutputQueue(monoQName, ph->getParam<int>("i_max_q_size"), false);
+        if(ipcEnabled()) {
+            RCLCPP_DEBUG(getROSNode()->get_logger(), "Enabling intra_process communication!");
+            monoPub = getROSNode()->create_publisher<sensor_msgs::msg::Image>("~/" + getName() + "/image_raw", 10);
+            infoPub = getROSNode()->create_publisher<sensor_msgs::msg::CameraInfo>("~/" + getName() + "/camera_info", 10);
+            monoQ->addCallback(std::bind(sensor_helpers::splitPub,
                                          std::placeholders::_1,
                                          std::placeholders::_2,
                                          *imageConverter,
                                          monoPub,
+                                         infoPub,
                                          infoManager,
-                                         dai::RawImgFrame::Type::GRAY8));
+                                         ph->getParam<bool>("i_enable_lazy_publisher")));
+
         } else {
-            monoQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, monoPub, infoManager));
+            monoPubIT = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
+            monoQ->addCallback(std::bind(sensor_helpers::cameraPub,
+                                         std::placeholders::_1,
+                                         std::placeholders::_2,
+                                         *imageConverter,
+                                         monoPubIT,
+                                         infoManager,
+                                         ph->getParam<bool>("i_enable_lazy_publisher")));
         }
     }
     controlQ = device->getInputQueue(controlQName);

@@ -41,7 +41,7 @@ class BaseParamHandler {
         return baseName + "." + paramName;
     }
     std::string getFullParamName(const std::string& daiNodeName, const std::string& paramName) {
-        std::string name = std::string(baseNode->get_namespace()) + "/" + daiNodeName + "." + paramName;
+        std::string name = daiNodeName + "." + paramName;
         return name;
     }
 

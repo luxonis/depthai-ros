@@ -24,7 +24,7 @@
       i_gyro_freq: 400
       i_mag_cov: 0.0
       i_mag_freq: 100
-      i_max_batch_reports: 10
+      i_max_batch_reports: 5
       i_message_type: IMU
       i_rot_cov: -1.0
       i_rot_freq: 400
@@ -108,7 +108,7 @@
       i_disparity_width: DISPARITY_96
       i_enable_companding: false
       i_enable_decimation_filter: false
-      i_enable_distortion_correction: true
+      i_enable_distortion_correction: false
       i_enable_spatial_filter: false
       i_enable_speckle_filter: false
       i_enable_temporal_filter: false
@@ -124,7 +124,7 @@
       i_lrc_threshold: 10
       i_max_q_size: 30
       i_rectify_edge_fill_color: 0
-      i_stereo_conf_threshold: 255
+      i_stereo_conf_threshold: 240
       i_set_input_size: false
       i_input_width: 1280
       i_input_height: 720

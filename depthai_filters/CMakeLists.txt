@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(depthai_filters VERSION 2.7.5 LANGUAGES CXX C)
+project(depthai_filters VERSION 2.8.0 LANGUAGES CXX C)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -18,6 +18,8 @@ ament_auto_add_library(
   src/segmentation_overlay.cpp
   src/spatial_bb.cpp
   src/wls_filter.cpp
+  src/feature_tracker_overlay.cpp
+  src/features_3d.cpp
   src/utils.cpp
 )
 ament_target_dependencies(${PROJECT_NAME} ${DEPENDENCIES})
@@ -29,7 +31,9 @@ rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::Detection2DOv
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::SegmentationOverlay")
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::WLSFilter")
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::SpatialBB")
-ament_export_include_directories(include)
+rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::FeatureTrackerOverlay")
+rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::Features3D")
+
 install(DIRECTORY launch config DESTINATION share/${PROJECT_NAME})
 install(
   TARGETS

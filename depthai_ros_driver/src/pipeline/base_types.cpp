@@ -128,17 +128,15 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> CamArray::createPipeline(rclcp
                                                                            std::shared_ptr<dai::Pipeline> pipeline,
                                                                            const std::string& /*nnType*/) {
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
-    int i = 0;
-    int j = 0;
-    for(auto& sensor : device->getCameraSensorNames()) {
-        // append letter for greater sensor number
-        if(i % alphabet.size() == 0) {
-            j++;
+
+    for(auto& feature : device->getConnectedCameraFeatures()) {
+        if(feature.name == "color") {
+            auto daiNode = std::make_unique<dai_nodes::SensorWrapper>("rgb", node, pipeline, device, feature.socket);
+            daiNodes.push_back(std::move(daiNode));
+        } else {
+            auto daiNode = std::make_unique<dai_nodes::SensorWrapper>(feature.name, node, pipeline, device, feature.socket);
+            daiNodes.push_back(std::move(daiNode));
         }
-        std::string nodeName(j, alphabet[i % alphabet.size()]);
-        auto daiNode = std::make_unique<dai_nodes::SensorWrapper>(nodeName, node, pipeline, device, sensor.first);
-        daiNodes.push_back(std::move(daiNode));
-        i++;
     };
     return daiNodes;
 }
