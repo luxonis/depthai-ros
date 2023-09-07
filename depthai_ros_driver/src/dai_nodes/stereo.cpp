@@ -132,7 +132,9 @@ void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
     }
     im = std::make_shared<camera_info_manager::CameraInfoManager>(
         getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + sensorInfo.name).get(), "/rect");
-
+    if(ph->getParam<bool>("i_reverse_stereo_socket_order")) {
+        conv->reverseStereoSocketOrder();
+    }
     auto info = sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
                                              *conv,
                                              device,
@@ -142,6 +144,11 @@ void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
     for(auto& d : info.d) {
         d = 0.0;
     }
+
+    for(auto& r : info.r) {
+        r = 0.0;
+    }
+    info.r[0] = info.r[4] = info.r[8] = 1.0;
 
     im->setCameraInfo(info);
 
@@ -192,12 +199,13 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_low_bandwidth")) {
         stereoConv->convertFromBitstream(dai::RawImgFrame::Type::RAW8);
     }
-    if(!ph->getParam<bool>("i_output_disparity")) {
-        stereoConv->convertDispToDepth();
-    }
+
     if(ph->getParam<bool>("i_add_exposure_offset")) {
         auto offset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
         stereoConv->addExposureOffset(offset);
+    }
+    if(ph->getParam<bool>("i_reverse_stereo_socket_order")) {
+        stereoConv->reverseStereoSocketOrder();
     }
     stereoIM = std::make_shared<camera_info_manager::CameraInfoManager>(
         getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
@@ -208,7 +216,15 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
                                              ph->getParam<int>("i_width"),
                                              ph->getParam<int>("i_height"));
     auto calibHandler = device->readCalibration();
-
+    if(!ph->getParam<bool>("i_output_disparity")) {
+        if(ph->getParam<bool>("i_reverse_stereo_socket_order")) {
+            stereoConv->convertDispToDepth(calibHandler.getBaselineDistance(leftSensInfo.socket, rightSensInfo.socket, false));
+        } else {
+            stereoConv->convertDispToDepth(calibHandler.getBaselineDistance(rightSensInfo.socket, leftSensInfo.socket, false));
+        }
+    }
+    double baseline = calibHandler.getBaselineDistance(leftSensInfo.socket, rightSensInfo.socket, false);
+    RCLCPP_INFO(getROSNode()->get_logger(), "Baseline distance: %f", baseline);
     // remove distortion since image is rectified
     for(auto& d : info.d) {
         d = 0.0;
@@ -217,7 +233,7 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
         r = 0.0;
     }
     info.r[0] = info.r[4] = info.r[8] = 1.0;
-    info.p[3] = calibHandler.getBaselineDistance(leftSensInfo.socket, rightSensInfo.socket);
+
     stereoIM->setCameraInfo(info);
     stereoQ = device->getOutputQueue(stereoQName, ph->getParam<int>("i_max_q_size"), false);
     if(ipcEnabled()) {

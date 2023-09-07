@@ -84,6 +84,10 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
             imageConverter->addExposureOffset(offset);
         }
 
+        if(ph->getParam<bool>("i_reverse_stereo_socket_order")){
+            imageConverter->reverseStereoSocketOrder();
+        }
+
         if(ph->getParam<std::string>("i_calibration_file").empty()) {
             infoManager->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
                                                                     *imageConverter,
