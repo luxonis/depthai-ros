@@ -26,13 +26,13 @@ class PipelineGenerator {
     /**
      * @brief      Validates the pipeline type. If the pipeline type is not valid for the number of sensors, it will be changed to the default type.
      *
-     * @param      node       The node
+     * @param      node       The node used for logging
      * @param[in]  type       The type
      * @param[in]  sensorNum  The sensor number
      *
      * @return     The validated pipeline type.
      */
-    PipelineType validatePipeline(rclcpp::Node* node, PipelineType type, int sensorNum);
+    std::string validatePipeline(rclcpp::Node* node,const std::string& typeStr, int sensorNum);
     /**
      * @brief      Creates the pipeline by using a plugin. Plugin types need to be of type depthai_ros_driver::pipeline_gen::BasePipeline.
      *

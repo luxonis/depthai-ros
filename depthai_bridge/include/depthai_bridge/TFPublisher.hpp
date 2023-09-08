@@ -82,6 +82,14 @@ class TFPublisher {
     std::string _customXacroArgs;
     std::vector<dai::CameraFeatures> _camFeatures;
     rclcpp::Logger _logger;
+    const std::unordered_map<dai::CameraBoardSocket, std::string> _socketNameMap = {
+        {dai::CameraBoardSocket::AUTO, "rgb"},
+        {dai::CameraBoardSocket::CAM_A, "rgb"},
+        {dai::CameraBoardSocket::CAM_B, "left"},
+        {dai::CameraBoardSocket::CAM_C, "right"},
+        {dai::CameraBoardSocket::CAM_D, "left_back"},
+        {dai::CameraBoardSocket::CAM_E, "right_back"},
+    };
 };
 }  // namespace ros
 }  // namespace dai
