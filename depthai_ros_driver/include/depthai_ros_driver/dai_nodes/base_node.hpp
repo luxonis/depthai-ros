@@ -20,7 +20,7 @@ namespace depthai_ros_driver {
 namespace dai_nodes {
 class BaseNode {
    public:
-    /*
+    /**
      * @brief      Constructor of the class BaseNode. Creates a node in the pipeline.
      *
      * @param[in]  daiNodeName  The dai node name
@@ -33,11 +33,11 @@ class BaseNode {
     virtual void link(dai::Node::Input in, int linkType = 0);
     virtual dai::Node::Input getInput(int linkType = 0);
     virtual void setupQueues(std::shared_ptr<dai::Device> device) = 0;
-    /*
+    /**
      * @brief      Sets the names of the queues.
      */
     virtual void setNames() = 0;
-    /*
+    /**
      * @brief      Link inputs and outputs.
      *
      * @param      pipeline  The pipeline
@@ -47,19 +47,19 @@ class BaseNode {
 
     void setNodeName(const std::string& daiNodeName);
     void setROSNodePointer(ros::NodeHandle node);
-    /*
+    /**
      * @brief      Gets the ROS node pointer.
      *
      * @return     The ROS node pointer.
      */
     ros::NodeHandle getROSNode();
-    /*
+    /**
      * @brief      Gets the name of the node.
      *
      * @return     The name.
      */
     std::string getName();
-    /*
+    /**
      * @brief    Append ROS node name to the frameName given.
      *
      * @param[in]  frameName  The frame name

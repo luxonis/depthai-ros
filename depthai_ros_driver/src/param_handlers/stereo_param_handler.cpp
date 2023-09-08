@@ -58,6 +58,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<bool>("i_add_exposure_offset", false);
     declareAndLogParam<int>("i_exposure_offset", 0);
     declareAndLogParam<bool>("i_enable_lazy_publisher", true);
+    declareAndLogParam<bool>("i_reverse_stereo_socket_order", false);
 
     declareAndLogParam<bool>("i_publish_synced_rect_pair", false);
     declareAndLogParam<bool>("i_publish_left_rect", false);

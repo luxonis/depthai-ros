@@ -28,7 +28,7 @@ namespace nn {
 template <typename T>
 class Detection : public BaseNode {
    public:
-    /*
+    /**
      * @brief      Constructor of the class Detection. Creates a DetectionNetwork node in the pipeline. Also creates an ImageManip node in the pipeline.
      *             The ImageManip node is used to resize the input frames to the size required by the DetectionNetwork node.
      *
@@ -48,7 +48,7 @@ class Detection : public BaseNode {
         setXinXout(pipeline);
     }
     ~Detection() = default;
-    /*
+    /**
      * @brief      Sets up the queues for the DetectionNetwork node and the ImageManip node. Also sets up the publishers for the DetectionNetwork node and the
      * ImageManip node.
      *
@@ -83,7 +83,7 @@ class Detection : public BaseNode {
             ptQ->addCallback(std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager));
         }
     };
-    /*
+    /**
      * @brief      Links the input of the DetectionNetwork node to the output of the ImageManip node.
      *
      * @param[in]  in        The input of the DetectionNetwork node
@@ -92,7 +92,7 @@ class Detection : public BaseNode {
     void link(dai::Node::Input in, int /*linkType*/) override {
         detectionNode->out.link(in);
     };
-    /*
+    /**
      * @brief      Gets the input of the DetectionNetwork node.
      *
      * @param[in]  linkType  The link type (not used)
@@ -109,7 +109,7 @@ class Detection : public BaseNode {
         nnQName = getName() + "_nn";
         ptQName = getName() + "_pt";
     };
-    /*
+    /**
      * @brief      Sets the XLinkOut for the DetectionNetwork node and the ImageManip node. Additionally enables the passthrough.
      *
      * @param      pipeline  The pipeline
@@ -124,7 +124,7 @@ class Detection : public BaseNode {
             detectionNode->passthrough.link(xoutPT->input);
         }
     };
-    /*
+    /**
      * @brief      Closes the queues for the DetectionNetwork node and the passthrough.
      */
     void closeQueues() override {
@@ -139,7 +139,7 @@ class Detection : public BaseNode {
     };
 
    private:
-    /*
+    /**
      * @brief      Callback for the DetectionNetwork node. Converts the ImgDetections to Detection2DArray and publishes it.
      *
      * @param[in]  name  The name of the stream
