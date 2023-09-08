@@ -104,7 +104,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         previewQ = device->getOutputQueue(previewQName, ph->getParam<int>("i_max_q_size"), false);
         previewPubIT = it.advertiseCamera(getName() + "/preview/image_raw", 1);
         previewInfoManager = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), "/" + previewQName), previewQName);
-        auto tfPrefix = getTFPrefix(getName());
+        auto tfPrefix = getTFPrefix(utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
         imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
         if(ph->getParam<std::string>("i_calibration_file").empty()) {
             previewInfoManager->setCameraInfo(sensor_helpers::getCalibInfo(*imageConverter,
