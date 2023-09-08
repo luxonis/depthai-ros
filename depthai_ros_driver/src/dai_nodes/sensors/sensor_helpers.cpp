@@ -23,9 +23,6 @@ std::vector<ImageSensor> availableSensors = {{"IMX378", "1080P", {"12MP", "4K", 
                                              {"LCM48", "4K", {"48MP", "12MP", "4K"}, true}};
 const std::unordered_map<dai::CameraBoardSocket, std::string> socketNameMap = {
     {dai::CameraBoardSocket::AUTO, "rgb"},
-    {dai::CameraBoardSocket::LEFT, "left"},
-    {dai::CameraBoardSocket::RIGHT, "right"},
-    {dai::CameraBoardSocket::RGB, "rgb"},
     {dai::CameraBoardSocket::CAM_A, "rgb"},
     {dai::CameraBoardSocket::CAM_B, "left"},
     {dai::CameraBoardSocket::CAM_C, "right"},

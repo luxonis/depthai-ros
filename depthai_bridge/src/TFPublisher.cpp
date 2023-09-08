@@ -137,18 +137,7 @@ void TFPublisher::publishImuTransform(nlohmann::json json, ::ros::NodeHandle nod
 }
 
 std::string TFPublisher::getCamSocketName(int socketNum) {
-    std::string name;
-    for(auto& cam : _camFeatures) {
-        if(cam.socket == static_cast<dai::CameraBoardSocket>(socketNum)) {
-            if(cam.name == "color" || cam.name == "center") {
-                name = "rgb";
-            } else {
-                name = cam.name;
-            }
-            return name;
-        }
-    }
-    throw std::runtime_error("Camera socket not found");
+    return _socketNameMap.at(static_cast<dai::CameraBoardSocket>(socketNum));
 }
 
 geometry_msgs::Vector3 TFPublisher::transFromExtr(nlohmann::json translation) {
