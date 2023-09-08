@@ -7,9 +7,6 @@
   camera_i_mx_id: ''
   camera_i_nn_type: spatial
   camera_i_pipeline_type: rgbd
-  camera_i_tf_imu_from_descr: "true"
   camera_i_usb_port_id: ''
   camera_i_usb_speed: SUPER_PLUS
-  left_i_board_socket_id: 1
-  right_i_board_socket_id: 2
   nn_i_nn_config_path: depthai_ros_driver/mobilenet

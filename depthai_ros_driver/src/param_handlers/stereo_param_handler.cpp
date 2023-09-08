@@ -80,7 +80,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     auto socket = static_cast<dai::CameraBoardSocket>(declareAndLogParam<int>("i_board_socket_id", static_cast<int>(dai::CameraBoardSocket::CAM_A)));
     std::string socketName;
     if(declareAndLogParam<bool>("i_align_depth", true)) {
-        socketName = utils::getSocketName(socket, camFeatures);
+        socketName = utils::getSocketName(socket);
         width = getOtherNodeParam<int>(socketName, "i_width");
         height = getOtherNodeParam<int>(socketName, "i_height");
         declareAndLogParam<std::string>("i_socket_name", socketName);

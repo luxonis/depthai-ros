@@ -28,8 +28,8 @@ Mono::Mono(const std::string& daiNodeName,
     ROS_DEBUG("Creating node %s", daiNodeName.c_str());
     setNames();
     monoCamNode = pipeline->create<dai::node::MonoCamera>();
-    ph = std::make_unique<param_handlers::SensorParamHandler>(node, daiNodeName);
-    ph->declareParams(monoCamNode, socket, sensor, publish);
+    ph = std::make_unique<param_handlers::SensorParamHandler>(node, daiNodeName, socket);
+    ph->declareParams(monoCamNode, sensor, publish);
     setXinXout(pipeline);
     ROS_DEBUG("Node %s created", daiNodeName.c_str());
 }
@@ -59,8 +59,7 @@ void Mono::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_publish_topic")) {
         monoQ = device->getOutputQueue(monoQName, ph->getParam<int>("i_max_q_size"), false);
-        auto tfPrefix = getTFPrefix(
-            utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")), device->getConnectedCameraFeatures()));
+        auto tfPrefix = getTFPrefix(utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
         imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
         imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
         if(ph->getParam<bool>("i_low_bandwidth")) {

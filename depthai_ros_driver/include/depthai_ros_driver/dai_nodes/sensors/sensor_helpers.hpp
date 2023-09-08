@@ -6,8 +6,10 @@
 
 #include "depthai-shared/datatype/RawImgFrame.hpp"
 #include "depthai-shared/properties/ColorCameraProperties.hpp"
+#include "depthai-shared/properties/MonoCameraProperties.hpp"
 #include "depthai-shared/properties/VideoEncoderProperties.hpp"
 #include "depthai/pipeline/datatype/ADatatype.hpp"
+#include "depthai/pipeline/datatype/CameraControl.hpp"
 #include "image_transport/camera_publisher.h"
 #include "sensor_msgs/CameraInfo.h"
 
@@ -39,7 +41,13 @@ struct ImageSensor {
     bool color;
     void getSizeFromResolution(const dai::ColorCameraProperties::SensorResolution& res, int& width, int& height);
 };
+
 extern std::vector<ImageSensor> availableSensors;
+extern const std::unordered_map<dai::CameraBoardSocket, std::string> socketNameMap;
+extern const std::unordered_map<std::string, dai::MonoCameraProperties::SensorResolution> monoResolutionMap;
+extern const std::unordered_map<std::string, dai::ColorCameraProperties::SensorResolution> rgbResolutionMap;
+extern const std::unordered_map<std::string, dai::CameraControl::FrameSyncMode> fSyncModeMap;
+extern const std::unordered_map<std::string, dai::CameraImageOrientation> cameraImageOrientationMap;
 
 void basicCameraPub(const std::string& /*name*/,
                     const std::shared_ptr<dai::ADatatype>& data,
