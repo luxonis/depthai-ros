@@ -105,6 +105,9 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     if(declareAndLogParam<bool>("i_enable_distortion_correction", false)) {
         stereo->enableDistortionCorrection(true);
     }
+    if(declareAndLogParam<bool>("i_set_disparity_to_depth_use_spec_translation", false)) {
+        stereo->setDisparityToDepthUseSpecTranslation(true);
+    }
 
     stereo->initialConfig.setBilateralFilterSigma(declareAndLogParam<int>("i_bilateral_sigma", 0));
     stereo->initialConfig.setLeftRightCheckThreshold(declareAndLogParam<int>("i_lrc_threshold", 10));
