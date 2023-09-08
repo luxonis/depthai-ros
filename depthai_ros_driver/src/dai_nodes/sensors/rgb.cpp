@@ -84,7 +84,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
             imageConverter->addExposureOffset(offset);
         }
 
-        if(ph->getParam<bool>("i_reverse_stereo_socket_order")){
+        if(ph->getParam<bool>("i_reverse_stereo_socket_order")) {
             imageConverter->reverseStereoSocketOrder();
         }
 

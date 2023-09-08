@@ -51,27 +51,27 @@ class ImageConverter {
     }
 
     /**
-        * @brief Sets converter behavior to convert from bitstream to raw data.
-        * @param srcType: The type of the bitstream data used for conversion.
-    */
+     * @brief Sets converter behavior to convert from bitstream to raw data.
+     * @param srcType: The type of the bitstream data used for conversion.
+     */
     void convertFromBitstream(dai::RawImgFrame::Type srcType);
 
     /**
-        * @brief Sets exposure offset when getting timestamps from the message.
-        * @param offset: The exposure offset to be added to the timestamp.
-    */
+     * @brief Sets exposure offset when getting timestamps from the message.
+     * @param offset: The exposure offset to be added to the timestamp.
+     */
     void addExposureOffset(dai::CameraExposureOffset& offset);
 
     /**
-        * @brief Sets converter behavior to convert from disparity to depth when converting messages from bitstream.
-        * @param baseline: The baseline of the stereo pair.
-    */
+     * @brief Sets converter behavior to convert from disparity to depth when converting messages from bitstream.
+     * @param baseline: The baseline of the stereo pair.
+     */
     void convertDispToDepth(double baseline);
 
     /**
-        * @brief Reverses the order of the stereo sockets when creating CameraInfo to calculate Tx component of Projection matrix.
-        * By default the right socket is used as the base, calling this function will set left as base.
-    */
+     * @brief Reverses the order of the stereo sockets when creating CameraInfo to calculate Tx component of Projection matrix.
+     * By default the right socket is used as the base, calling this function will set left as base.
+     */
     void reverseStereoSocketOrder();
 
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs);

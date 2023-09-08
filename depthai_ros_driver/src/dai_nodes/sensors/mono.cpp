@@ -70,7 +70,7 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
             auto offset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
             imageConverter->addExposureOffset(offset);
         }
-        if(ph->getParam<bool>("i_reverse_stereo_socket_order")){
+        if(ph->getParam<bool>("i_reverse_stereo_socket_order")) {
             imageConverter->reverseStereoSocketOrder();
         }
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
