@@ -35,7 +35,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGB::createPipeline(rclcpp::No
             break;
         }
         case NNType::Spatial: {
-            RCLCPP_WARN(node->get_logger(), "Spatial NN selected, but configuration is RGB.");
+            RCLCPP_WARN(node->get_logger(), "Spatial NN selected, but configuration is RGB. Please change camera.i_nn_type parameter to RGB.");
         }
         default:
             break;
@@ -93,7 +93,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBStereo::createPipeline(rclc
             break;
         }
         case NNType::Spatial: {
-            RCLCPP_WARN(node->get_logger(), "Spatial NN selected, but configuration is RGBStereo.");
+            RCLCPP_WARN(node->get_logger(), "Spatial NN selected, but configuration is RGBStereo. Please change camera.i_nn_type parameter to RGB.");
         }
         default:
             break;
@@ -130,13 +130,9 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> CamArray::createPipeline(rclcp
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
 
     for(auto& feature : device->getConnectedCameraFeatures()) {
-        if(feature.name == "color") {
-            auto daiNode = std::make_unique<dai_nodes::SensorWrapper>("rgb", node, pipeline, device, feature.socket);
-            daiNodes.push_back(std::move(daiNode));
-        } else {
-            auto daiNode = std::make_unique<dai_nodes::SensorWrapper>(feature.name, node, pipeline, device, feature.socket);
-            daiNodes.push_back(std::move(daiNode));
-        }
+        auto name = utils::getSocketName(feature.socket);
+        auto daiNode = std::make_unique<dai_nodes::SensorWrapper>(name, node, pipeline, device, feature.socket);
+        daiNodes.push_back(std::move(daiNode));
     };
     return daiNodes;
 }

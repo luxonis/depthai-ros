@@ -91,7 +91,8 @@ def launch_setup(context, *args, **kwargs):
                               'cam_roll': cam_roll,
                               'cam_pitch': cam_pitch,
                               'cam_yaw': cam_yaw,
-                              'use_composition': use_composition}.items()),
+                              'use_composition': use_composition,
+                              'use_base_descr': pass_tf_args_as_params}.items()),
 
         ComposableNodeContainer(
             name=name+"_container",

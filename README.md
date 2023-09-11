@@ -324,7 +324,6 @@ an example can be seen by running  `ros2 launch depthai_filters example_wls_filt
 - FeatureTrackerOverlay - publishes Tracked Features overlay based on features and images coming from the driver
 - Features3D - uses depth image to republish features as 3D pointcloud
 
-
 ### Using external sources for NN inference or Stereo Depth
 
 There is a possibility of using external image topics as input for NNs or Depth calculation.

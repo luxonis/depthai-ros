@@ -10,7 +10,12 @@ import os
 
 def launch_setup(context, *args, **kwargs):
     bringup_dir = get_package_share_directory('depthai_descriptions')
-    xacro_path = os.path.join(bringup_dir, 'urdf', 'depthai_descr.urdf.xacro')
+    use_base_descr = LaunchConfiguration('use_base_descr', default='false')
+    xacro_path = ''
+    if use_base_descr.perform(context) == 'true':
+        xacro_path = os.path.join(bringup_dir, 'urdf', 'base_descr.urdf.xacro')
+    else:
+        xacro_path = os.path.join(bringup_dir, 'urdf', 'depthai_descr.urdf.xacro')
 
     camera_model = LaunchConfiguration('camera_model',  default='OAK-D')
     tf_prefix = LaunchConfiguration('tf_prefix',     default='oak')
@@ -134,7 +139,12 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'use_composition',
             default_value='false',
-            description='Use composition to start the robot_state_publisher node. Default value will be false')
+            description='Use composition to start the robot_state_publisher node. Default value will be false'),
+        DeclareLaunchArgument(
+            'use_base_descr',
+            default_value='false',
+            description='Launch base description. Default value will be false'
+        )
     ]
 
     return LaunchDescription(

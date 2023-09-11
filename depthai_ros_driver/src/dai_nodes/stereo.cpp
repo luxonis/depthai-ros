@@ -43,7 +43,7 @@ Stereo::Stereo(const std::string& daiNodeName,
     stereoCamNode = pipeline->create<dai::node::StereoDepth>();
     left = std::make_unique<SensorWrapper>(leftSensInfo.name, node, pipeline, device, leftSensInfo.socket, false);
     right = std::make_unique<SensorWrapper>(rightSensInfo.name, node, pipeline, device, rightSensInfo.socket, false);
-    ph->declareParams(stereoCamNode, features);
+    ph->declareParams(stereoCamNode);
     setXinXout(pipeline);
     left->link(stereoCamNode->left);
     right->link(stereoCamNode->right);
@@ -223,8 +223,6 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
             stereoConv->convertDispToDepth(calibHandler.getBaselineDistance(rightSensInfo.socket, leftSensInfo.socket, false));
         }
     }
-    double baseline = calibHandler.getBaselineDistance(leftSensInfo.socket, rightSensInfo.socket, false);
-    RCLCPP_INFO(getROSNode()->get_logger(), "Baseline distance: %f", baseline);
     // remove distortion since image is rectified
     for(auto& d : info.d) {
         d = 0.0;

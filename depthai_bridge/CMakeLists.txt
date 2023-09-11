@@ -38,6 +38,9 @@ find_package(stereo_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(vision_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(composition_interfaces REQUIRED)
 
 set(dependencies
   camera_info_manager
@@ -50,6 +53,9 @@ set(dependencies
   std_msgs
   vision_msgs
   tf2_ros
+  tf2_geometry_msgs
+  tf2
+  composition_interfaces
 )
 
 include_directories(
