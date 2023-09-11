@@ -134,9 +134,9 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     if(config.postProcessing.speckleFilter.enable) {
         config.postProcessing.speckleFilter.speckleRange = declareAndLogParam<int>("i_speckle_filter_speckle_range", 50);
     }
-    if(declareAndLogParam<bool>("i_enable_disparity_shift", false)) {
-        config.algorithmControl.disparityShift = declareAndLogParam<int>("i_disparity_shift", 0);
-    }
+    // if(declareAndLogParam<bool>("i_enable_disparity_shift", false)) {
+    //     config.algorithmControl.disparityShift = declareAndLogParam<int>("i_disparity_shift", 0);
+    // }
     config.postProcessing.spatialFilter.enable = declareAndLogParam<bool>("i_enable_spatial_filter", false);
     if(config.postProcessing.spatialFilter.enable) {
         config.postProcessing.spatialFilter.holeFillingRadius = declareAndLogParam<int>("i_spatial_filter_hole_filling_radius", 2);

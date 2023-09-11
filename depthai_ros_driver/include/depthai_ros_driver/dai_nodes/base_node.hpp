@@ -30,7 +30,7 @@ class BaseNode {
     virtual ~BaseNode();
     virtual void updateParams(const std::vector<rclcpp::Parameter>& params);
     virtual void link(dai::Node::Input in, int linkType = 0);
-    virtual dai::Node::Input getInput(int linkType = 0);
+    virtual dai::Node::Input& getInput(int linkType = 0);
     virtual void setupQueues(std::shared_ptr<dai::Device> device) = 0;
     /**
      * @brief      Sets the names of the queues.

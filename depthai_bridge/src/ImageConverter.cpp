@@ -80,50 +80,6 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
     header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp); //RAE doesn't output correct time
     // header.stamp = rclcpp::Clock().now();
 
-    if(fromBitStream) {
-        std::string encoding;
-        int decodeFlags;
-        cv::Mat output;
-        auto type = inData->getType();
-        switch(type) {
-            case dai::RawImgFrame::Type::BGR888i: {
-                encoding = sensor_msgs::image_encodings::BGR8;
-                decodeFlags = cv::IMREAD_COLOR;
-                break;
-            }
-            case dai::RawImgFrame::Type::GRAY8: {
-                encoding = sensor_msgs::image_encodings::MONO8;
-                decodeFlags = cv::IMREAD_GRAYSCALE;
-                break;
-            }
-            case dai::RawImgFrame::Type::RAW8: {
-                encoding = sensor_msgs::image_encodings::TYPE_16UC1;
-                decodeFlags = cv::IMREAD_GRAYSCALE;
-                break;
-            }
-            default: {
-                throw(std::runtime_error("Converted type not supported!"));
-            }
-        }
-
-        output = cv::imdecode(cv::Mat(1, inData->getData().size(), CV_8UC1, inData->getData().data()), decodeFlags);
-
-        // converting disparity
-        if(dispToDepth) {
-            auto factor = (info.k[0] * info.p[3]);
-            cv::Mat depthOut = cv::Mat(cv::Size(output.cols, output.rows), CV_16UC1);
-            depthOut.forEach<short>([&output, &factor](short& pixel, const int* position) -> void {
-                auto disp = output.at<int8_t>(position);
-                if(disp == 0)
-                    pixel = 0;
-                else
-                    pixel = factor / disp;
-            });
-            output = depthOut.clone();
-        }
-        cv_bridge::CvImage(header, encoding, output).toImageMsg(outImageMsg);
-        return outImageMsg;
-    }
 
     if(_fromBitstream) {
         std::string encoding;

@@ -129,17 +129,7 @@ sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
     }
     return info;
 }
-sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
-                                          dai::ros::ImageConverter& converter,
-                                          std::shared_ptr<dai::Device> device,
-    sensor_msgs::msg::CameraInfo info = getCalibInfo(logger, converter,  device, socket, width, height);
-    auto calibHandler = device->readCalibration();
-        info.p[3] = calibHandler.getBaselineDistance(rightSocket, leftSocket) * 10.0;  // baseline in mm
-    } catch(std::runtime_error& e) {
-        RCLCPP_ERROR(logger, e.what());
-    }
-    return info;
-}
+
 std::shared_ptr<dai::node::VideoEncoder> createEncoder(std::shared_ptr<dai::Pipeline> pipeline, int quality, dai::VideoEncoderProperties::Profile profile) {
     auto enc = pipeline->create<dai::node::VideoEncoder>();
     enc->setQuality(quality);

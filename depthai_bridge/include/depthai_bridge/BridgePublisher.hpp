@@ -246,7 +246,7 @@ void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDa
             
             opMsgs.pop_front();
         }
-    
+    }
 }
 
 template <class RosMsg, class SimMsg>

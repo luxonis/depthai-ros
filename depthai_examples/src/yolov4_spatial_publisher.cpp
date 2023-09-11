@@ -22,6 +22,8 @@
 #include "depthai/pipeline/node/SpatialDetectionNetwork.hpp"
 #include "depthai/pipeline/node/StereoDepth.hpp"
 #include "depthai/pipeline/node/XLinkOut.hpp"
+#include "depthai-shared/common/CameraBoardSocket.hpp"
+
 
 const std::vector<std::string> label_map = {
     "person",        "bicycle",      "car",           "motorbike",     "aeroplane",   "bus",         "train",       "truck",        "boat",
@@ -238,7 +240,7 @@ int main(int argc, char** argv) {
                                                                                        rgbCameraInfo,
                                                                                        "color");
 
-    dai::rosBridge::SpatialDetectionConverter detConverter(tfPrefix + "_rgb_camera_optical_frame", 416, 416, false);
+    dai::ros::SpatialDetectionConverter detConverter(tfPrefix + "_rgb_camera_optical_frame", 416, 416, false);
     dai::rosBridge::BridgePublisher<depthai_ros_msgs::msg::SpatialDetectionArray, dai::SpatialImgDetections> detectionPublish(
         detectionQueue,
         node,
