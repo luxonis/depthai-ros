@@ -23,7 +23,7 @@ enum class PipelineType { RGB, RGBD, RGBStereo, Stereo, Depth, CamArray };
 class PipelineGenerator {
    public:
     ~PipelineGenerator() = default;
-    /*
+    /**
      * @brief      Validates the pipeline type. If the pipeline type is not valid for the number of sensors, it will be changed to the default type.
      *
      * @param      node       The node
@@ -33,7 +33,7 @@ class PipelineGenerator {
      * @return     The validated pipeline type.
      */
     PipelineType validatePipeline(rclcpp::Node* node, PipelineType type, int sensorNum);
-    /*
+    /**
      * @brief      Creates the pipeline by using a plugin. Plugin types need to be of type depthai_ros_driver::pipeline_gen::BasePipeline.
      *
      * @param      node          The node

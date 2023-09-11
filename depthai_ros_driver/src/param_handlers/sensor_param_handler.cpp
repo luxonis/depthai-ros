@@ -31,6 +31,7 @@ void SensorParamHandler::declareCommonParams() {
     declareAndLogParam<bool>("i_enable_lazy_publisher", true);
     declareAndLogParam<bool>("i_add_exposure_offset", false);
     declareAndLogParam<int>("i_exposure_offset", 0);
+    declareAndLogParam<bool>("i_reverse_stereo_socket_order", false);
     fSyncModeMap = {
         {"OFF", dai::CameraControl::FrameSyncMode::OFF},
         {"OUTPUT", dai::CameraControl::FrameSyncMode::OUTPUT},
