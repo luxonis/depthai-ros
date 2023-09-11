@@ -27,13 +27,12 @@ class PipelineGenerator {
     /*
      * @brief      Validates the pipeline type. If the pipeline type is not valid for the number of sensors, it will be changed to the default type.
      *
-     * @param      node       The node
      * @param[in]  type       The type
      * @param[in]  sensorNum  The sensor number
      *
      * @return     The validated pipeline type.
      */
-    PipelineType validatePipeline(PipelineType type, int sensorNum);
+    std::string validatePipeline(const std::string& typeStr, int sensorNum);
 
     /*
      * @brief      Creates the pipeline by using a plugin. Plugin types need to be of type depthai_ros_driver::pipeline_gen::BasePipeline.
@@ -68,7 +67,6 @@ class PipelineGenerator {
                                                                   {"STEREO", PipelineType::Stereo},
                                                                   {"DEPTH", PipelineType::Depth},
                                                                   {"CAMARRAY", PipelineType::CamArray}};
-    const std::string alphabet = "abcdefghijklmnopqrstuvwxyz";
 };
 }  // namespace pipeline_gen
 }  // namespace depthai_ros_driver

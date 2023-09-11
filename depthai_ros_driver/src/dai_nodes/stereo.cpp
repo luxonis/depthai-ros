@@ -43,7 +43,7 @@ Stereo::Stereo(const std::string& daiNodeName,
     stereoCamNode = pipeline->create<dai::node::StereoDepth>();
     left = std::make_unique<SensorWrapper>(leftSensInfo.name, node, pipeline, device, leftSensInfo.socket, false);
     right = std::make_unique<SensorWrapper>(rightSensInfo.name, node, pipeline, device, rightSensInfo.socket, false);
-    ph->declareParams(stereoCamNode, features);
+    ph->declareParams(stereoCamNode);
     setXinXout(pipeline);
     left->link(stereoCamNode->left);
     right->link(stereoCamNode->right);

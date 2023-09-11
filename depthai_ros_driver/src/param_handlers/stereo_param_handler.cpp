@@ -47,7 +47,7 @@ void StereoParamHandler::updateSocketsFromParams(dai::CameraBoardSocket& left, d
 }
 
 StereoParamHandler::~StereoParamHandler() = default;
-void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> stereo, const std::vector<dai::CameraFeatures>& camFeatures) {
+void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> stereo) {
     declareAndLogParam<int>("i_max_q_size", 30);
     declareAndLogParam<bool>("i_low_bandwidth", false);
     declareAndLogParam<int>("i_low_bandwidth_quality", 50);
@@ -80,7 +80,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     auto socket = static_cast<dai::CameraBoardSocket>(declareAndLogParam<int>("i_board_socket_id", static_cast<int>(dai::CameraBoardSocket::CAM_A)));
     std::string socketName;
     if(declareAndLogParam<bool>("i_align_depth", true)) {
-        socketName = utils::getSocketName(socket, camFeatures);
+        socketName = utils::getSocketName(socket);
         width = getOtherNodeParam<int>(socketName, "i_width");
         height = getOtherNodeParam<int>(socketName, "i_height");
         declareAndLogParam<std::string>("i_socket_name", socketName);

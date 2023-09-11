@@ -8,19 +8,61 @@
 namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace sensor_helpers {
-std::vector<ImageSensor> availableSensors{{"IMX378", "1080p", {"12mp", "4k", "1080p"}, true},
-                                          {"OV9282", "800p", {"800p", "720p", "400p"}, false},
-                                          {"OV9782", "800p", {"800p", "720p", "400p"}, true},
-                                          {"OV9281", "800p", {"800p", "720p", "400p"}, true},
-                                          {"IMX214", "1080p", {"13mp", "12mp", "4k", "1080p"}, true},
-                                          {"IMX412", "1080p", {"13mp", "12mp", "4k", "1080p"}, true},
-                                          {"OV7750", "480p", {"480p", "400p"}, false},
-                                          {"OV7251", "480p", {"480p", "400p"}, false},
-                                          {"IMX477", "1080p", {"12mp", "4k", "1080p"}, true},
-                                          {"IMX577", "1080p", {"12mp", "4k", "1080p"}, true},
-                                          {"AR0234", "1200p", {"1200p"}, true},
-                                          {"IMX582", "4k", {"48mp", "12mp", "4k"}, true},
-                                          {"LCM48", "4k", {"48mp", "12mp", "4k"}, true}};
+std::vector<ImageSensor> availableSensors = {{"IMX378", "1080P", {"12MP", "4K", "1080P"}, true},
+                                             {"OV9282", "800P", {"800P", "720P", "400P"}, false},
+                                             {"OV9782", "800P", {"800P", "720P", "400P"}, true},
+                                             {"OV9281", "800P", {"800P", "720P", "400P"}, true},
+                                             {"IMX214", "1080P", {"13MP", "12MP", "4K", "1080P"}, true},
+                                             {"IMX412", "1080P", {"13MP", "12MP", "4K", "1080P"}, true},
+                                             {"OV7750", "480P", {"480P", "400P"}, false},
+                                             {"OV7251", "480P", {"480P", "400P"}, false},
+                                             {"IMX477", "1080P", {"12MP", "4K", "1080P"}, true},
+                                             {"IMX577", "1080P", {"12MP", "4K", "1080P"}, true},
+                                             {"AR0234", "1200P", {"1200P"}, true},
+                                             {"IMX582", "4K", {"48MP", "12MP", "4K"}, true},
+                                             {"LCM48", "4K", {"48MP", "12MP", "4K"}, true}};
+const std::unordered_map<dai::CameraBoardSocket, std::string> socketNameMap = {
+    {dai::CameraBoardSocket::AUTO, "rgb"},
+    {dai::CameraBoardSocket::CAM_A, "rgb"},
+    {dai::CameraBoardSocket::CAM_B, "left"},
+    {dai::CameraBoardSocket::CAM_C, "right"},
+    {dai::CameraBoardSocket::CAM_D, "left_back"},
+    {dai::CameraBoardSocket::CAM_E, "right_back"},
+};
+const std::unordered_map<std::string, dai::MonoCameraProperties::SensorResolution> monoResolutionMap = {
+    {"400P", dai::MonoCameraProperties::SensorResolution::THE_400_P},
+    {"480P", dai::MonoCameraProperties::SensorResolution::THE_480_P},
+    {"720P", dai::MonoCameraProperties::SensorResolution::THE_720_P},
+    {"800P", dai::MonoCameraProperties::SensorResolution::THE_800_P},
+    {"1200P", dai::MonoCameraProperties::SensorResolution::THE_1200_P},
+};
+
+const std::unordered_map<std::string, dai::ColorCameraProperties::SensorResolution> rgbResolutionMap = {
+    {"720P", dai::ColorCameraProperties::SensorResolution::THE_720_P},
+    {"1080P", dai::ColorCameraProperties::SensorResolution::THE_1080_P},
+    {"4K", dai::ColorCameraProperties::SensorResolution::THE_4_K},
+    {"12MP", dai::ColorCameraProperties::SensorResolution::THE_12_MP},
+    {"13MP", dai::ColorCameraProperties::SensorResolution::THE_13_MP},
+    {"800P", dai::ColorCameraProperties::SensorResolution::THE_800_P},
+    {"1200P", dai::ColorCameraProperties::SensorResolution::THE_1200_P},
+    {"5MP", dai::ColorCameraProperties::SensorResolution::THE_5_MP},
+    {"4000x3000", dai::ColorCameraProperties::SensorResolution::THE_4000X3000},
+    {"5312X6000", dai::ColorCameraProperties::SensorResolution::THE_5312X6000},
+    {"48MP", dai::ColorCameraProperties::SensorResolution::THE_48_MP},
+    {"1440X1080", dai::ColorCameraProperties::SensorResolution::THE_1440X1080}};
+
+const std::unordered_map<std::string, dai::CameraControl::FrameSyncMode> fSyncModeMap = {
+    {"OFF", dai::CameraControl::FrameSyncMode::OFF},
+    {"OUTPUT", dai::CameraControl::FrameSyncMode::OUTPUT},
+    {"INPUT", dai::CameraControl::FrameSyncMode::INPUT},
+};
+const std::unordered_map<std::string, dai::CameraImageOrientation> cameraImageOrientationMap = {
+    {"NORMAL", dai::CameraImageOrientation::NORMAL},
+    {"ROTATE_180_DEG", dai::CameraImageOrientation::ROTATE_180_DEG},
+    {"AUTO", dai::CameraImageOrientation::AUTO},
+    {"HORIZONTAL_MIRROR", dai::CameraImageOrientation::HORIZONTAL_MIRROR},
+    {"VERTICAL_FLIP", dai::CameraImageOrientation::VERTICAL_FLIP},
+};
 
 void basicCameraPub(const std::string& /*name*/,
                     const std::shared_ptr<dai::ADatatype>& data,
