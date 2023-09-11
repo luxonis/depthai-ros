@@ -17,6 +17,7 @@ class Pipeline;
 class Device;
 class DataOutputQueue;
 class ADatatype;
+class ImgFrame;
 namespace node {
 class StereoDepth;
 class XLinkOut;
@@ -67,6 +68,22 @@ class Stereo : public BaseNode {
     void setupStereoQueue(std::shared_ptr<dai::Device> device);
     void setupLeftRectQueue(std::shared_ptr<dai::Device> device);
     void setupRightRectQueue(std::shared_ptr<dai::Device> device);
+    void setupRectQueue(std::shared_ptr<dai::Device> device,
+                        dai::CameraFeatures& sensorInfo,
+                        const std::string& queueName,
+                        std::unique_ptr<dai::ros::ImageConverter>& conv,
+                        std::shared_ptr<camera_info_manager::CameraInfoManager>& im,
+                        std::shared_ptr<dai::DataOutputQueue>& q,
+                        rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub,
+                        rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr infoPub,
+                        image_transport::CameraPublisher& pubIT,
+                        bool isLeft);
+    /*
+     * This callback is used to synchronize left and right rectified frames
+     * It is called every 10ms and it publishes the frames if they are synchronized
+     * If they are not synchronized, it prints a warning message
+     */
+    void syncTimerCB();
     std::unique_ptr<dai::ros::ImageConverter> stereoConv, leftRectConv, rightRectConv;
     image_transport::CameraPublisher stereoPubIT, leftRectPubIT, rightRectPubIT;
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr stereoPub, leftRectPub, rightRectPub;
@@ -82,6 +99,7 @@ class Stereo : public BaseNode {
     std::shared_ptr<dai::node::XLinkOut> xoutStereo, xoutLeftRect, xoutRightRect;
     std::string stereoQName, leftRectQName, rightRectQName;
     dai::CameraFeatures leftSensInfo, rightSensInfo;
+    rclcpp::TimerBase::SharedPtr syncTimer;
 };
 
 }  // namespace dai_nodes

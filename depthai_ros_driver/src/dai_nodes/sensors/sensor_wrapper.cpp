@@ -21,7 +21,7 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
                              bool publish)
     : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s base", daiNodeName.c_str());
-    ph = std::make_unique<param_handlers::SensorParamHandler>(node, daiNodeName);
+    ph = std::make_unique<param_handlers::SensorParamHandler>(node, daiNodeName, socket);
 
     if(ph->getParam<bool>("i_simulate_from_topic")) {
         std::string topicName = ph->getParam<std::string>("i_simulated_topic_name");

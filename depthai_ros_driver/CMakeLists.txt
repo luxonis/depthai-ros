@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(depthai_ros_driver VERSION 2.7.5)
+project(depthai_ros_driver VERSION 2.8.0)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_BUILD_SHARED_LIBS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -28,6 +28,8 @@ depthai_bridge
 image_transport
 rclcpp
 sensor_msgs
+diagnostic_updater
+diagnostic_msgs
 )
 
 set(SENSOR_DEPS
@@ -63,6 +65,7 @@ add_library(
   ${COMMON_LIB_NAME} SHARED
   src/utils.cpp
   src/dai_nodes/base_node.cpp
+  src/dai_nodes/sys_logger.cpp
   src/dai_nodes/sensors/sensor_helpers.cpp # TODO: Figure out different place for this 
   src/param_handlers/camera_param_handler.cpp
   src/param_handlers/imu_param_handler.cpp

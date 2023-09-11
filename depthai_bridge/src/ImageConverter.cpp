@@ -40,14 +40,37 @@ void ImageConverter::updateRosBaseTime() {
     updateBaseTime(_steadyBaseTime, _rosBaseTime, _totalNsChange);
 }
 
-ImageMsgs::Image ImageConverter::toRosMsgRawPtr(
-    std::shared_ptr<dai::ImgFrame> inData, bool fromBitStream, bool dispToDepth, dai::RawImgFrame::Type type, const sensor_msgs::msg::CameraInfo& info) {
+void ImageConverter::convertFromBitstream(dai::RawImgFrame::Type srcType) {
+    _fromBitstream = true;
+    _srcType = srcType;
+}
+
+void ImageConverter::convertDispToDepth(double baseline) {
+    _convertDispToDepth = true;
+    _baseline = baseline;
+}
+
+void ImageConverter::addExposureOffset(dai::CameraExposureOffset& offset) {
+    _expOffset = offset;
+    _addExpOffset = true;
+}
+
+void ImageConverter::reverseStereoSocketOrder() {
+    _reverseStereoSocketOrder = true;
+}
+
+ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> inData, const sensor_msgs::msg::CameraInfo& info) {
     if(_updateRosBaseTimeOnToRosMsg) {
         updateRosBaseTime();
     }
     std::chrono::_V2::steady_clock::time_point tstamp;
     if(_getBaseDeviceTimestamp)
-        tstamp = inData->getTimestampDevice();
+        if(_addExpOffset)
+            tstamp = inData->getTimestampDevice(_expOffset);
+        else
+            tstamp = inData->getTimestampDevice();
+    else if(_addExpOffset)
+        tstamp = inData->getTimestamp(_expOffset);
     else
         tstamp = inData->getTimestamp();
     ImageMsgs::Image outImageMsg;
@@ -102,12 +125,12 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(
         return outImageMsg;
     }
 
-    if(fromBitStream) {
+    if(_fromBitstream) {
         std::string encoding;
         int decodeFlags;
         int channels;
         cv::Mat output;
-        switch(type) {
+        switch(_srcType) {
             case dai::RawImgFrame::Type::BGR888i: {
                 encoding = sensor_msgs::image_encodings::BGR8;
                 decodeFlags = cv::IMREAD_COLOR;
@@ -127,7 +150,7 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(
                 break;
             }
             default: {
-                std::cout << static_cast<int>(type) << std::endl;
+                std::cout << _frameName << static_cast<int>(_srcType) << std::endl;
                 throw(std::runtime_error("Converted type not supported!"));
             }
         }
@@ -135,8 +158,8 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(
         output = cv::imdecode(cv::Mat(1, inData->getData().size(), channels, inData->getData().data()), decodeFlags);
 
         // converting disparity
-        if(dispToDepth) {
-            auto factor = std::abs(info.p[3]) * 10000;
+        if(_convertDispToDepth) {
+            auto factor = std::abs(_baseline * 10) * info.p[0];
             cv::Mat depthOut = cv::Mat(cv::Size(output.cols, output.rows), CV_16UC1);
             depthOut.forEach<uint16_t>([&output, &factor](uint16_t& pixel, const int* position) -> void {
                 auto disp = output.at<uint8_t>(position);
@@ -404,12 +427,20 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
                 std::copy(stereoIntrinsics[i].begin(), stereoIntrinsics[i].end(), stereoFlatIntrinsics.begin() + 4 * i);
                 stereoFlatIntrinsics[(4 * i) + 3] = 0;
             }
+            // Check stereo socket order
+            dai::CameraBoardSocket stereoSocketFirst = calibHandler.getStereoLeftCameraId();
+            dai::CameraBoardSocket stereoSocketSecond = calibHandler.getStereoRightCameraId();
+            double factor = 1.0;
+            if(_reverseStereoSocketOrder) {
+                stereoSocketFirst = calibHandler.getStereoRightCameraId();
+                stereoSocketSecond = calibHandler.getStereoLeftCameraId();
+                factor = -1.0;
+            }
 
-            if(calibHandler.getStereoLeftCameraId() == cameraId) {
+            if(stereoSocketFirst == cameraId) {
                 // This defines where the first camera is w.r.t second camera coordinate system giving it a translation to place all the points in the first
                 // camera to second camera by multiplying that translation vector using transformation function.
-                stereoFlatIntrinsics[3] = stereoFlatIntrinsics[0]
-                                          * calibHandler.getCameraExtrinsics(calibHandler.getStereoRightCameraId(), calibHandler.getStereoLeftCameraId())[0][3]
+                stereoFlatIntrinsics[3] = factor * stereoFlatIntrinsics[0] * calibHandler.getCameraExtrinsics(stereoSocketFirst, stereoSocketSecond)[0][3]
                                           / 100.0;  // Converting to meters
                 rectifiedRotation = calibHandler.getStereoLeftRectificationRotation();
             } else {
