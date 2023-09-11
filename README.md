@@ -354,7 +354,6 @@ For more examples please check the launch files.
 For more examples please check the launch files.
 
 
-
 ## Running Examples
 
 ### Mobilenet Publisher:
