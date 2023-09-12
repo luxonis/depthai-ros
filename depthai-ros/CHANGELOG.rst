@@ -9,6 +9,7 @@ Changelog for package depthai-ros
 * Added disparity to depth use spec translation parameter
 * Updated sensor socket logic
 * Fixed issues when running robot_state_publisher as component
+* Added missing tf2 dependencies
 
 2.8.0 (2023-09-01)
 -------------------
