@@ -41,7 +41,7 @@ Stereo::Stereo(const std::string& daiNodeName,
             continue;
         }
     }
-    ROS_INFO("Creating stereo node with left sensor %s and right sensor %s",
+    ROS_DEBUG("Creating stereo node with left sensor %s and right sensor %s",
              utils::getSocketName(leftSensInfo.socket).c_str(),
              utils::getSocketName(rightSensInfo.socket).c_str());
     left = std::make_unique<SensorWrapper>(utils::getSocketName(leftSensInfo.socket), node, pipeline, device, leftSensInfo.socket, false);
