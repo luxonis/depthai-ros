@@ -43,8 +43,9 @@ void ImageConverter::convertFromBitstream(dai::RawImgFrame::Type srcType) {
     _srcType = srcType;
 }
 
-void ImageConverter::convertDispToDepth() {
+void ImageConverter::convertDispToDepth(double baseline) {
     _convertDispToDepth = true;
+    _baseline = baseline;
 }
 
 void ImageConverter::addExposureOffset(dai::CameraExposureOffset& offset) {
@@ -106,7 +107,7 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
 
         // converting disparity
         if(_convertDispToDepth) {
-            auto factor = std::abs(info.P[3]) * 10000;
+            auto factor = std::abs(_baseline * 10) * info.P[0];
             cv::Mat depthOut = cv::Mat(cv::Size(output.cols, output.rows), CV_16UC1);
             depthOut.forEach<uint16_t>([&output, &factor](uint16_t& pixel, const int* position) -> void {
                 auto disp = output.at<uint8_t>(position);
@@ -365,11 +366,20 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
                 stereoFlatIntrinsics[(4 * i) + 3] = 0;
             }
 
-            if(calibHandler.getStereoLeftCameraId() == cameraId) {
+            // Check stereo socket order
+            dai::CameraBoardSocket stereoSocketFirst = calibHandler.getStereoLeftCameraId();
+            dai::CameraBoardSocket stereoSocketSecond = calibHandler.getStereoRightCameraId();
+            double factor = 1.0;
+            if(_reverseStereoSocketOrder) {
+                stereoSocketFirst = calibHandler.getStereoRightCameraId();
+                stereoSocketSecond = calibHandler.getStereoLeftCameraId();
+                factor = -1.0;
+            }
+
+            if(stereoSocketFirst == cameraId) {
                 // This defines where the first camera is w.r.t second camera coordinate system giving it a translation to place all the points in the first
                 // camera to second camera by multiplying that translation vector using transformation function.
-                stereoFlatIntrinsics[3] = stereoFlatIntrinsics[0]
-                                          * calibHandler.getCameraExtrinsics(calibHandler.getStereoRightCameraId(), calibHandler.getStereoLeftCameraId())[0][3]
+                stereoFlatIntrinsics[3] = factor * stereoFlatIntrinsics[0] * calibHandler.getCameraExtrinsics(stereoSocketFirst, stereoSocketSecond)[0][3]
                                           / 100.0;  // Converting to meters
                 rectifiedRotation = calibHandler.getStereoLeftRectificationRotation();
             } else {

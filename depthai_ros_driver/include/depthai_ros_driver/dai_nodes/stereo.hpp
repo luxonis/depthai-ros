@@ -70,7 +70,7 @@ class Stereo : public BaseNode {
                         std::shared_ptr<dai::DataOutputQueue>& q,
                         image_transport::CameraPublisher& pubIT,
                         bool isLeft);
-    /*
+    /**
      * This callback is used to synchronize left and right rectified frames
      * It is called every 10ms and it publishes the frames if they are synchronized
      * If they are not synchronized, it prints a warning message

@@ -58,6 +58,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<bool>("i_add_exposure_offset", false);
     declareAndLogParam<int>("i_exposure_offset", 0);
     declareAndLogParam<bool>("i_enable_lazy_publisher", true);
+    declareAndLogParam<bool>("i_reverse_stereo_socket_order", false);
 
     declareAndLogParam<bool>("i_publish_synced_rect_pair", false);
     declareAndLogParam<bool>("i_publish_left_rect", false);
@@ -96,6 +97,9 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     stereo->setDefaultProfilePreset(depthPresetMap.at(declareAndLogParam<std::string>("i_depth_preset", "HIGH_ACCURACY")));
     if(declareAndLogParam<bool>("i_enable_distortion_correction", false)) {
         stereo->enableDistortionCorrection(true);
+    }
+    if(declareAndLogParam<bool>("i_set_disparity_to_depth_use_spec_translation", false)) {
+        stereo->setDisparityToDepthUseSpecTranslation(true);
     }
 
     stereo->initialConfig.setBilateralFilterSigma(declareAndLogParam<int>("i_bilateral_sigma", 0));

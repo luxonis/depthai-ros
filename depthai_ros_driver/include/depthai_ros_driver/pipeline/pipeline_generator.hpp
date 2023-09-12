@@ -24,7 +24,7 @@ class PipelineGenerator {
    public:
     PipelineGenerator(){};
     ~PipelineGenerator() = default;
-    /*
+    /**
      * @brief      Validates the pipeline type. If the pipeline type is not valid for the number of sensors, it will be changed to the default type.
      *
      * @param[in]  type       The type
@@ -34,7 +34,7 @@ class PipelineGenerator {
      */
     std::string validatePipeline(const std::string& typeStr, int sensorNum);
 
-    /*
+    /**
      * @brief      Creates the pipeline by using a plugin. Plugin types need to be of type depthai_ros_driver::pipeline_gen::BasePipeline.
      *
      * @param      node          The node
