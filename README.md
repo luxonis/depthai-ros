@@ -406,6 +406,7 @@ For easier development inside isolated workspace, one can use Visual Studio Code
 - Open workspace directory in VSCode
 
 ### List of parameters:
+```yaml
 /oak:
   ros__parameters:
     camera:
@@ -612,3 +613,4 @@ For easier development inside isolated workspace, one can use Visual Studio Code
       i_update_ros_base_time_on_ros_msg: false
       i_width: 1280
     use_sim_time: false
+```
