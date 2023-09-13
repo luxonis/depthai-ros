@@ -2,6 +2,15 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.8.1 (2023-09-12)
+-------------------
+
+* Added support for OpenCV Stereo order convention
+* Added disparity to depth use spec translation parameter
+* Updated sensor socket logic
+* Fixed issues when running robot_state_publisher as component
+* Added missing tf2 dependencies
+
 2.8.0 (2023-09-01)
 -------------------
 * Add camera image orientation param 

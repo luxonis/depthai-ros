@@ -3,6 +3,7 @@
     camera:
       i_nn_type: none
     stereo:
-      i_align_depth: false
+      i_align_depth: true
+      i_board_socket_id: 2
       i_subpixel: true
       i_publish_right_rect: true

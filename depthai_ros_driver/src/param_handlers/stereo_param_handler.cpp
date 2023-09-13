@@ -51,7 +51,7 @@ void StereoParamHandler::updateSocketsFromParams(dai::CameraBoardSocket& left, d
     right = static_cast<dai::CameraBoardSocket>(newRightS);
 }
 
-void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> stereo, const std::vector<dai::CameraFeatures>& camFeatures) {
+void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> stereo) {
     declareAndLogParam<int>("i_max_q_size", 30);
     declareAndLogParam<bool>("i_low_bandwidth", false);
     declareAndLogParam<int>("i_low_bandwidth_quality", 50);
@@ -62,6 +62,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<bool>("i_add_exposure_offset", false);
     declareAndLogParam<int>("i_exposure_offset", 0);
     declareAndLogParam<bool>("i_enable_lazy_publisher", true);
+    declareAndLogParam<bool>("i_reverse_stereo_socket_order", false);
 
     declareAndLogParam<bool>("i_publish_synced_rect_pair", false);
     declareAndLogParam<bool>("i_publish_left_rect", false);
@@ -84,7 +85,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     auto socket = static_cast<dai::CameraBoardSocket>(declareAndLogParam<int>("i_board_socket_id", static_cast<int>(dai::CameraBoardSocket::CAM_A)));
     std::string socketName;
     if(declareAndLogParam<bool>("i_align_depth", true)) {
-        socketName = utils::getSocketName(socket, camFeatures);
+        socketName = utils::getSocketName(socket);
         try {
             width = getROSNode()->get_parameter(socketName + ".i_width").as_int();
             height = getROSNode()->get_parameter(socketName + ".i_height").as_int();
@@ -104,6 +105,9 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     stereo->setDefaultProfilePreset(depthPresetMap.at(declareAndLogParam<std::string>("i_depth_preset", "HIGH_ACCURACY")));
     if(declareAndLogParam<bool>("i_enable_distortion_correction", false)) {
         stereo->enableDistortionCorrection(true);
+    }
+    if(declareAndLogParam<bool>("i_set_disparity_to_depth_use_spec_translation", false)) {
+        stereo->setDisparityToDepthUseSpecTranslation(true);
     }
 
     stereo->initialConfig.setBilateralFilterSigma(declareAndLogParam<int>("i_bilateral_sigma", 0));

@@ -28,7 +28,7 @@ class TFPublisher {
                          const std::string& imuFromDescr,
                          const std::string& customURDFLocation,
                          const std::string& customXacroArgs);
-    /*
+    /**
      * @brief Obtain URDF description by running Xacro with provided arguments.
      */
     std::string getURDF();
@@ -36,31 +36,31 @@ class TFPublisher {
     geometry_msgs::msg::Vector3 transFromExtr(nlohmann::json translation);
 
    private:
-    /*
+    /**
      * @brief Converts model name to one of the available model families
      */
     void convertModelName();
-    /*
+    /**
      * @brief Prepare arguments for xacro command. If custom URDF location is not provided, check if model name is available in depthai_descriptions package.
      */
     std::string prepareXacroArgs();
-    /*
+    /**
      * @brief Get URDF description and set it as a parameter for robot_state_publisher
      */
     void publishDescription();
-    /*
+    /**
      * @brief Publish camera transforms ("standard" and optical) based on calibration data.
      * Frame names are based on socket names and use following convention: [base_frame]_[socket_name]_camera_frame and
      * [base_frame]_[socket_name]_camera_optical_frame
      */
     void publishCamTransforms(nlohmann::json camData, rclcpp::Node* node);
-    /*
+    /**
      * @brief Publish IMU transform based on calibration data.
      * Frame name is based on IMU name and uses following convention: [base_frame]_imu_frame.
      * If IMU extrinsics are not set, warning is printed out and imu frame is published with zero translation and rotation.
      */
     void publishImuTransform(nlohmann::json json, rclcpp::Node* node);
-    /*
+    /**
      * @brief Check if model STL file is available in depthai_descriptions package.
      */
     bool modelNameAvailable();
@@ -82,6 +82,14 @@ class TFPublisher {
     std::string _customXacroArgs;
     std::vector<dai::CameraFeatures> _camFeatures;
     rclcpp::Logger _logger;
+    const std::unordered_map<dai::CameraBoardSocket, std::string> _socketNameMap = {
+        {dai::CameraBoardSocket::AUTO, "rgb"},
+        {dai::CameraBoardSocket::CAM_A, "rgb"},
+        {dai::CameraBoardSocket::CAM_B, "left"},
+        {dai::CameraBoardSocket::CAM_C, "right"},
+        {dai::CameraBoardSocket::CAM_D, "left_back"},
+        {dai::CameraBoardSocket::CAM_E, "right_back"},
+    };
 };
 }  // namespace ros
 }  // namespace dai
