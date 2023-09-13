@@ -25,12 +25,7 @@ namespace ImageMsgs = sensor_msgs::msg;
 using ImagePtr = ImageMsgs::Image::SharedPtr;
 
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration>;
-ImageMsgs::CameraInfo calibrationToCameraInfo(dai::CalibrationHandler calibHandler,
-                                              dai::CameraBoardSocket cameraId,
-                                              int width = -1,
-                                              int height = -1,
-                                              Point2f topLeftPixelId = Point2f(),
-                                              Point2f bottomRightPixelId = Point2f());
+
 class ImageConverter {
    public:
     // ImageConverter() = default;
@@ -55,9 +50,29 @@ class ImageConverter {
         _updateRosBaseTimeOnToRosMsg = update;
     }
 
+    /**
+     * @brief Sets converter behavior to convert from bitstream to raw data.
+     * @param srcType: The type of the bitstream data used for conversion.
+     */
     void convertFromBitstream(dai::RawImgFrame::Type srcType);
+
+    /**
+     * @brief Sets exposure offset when getting timestamps from the message.
+     * @param offset: The exposure offset to be added to the timestamp.
+     */
     void addExposureOffset(dai::CameraExposureOffset& offset);
-    void convertDispToDepth();
+
+    /**
+     * @brief Sets converter behavior to convert from disparity to depth when converting messages from bitstream.
+     * @param baseline: The baseline of the stereo pair.
+     */
+    void convertDispToDepth(double baseline);
+
+    /**
+     * @brief Reverses the order of the stereo sockets when creating CameraInfo to calculate Tx component of Projection matrix.
+     * By default the right socket is used as the base, calling this function will set left as base.
+     */
+    void reverseStereoSocketOrder();
 
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs);
     ImageMsgs::Image toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> inData, const sensor_msgs::msg::CameraInfo& info = sensor_msgs::msg::CameraInfo());
@@ -100,6 +115,8 @@ class ImageConverter {
     bool _convertDispToDepth = false;
     bool _addExpOffset = false;
     dai::CameraExposureOffset _expOffset;
+    bool _reverseStereoSocketOrder = false;
+    double _baseline;
 };
 
 }  // namespace ros

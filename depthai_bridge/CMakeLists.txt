@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-project(depthai_bridge VERSION 2.8.0 LANGUAGES CXX C)
+project(depthai_bridge VERSION 2.8.1 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -38,6 +38,9 @@ find_package(stereo_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(vision_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(composition_interfaces REQUIRED)
 
 set(dependencies
   camera_info_manager
@@ -50,6 +53,9 @@ set(dependencies
   std_msgs
   vision_msgs
   tf2_ros
+  tf2_geometry_msgs
+  tf2
+  composition_interfaces
 )
 
 include_directories(

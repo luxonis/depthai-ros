@@ -24,7 +24,7 @@ class StereoParamHandler : public BaseParamHandler {
    public:
     explicit StereoParamHandler(rclcpp::Node* node, const std::string& name);
     ~StereoParamHandler();
-    void declareParams(std::shared_ptr<dai::node::StereoDepth> stereo, const std::vector<dai::CameraFeatures>& camFeatures);
+    void declareParams(std::shared_ptr<dai::node::StereoDepth> stereo);
     dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;
     void updateSocketsFromParams(dai::CameraBoardSocket& left, dai::CameraBoardSocket& right);
 

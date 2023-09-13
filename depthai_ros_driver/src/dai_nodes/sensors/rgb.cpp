@@ -28,8 +28,8 @@ RGB::RGB(const std::string& daiNodeName,
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     colorCamNode = pipeline->create<dai::node::ColorCamera>();
-    ph = std::make_unique<param_handlers::SensorParamHandler>(node, daiNodeName);
-    ph->declareParams(colorCamNode, socket, sensor, publish);
+    ph = std::make_unique<param_handlers::SensorParamHandler>(node, daiNodeName, socket);
+    ph->declareParams(colorCamNode, sensor, publish);
     setXinXout(pipeline);
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
 }
@@ -69,8 +69,7 @@ void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 
 void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_publish_topic")) {
-        auto tfPrefix = getTFPrefix(
-            utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")), device->getConnectedCameraFeatures()));
+        auto tfPrefix = getTFPrefix(utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
             getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
         imageConverter =
@@ -82,6 +81,10 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         if(ph->getParam<bool>("i_add_exposure_offset")) {
             auto offset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
             imageConverter->addExposureOffset(offset);
+        }
+
+        if(ph->getParam<bool>("i_reverse_stereo_socket_order")) {
+            imageConverter->reverseStereoSocketOrder();
         }
 
         if(ph->getParam<std::string>("i_calibration_file").empty()) {
@@ -123,7 +126,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
 
         previewInfoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
             getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + previewQName).get(), previewQName);
-        auto tfPrefix = getTFPrefix(getName());
+        auto tfPrefix = getTFPrefix(utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
         imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
         imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
         if(ph->getParam<std::string>("i_calibration_file").empty()) {

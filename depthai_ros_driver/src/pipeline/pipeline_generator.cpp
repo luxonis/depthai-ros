@@ -23,9 +23,8 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
     // Check if one of the default types.
     try {
         std::string pTypeUpCase = utils::getUpperCaseStr(pipelineType);
-        auto pType = utils::getValFromMap(pTypeUpCase, pipelineTypeMap);
-        pType = validatePipeline(node, pType, device->getCameraSensorNames().size());
-        pluginType = utils::getValFromMap(pTypeUpCase, pluginTypeMap);
+        auto pTypeValidated = validatePipeline(node, pTypeUpCase, device->getCameraSensorNames().size());
+        pluginType = utils::getValFromMap(pTypeValidated, pluginTypeMap);
     } catch(std::out_of_range& e) {
         RCLCPP_DEBUG(node->get_logger(), "Pipeline type [%s] not found in base types, trying to load as a plugin.", pipelineType.c_str());
     }
@@ -52,22 +51,20 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
     return daiNodes;
 }
 
-PipelineType PipelineGenerator::validatePipeline(rclcpp::Node* node, PipelineType type, int sensorNum) {
+std::string PipelineGenerator::validatePipeline(rclcpp::Node* node, const std::string& typeStr, int sensorNum) {
+    auto pType = utils::getValFromMap(typeStr, pipelineTypeMap);
     if(sensorNum == 1) {
-        if(type != PipelineType::RGB) {
+        if(pType != PipelineType::RGB) {
             RCLCPP_ERROR(node->get_logger(), "Wrong pipeline chosen for camera as it has only one sensor. Switching to RGB.");
-            return PipelineType::RGB;
+            return "RGB";
         }
     } else if(sensorNum == 2) {
-        if(type != PipelineType::Stereo && type != PipelineType::Depth) {
-            RCLCPP_ERROR(node->get_logger(), "Wrong pipeline chosen for camera as it has only stereo pair. Switching to Stereo.");
-            return PipelineType::Stereo;
+        if(pType != PipelineType::Stereo && pType != PipelineType::Depth) {
+            RCLCPP_ERROR(node->get_logger(), "Wrong pipeline chosen for camera as it has only stereo pair. Switching to Depth.");
+            return "DEPTH";
         }
-    } else if(sensorNum > 3 && type != PipelineType::CamArray) {
-        RCLCPP_ERROR(node->get_logger(), "For cameras with more than three sensors you can only use CamArray. Switching to CamArray.");
-        return PipelineType::CamArray;
     }
-    return type;
+    return typeStr;
 }
 }  // namespace pipeline_gen
 }  // namespace depthai_ros_driver

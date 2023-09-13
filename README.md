@@ -137,7 +137,8 @@ docker run -it -v /dev/:/dev/ --privileged -e DISPLAY -v /tmp/.X11-unix:/tmp/.X1
 
 Currently, recommended way to launch cameras is to use executables from depthai_ros_driver package. 
 
-This runs your camera as a ROS2 Component and gives you the ability to customize your camera using ROS parameters. 
+This runs your camera as a ROS2 Component/ROS Nodelet and gives you the ability to customize your camera using ROS parameters.
+Main API difference between ROS2 and ROS1 is that parameter names use different convention - parameters in ROS2 are namespaced using `.` and parameters in ROS1 are namespaced using `_`, for example in ROS2: `camera.i_pipeline_type`, ROS1 `camera_i_pipeline_type`. For sake of simplicity, this Readme uses ROS2 convention. List of all available parameters with their default values can be found at the bottom of Readme.
 Paramerers that begin with `r_` can be freely modified during runtime, for example with rqt. 
 Parameters that begin with `i_` are set when camera is initializing, to change them you have to call `stop` and `start` services. This can be used to hot swap NNs during runtime, changing resolutions, etc. Below you can see some examples:
 
@@ -166,18 +167,39 @@ It is also possible to set custom URDF path (for now only absolute path works) a
 **NOTE ON IMU EXTRINSICS**
 If your camera has uncalibrated IMU, a warning will be shown, and IMU will be published with zero rotation and translation. You can override this behavior by setting `camera.i_tf_imu_from_descr`: true. This will publish default IMU extrinsics from URDF based on camera model.
 
+
+#### Available sensors and their resolutions:
+
+* IMX378 - {"12MP", "4K", "1080P"}, default 1080P
+* OV9282 - {"800P", "720P", "400P"}, default 800P
+* OV9782 - {"800P", "720P", "400P"}, default 800P
+* OV9281 - {"800P", "720P", "400P"}, default 800P
+* IMX214 - {"13MP", "12MP", "4K", "1080P"}, default 1080P
+* IMX412 - {"13MP", "12MP", "4K", "1080P"}, default 1080P
+* OV7750 - {"480P", "400P"}, default 480P
+* OV7251 - {"480P", "400P"}, default 480P
+* IMX477 - {"12MP", "4K", "1080P"}, default 1080P
+* IMX577 - {"12MP", "4K", "1080P"}, default 1080P
+* AR0234 - {"1200P"}, default 1200P
+* IMX582 - {"48MP", "12MP", "4K"}, default 4K
+* LCM48 - {"48MP", "12MP", "4K"}, default 4K
+  
 #### Setting RGB parameters
+![](docs/param_rgb.gif)
 
 By default RGB camera outputs `ISP` frame. To set custom width and height of output image, you can set `i_isp_num` and `i_isp_den` which scale image dimensions (2 and 3 by default, so from 1920x1080 to 1280x720), note for RGBD alignment to work resulting width and height must be divisible by 16. 
 
 Additionally you can set `i.output_isp: false` to use `video` output and set custom size using `i_width` and `i_height` parameters.
-![](docs/param_rgb.gif)
+
 #### Setting Stereo parameters
 ![](docs/param_stereo.gif)
 ##### Depth alignment
 When setting `stereo.i_align_depth: true`, stereo output is aligned to board socket specified by `stereo.i_board_socket_id` parameter (by default 0/CAM_A)
 
 You can enable rectified Stereo streams by setting, for example in the case of right stream `i_publish_right_rect: true`. You can also set `i_publish_synced_rect_pair: true` to get both images with the same timestamps.
+
+##### Stereo socket order
+By default, right camera is treated as first when used for stereo computation, which is reflected in CameraInfo messages. If you want to reverse that logic, set `stereo.i_reverse_stereo_socket_order: true` (this can be also set for individual sensors).
 
 ##### Custom Sensor sockets
 
@@ -302,7 +324,6 @@ an example can be seen by running  `ros2 launch depthai_filters example_wls_filt
 - FeatureTrackerOverlay - publishes Tracked Features overlay based on features and images coming from the driver
 - Features3D - uses depth image to republish features as 3D pointcloud
 
-
 ### Using external sources for NN inference or Stereo Depth
 
 There is a possibility of using external image topics as input for NNs or Depth calculation.
@@ -383,3 +404,213 @@ For easier development inside isolated workspace, one can use Visual Studio Code
 - Clone repository into src
 - Copy `.devcontainer` directory into main workspace directory
 - Open workspace directory in VSCode
+
+### List of parameters:
+```yaml
+/oak:
+  ros__parameters:
+    camera:
+      i_calibration_dump: false
+      i_enable_imu: true
+      i_enable_ir: true
+      i_external_calibration_path: ''
+      i_floodlight_brightness: 0
+      i_ip: ''
+      i_laser_dot_brightness: 800
+      i_mx_id: ''
+      i_nn_type: spatial
+      i_pipeline_dump: false
+      i_pipeline_type: RGBD
+      i_publish_tf_from_calibration: false
+      i_tf_base_frame: oak
+      i_tf_cam_pitch: '0.0'
+      i_tf_cam_pos_x: '0.0'
+      i_tf_cam_pos_y: '0.0'
+      i_tf_cam_pos_z: '0.0'
+      i_tf_cam_roll: '0.0'
+      i_tf_cam_yaw: '0.0'
+      i_tf_camera_model: ''
+      i_tf_camera_name: oak
+      i_tf_custom_urdf_location: ''
+      i_tf_custom_xacro_args: ''
+      i_tf_imu_from_descr: 'false'
+      i_tf_parent_frame: oak-d-base-frame
+      i_usb_port_id: ''
+      i_usb_speed: SUPER_PLUS
+    diagnostic_updater:
+      period: 1.0
+    imu:
+      i_acc_cov: 0.0
+      i_acc_freq: 400
+      i_batch_report_threshold: 5
+      i_enable_rotation: false
+      i_get_base_device_timestamp: false
+      i_gyro_cov: 0.0
+      i_gyro_freq: 400
+      i_mag_cov: 0.0
+      i_max_batch_reports: 10
+      i_message_type: IMU
+      i_rot_cov: -1.0
+      i_sync_method: LINEAR_INTERPOLATE_ACCEL
+      i_update_ros_base_time_on_ros_msg: false
+    left:
+      i_add_exposure_offset: false
+      i_board_socket_id: 1
+      i_calibration_file: ''
+      i_disable_node: false
+      i_enable_feature_tracker: false
+      i_enable_lazy_publisher: true
+      i_exposure_offset: 0
+      i_fps: 30.0
+      i_fsync_continuous: false
+      i_fsync_trigger: false
+      i_get_base_device_timestamp: false
+      i_height: 720
+      i_low_bandwidth: false
+      i_low_bandwidth_quality: 50
+      i_max_q_size: 30
+      i_publish_topic: false
+      i_resolution: '720'
+      i_reverse_stereo_socket_order: false
+      i_sensor_img_orientation: NORMAL
+      i_set_isp3a_fps: false
+      i_simulate_from_topic: false
+      i_simulated_topic_name: ''
+      i_update_ros_base_time_on_ros_msg: false
+      i_width: 1280
+      r_exposure: 1000
+      r_iso: 800
+      r_set_man_exposure: false
+    nn:
+      i_disable_resize: false
+      i_enable_passthrough: false
+      i_enable_passthrough_depth: false
+      i_get_base_device_timestamp: false
+      i_num_inference_threads: 2
+      i_num_pool_frames: 4
+      i_update_ros_base_time_on_ros_msg: false
+    rgb:
+      i_add_exposure_offset: false
+      i_board_socket_id: 0
+      i_calibration_file: ''
+      i_disable_node: false
+      i_enable_feature_tracker: false
+      i_enable_lazy_publisher: true
+      i_enable_preview: false
+      i_exposure_offset: 0
+      i_fps: 30.0
+      i_fsync_continuous: false
+      i_fsync_trigger: false
+      i_get_base_device_timestamp: false
+      i_height: 720
+      i_interleaved: false
+      i_isp_den: 3
+      i_isp_num: 2
+      i_keep_preview_aspect_ratio: true
+      i_low_bandwidth: false
+      i_low_bandwidth_quality: 50
+      i_max_q_size: 30
+      i_output_isp: true
+      i_preview_height: 300
+      i_preview_size: 300
+      i_preview_width: 300
+      i_publish_topic: true
+      i_resolution: 1080p
+      i_reverse_stereo_socket_order: false
+      i_sensor_img_orientation: NORMAL
+      i_set_isp3a_fps: false
+      i_set_isp_scale: true
+      i_simulate_from_topic: false
+      i_simulated_topic_name: ''
+      i_update_ros_base_time_on_ros_msg: false
+      i_width: 1280
+      r_exposure: 20000
+      r_focus: 1
+      r_iso: 800
+      r_set_man_exposure: false
+      r_set_man_focus: false
+      r_set_man_whitebalance: false
+      r_whitebalance: 3300
+    right:
+      i_add_exposure_offset: false
+      i_board_socket_id: 2
+      i_calibration_file: ''
+      i_disable_node: false
+      i_enable_feature_tracker: false
+      i_enable_lazy_publisher: true
+      i_exposure_offset: 0
+      i_fps: 30.0
+      i_fsync_continuous: false
+      i_fsync_trigger: false
+      i_get_base_device_timestamp: false
+      i_height: 720
+      i_low_bandwidth: false
+      i_low_bandwidth_quality: 50
+      i_max_q_size: 30
+      i_publish_topic: false
+      i_resolution: '720'
+      i_reverse_stereo_socket_order: false
+      i_sensor_img_orientation: NORMAL
+      i_set_isp3a_fps: false
+      i_simulate_from_topic: false
+      i_simulated_topic_name: ''
+      i_update_ros_base_time_on_ros_msg: false
+      i_width: 1280
+      r_exposure: 1000
+      r_iso: 800
+      r_set_man_exposure: false
+    stereo:
+      i_add_exposure_offset: false
+      i_align_depth: true
+      i_bilateral_sigma: 0
+      i_board_socket_id: 0
+      i_depth_filter_size: 5
+      i_depth_preset: HIGH_ACCURACY
+      i_disparity_width: DISPARITY_96
+      i_enable_alpha_scaling: false
+      i_enable_brightness_filter: false
+      i_enable_companding: false
+      i_enable_decimation_filter: false
+      i_enable_disparity_shift: false
+      i_enable_distortion_correction: false
+      i_enable_lazy_publisher: true
+      i_enable_spatial_filter: false
+      i_enable_speckle_filter: false
+      i_enable_temporal_filter: false
+      i_enable_threshold_filter: false
+      i_exposure_offset: 0
+      i_extended_disp: false
+      i_get_base_device_timestamp: false
+      i_height: 720
+      i_left_rect_add_exposure_offset: false
+      i_left_rect_enable_feature_tracker: false
+      i_left_rect_exposure_offset: 0
+      i_left_rect_low_bandwidth: false
+      i_left_rect_low_bandwidth_quality: 50
+      i_left_socket_id: 1
+      i_low_bandwidth: false
+      i_low_bandwidth_quality: 50
+      i_lr_check: true
+      i_lrc_threshold: 10
+      i_max_q_size: 30
+      i_output_disparity: false
+      i_publish_left_rect: false
+      i_publish_right_rect: false
+      i_publish_synced_rect_pair: false
+      i_publish_topic: true
+      i_rectify_edge_fill_color: 0
+      i_reverse_stereo_socket_order: false
+      i_right_rect_add_exposure_offset: false
+      i_right_rect_enable_feature_tracker: false
+      i_right_rect_exposure_offset: 0
+      i_right_rect_low_bandwidth: false
+      i_right_rect_low_bandwidth_quality: 50
+      i_right_socket_id: 2
+      i_set_input_size: false
+      i_socket_name: rgb
+      i_stereo_conf_threshold: 240
+      i_subpixel: false
+      i_update_ros_base_time_on_ros_msg: false
+      i_width: 1280
+    use_sim_time: false
+```
