@@ -12,12 +12,11 @@
         <xacro:property name="has_imu" value="false" />
         <xacro:property name="baseline" value="0.075" />
 
-        <xacro:if value="${model == 'OAK-D'}">
+        <xacro:if value="${model in ['OAK-D', 'OAK-D-PRO', 'OAK-D-POE']}">
             <xacro:property name="has_imu" value="true" />
         </xacro:if>
 
-        <xacro:base camera_name = "$(arg camera_name)" parent = "$(arg parent_frame)" camera_model = "$(arg camera_model)" base_frame = "$(arg base_frame)" cam_pos_x = "$(arg cam_pos_x)" cam_pos_y = "$(arg cam_pos_y)" cam_pos_z = "$(arg cam_pos_z)" cam_roll = "$(arg cam_roll)" cam_pitch = "$(arg cam_pitch)" cam_yaw = "$(arg cam_yaw)" has_imu="${has_imu}"/>
-
+        <xacro:base camera_name="${camera_name}" parent="${parent}" camera_model="${camera_model}" base_frame="${base_frame}" cam_pos_x="${cam_pos_x}" cam_pos_y="${cam_pos_y}" cam_pos_z="${cam_pos_z}" cam_roll="${cam_roll}" cam_pitch="${cam_pitch}" cam_yaw="${cam_yaw}" has_imu="${has_imu}"/>
         <!-- RGB Camera -->
         <link name="${camera_name}_rgb_camera_frame" />
 
