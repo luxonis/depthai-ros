@@ -213,6 +213,9 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_reverse_stereo_socket_order")) {
         stereoConv->reverseStereoSocketOrder();
     }
+    if(ph->getParam<bool>("i_enable_alpha_scaling")){
+        stereoConv->setAlphaScaling(ph->getParam<double>("i_alpha_scaling"));
+    }
     stereoIM = std::make_shared<camera_info_manager::CameraInfoManager>(
         getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
     auto info = sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
