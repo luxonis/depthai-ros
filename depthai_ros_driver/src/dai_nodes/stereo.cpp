@@ -121,7 +121,7 @@ void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
                             std::shared_ptr<dai::DataOutputQueue>& q,
                             image_transport::CameraPublisher& pubIT,
                             bool isLeft) {
-    auto sensorName = getTFPrefix(utils::getSocketName(sensorInfo.socket));
+    auto sensorName = utils::getSocketName(sensorInfo.socket);
     auto tfPrefix = getTFPrefix(sensorName);
     conv = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
     conv->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
