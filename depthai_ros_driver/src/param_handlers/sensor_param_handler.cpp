@@ -94,9 +94,9 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
         resString = sensor.defaultResolution;
     }
 
+    colorCam->setResolution(utils::getValFromMap(resString, dai_nodes::sensor_helpers::rgbResolutionMap));
     int width = colorCam->getResolutionWidth();
     int height = colorCam->getResolutionHeight();
-    colorCam->setResolution(utils::getValFromMap(resString, dai_nodes::sensor_helpers::rgbResolutionMap));
 
     colorCam->setInterleaved(declareAndLogParam<bool>("i_interleaved", false));
     if(declareAndLogParam<bool>("i_set_isp_scale", true)) {
