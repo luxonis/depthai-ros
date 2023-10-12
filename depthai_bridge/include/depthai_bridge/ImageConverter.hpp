@@ -117,6 +117,7 @@ class ImageConverter {
     dai::CameraExposureOffset _expOffset;
     bool _reverseStereoSocketOrder = false;
     double _baseline;
+    double _alphaScalingFactor = 0.0;
 };
 
 }  // namespace ros
