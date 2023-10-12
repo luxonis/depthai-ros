@@ -262,7 +262,10 @@ void Stereo::syncTimerCB() {
     auto left = leftRectQ->get<dai::ImgFrame>();
     auto right = rightRectQ->get<dai::ImgFrame>();
     if(left->getSequenceNum() != right->getSequenceNum()) {
-        RCLCPP_WARN(getROSNode()->get_logger(), "Left and right rectified frames are not synchronized!");
+        RCLCPP_WARN(getROSNode()->get_logger(),
+                    "Left and right rectified frames are not synchronized! Left seq: %d, right seq: %d",
+                    left->getSequenceNum(),
+                    right->getSequenceNum());
     } else {
         bool lazyPub = ph->getParam<bool>("i_enable_lazy_publisher");
         if(ipcEnabled() && rclcpp::ok()
