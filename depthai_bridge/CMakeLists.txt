@@ -13,11 +13,11 @@ if(POLICY CMP0057)
 endif()
 
 set(opencv_version 4)
-find_package(OpenCV ${opencv_version} QUIET COMPONENTS imgproc highgui)
+find_package(OpenCV ${opencv_version} QUIET COMPONENTS imgproc highgui calib3d)
 if(NOT OpenCV_FOUND)
   message(STATUS "----------------Did not find OpenCV 4, trying OpenCV 3--------------")
   set(opencv_version 3)
-  find_package(OpenCV ${opencv_version} REQUIRED COMPONENTS imgproc highgui)
+  find_package(OpenCV ${opencv_version} REQUIRED COMPONENTS imgproc highgui calib3d)
 endif()
 
 set(catkin_FOUND 1)
@@ -87,6 +87,7 @@ target_link_libraries(${PROJECT_NAME}
   depthai::core
   opencv_imgproc
   opencv_highgui
+  opencv_calib3d
 )
 
 install(TARGETS ${PROJECT_NAME}
