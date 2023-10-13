@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cv_bridge/cv_bridge.h"
+#include "cv_bridge/cv_bridge.hpp"
 #include "depthai_ros_msgs/msg/tracked_features.hpp"
 #include "geometry_msgs/msg/point.hpp"
 #include "message_filters/subscriber.h"
