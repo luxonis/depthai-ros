@@ -120,6 +120,7 @@ class ImageConverter {
     dai::CameraExposureOffset _expOffset;
     bool _reverseStereoSocketOrder = false;
     double _baseline;
+    bool _alphaScalingEnabled = false;
     double _alphaScalingFactor = 0.0;
 };
 

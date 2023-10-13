@@ -220,8 +220,6 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
         }
         info.R[0] = info.R[4] = info.R[8] = 1.0;
     }
-    im->setCameraInfo(info);
-
     stereoIM->setCameraInfo(info);
 
     stereoPubIT = it.advertiseCamera(getName() + "/image_raw", 1);

@@ -114,17 +114,11 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     int videoWidth = declareAndLogParam<int>("i_width", width);
     int videoHeight = declareAndLogParam<int>("i_height", height);
     if(videoWidth > maxVideoWidth) {
-        RCLCPP_WARN(getROSNode()->get_logger(),
-                    "Video width %d is greater than max video width %d. Setting video width to max video width.",
-                    videoWidth,
-                    maxVideoWidth);
+        ROS_WARN("Video width %d is greater than max video width %d. Setting video width to max video width.", videoWidth, maxVideoWidth);
         videoWidth = maxVideoWidth;
     }
     if(videoHeight > maxVideoHeight) {
-        RCLCPP_WARN(getROSNode()->get_logger(),
-                    "Video height %d is greater than max video height %d. Setting video height to max video height.",
-                    videoHeight,
-                    maxVideoHeight);
+        ROS_WARN("Video height %d is greater than max video height %d. Setting video height to max video height.", videoHeight, maxVideoHeight);
         videoHeight = maxVideoHeight;
     }
     colorCam->setVideoSize(videoWidth, videoHeight);
