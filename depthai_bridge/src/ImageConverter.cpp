@@ -419,7 +419,7 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
             std::copy(stereoFlatIntrinsics.begin(), stereoFlatIntrinsics.end(), projection.begin());
             std::copy(flatRectifiedRotation.begin(), flatRectifiedRotation.end(), rotation.begin());
         }
-    }   
+    }
     cameraData.distortion_model = "rational_polynomial";
 
     return cameraData;
