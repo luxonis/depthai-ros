@@ -67,7 +67,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> mo
         monoCam->setIsp3aFps(declareAndLogParam<int>("i_isp3a_fps", 10));
     }
     monoCam->setImageOrientation(
-        utils::getValFromMap(declareAndLogParam<std::string>("i_sensor_img_orientation", "NORMAL"), dai_nodes::sensor_helpers::cameraImageOrientationMap));
+        utils::getValFromMap(declareAndLogParam<std::string>("i_sensor_img_orientation", "AUTO"), dai_nodes::sensor_helpers::cameraImageOrientationMap));
 }
 
 void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> colorCam, dai_nodes::sensor_helpers::ImageSensor sensor, bool publish) {
@@ -153,7 +153,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
         colorCam->setIsp3aFps(declareAndLogParam<int>("i_isp3a_fps", 10));
     }
     colorCam->setImageOrientation(
-        utils::getValFromMap(declareAndLogParam<std::string>("i_sensor_img_orientation", "NORMAL"), dai_nodes::sensor_helpers::cameraImageOrientationMap));
+        utils::getValFromMap(declareAndLogParam<std::string>("i_sensor_img_orientation", "AUTO"), dai_nodes::sensor_helpers::cameraImageOrientationMap));
 }
 dai::CameraControl SensorParamHandler::setRuntimeParams(parametersConfig& config) {
     dai::CameraControl ctrl;
