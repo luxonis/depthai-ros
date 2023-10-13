@@ -34,8 +34,13 @@ class PipelineGenerator {
      */
     std::string validatePipeline(rclcpp::Node* node,const std::string& typeStr, int sensorNum);
     /**
+     * @brief      Creates the pipeline by using a plugin. Plugin types need to be of type depthai_ros_driver::pipeline_gen::BasePipeline.
+     *
+     * @param      node          The node
+     * @param      device        The device
      * @param      pipeline      The pipeline
      * @param[in]  pipelineType  The pipeline type name (plugin name or one of the default types)
+     * @param[in]  nnType        The neural network type (none, rgb, spatial)
      * @param[in]  enableImu     Indicates if IMU is enabled
      *
      * @return     Vector BaseNodes created.
