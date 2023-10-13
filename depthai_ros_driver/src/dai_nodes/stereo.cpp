@@ -338,11 +338,14 @@ void Stereo::closeQueues() {
         stereoQ->close();
     }
     if(ph->getParam<bool>("i_publish_left_rect") || ph->getParam<bool>("i_publish_synced_rect_pair")) {
-        syncTimer->reset();
         leftRectQ->close();
     }
     if(ph->getParam<bool>("i_publish_right_rect") || ph->getParam<bool>("i_publish_synced_rect_pair")) {
-        syncTimer->reset();
+        rightRectQ->close();
+    }
+    if(ph->getParam<bool>("i_publish_synced_rect_pair")) {
+        syncTimer->cancel();
+        leftRectQ->close();
         rightRectQ->close();
     }
     if(ph->getParam<bool>("i_left_rect_enable_feature_tracker")) {
