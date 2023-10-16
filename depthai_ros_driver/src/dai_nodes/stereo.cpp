@@ -136,8 +136,8 @@ void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
         auto offset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>(isLeft ? "i_left_rect_exposure_offset" : "i_right_rect_exposure_offset"));
         conv->addExposureOffset(offset);
     }
-    im = std::make_shared<camera_info_manager::CameraInfoManager>(
-        getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + sensorName).get(), "/rect");
+    im = std::make_shared<camera_info_manager::CameraInfoManager>(getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + sensorName).get(),
+                                                                  "/rect");
     if(ph->getParam<bool>("i_reverse_stereo_socket_order")) {
         conv->reverseStereoSocketOrder();
     }
@@ -336,12 +336,15 @@ void Stereo::closeQueues() {
     if(ph->getParam<bool>("i_publish_topic")) {
         stereoQ->close();
     }
-    if(ph->getParam<bool>("i_publish_left_rect") || ph->getParam<bool>("i_publish_synced_rect_pair")) {
-        syncTimer->reset();
+    if(ph->getParam<bool>("i_publish_left_rect")) {
         leftRectQ->close();
     }
-    if(ph->getParam<bool>("i_publish_right_rect") || ph->getParam<bool>("i_publish_synced_rect_pair")) {
-        syncTimer->reset();
+    if(ph->getParam<bool>("i_publish_right_rect")) {
+        rightRectQ->close();
+    }
+    if(ph->getParam<bool>("i_publish_synced_rect_pair")) {
+        syncTimer->cancel();
+        leftRectQ->close();
         rightRectQ->close();
     }
     if(ph->getParam<bool>("i_left_rect_enable_feature_tracker")) {
