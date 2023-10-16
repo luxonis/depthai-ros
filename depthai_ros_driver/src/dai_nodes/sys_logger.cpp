@@ -65,7 +65,7 @@ std::string SysLogger::sysInfoToString(const dai::SystemInformation& sysInfo) {
 void SysLogger::produceDiagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat) {
     try {
         bool timeout;
-        auto logData = loggerQ->tryGet<dai::SystemInformation>(std::chrono::seconds(5), timeout);
+        auto logData = loggerQ->get<dai::SystemInformation>(std::chrono::seconds(5), timeout);
         if(!timeout) {
             stat.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "System Information");
             stat.add("System Information", sysInfoToString(*logData));
