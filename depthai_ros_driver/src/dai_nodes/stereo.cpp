@@ -283,12 +283,15 @@ void Stereo::closeQueues() {
     if(ph->getParam<bool>("i_publish_topic")) {
         stereoQ->close();
     }
-    if(ph->getParam<bool>("i_publish_left_rect") || ph->getParam<bool>("i_publish_synced_rect_pair")) {
-        syncTimer.reset();
+    if(ph->getParam<bool>("i_publish_left_rect")) {
         leftRectQ->close();
     }
-    if(ph->getParam<bool>("i_publish_right_rect") || ph->getParam<bool>("i_publish_synced_rect_pair")) {
+    if(ph->getParam<bool>("i_publish_right_rect")) {
+        rightRectQ->close();
+    }
+    if(ph->getParam<bool>("i_publish_synced_rect_pair")) {
         syncTimer.reset();
+        leftRectQ->close();
         rightRectQ->close();
     }
     if(ph->getParam<bool>("i_left_rect_enable_feature_tracker")) {
