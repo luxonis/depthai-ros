@@ -67,7 +67,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> mo
         monoCam->setIsp3aFps(declareAndLogParam<int>("i_isp3a_fps", 10));
     }
     monoCam->setImageOrientation(
-        utils::getValFromMap(declareAndLogParam<std::string>("i_sensor_img_orientation", "NORMAL"), dai_nodes::sensor_helpers::cameraImageOrientationMap));
+        utils::getValFromMap(declareAndLogParam<std::string>("i_sensor_img_orientation", "AUTO"), dai_nodes::sensor_helpers::cameraImageOrientationMap));
 }
 
 void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> colorCam, dai_nodes::sensor_helpers::ImageSensor sensor, bool publish) {
@@ -109,7 +109,19 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
             ROS_ERROR(err_stream.str().c_str());
         }
     }
-    colorCam->setVideoSize(declareAndLogParam<int>("i_width", width), declareAndLogParam<int>("i_height", height));
+    int maxVideoWidth = 3840;
+    int maxVideoHeight = 2160;
+    int videoWidth = declareAndLogParam<int>("i_width", width);
+    int videoHeight = declareAndLogParam<int>("i_height", height);
+    if(videoWidth > maxVideoWidth) {
+        ROS_WARN("Video width %d is greater than max video width %d. Setting video width to max video width.", videoWidth, maxVideoWidth);
+        videoWidth = maxVideoWidth;
+    }
+    if(videoHeight > maxVideoHeight) {
+        ROS_WARN("Video height %d is greater than max video height %d. Setting video height to max video height.", videoHeight, maxVideoHeight);
+        videoHeight = maxVideoHeight;
+    }
+    colorCam->setVideoSize(videoWidth, videoHeight);
     colorCam->setPreviewKeepAspectRatio(declareAndLogParam("i_keep_preview_aspect_ratio", true));
     size_t iso = declareAndLogParam("r_iso", 800, getRangedIntDescriptor(100, 1600));
     size_t exposure = declareAndLogParam("r_exposure", 20000, getRangedIntDescriptor(1, 33000));
@@ -135,7 +147,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
         colorCam->setIsp3aFps(declareAndLogParam<int>("i_isp3a_fps", 10));
     }
     colorCam->setImageOrientation(
-        utils::getValFromMap(declareAndLogParam<std::string>("i_sensor_img_orientation", "NORMAL"), dai_nodes::sensor_helpers::cameraImageOrientationMap));
+        utils::getValFromMap(declareAndLogParam<std::string>("i_sensor_img_orientation", "AUTO"), dai_nodes::sensor_helpers::cameraImageOrientationMap));
 }
 dai::CameraControl SensorParamHandler::setRuntimeParams(parametersConfig& config) {
     dai::CameraControl ctrl;

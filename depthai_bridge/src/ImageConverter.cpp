@@ -2,6 +2,7 @@
 #include "depthai_bridge/ImageConverter.hpp"
 
 #include "depthai_bridge/depthaiUtility.hpp"
+#include "opencv2/calib3d.hpp"
 #include "opencv2/imgcodecs.hpp"
 
 namespace dai {
@@ -51,6 +52,11 @@ void ImageConverter::convertDispToDepth(double baseline) {
 void ImageConverter::addExposureOffset(dai::CameraExposureOffset& offset) {
     _expOffset = offset;
     _addExpOffset = true;
+}
+
+void ImageConverter::setAlphaScaling(double alphaScalingFactor) {
+    _alphaScalingEnabled = true;
+    _alphaScalingFactor = alphaScalingFactor;
 }
 
 ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> inData, const sensor_msgs::CameraInfo& info) {
@@ -360,6 +366,26 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
         if(calibHandler.getStereoRightCameraId() == cameraId || calibHandler.getStereoLeftCameraId() == cameraId) {
             std::vector<std::vector<float>> stereoIntrinsics = calibHandler.getCameraIntrinsics(
                 calibHandler.getStereoRightCameraId(), cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);
+
+            if(_alphaScalingEnabled) {
+                cv::Mat cameraMatrix = cv::Mat(3, 3, CV_64F);
+                for(int i = 0; i < 3; i++) {
+                    for(int j = 0; j < 3; j++) {
+                        cameraMatrix.at<double>(i, j) = stereoIntrinsics[i][j];
+                    }
+                }
+                cv::Mat distCoefficients(distCoeffs);
+
+                cv::Mat newCameraMatrix = cv::getOptimalNewCameraMatrix(cameraMatrix, distCoefficients, cv::Size(width, height), _alphaScalingFactor);
+                // Copying the contents of newCameraMatrix to stereoIntrinsics
+                for(int i = 0; i < 3; i++) {
+                    for(int j = 0; j < 3; j++) {
+                        float newValue = static_cast<float>(newCameraMatrix.at<double>(i, j));
+                        stereoIntrinsics[i][j] = newValue;
+                        intrinsics[i * 3 + j] = newValue;
+                    }
+                }
+            }
             std::vector<double> stereoFlatIntrinsics(12), flatRectifiedRotation(9);
             for(int i = 0; i < 3; i++) {
                 std::copy(stereoIntrinsics[i].begin(), stereoIntrinsics[i].end(), stereoFlatIntrinsics.begin() + 4 * i);

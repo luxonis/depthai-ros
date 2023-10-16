@@ -193,7 +193,9 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_reverse_stereo_socket_order")) {
         stereoConv->reverseStereoSocketOrder();
     }
-
+    if(ph->getParam<bool>("i_enable_alpha_scaling")) {
+        stereoConv->setAlphaScaling(ph->getParam<double>("i_alpha_scaling"));
+    }
     stereoIM = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), getName()), "/" + getName());
     auto info = sensor_helpers::getCalibInfo(*stereoConv,
                                              device,
@@ -208,15 +210,16 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
             stereoConv->convertDispToDepth(calibHandler.getBaselineDistance(rightSensInfo.socket, leftSensInfo.socket, false));
         }
     }
-    // remove distortion since image is rectified
-    for(auto& d : info.D) {
-        d = 0.0;
+    // remove distortion if alpha scaling is not enabled
+    if(!ph->getParam<bool>("i_enable_alpha_scaling")) {
+        for(auto& d : info.D) {
+            d = 0.0;
+        }
+        for(auto& r : info.R) {
+            r = 0.0;
+        }
+        info.R[0] = info.R[4] = info.R[8] = 1.0;
     }
-    for(auto& r : info.R) {
-        r = 0.0;
-    }
-    info.R[0] = info.R[4] = info.R[8] = 1.0;
-
     stereoIM->setCameraInfo(info);
 
     stereoPubIT = it.advertiseCamera(getName() + "/image_raw", 1);

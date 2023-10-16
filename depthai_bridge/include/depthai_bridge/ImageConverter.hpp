@@ -71,6 +71,12 @@ class ImageConverter {
      */
     void reverseStereoSocketOrder();
 
+    /**
+     * @brief Sets the alpha scaling factor for the image.
+     * @param alphaScalingFactor: The alpha scaling factor to be used.
+     */
+    void setAlphaScaling(double alphaScalingFactor = 0.0);
+
     ImageMsgs::Image toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> inData, const sensor_msgs::CameraInfo& info = sensor_msgs::CameraInfo());
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs);
     ImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
@@ -114,6 +120,8 @@ class ImageConverter {
     dai::CameraExposureOffset _expOffset;
     bool _reverseStereoSocketOrder = false;
     double _baseline;
+    bool _alphaScalingEnabled = false;
+    double _alphaScalingFactor = 0.0;
 };
 
 }  // namespace ros
