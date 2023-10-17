@@ -2,6 +2,15 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.8.2 (2023-10-17)
+-------------------
+
+* Fixed default resolution for Stereo cameras
+* Added CameraInfo update based on alpha scaling
+* Logger restart bugfix
+* URDF parameters fix
+
+
 2.8.1 (2023-09-12)
 -------------------
 
