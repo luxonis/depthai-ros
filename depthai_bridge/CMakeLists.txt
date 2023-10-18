@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-project(depthai_bridge VERSION 2.8.0 LANGUAGES CXX C)
+project(depthai_bridge VERSION 2.8.2 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -13,11 +13,11 @@ if(POLICY CMP0057)
 endif()
 
 set(opencv_version 4)
-find_package(OpenCV ${opencv_version} QUIET COMPONENTS imgproc highgui)
+find_package(OpenCV ${opencv_version} QUIET COMPONENTS imgproc highgui calib3d)
 if(NOT OpenCV_FOUND)
   message(STATUS "----------------Did not find OpenCV 4, trying OpenCV 3--------------")
   set(opencv_version 3)
-  find_package(OpenCV ${opencv_version} REQUIRED COMPONENTS imgproc highgui)
+  find_package(OpenCV ${opencv_version} REQUIRED COMPONENTS imgproc highgui calib3d)
 endif()
 
 
@@ -95,7 +95,8 @@ endif()
 target_link_libraries(${PROJECT_NAME}
                       depthai::core
                       opencv_imgproc
-                      opencv_highgui)
+                      opencv_highgui
+                      opencv_calib3d)
 
 ament_export_targets(depthai_bridgeTargets HAS_LIBRARY_TARGET)
 

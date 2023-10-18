@@ -70,7 +70,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> mo
     //     monoCam->setIsp3aFps(declareAndLogParam<int>("i_isp3a_fps", 10));
     // }
     monoCam->setImageOrientation(
-        utils::getValFromMap(declareAndLogParam<std::string>("i_sensor_img_orientation", "NORMAL"), dai_nodes::sensor_helpers::cameraImageOrientationMap));
+        utils::getValFromMap(declareAndLogParam<std::string>("i_sensor_img_orientation", "AUTO"), dai_nodes::sensor_helpers::cameraImageOrientationMap));
 }
 void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> colorCam, dai_nodes::sensor_helpers::ImageSensor sensor, bool publish) {
     declareAndLogParam<bool>("i_publish_topic", publish);
@@ -94,9 +94,9 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
         resString = sensor.defaultResolution;
     }
 
+    colorCam->setResolution(utils::getValFromMap(resString, dai_nodes::sensor_helpers::rgbResolutionMap));
     int width = colorCam->getResolutionWidth();
     int height = colorCam->getResolutionHeight();
-    colorCam->setResolution(utils::getValFromMap(resString, dai_nodes::sensor_helpers::rgbResolutionMap));
 
     colorCam->setInterleaved(declareAndLogParam<bool>("i_interleaved", false));
     if(declareAndLogParam<bool>("i_set_isp_scale", true)) {
@@ -114,7 +114,25 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
             RCLCPP_ERROR(getROSNode()->get_logger(), err_stream.str().c_str());
         }
     }
-    colorCam->setVideoSize(declareAndLogParam<int>("i_width", width), declareAndLogParam<int>("i_height", height));
+    int maxVideoWidth = 3840;
+    int maxVideoHeight = 2160;
+    int videoWidth = declareAndLogParam<int>("i_width", width);
+    int videoHeight = declareAndLogParam<int>("i_height", height);
+    if(videoWidth > maxVideoWidth) {
+        RCLCPP_WARN(getROSNode()->get_logger(),
+                    "Video width %d is greater than max video width %d. Setting video width to max video width.",
+                    videoWidth,
+                    maxVideoWidth);
+        videoWidth = maxVideoWidth;
+    }
+    if(videoHeight > maxVideoHeight) {
+        RCLCPP_WARN(getROSNode()->get_logger(),
+                    "Video height %d is greater than max video height %d. Setting video height to max video height.",
+                    videoHeight,
+                    maxVideoHeight);
+        videoHeight = maxVideoHeight;
+    }
+    colorCam->setVideoSize(videoWidth, videoHeight);
     colorCam->setPreviewKeepAspectRatio(declareAndLogParam("i_keep_preview_aspect_ratio", true));
     colorCam->initialControl.setMisc("stride-align", 1);
     colorCam->initialControl.setMisc("scanline-align", 1);
@@ -142,7 +160,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     //     colorCam->setIsp3aFps(declareAndLogParam<int>("i_isp3a_fps", 10));
     // }
     colorCam->setImageOrientation(
-        utils::getValFromMap(declareAndLogParam<std::string>("i_sensor_img_orientation", "NORMAL"), dai_nodes::sensor_helpers::cameraImageOrientationMap));
+        utils::getValFromMap(declareAndLogParam<std::string>("i_sensor_img_orientation", "AUTO"), dai_nodes::sensor_helpers::cameraImageOrientationMap));
 }
 dai::CameraControl SensorParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& params) {
     dai::CameraControl ctrl;
