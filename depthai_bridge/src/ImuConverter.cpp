@@ -14,6 +14,7 @@ ImuConverter::ImuConverter(const std::string& frameName,
                            double rotation_cov,
                            double magnetic_field_cov,
                            bool enable_rotation,
+                           bool enable_magn,
                            bool getBaseDeviceTimestamp)
     : _frameName(frameName),
       _syncMode(syncMode),
@@ -22,6 +23,7 @@ ImuConverter::ImuConverter(const std::string& frameName,
       _rotation_cov(rotation_cov),
       _magnetic_field_cov(magnetic_field_cov),
       _enable_rotation(enable_rotation),
+      _enable_magn(enable_magn),
       _sequenceNum(0),
       _steadyBaseTime(std::chrono::steady_clock::now()),
       _getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
@@ -103,9 +105,12 @@ void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<Imu
                 tstamp = accel.getTimestampDevice();
             else
                 tstamp = accel.getTimestamp();
-
-            CreateUnitMessage(accel, gyro, msg, tstamp);
-
+            if(_enable_rotation) {
+                auto rot = inData->packets[i].rotationVector;
+                CreateUnitMessage(accel, gyro, rot, msg, tstamp);
+            } else {
+                CreateUnitMessage(accel, gyro, msg, tstamp);
+            }
             outImuMsgs.push_back(msg);
         }
     }

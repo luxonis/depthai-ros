@@ -30,7 +30,9 @@ void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const s
     if(declareAndLogParam<bool>("i_enable_rotation", false)) {
         if(rotationAvailable) {
             imu->enableIMUSensor(dai::IMUSensor::ROTATION_VECTOR, declareAndLogParam<int>("i_rot_freq", 400));
-            imu->enableIMUSensor(dai::IMUSensor::MAGNETOMETER_CALIBRATED, declareAndLogParam<int>("i_mag_freq", 100));
+            if(declareAndLogParam<bool>("i_enable_magn", false)) {
+                imu->enableIMUSensor(dai::IMUSensor::MAGNETOMETER_CALIBRATED, declareAndLogParam<int>("i_mag_freq", 100));
+            }
         } else {
             RCLCPP_ERROR(getROSNode()->get_logger(), "Rotation enabled but not available with current sensor");
             declareAndLogParam<bool>("i_enable_rotation", false, true);
