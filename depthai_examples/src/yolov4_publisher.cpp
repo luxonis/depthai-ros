@@ -42,7 +42,6 @@ dai::Pipeline createPipeline(bool syncNN, std::string nnPath) {
     xoutRgb->setStreamName("preview");
     xoutNN->setStreamName("detections");
 
-
     // Properties
     colorCam->setPreviewSize(416, 416);
     colorCam->setResolution(dai::ColorCameraProperties::SensorResolution::THE_1080_P);
@@ -132,7 +131,6 @@ int main(int argc, char** argv) {
         std::string("color/yolov4_detections"),
         std::bind(&dai::rosBridge::ImgDetectionConverter::toRosMsg, &detConverter, std::placeholders::_1, std::placeholders::_2),
         30);
-
 
     detectionPublish.addPublisherCallback();
     rgbPublish.addPublisherCallback();  // addPublisherCallback works only when the dataqueue is non blocking.
