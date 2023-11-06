@@ -37,8 +37,8 @@ void ImuConverter::updateRosBaseTime() {
 }
 
 void ImuConverter::fillImuMsg(dai::IMUReportAccelerometer report, ImuMsgs::Imu& msg) {
-    msg.linear_acceleration.x = report.x;
-    msg.linear_acceleration.y = report.y;
+    msg.linear_acceleration.x = report.y;
+    msg.linear_acceleration.y = report.x;
     msg.linear_acceleration.z = report.z;
     msg.linear_acceleration_covariance = {_linear_accel_cov, 0.0, 0.0, 0.0, _linear_accel_cov, 0.0, 0.0, 0.0, _linear_accel_cov};
 }
@@ -52,10 +52,10 @@ void ImuConverter::fillImuMsg(dai::IMUReportGyroscope report, ImuMsgs::Imu& msg)
 
 void ImuConverter::fillImuMsg(dai::IMUReportRotationVectorWAcc report, ImuMsgs::Imu& msg) {
     if(_enable_rotation) {
-        msg.orientation.x = report.i;
-        msg.orientation.y = report.j;
-        msg.orientation.z = report.k;
-        msg.orientation.w = report.real;
+        msg.orientation.x = -report.real;
+        msg.orientation.y = -report.k;
+        msg.orientation.z = -report.i;
+        msg.orientation.w = report.j;
         msg.orientation_covariance = {_rotation_cov, 0.0, 0.0, 0.0, _rotation_cov, 0.0, 0.0, 0.0, _rotation_cov};
     } else {
         msg.orientation.x = 0.0;
