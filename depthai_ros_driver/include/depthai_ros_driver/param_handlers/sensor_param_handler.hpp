@@ -27,12 +27,8 @@ class SensorParamHandler : public BaseParamHandler {
     explicit SensorParamHandler(rclcpp::Node* node, const std::string& name, dai::CameraBoardSocket socket);
     ~SensorParamHandler();
     void declareCommonParams(dai::CameraBoardSocket socket);
-    void declareParams(std::shared_ptr<dai::node::MonoCamera> monoCam,
-                       dai_nodes::sensor_helpers::ImageSensor sensor,
-                       bool publish);
-    void declareParams(std::shared_ptr<dai::node::ColorCamera> colorCam,
-                       dai_nodes::sensor_helpers::ImageSensor sensor,
-                       bool publish);
+    void declareParams(std::shared_ptr<dai::node::MonoCamera> monoCam, dai_nodes::sensor_helpers::ImageSensor sensor, bool publish);
+    void declareParams(std::shared_ptr<dai::node::ColorCamera> colorCam, dai_nodes::sensor_helpers::ImageSensor sensor, bool publish);
     dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;
 
    private:
