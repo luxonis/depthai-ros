@@ -37,8 +37,8 @@ void ImuConverter::updateRosBaseTime() {
 }
 
 void ImuConverter::fillImuMsg(ImuMsgs::Imu& msg, dai::IMUReportAccelerometer report) {
-    msg.linear_acceleration.x = report.x;
-    msg.linear_acceleration.y = report.y;
+    msg.linear_acceleration.x = report.y;
+    msg.linear_acceleration.y = report.x;
     msg.linear_acceleration.z = report.z;
     msg.linear_acceleration_covariance = {_linear_accel_cov, 0.0, 0.0, 0.0, _linear_accel_cov, 0.0, 0.0, 0.0, _linear_accel_cov};
 }
