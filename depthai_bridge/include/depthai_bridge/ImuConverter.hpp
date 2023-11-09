@@ -155,22 +155,33 @@ class ImuConverter {
     // Whether to update the ROS base time on each message conversion
     bool _updateRosBaseTimeOnToRosMsg{false};
 
-    void fillImuMsg(dai::IMUReportAccelerometer report, ImuMsgs::Imu& msg);
-    void fillImuMsg(dai::IMUReportGyroscope report, ImuMsgs::Imu& msg);
-    void fillImuMsg(dai::IMUReportRotationVectorWAcc report, ImuMsgs::Imu& msg);
-    void fillImuMsg(dai::IMUReportMagneticField report, ImuMsgs::Imu& msg);
+    void fillImuMsg(ImuMsgs::Imu& msg, dai::IMUReportAccelerometer report);
+    void fillImuMsg(ImuMsgs::Imu& msg, dai::IMUReportGyroscope report);
+    void fillImuMsg(ImuMsgs::Imu& msg, dai::IMUReportRotationVectorWAcc report);
+    void fillImuMsg(ImuMsgs::Imu& msg, dai::IMUReportMagneticField report);
 
-    void fillImuMsg(dai::IMUReportAccelerometer report, depthai_ros_msgs::msg::ImuWithMagneticField& msg);
-    void fillImuMsg(dai::IMUReportGyroscope report, depthai_ros_msgs::msg::ImuWithMagneticField& msg);
-    void fillImuMsg(dai::IMUReportRotationVectorWAcc report, depthai_ros_msgs::msg::ImuWithMagneticField& msg);
-    void fillImuMsg(dai::IMUReportMagneticField report, depthai_ros_msgs::msg::ImuWithMagneticField& msg);
+    void fillImuMsg(depthai_ros_msgs::msg::ImuWithMagneticField& msg, dai::IMUReportAccelerometer report);
+    void fillImuMsg(depthai_ros_msgs::msg::ImuWithMagneticField& msg, dai::IMUReportGyroscope report);
+    void fillImuMsg(depthai_ros_msgs::msg::ImuWithMagneticField& msg, dai::IMUReportRotationVectorWAcc report);
+    void fillImuMsg(depthai_ros_msgs::msg::ImuWithMagneticField& msg, dai::IMUReportMagneticField report);
 
     template <typename I, typename S, typename T, typename F, typename M>
-    void CreateUnitMessage(I first, S second, T third, F fourth, M& msg, std::chrono::_V2::steady_clock::time_point timestamp) {
-        fillImuMsg(first, msg);
-        fillImuMsg(second, msg);
-        fillImuMsg(third, msg);
-        fillImuMsg(fourth, msg);
+    void CreateUnitMessage(M& msg, std::chrono::_V2::steady_clock::time_point timestamp, I first, S second, T third, F fourth) {
+        fillImuMsg(msg, first);
+        fillImuMsg(msg, second);
+        fillImuMsg(msg, third);
+        fillImuMsg(msg, fourth);
+
+        msg.header.frame_id = _frameName;
+
+        msg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, timestamp);
+    }
+
+    template <typename I, typename S, typename T, typename M>
+    void CreateUnitMessage(M& msg, std::chrono::_V2::steady_clock::time_point timestamp, I first, S second, T third) {
+        fillImuMsg(msg, first);
+        fillImuMsg(msg, second);
+        fillImuMsg(msg, third);
 
         msg.header.frame_id = _frameName;
 
@@ -178,9 +189,9 @@ class ImuConverter {
     }
 
     template <typename I, typename S, typename M>
-    void CreateUnitMessage(I first, S second, M& msg, std::chrono::_V2::steady_clock::time_point timestamp) {
-        fillImuMsg(first, msg);
-        fillImuMsg(second, msg);
+    void CreateUnitMessage(M& msg, std::chrono::_V2::steady_clock::time_point timestamp, I first, S second) {
+        fillImuMsg(msg, first);
+        fillImuMsg(msg, second);
 
         msg.header.frame_id = _frameName;
 
@@ -226,7 +237,7 @@ class ImuConverter {
                             tstamp = currSecond.getTimestampDevice();
                         else
                             tstamp = currSecond.getTimestamp();
-                        CreateUnitMessage(interp, currSecond, msg, tstamp);
+                        CreateUnitMessage(msg, tstamp, interp, currSecond);
                         imuMsgs.push_back(msg);
                         second.pop_front();
                     } else if(currSecond.timestamp.get() > interp1.timestamp.get()) {
@@ -279,7 +290,7 @@ class ImuConverter {
                             tstamp = currSecond.getTimestampDevice();
                         else
                             tstamp = currSecond.getTimestamp();
-                        CreateUnitMessage(interp, currSecond, currThird, msg, tstamp);
+                        CreateUnitMessage(msg, tstamp, interp, currSecond, currThird);
                         imuMsgs.push_back(msg);
                         second.pop_front();
                         third.pop_front();
@@ -336,7 +347,7 @@ class ImuConverter {
                             tstamp = currSecond.getTimestampDevice();
                         else
                             tstamp = currSecond.getTimestamp();
-                        CreateUnitMessage(interp, currSecond, currThird, currFourth, msg, tstamp);
+                        CreateUnitMessage(msg, tstamp, interp, currSecond, currThird, currFourth);
                         imuMsgs.push_back(msg);
                         second.pop_front();
                         third.pop_front();
