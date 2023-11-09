@@ -40,6 +40,8 @@ void Imu::setupQueues(std::shared_ptr<dai::Device> device) {
     auto imuMode = ph->getSyncMethod();
     rclcpp::PublisherOptions options;
     options.qos_overriding_options = rclcpp::QosOverridingOptions();
+    param_handlers::imu::ImuMsgType msgType = ph->getMsgType();
+    bool enableMagn = msgType == param_handlers::imu::ImuMsgType::IMU_WITH_MAG || msgType == param_handlers::imu::ImuMsgType::IMU_WITH_MAG_SPLIT;
     imuConverter = std::make_unique<dai::ros::ImuConverter>(tfPrefix + "_frame",
                                                             imuMode,
                                                             ph->getParam<float>("i_acc_cov"),
@@ -47,9 +49,9 @@ void Imu::setupQueues(std::shared_ptr<dai::Device> device) {
                                                             ph->getParam<float>("i_rot_cov"),
                                                             ph->getParam<float>("i_mag_cov"),
                                                             ph->getParam<bool>("i_enable_rotation"),
+                                                            enableMagn,
                                                             ph->getParam<bool>("i_get_base_device_timestamp"));
     imuConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
-    param_handlers::imu::ImuMsgType msgType = ph->getMsgType();
     switch(msgType) {
         case param_handlers::imu::ImuMsgType::IMU: {
             rosImuPub = getROSNode()->create_publisher<sensor_msgs::msg::Imu>("~/" + getName() + "/data", 10, options);
