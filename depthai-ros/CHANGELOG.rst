@@ -10,7 +10,6 @@ Changelog for package depthai-ros
 * Logger restart bugfix
 * URDF parameters fix
 
-
 2.8.1 (2023-09-12)
 -------------------
 

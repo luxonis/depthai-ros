@@ -416,6 +416,16 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
                 factor = -1.0;
             }
 
+            // Check stereo socket order
+            dai::CameraBoardSocket stereoSocketFirst = calibHandler.getStereoLeftCameraId();
+            dai::CameraBoardSocket stereoSocketSecond = calibHandler.getStereoRightCameraId();
+            double factor = 1.0;
+            if(_reverseStereoSocketOrder) {
+                stereoSocketFirst = calibHandler.getStereoRightCameraId();
+                stereoSocketSecond = calibHandler.getStereoLeftCameraId();
+                factor = -1.0;
+            }
+
             if(stereoSocketFirst == cameraId) {
                 // This defines where the first camera is w.r.t second camera coordinate system giving it a translation to place all the points in the first
                 // camera to second camera by multiplying that translation vector using transformation function.

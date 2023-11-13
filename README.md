@@ -231,6 +231,12 @@ Parameters:
   * `COPY`
   * `LINEAR_INTERPOLATE_GYRO`
   * `LINEAR_INTERPOLATE_ACCEL`
+* `i_rotation_vector_type` - type of rotation vector, for more information, refer to [this link](https://docs.luxonis.com/projects/api/en/latest/components/nodes/imu/). Available options:
+  * `ROTATION_VECTOR`
+  * `GAME_ROTATION_VECTOR`
+  * `GEOMAGNETIC_ROTATION_VECTOR`
+  * `ARVR_STABILIZED_ROTATION_VECTOR`
+  * `ARVR_STABILIZED_GAME_ROTATION_VECTOR`
 
 #### Stopping/starting camera for power saving/reconfiguration
 ![](docs/start_stop.gif)
@@ -451,6 +457,7 @@ For easier development inside isolated workspace, one can use Visual Studio Code
       i_max_batch_reports: 10
       i_message_type: IMU
       i_rot_cov: -1.0
+      i_rotation_vector_type: ROTATION_VECTOR
       i_sync_method: LINEAR_INTERPOLATE_ACCEL
       i_update_ros_base_time_on_ros_msg: false
     left:

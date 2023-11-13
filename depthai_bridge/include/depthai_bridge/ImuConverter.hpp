@@ -33,6 +33,7 @@ class ImuConverter {
                  double rotation_cov = 0.0,
                  double magnetic_field_cov = 0.0,
                  bool enable_rotation = false,
+                 bool enable_magn = false,
                  bool getBaseDeviceTimestamp = false);
     ~ImuConverter();
 
@@ -99,9 +100,9 @@ class ImuConverter {
                 rotationHist.resize(accelHist.size());
             }
 
-            if(_enable_rotation && magnHist.size() == 0) {
+            if(_enable_magn && magnHist.size() == 0) {
                 magnHist.push_back(imuPackets[i].magneticField);
-            } else if(_enable_rotation && magnHist.back().sequence != imuPackets[i].magneticField.sequence) {
+            } else if(_enable_magn && magnHist.back().sequence != imuPackets[i].magneticField.sequence) {
                 magnHist.push_back(imuPackets[i].magneticField);
             } else {
                 magnHist.resize(accelHist.size());
@@ -112,7 +113,11 @@ class ImuConverter {
                     continue;
                 } else {
                     if(_enable_rotation) {
-                        interpolate(accelHist, gyroHist, rotationHist, magnHist, imuMsgs);
+                        if(_enable_magn) {
+                            interpolate(accelHist, gyroHist, rotationHist, magnHist, imuMsgs);
+                        } else {
+                            interpolate(accelHist, gyroHist, rotationHist, imuMsgs);
+                        }
                     } else {
                         interpolate(accelHist, gyroHist, imuMsgs);
                     }
@@ -123,7 +128,11 @@ class ImuConverter {
                     continue;
                 } else {
                     if(_enable_rotation) {
-                        interpolate(gyroHist, accelHist, rotationHist, magnHist, imuMsgs);
+                        if(_enable_magn) {
+                            interpolate(gyroHist, accelHist, rotationHist, magnHist, imuMsgs);
+                        } else {
+                            interpolate(gyroHist, accelHist, rotationHist, imuMsgs);
+                        }
                     } else {
                         interpolate(gyroHist, accelHist, imuMsgs);
                     }
@@ -135,6 +144,7 @@ class ImuConverter {
     uint32_t _sequenceNum;
     double _linear_accel_cov, _angular_velocity_cov, _rotation_cov, _magnetic_field_cov;
     bool _enable_rotation;
+    bool _enable_magn;
     const std::string _frameName = "";
     ImuSyncMethod _syncMode;
     std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
@@ -145,22 +155,33 @@ class ImuConverter {
     // Whether to update the ROS base time on each message conversion
     bool _updateRosBaseTimeOnToRosMsg{false};
 
-    void fillImuMsg(dai::IMUReportAccelerometer report, ImuMsgs::Imu& msg);
-    void fillImuMsg(dai::IMUReportGyroscope report, ImuMsgs::Imu& msg);
-    void fillImuMsg(dai::IMUReportRotationVectorWAcc report, ImuMsgs::Imu& msg);
-    void fillImuMsg(dai::IMUReportMagneticField report, ImuMsgs::Imu& msg);
+    void fillImuMsg(ImuMsgs::Imu& msg, dai::IMUReportAccelerometer report);
+    void fillImuMsg(ImuMsgs::Imu& msg, dai::IMUReportGyroscope report);
+    void fillImuMsg(ImuMsgs::Imu& msg, dai::IMUReportRotationVectorWAcc report);
+    void fillImuMsg(ImuMsgs::Imu& msg, dai::IMUReportMagneticField report);
 
-    void fillImuMsg(dai::IMUReportAccelerometer report, depthai_ros_msgs::msg::ImuWithMagneticField& msg);
-    void fillImuMsg(dai::IMUReportGyroscope report, depthai_ros_msgs::msg::ImuWithMagneticField& msg);
-    void fillImuMsg(dai::IMUReportRotationVectorWAcc report, depthai_ros_msgs::msg::ImuWithMagneticField& msg);
-    void fillImuMsg(dai::IMUReportMagneticField report, depthai_ros_msgs::msg::ImuWithMagneticField& msg);
+    void fillImuMsg(depthai_ros_msgs::msg::ImuWithMagneticField& msg, dai::IMUReportAccelerometer report);
+    void fillImuMsg(depthai_ros_msgs::msg::ImuWithMagneticField& msg, dai::IMUReportGyroscope report);
+    void fillImuMsg(depthai_ros_msgs::msg::ImuWithMagneticField& msg, dai::IMUReportRotationVectorWAcc report);
+    void fillImuMsg(depthai_ros_msgs::msg::ImuWithMagneticField& msg, dai::IMUReportMagneticField report);
 
     template <typename I, typename S, typename T, typename F, typename M>
-    void CreateUnitMessage(I first, S second, T third, F fourth, M& msg, std::chrono::_V2::steady_clock::time_point timestamp) {
-        fillImuMsg(first, msg);
-        fillImuMsg(second, msg);
-        fillImuMsg(third, msg);
-        fillImuMsg(fourth, msg);
+    void CreateUnitMessage(M& msg, std::chrono::_V2::steady_clock::time_point timestamp, I first, S second, T third, F fourth) {
+        fillImuMsg(msg, first);
+        fillImuMsg(msg, second);
+        fillImuMsg(msg, third);
+        fillImuMsg(msg, fourth);
+
+        msg.header.frame_id = _frameName;
+
+        msg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, timestamp);
+    }
+
+    template <typename I, typename S, typename T, typename M>
+    void CreateUnitMessage(M& msg, std::chrono::_V2::steady_clock::time_point timestamp, I first, S second, T third) {
+        fillImuMsg(msg, first);
+        fillImuMsg(msg, second);
+        fillImuMsg(msg, third);
 
         msg.header.frame_id = _frameName;
 
@@ -168,9 +189,9 @@ class ImuConverter {
     }
 
     template <typename I, typename S, typename M>
-    void CreateUnitMessage(I first, S second, M& msg, std::chrono::_V2::steady_clock::time_point timestamp) {
-        fillImuMsg(first, msg);
-        fillImuMsg(second, msg);
+    void CreateUnitMessage(M& msg, std::chrono::_V2::steady_clock::time_point timestamp, I first, S second) {
+        fillImuMsg(msg, first);
+        fillImuMsg(msg, second);
 
         msg.header.frame_id = _frameName;
 
@@ -205,7 +226,7 @@ class ImuConverter {
                             tstamp = currSecond.getTimestampDevice();
                         else
                             tstamp = currSecond.getTimestamp();
-                        CreateUnitMessage(interp, currSecond, msg, tstamp);
+                        CreateUnitMessage(msg, tstamp, interp, currSecond);
                         imuMsgs.push_back(msg);
                         second.pop_front();
                     } else if(currSecond.timestamp.get() > interp1.timestamp.get()) {
@@ -220,6 +241,61 @@ class ImuConverter {
                         }
                     } else {
                         second.pop_front();
+                    }
+                }
+                interp0 = interp1;
+            }
+        }
+        interpolated.push_back(interp0);
+    }
+
+    template <typename I, typename S, typename T, typename M>
+    void interpolate(std::deque<I>& interpolated, std::deque<S>& second, std::deque<T>& third, std::deque<M>& imuMsgs) {
+        I interp0, interp1;
+        S currSecond;
+        T currThird;
+        interp0.sequence = -1;
+        while(interpolated.size()) {
+            if(interp0.sequence == -1) {
+                interp0 = interpolated.front();
+                interpolated.pop_front();
+            } else {
+                interp1 = interpolated.front();
+                interpolated.pop_front();
+                // remove std::milli to get in seconds
+                std::chrono::duration<double, std::milli> duration_ms = interp1.timestamp.get() - interp0.timestamp.get();
+                double dt = duration_ms.count();
+                while(second.size()) {
+                    currSecond = second.front();
+                    currThird = third.front();
+                    if(currSecond.timestamp.get() > interp0.timestamp.get() && currSecond.timestamp.get() <= interp1.timestamp.get()) {
+                        // remove std::milli to get in seconds
+                        std::chrono::duration<double, std::milli> diff = currSecond.timestamp.get() - interp0.timestamp.get();
+                        const double alpha = diff.count() / dt;
+                        I interp = lerpImu(interp0, interp1, alpha);
+                        M msg;
+                        std::chrono::_V2::steady_clock::time_point tstamp;
+                        if(_getBaseDeviceTimestamp)
+                            tstamp = currSecond.getTimestampDevice();
+                        else
+                            tstamp = currSecond.getTimestamp();
+                        CreateUnitMessage(msg, tstamp, interp, currSecond, currThird);
+                        imuMsgs.push_back(msg);
+                        second.pop_front();
+                        third.pop_front();
+                    } else if(currSecond.timestamp.get() > interp1.timestamp.get()) {
+                        interp0 = interp1;
+                        if(interpolated.size()) {
+                            interp1 = interpolated.front();
+                            interpolated.pop_front();
+                            duration_ms = interp1.timestamp.get() - interp0.timestamp.get();
+                            dt = duration_ms.count();
+                        } else {
+                            break;
+                        }
+                    } else {
+                        second.pop_front();
+                        third.pop_front();
                     }
                 }
                 interp0 = interp1;
@@ -260,7 +336,7 @@ class ImuConverter {
                             tstamp = currSecond.getTimestampDevice();
                         else
                             tstamp = currSecond.getTimestamp();
-                        CreateUnitMessage(interp, currSecond, currThird, currFourth, msg, tstamp);
+                        CreateUnitMessage(msg, tstamp, interp, currSecond, currThird, currFourth);
                         imuMsgs.push_back(msg);
                         second.pop_front();
                         third.pop_front();
