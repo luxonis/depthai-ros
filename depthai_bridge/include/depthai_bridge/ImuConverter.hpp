@@ -247,7 +247,7 @@ class ImuConverter {
         interpolated.push_back(interp0);
     }
 
-        template <typename I, typename S, typename T, typename M>
+    template <typename I, typename S, typename T, typename M>
     void interpolate(std::deque<I>& interpolated, std::deque<S>& second, std::deque<T>& third, std::deque<M>& imuMsgs) {
         I interp0, interp1;
         S currSecond;
@@ -301,7 +301,6 @@ class ImuConverter {
         }
         interpolated.push_back(interp0);
     }
-
 
     template <typename I, typename S, typename T, typename F, typename M>
     void interpolate(std::deque<I>& interpolated, std::deque<S>& second, std::deque<T>& third, std::deque<F>& fourth, std::deque<M>& imuMsgs) {
