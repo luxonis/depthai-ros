@@ -34,8 +34,83 @@ void ImgStreamer::publish(const std::string& name, std::shared_ptr<dai::ImgFrame
     _pubCamInfo->publish(_camInfoMsg);
 }
 
-void ImgStreamer::convertFromBitstream(dai::RawImgFrame::Type type){
+void ImgStreamer::convertFromBitstream(dai::RawImgFrame::Type type) {
     _imageConverter->convertFromBitstream(type);
+}
+
+ImuStreamer::ImuStreamer(rclcpp::Node::SharedPtr node,
+                         const std::string& topicName,
+                         const std::string& frameName,
+                         ImuSyncMethod syncMode,
+                         double linear_accel_cov,
+                         double angular_velocity_cov,
+                         double rotation_cov,
+                         double magnetic_field_cov,
+                         bool enable_rotation,
+                         bool enable_magn,
+                         bool getBaseDeviceTimestamp) {
+    _imuConverter = std::make_shared<ImuConverter>(
+        frameName, syncMode, linear_accel_cov, angular_velocity_cov, rotation_cov, magnetic_field_cov, enable_rotation, enable_magn, getBaseDeviceTimestamp);
+    _pub = node->create_publisher<sensor_msgs::msg::Imu>(topicName, 10);
+}
+
+void ImuStreamer::publish(const std::string& name, std::shared_ptr<dai::IMUData> imuFrame) {
+    std::deque<sensor_msgs::msg::Imu> imuMsgs;
+    _imuConverter->toRosMsg(imuFrame, imuMsgs);
+    for(auto& msg : imuMsgs) {
+        _pub->publish(msg);
+    };
+}
+
+SpatialDetectionStreamer::SpatialDetectionStreamer(rclcpp::Node::SharedPtr node,
+                                                   const std::string& topicName,
+                                                   std::string frameName,
+                                                   int width,
+                                                   int height,
+                                                   bool normalized,
+                                                   bool getBaseDeviceTimestamp) {
+    _spatialDetectionConverter = std::make_shared<SpatialDetectionConverter>(frameName, width, height, normalized, getBaseDeviceTimestamp);
+    _pub = node->create_publisher<vision_msgs::msg::Detection3DArray>(topicName, 10);
+}
+
+void SpatialDetectionStreamer::publish(const std::string& name, std::shared_ptr<dai::SpatialImgDetections> detections) {
+    std::deque<vision_msgs::msg::Detection3DArray> detectionMsg;
+    _spatialDetectionConverter->toRosVisionMsg(detections, detectionMsg);
+    for(auto& msg : detectionMsg) {
+        _pub->publish(msg);
+    };
+}
+
+DetectionStreamer::DetectionStreamer(rclcpp::Node::SharedPtr node,
+                                     const std::string& topicName,
+                                     std::string frameName,
+                                     int width,
+                                     int height,
+                                     bool normalized,
+                                     bool getBaseDeviceTimestamp) {
+    _detectionConverter = std::make_shared<ImgDetectionConverter>(frameName, width, height, normalized, getBaseDeviceTimestamp);
+    _pub = node->create_publisher<vision_msgs::msg::Detection2DArray>(topicName, 10);
+}
+
+void DetectionStreamer::publish(const std::string& name, std::shared_ptr<dai::ImgDetections> detections) {
+    std::deque<vision_msgs::msg::Detection2DArray> detectionMsg;
+    _detectionConverter->toRosMsg(detections, detectionMsg);
+    for(auto& msg : detectionMsg) {
+        _pub->publish(msg);
+    };
+}
+
+TrackedFeaturesStreamer::TrackedFeaturesStreamer(rclcpp::Node::SharedPtr node, const std::string& topicName, std::string frameName, bool getBaseDeviceTimestamp) {
+    _trackedFeaturesConverter = std::make_shared<TrackedFeaturesConverter>(frameName, getBaseDeviceTimestamp);
+    _pub = node->create_publisher<depthai_ros_msgs::msg::TrackedFeatures>(topicName, 10);
+}
+
+void TrackedFeaturesStreamer::publish(const std::string& name, std::shared_ptr<dai::TrackedFeatures> trackedFeatures) {
+    std::deque<depthai_ros_msgs::msg::TrackedFeatures> trackedFeaturesMsg;
+    _trackedFeaturesConverter->toRosMsg(trackedFeatures, trackedFeaturesMsg);
+    for(auto& msg : trackedFeaturesMsg) {
+        _pub->publish(msg);
+    };
 }
 
 void ROSContextManager::init(py::list args) {
@@ -70,22 +145,9 @@ void RosBindings::bind(pybind11::module& m, void* pCallstack) {
     point.def_readwrite("z", &geometry_msgs::msg::Point::z);
 
     py::class_<rclcpp::Node, rclcpp::Node::SharedPtr> node(m_ros, "ROSNode");
-    py::class_<ImgStreamer, std::shared_ptr<ImgStreamer>> imgStreamer(m_ros, "ImgStreamer");
-    py::class_<ROSContextManager, std::shared_ptr<ROSContextManager>> rosContextManager(m_ros, "ROSContextManager");
-
-
     node.def(py::init([](std::string nodename) { return std::make_shared<rclcpp::Node>(nodename); }));
-    imgStreamer.def(py::init([](rclcpp::Node::SharedPtr node,
-                                dai::CalibrationHandler calibHandler,
-                                dai::CameraBoardSocket socket,
-                                const std::string& topicName,
-                                const std::string& frameName,
-                                bool interleaved,
-                                bool getBaseDeviceTimestamp) {
-        return std::make_shared<ImgStreamer>(node, calibHandler, socket, topicName, frameName, interleaved, getBaseDeviceTimestamp);
-    }));
-    imgStreamer.def("publish", &ImgStreamer::publish);
-    imgStreamer.def("convertFromBitStream", &ImgStreamer::convertFromBitstream);
+
+    py::class_<ROSContextManager, std::shared_ptr<ROSContextManager>> rosContextManager(m_ros, "ROSContextManager");
     rosContextManager.def(py::init([]() { return std::make_shared<ROSContextManager>(); }));
     rosContextManager.def("init", &ROSContextManager::init);
     rosContextManager.def("shutdown", &ROSContextManager::shutdown);
@@ -102,9 +164,86 @@ void RosBindings::bind(pybind11::module& m, void* pCallstack) {
 
     node.def("log", [](rclcpp::Node::SharedPtr n, std::string logmsg) { RCLCPP_INFO(n->get_logger(), logmsg.c_str()); });
 
-    m_ros.def("ros_ok", [](){return rclcpp::ok();});
+    m_ros.def("ros_ok", []() { return rclcpp::ok(); });
 
     m_ros.def("shutdown", []() { rclcpp::shutdown(); });
+
+    py::class_<ImgStreamer, std::shared_ptr<ImgStreamer>> imgStreamer(m_ros, "ImgStreamer");
+
+    imgStreamer.def(py::init([](rclcpp::Node::SharedPtr node,
+                                dai::CalibrationHandler calibHandler,
+                                dai::CameraBoardSocket socket,
+                                const std::string& topicName,
+                                const std::string& frameName,
+                                bool interleaved,
+                                bool getBaseDeviceTimestamp) {
+        return std::make_shared<ImgStreamer>(node, calibHandler, socket, topicName, frameName, interleaved, getBaseDeviceTimestamp);
+    }));
+
+    imgStreamer.def("publish", &ImgStreamer::publish);
+    imgStreamer.def("convertFromBitStream", &ImgStreamer::convertFromBitstream);
+
+    py::enum_<ImuSyncMethod>(m_ros, "ImuSyncMethod")
+        .value("COPY", ImuSyncMethod::COPY)
+        .value("LINEAR_INTERPOLATE_ACCEL", ImuSyncMethod::LINEAR_INTERPOLATE_ACCEL)
+        .value("LINEAR_INTERPOLATE_GYRO", ImuSyncMethod::LINEAR_INTERPOLATE_GYRO)
+        .export_values();
+
+    py::class_<ImuStreamer, std::shared_ptr<ImuStreamer>> imuStreamer(m_ros, "ImuStreamer");
+    imuStreamer.def(py::init([](rclcpp::Node::SharedPtr node,
+                                const std::string& topicName,
+                                const std::string& frameName,
+                                ImuSyncMethod syncMode,
+                                double linear_accel_cov,
+                                double angular_velocity_cov,
+                                double rotation_cov,
+                                double magnetic_field_cov,
+                                bool enable_rotation,
+                                bool enable_magn,
+                                bool getBaseDeviceTimestamp) {
+        return std::make_shared<ImuStreamer>(node,
+                                             topicName,
+                                             frameName,
+                                             syncMode,
+                                             linear_accel_cov,
+                                             angular_velocity_cov,
+                                             rotation_cov,
+                                             magnetic_field_cov,
+                                             enable_rotation,
+                                             enable_magn,
+                                             getBaseDeviceTimestamp);
+    }));
+    imuStreamer.def("publish", &ImuStreamer::publish);
+
+    py::class_<SpatialDetectionStreamer, std::shared_ptr<SpatialDetectionStreamer>> spatialDetectionStreamer(m_ros, "SpatialDetectionStreamer");
+    spatialDetectionStreamer.def(py::init([](rclcpp::Node::SharedPtr node,
+                                             const std::string& topicName,
+                                             std::string frameName,
+                                             int width,
+                                             int height,
+                                             bool normalized = false,
+                                             bool getBaseDeviceTimestamp = false) {
+        return std::make_shared<SpatialDetectionStreamer>(node, topicName, frameName, width, height, normalized, getBaseDeviceTimestamp);
+    }));
+    spatialDetectionStreamer.def("publish", &SpatialDetectionStreamer::publish);
+    
+    py::class_<DetectionStreamer, std::shared_ptr<DetectionStreamer>> detectionStreamer(m_ros, "DetectionStreamer");
+    detectionStreamer.def(py::init([](rclcpp::Node::SharedPtr node,
+                                      const std::string& topicName,
+                                      std::string frameName,
+                                      int width,
+                                      int height,
+                                      bool normalized = false,
+                                      bool getBaseDeviceTimestamp = false) {
+        return std::make_shared<DetectionStreamer>(node, topicName, frameName, width, height, normalized, getBaseDeviceTimestamp);
+    }));
+    detectionStreamer.def("publish", &DetectionStreamer::publish);
+
+    py::class_<TrackedFeaturesStreamer, std::shared_ptr<TrackedFeaturesStreamer>> trackedFeaturesStreamer(m_ros, "TrackedFeaturesStreamer");
+    trackedFeaturesStreamer.def(py::init([](rclcpp::Node::SharedPtr node, const std::string& topicName, std::string frameName, bool getBaseDeviceTimestamp = false) {
+        return std::make_shared<TrackedFeaturesStreamer>(node, topicName, frameName, getBaseDeviceTimestamp);
+    }));
+    trackedFeaturesStreamer.def("publish", &TrackedFeaturesStreamer::publish);
 };
 }  // namespace ros
 }  // namespace dai

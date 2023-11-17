@@ -96,7 +96,7 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
             case dai::RawImgFrame::Type::BGR888i: {
                 encoding = sensor_msgs::image_encodings::BGR8;
                 decodeFlags = cv::IMREAD_COLOR;
-                channels = CV_8UC3;
+                channels = CV_8UC1;
                 break;
             }
             case dai::RawImgFrame::Type::GRAY8: {
