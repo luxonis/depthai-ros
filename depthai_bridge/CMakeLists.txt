@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
+cmake_minimum_required(VERSION 3.15)  # CMake version in Ubuntu 18.04 LTS
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 project(depthai_bridge VERSION 2.8.2 LANGUAGES CXX C)
@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(POLICY CMP0057)
     cmake_policy(SET CMP0057 NEW)
 endif()
-
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(opencv_version 4)
 find_package(OpenCV ${opencv_version} QUIET COMPONENTS imgproc highgui calib3d)
 if(NOT OpenCV_FOUND)
@@ -27,21 +27,32 @@ message(STATUS "------------------------------------------")
 
 set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
 
+# set(CMAKE_PREFIX_PATH "${CMAKE_REFIX_PATH} /underlay_ws/install/")
+list(APPEND CMAKE_PREFIX_PATH "/underlay_ws/install/depthai_ros_msgs/share/depthai_ros_msgs/cmake")
+message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
+message(STATUS "CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
+find_package(ament_cmake REQUIRED)
 find_package(camera_info_manager REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(depthai_ros_msgs REQUIRED)
-find_package(depthai CONFIG REQUIRED)
+list(APPEND CMAKE_MODULE_PATH "/workspaces/rae_ws/src/depthai-python/depthai-core/depthai-core/cmake")
+# find_package(depthai REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(stereo_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(vision_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(composition_interfaces REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+
+find_package(pybind11 REQUIRED)
+
 
 set(dependencies
   camera_info_manager
@@ -56,8 +67,10 @@ set(dependencies
   spdlog
   tf2_ros
   tf2_geometry_msgs
+  geometry_msgs
   tf2
   composition_interfaces
+  pybind11
 )
 
 include_directories(
@@ -74,6 +87,7 @@ file(GLOB LIB_SRC
 "src/ImuConverter.cpp"
 "src/TFPublisher.cpp"
 "src/TrackedFeaturesConverter.cpp"
+"src/python/bindings.cpp"
 )
 
 add_library(${PROJECT_NAME} SHARED ${LIB_SRC})
@@ -118,6 +132,7 @@ install(EXPORT depthai_bridgeTargets
 
 
 install(DIRECTORY rviz DESTINATION share/${PROJECT_NAME})
+
 
 ament_export_include_directories(include)
 ament_export_libraries(depthai_bridge)
