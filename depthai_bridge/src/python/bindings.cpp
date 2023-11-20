@@ -1,7 +1,6 @@
 // https://gist.github.com/kervel/75d81b8c34e45a19706c661b90d02548
 #include "depthai_bridge/python/bindings.hpp"
 
-
 #include <pybind11/complex.h>
 #include <pybind11/functional.h>
 #include <pybind11/stl.h>
@@ -12,13 +11,9 @@
 #include "pybind11/pybind11.h"
 #include "rclcpp/rclcpp.hpp"
 
-
-
 namespace dai {
 namespace ros {
 namespace py = pybind11;
-
-
 
 ImgStreamer::ImgStreamer(rclcpp::Node::SharedPtr node,
                          dai::CalibrationHandler calibHandler,
@@ -35,7 +30,7 @@ ImgStreamer::ImgStreamer(rclcpp::Node::SharedPtr node,
         _pubCompressed = node->create_publisher<sensor_msgs::msg::CompressedImage>(topicName + "/compressed", 10);
         _pubCamInfo = node->create_publisher<sensor_msgs::msg::CameraInfo>(topicName + "/camera_info", 10);
     } else {
-        _pubCamera = image_transport::create_camera_publisher(node.get(), topicName);
+        _pubCamera = image_transport::create_camera_publisher(node.get(), topicName + "/image_raw");
     }
     _camInfoMsg = _imageConverter->calibrationToCameraInfo(calibHandler, socket);
 }
@@ -167,7 +162,8 @@ void RosBindings::bind(pybind11::module& m, void* pCallstack) {
     point.def_readwrite("z", &geometry_msgs::msg::Point::z);
 
     py::class_<rclcpp::Node, rclcpp::Node::SharedPtr> node(m_ros, "ROSNode");
-    node.def(py::init([](std::string nodename, rclcpp::NodeOptions options = rclcpp::NodeOptions()) { return std::make_shared<rclcpp::Node>(nodename, options); }));
+    node.def(
+        py::init([](std::string nodename, rclcpp::NodeOptions options = rclcpp::NodeOptions()) { return std::make_shared<rclcpp::Node>(nodename, options); }));
     py::class_<rclcpp::NodeOptions> nodeOptions(m_ros, "ROSNodeOptions");
     nodeOptions.def(py::init([](bool useIntraProcessComms) {
         rclcpp::NodeOptions options;
