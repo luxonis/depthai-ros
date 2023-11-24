@@ -41,6 +41,13 @@ void ImuConverter::fillImuMsg(ImuMsgs::Imu& msg, dai::IMUReportAccelerometer rep
     msg.linear_acceleration.y = report.y;
     msg.linear_acceleration.z = report.z;
     msg.linear_acceleration_covariance = {_linear_accel_cov, 0.0, 0.0, 0.0, _linear_accel_cov, 0.0, 0.0, 0.0, _linear_accel_cov};
+    if(!_enable_rotation){
+        msg.orientation.x = 0.0;
+        msg.orientation.y = 0.0;
+        msg.orientation.z = 0.0;
+        msg.orientation.w = 1.0;
+        msg.orientation_covariance = {-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    }
 }
 
 void ImuConverter::fillImuMsg(ImuMsgs::Imu& msg, dai::IMUReportGyroscope report) {
