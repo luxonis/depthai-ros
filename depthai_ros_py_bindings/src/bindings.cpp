@@ -1,5 +1,5 @@
 // https://gist.github.com/kervel/75d81b8c34e45a19706c661b90d02548
-#include "depthai_bridge/python/bindings.hpp"
+#include "depthai_ros_py_bindings/bindings.hpp"
 
 #include <pybind11/complex.h>
 #include <pybind11/functional.h>
@@ -10,6 +10,8 @@
 #include "geometry_msgs/msg/point.hpp"
 #include "pybind11/pybind11.h"
 #include "rclcpp/rclcpp.hpp"
+#include "rtabmap_slam/CoreWrapper.h"
+#include "spectacularai_ros2/ros2_plugin.hpp"
 
 namespace dai {
 namespace ros {
@@ -165,16 +167,32 @@ void RosBindings::bind(pybind11::module& m, void* pCallstack) {
     node.def(
         py::init([](std::string nodename, rclcpp::NodeOptions options = rclcpp::NodeOptions()) { return std::make_shared<rclcpp::Node>(nodename, options); }));
     py::class_<rclcpp::NodeOptions> nodeOptions(m_ros, "ROSNodeOptions");
-    nodeOptions.def(py::init([](bool useIntraProcessComms) {
-        rclcpp::NodeOptions options;
-        options.use_intra_process_comms(useIntraProcessComms);
-        return options;
-    }));
+    nodeOptions.def(
+        py::init([](bool useIntraProcessComms = true, std::string nodeName = "", std::string paramFile = "", remappingsMap remappings = remappingsMap()) {
+            rclcpp::NodeOptions options;
+            options.use_intra_process_comms(useIntraProcessComms);
+            std::vector<std::string> args;
+            if(!paramFile.empty()) {
+                args.push_back("--ros-args");
+                args.push_back("--params-file");
+                args.push_back(paramFile);
+            }
+            if(!remappings.empty()) {
+                for (auto& remap : remappings) {
+                    args.push_back("--remap");
+                    args.push_back(remap.first + ":=" + remap.second);
+                }
+            }
+            options.arguments(args);
+            return options;
+        }));
 
     py::class_<Consumer, std::shared_ptr<Consumer>, rclcpp::Node> consumer(m_ros, "Consumer");
-    consumer.def(py::init([](std::string nodename, std::string input) { return std::make_shared<Consumer>(nodename, input); }));
+    consumer.def(
+        py::init([](std::string nodename, rclcpp::NodeOptions options, std::string input) { return std::make_shared<Consumer>(nodename, options, input); }));
     py::class_<Producer, std::shared_ptr<Producer>, rclcpp::Node> producer(m_ros, "Producer");
-    producer.def(py::init([](std::string nodename, std::string output) { return std::make_shared<Producer>(nodename, output); }));
+    producer.def(
+        py::init([](std::string nodename, rclcpp::NodeOptions options, std::string output) { return std::make_shared<Producer>(nodename, options, output); }));
 
     py::class_<ROSContextManager, std::shared_ptr<ROSContextManager>> rosContextManager(m_ros, "ROSContextManager");
     rosContextManager.def(py::init([]() { return std::make_shared<ROSContextManager>(); }));
@@ -275,6 +293,13 @@ void RosBindings::bind(pybind11::module& m, void* pCallstack) {
             return std::make_shared<TrackedFeaturesStreamer>(node, topicName, frameName, getBaseDeviceTimestamp);
         }));
     trackedFeaturesStreamer.def("publish", &TrackedFeaturesStreamer::publish);
+
+    py::class_<rtabmap_slam::CoreWrapper, std::shared_ptr<rtabmap_slam::CoreWrapper>, rclcpp::Node> RTABMapCoreWrapper(m_ros, "RTABMapCoreWrapper");
+    RTABMapCoreWrapper.def(py::init([](rclcpp::NodeOptions options) { 
+        return std::make_shared<rtabmap_slam::CoreWrapper>(options); }));
+    py::class_<spectacularAI::ros2::Node, std::shared_ptr<spectacularAI::ros2::Node>, rclcpp::Node> SpectacularAINode(m_ros, "SpectacularAINode");
+    SpectacularAINode.def(py::init([](rclcpp::NodeOptions options) { 
+        return std::make_shared<spectacularAI::ros2::Node>(options); }));
 };
 }  // namespace ros
 }  // namespace dai

@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.8)  # CMake version in Ubuntu 18.04 LTS
+cmake_minimum_required(VERSION 3.15)  # CMake version in Ubuntu 18.04 LTS
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-project(depthai_bridge VERSION 2.8.2 LANGUAGES CXX C)
+project(depthai_ros_py_bindings VERSION 2.8.2 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -11,6 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(POLICY CMP0057)
     cmake_policy(SET CMP0057 NEW)
 endif()
+cmake_policy(SET CMP0074 NEW)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(opencv_version 4)
 find_package(OpenCV ${opencv_version} QUIET COMPONENTS imgproc highgui calib3d)
@@ -27,107 +28,77 @@ message(STATUS "------------------------------------------")
 
 set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
 
-
+message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
+message(STATUS "CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 find_package(ament_cmake REQUIRED)
-find_package(camera_info_manager REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(depthai_ros_msgs REQUIRED)
-find_package(depthai REQUIRED)
+set(DAI_ROS_BRIDGE_PATH "" CACHE STRING "Path to depthai-ros-bridge project")
+add_subdirectory(${DAI_ROS_BRIDGE_PATH} depthai_bridge)
 find_package(image_transport REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(stereo_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(vision_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
-find_package(spdlog REQUIRED)
-find_package(tf2_ros REQUIRED)
-find_package(tf2 REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
-find_package(composition_interfaces REQUIRED)
+hunter_add_package(TIFF)
+hunter_add_package(PNG)
+find_package(rtabmap_slam REQUIRED)
+set(spectacularai_ros2_DIR "" CACHE STRING "Path to spectacularai_ros2 project")
+find_package(spectacularai_ros2 REQUIRED)
+
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+
+find_package(pybind11 REQUIRED)
+include_directories(
+    include
+    ${BUILD_TOOL_INCLUDE_DIRS}
+    ${ament_INCLUDE_DIRS}
+)
 
 set(dependencies
-  camera_info_manager
   cv_bridge
   depthai_ros_msgs
   image_transport
   rclcpp
   sensor_msgs
-  stereo_msgs
   std_msgs
   vision_msgs
-  spdlog
-  tf2_ros
-  tf2_geometry_msgs
-  geometry_msgs
-  tf2
-  composition_interfaces
+  rtabmap_slam
+  spectacularai_ros2
+  pybind11
 )
-
-include_directories(
-    include
-    ${BUILD_TOOL_INCLUDE_DIRS}
-
-)
-
-file(GLOB LIB_SRC
-"src/DisparityConverter.cpp"
-"src/ImageConverter.cpp"
-"src/ImgDetectionConverter.cpp"
-"src/SpatialDetectionConverter.cpp"
-"src/ImuConverter.cpp"
-"src/TFPublisher.cpp"
-"src/TrackedFeaturesConverter.cpp"
-"src/python/bindings.cpp"
-)
-
-add_library(${PROJECT_NAME} SHARED ${LIB_SRC})
-
+add_library(${PROJECT_NAME} SHARED src/bindings.cpp)
 ament_target_dependencies(${PROJECT_NAME}
   ${dependencies})
-target_compile_definitions(${PROJECT_NAME} PUBLIC IS_ROS2)
-message(STATUS "--------------------------$ENV{ROS_DISTRO} ---")
-message(STATUS $ENV{ROS_DISTRO})
-
-if($ENV{ROS_DISTRO} STREQUAL "galactic" OR ($ENV{ROS_DISTRO} STREQUAL "rolling" AND "${ubuntu_version}" STREQUAL "20.04\n"))
-  target_compile_definitions(${PROJECT_NAME} PRIVATE IS_GALACTIC)
-endif()
-
-if($ENV{ROS_DISTRO} STREQUAL "humble")
-  target_compile_definitions(${PROJECT_NAME} PRIVATE IS_HUMBLE)
-endif()
+set(DAI_ROS_BRIDGE_INCLUDE_DIR "${DAI_ROS_BRIDGE_PATH}/include")
+target_include_directories(${PROJECT_NAME} PUBLIC src ${DAI_ROS_BRIDGE_INCLUDE_DIR})
 
 target_link_libraries(${PROJECT_NAME}
+                      depthai_bridge
                       depthai::core
                       opencv_imgproc
                       opencv_highgui
                       opencv_calib3d)
 
-# ament_export_targets(depthai_bridgeTargets HAS_LIBRARY_TARGET)
+ament_export_targets(${PROJECT_NAME}Targets HAS_LIBRARY_TARGET)
 
 install(DIRECTORY include/
         DESTINATION include/
 )
 
-install(TARGETS depthai_bridge
-      EXPORT depthai_bridgeTargets
+install(TARGETS ${PROJECT_NAME}
+      EXPORT ${PROJECT_NAME}Targets
               ARCHIVE DESTINATION lib
               LIBRARY DESTINATION lib
               RUNTIME DESTINATION bin
               INCLUDES DESTINATION include
 
 )
-install(EXPORT depthai_bridgeTargets
+install(EXPORT ${PROJECT_NAME}Targets
       DESTINATION share/${PROJECT_NAME}/cmake)
 
-
-
-install(DIRECTORY rviz DESTINATION share/${PROJECT_NAME})
-
-
-ament_export_include_directories(include)
-ament_export_libraries(depthai_bridge)
-ament_export_dependencies(${dependencies})
+      ament_export_include_directories(include)
+      ament_export_libraries(${PROJECT_NAME})
+      ament_export_dependencies(${dependencies})
 
 ament_package()
-

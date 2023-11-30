@@ -36,13 +36,15 @@ namespace ros {
 namespace py = pybind11;
 
 using namespace std::chrono_literals;
-
+typedef std::map<std::string, std::string> remappingsMap;
 // Node that produces messages.
 class Producer : public rclcpp::Node {
    public:
-    Producer(const std::string& name, const std::string& output) : Node(name, rclcpp::NodeOptions().use_intra_process_comms(true)) {
+    Producer(const std::string& name, rclcpp::NodeOptions options, const std::string& output) : Node(name, options) {
         // Create a publisher on the output topic.
         pub_ = this->create_publisher<std_msgs::msg::Int32>(output, 10);
+        std::string test_param = this->declare_parameter<std::string>("test_param1", "default_value");
+        RCLCPP_INFO(this->get_logger(), "test_param1: %s", test_param.c_str());
         std::weak_ptr<std::remove_pointer<decltype(pub_.get())>::type> captured_pub = pub_;
         // Create a timer which publishes on the output topic at ~1Hz.
         auto callback = [captured_pub]() -> void {
@@ -66,8 +68,10 @@ class Producer : public rclcpp::Node {
 // Node that consumes messages.
 class Consumer : public rclcpp::Node {
    public:
-    Consumer(const std::string& name, const std::string& input) : Node(name, rclcpp::NodeOptions().use_intra_process_comms(true)) {
+    Consumer(const std::string& name, rclcpp::NodeOptions options, const std::string& input) : Node(name, options) {
         // Create a subscription on the input topic which prints on receipt of new messages.
+        std::string test_param = this->declare_parameter<std::string>("test_param2", "default_value");
+        RCLCPP_INFO(this->get_logger(), "test_param2: %s", test_param.c_str());
         sub_ = this->create_subscription<std_msgs::msg::Int32>(input, 10, [](std_msgs::msg::Int32::UniquePtr msg) {
             printf(" Received message with value: %d, and address: 0x%" PRIXPTR "\n", msg->data, reinterpret_cast<std::uintptr_t>(msg.get()));
         });
