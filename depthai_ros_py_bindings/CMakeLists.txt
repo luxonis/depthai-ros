@@ -45,6 +45,11 @@ hunter_add_package(PNG)
 find_package(rtabmap_slam REQUIRED)
 set(spectacularai_ros2_DIR "" CACHE STRING "Path to spectacularai_ros2 project")
 find_package(spectacularai_ros2 REQUIRED)
+find_package(image_proc REQUIRED)
+set(laserscan_kinect_DIR "" CACHE STRING "Path to laserscan_kinect project")
+find_package(laserscan_kinect REQUIRED)
+set(ira_laser_tools_DIR "" CACHE STRING "Path to ira_laser_tools project")
+find_package(ira_laser_tools REQUIRED)
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 
@@ -65,6 +70,9 @@ set(dependencies
   vision_msgs
   rtabmap_slam
   spectacularai_ros2
+  image_proc
+  laserscan_kinect
+  ira_laser_tools
   pybind11
 )
 add_library(${PROJECT_NAME} SHARED src/bindings.cpp)

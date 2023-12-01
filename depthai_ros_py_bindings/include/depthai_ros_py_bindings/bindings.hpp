@@ -103,13 +103,15 @@ class PYBIND11_EXPORT ROSContextManager {
    public:
     ROSContextManager(){};
     ~ROSContextManager() = default;
-    void init(py::list args);
+    void init(py::list args, const std::string& executorType);
     void shutdown();
     void addNode(rclcpp::Node::SharedPtr node);
     void spin();
 
    private:
-    std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> _executor;
+    std::string _executorType;
+    std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> _singleExecutor;
+    std::shared_ptr<rclcpp::executors::MultiThreadedExecutor> _multiExecutor;
     std::vector<rclcpp::Node::SharedPtr> _nodes;
     std::thread _executionThread;
 };
