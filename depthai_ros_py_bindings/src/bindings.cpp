@@ -197,7 +197,7 @@ void RosBindings::bind(pybind11::module& m, void* pCallstack) {
 
     py::class_<rclcpp::Node, rclcpp::Node::SharedPtr> node(m_ros, "ROSNode");
     node.def(
-        py::init([](std::string nodename, rclcpp::NodeOptions options = rclcpp::NodeOptions()) { return std::make_shared<rclcpp::Node>(nodename, options); }));
+        py::init([](std::string nodename,const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) { return std::make_shared<rclcpp::Node>(nodename, options); }));
     py::class_<rclcpp::NodeOptions> nodeOptions(m_ros, "ROSNodeOptions");
     nodeOptions.def(
         py::init([](bool useIntraProcessComms = true, std::string nodeName = "", std::string paramFile = "", remappingsMap remappings = remappingsMap()) {
@@ -221,10 +221,10 @@ void RosBindings::bind(pybind11::module& m, void* pCallstack) {
 
     py::class_<Consumer, std::shared_ptr<Consumer>, rclcpp::Node> consumer(m_ros, "Consumer");
     consumer.def(
-        py::init([](std::string nodename, rclcpp::NodeOptions options, std::string input) { return std::make_shared<Consumer>(nodename, options, input); }));
+        py::init([](std::string nodename,const rclcpp::NodeOptions& options, std::string input) { return std::make_shared<Consumer>(nodename, options, input); }));
     py::class_<Producer, std::shared_ptr<Producer>, rclcpp::Node> producer(m_ros, "Producer");
     producer.def(
-        py::init([](std::string nodename, rclcpp::NodeOptions options, std::string output) { return std::make_shared<Producer>(nodename, options, output); }));
+        py::init([](std::string nodename,const rclcpp::NodeOptions& options, std::string output) { return std::make_shared<Producer>(nodename, options, output); }));
 
     py::class_<ROSContextManager, std::shared_ptr<ROSContextManager>> rosContextManager(m_ros, "ROSContextManager");
     rosContextManager.def(py::init([]() { return std::make_shared<ROSContextManager>(); }));
@@ -327,18 +327,18 @@ void RosBindings::bind(pybind11::module& m, void* pCallstack) {
     trackedFeaturesStreamer.def("publish", &TrackedFeaturesStreamer::publish);
 
     py::class_<rtabmap_slam::CoreWrapper, std::shared_ptr<rtabmap_slam::CoreWrapper>, rclcpp::Node> RTABMapCoreWrapper(m_ros, "RTABMapCoreWrapper");
-    RTABMapCoreWrapper.def(py::init([](rclcpp::NodeOptions options) { return std::make_shared<rtabmap_slam::CoreWrapper>(options); }));
+    RTABMapCoreWrapper.def(py::init([](const rclcpp::NodeOptions& options) { return std::make_shared<rtabmap_slam::CoreWrapper>(options); }));
     py::class_<spectacularAI::ros2::Node, std::shared_ptr<spectacularAI::ros2::Node>, rclcpp::Node> SpectacularAINode(m_ros, "SpectacularAINode");
-    SpectacularAINode.def(py::init([](rclcpp::NodeOptions options) { return std::make_shared<spectacularAI::ros2::Node>(options); }));
+    SpectacularAINode.def(py::init([](const rclcpp::NodeOptions& options) { return std::make_shared<spectacularAI::ros2::Node>(options); }));
 
     py::class_<image_proc::RectifyNode, std::shared_ptr<image_proc::RectifyNode>, rclcpp::Node> ImageProcRectifyNode(m_ros, "ImageProcRectifyNode");
-    ImageProcRectifyNode.def(py::init([](rclcpp::NodeOptions options) { return std::make_shared<image_proc::RectifyNode>(options); }));
+    ImageProcRectifyNode.def(py::init([](const rclcpp::NodeOptions& options) { return std::make_shared<image_proc::RectifyNode>(options); }));
     py::class_<laserscan_kinect::LaserScanKinectNode, std::shared_ptr<laserscan_kinect::LaserScanKinectNode>, rclcpp::Node> LaserScanKinectNode(
         m_ros, "LaserScanKinectNode");
-    LaserScanKinectNode.def(py::init([](rclcpp::NodeOptions options) { return std::make_shared<laserscan_kinect::LaserScanKinectNode>(options); }));
+    LaserScanKinectNode.def(py::init([](const rclcpp::NodeOptions& options) { return std::make_shared<laserscan_kinect::LaserScanKinectNode>(options); }));
     py::class_<ira_laser_tools::LaserscanMerger, std::shared_ptr<ira_laser_tools::LaserscanMerger>, rclcpp::Node> LaserscanMerger(
         m_ros, "LaserscanMerger");
-    LaserscanMerger.def(py::init([](rclcpp::NodeOptions options) { return std::make_shared<ira_laser_tools::LaserscanMerger>(options); }));
+    LaserscanMerger.def(py::init([](const rclcpp::NodeOptions& options) { return std::make_shared<ira_laser_tools::LaserscanMerger>(options); }));
 };
 }  // namespace ros
 }  // namespace dai
