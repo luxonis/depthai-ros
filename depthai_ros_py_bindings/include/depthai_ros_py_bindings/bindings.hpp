@@ -122,6 +122,8 @@ class PYBIND11_EXPORT ImgStreamer {
                 dai::CameraBoardSocket socket,
                 const std::string& topicName,
                 const std::string& frameName,
+                int width,
+                int height,
                 bool interleaved,
                 bool getBaseDeviceTimestamp = false);
     ~ImgStreamer() = default;
