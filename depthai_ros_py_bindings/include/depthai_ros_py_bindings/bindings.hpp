@@ -132,6 +132,7 @@ class PYBIND11_EXPORT ImgStreamer {
 
    private:
     std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::Image>> _pub;
+    rclcpp::CallbackGroup::SharedPtr _callbackGroup;
     image_transport::CameraPublisher _pubCamera;
     std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::CompressedImage>> _pubCompressed;
     std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::CameraInfo>> _pubCamInfo;

@@ -33,33 +33,30 @@ ImgStreamer::ImgStreamer(rclcpp::Node::SharedPtr node,
       _publishCompressed(false),
       _ipcEnabled(node->get_node_options().use_intra_process_comms()) {
     _imageConverter->setUpdateRosBaseTimeOnToRosMsg(true);
-    if(_ipcEnabled) {
-        _pub = node->create_publisher<sensor_msgs::msg::Image>(topicName, 10);
-        _pubCompressed = node->create_publisher<sensor_msgs::msg::CompressedImage>(topicName + "/compressed", 10);
-        _pubCamInfo = node->create_publisher<sensor_msgs::msg::CameraInfo>(topicName + "/camera_info", 10);
-    } else {
-        _pubCamera = image_transport::create_camera_publisher(node.get(), topicName);
-    }
+    _callbackGroup = node->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+    rclcpp::PublisherOptions opts;
+    opts.callback_group = _callbackGroup;
+    RCLCPP_INFO(node->get_logger(), "Creating publisher for '%s'", topicName.c_str());
+    _pub = node->create_publisher<sensor_msgs::msg::Image>(topicName + "/image_raw", 10, opts);
+    _pubCompressed = node->create_publisher<sensor_msgs::msg::CompressedImage>(topicName + "/compressed", 10, opts);
+    _pubCamInfo = node->create_publisher<sensor_msgs::msg::CameraInfo>(topicName + "/camera_info", 10, opts);
+
     _camInfoMsg = _imageConverter->calibrationToCameraInfo(calibHandler, socket, width, height);
 }
 void ImgStreamer::publish(const std::string& name, std::shared_ptr<dai::ImgFrame> imgFrame) {
     auto imgMsg = _imageConverter->toRosMsgRawPtr(imgFrame);
     _camInfoMsg.header = imgMsg.header;
-    if(_ipcEnabled) {
-        if(_publishCompressed) {
-            sensor_msgs::msg::CompressedImage compressedImgMsg;
-            compressedImgMsg.header = imgMsg.header;
-            compressedImgMsg.format = "jpeg";
-            size_t size = imgFrame->getData().size();
-            compressedImgMsg.data.resize(size);
-            compressedImgMsg.data.assign(imgFrame->getData().begin(), imgFrame->getData().end());
-            _pubCompressed->publish(compressedImgMsg);
-        }
-        _pub->publish(imgMsg);
-        _pubCamInfo->publish(_camInfoMsg);
-    } else {
-        _pubCamera.publish(imgMsg, _camInfoMsg);
+    if(_publishCompressed) {
+        sensor_msgs::msg::CompressedImage compressedImgMsg;
+        compressedImgMsg.header = imgMsg.header;
+        compressedImgMsg.format = "jpeg";
+        size_t size = imgFrame->getData().size();
+        compressedImgMsg.data.resize(size);
+        compressedImgMsg.data.assign(imgFrame->getData().begin(), imgFrame->getData().end());
+        _pubCompressed->publish(compressedImgMsg);
     }
+    _pub->publish(imgMsg);
+    _pubCamInfo->publish(_camInfoMsg);
 }
 
 void ImgStreamer::convertFromBitstream(dai::RawImgFrame::Type type) {
@@ -150,6 +147,7 @@ void ROSContextManager::init(py::list args, const std::string& executorType) {
 }
 
 void ROSContextManager::shutdown() {
+    _executionThread.join();
     if(_executorType == "single_threaded") {
         _singleExecutor->cancel();
         _singleExecutor.reset();
