@@ -182,19 +182,19 @@ void ROSContextManager::spin() {
         throw std::runtime_error("Unknown executor type");
 }
 
-void RosBindings::bind(pybind11::module& m, void* pCallstack) {
-    auto m_ros = m.def_submodule("ros", "ROS bindings");
-
-    auto point = message_class<geometry_msgs::msg::Point>(m_ros, "Point");
+PYBIND11_MODULE(dai_ros_py, m){
+    py::module::import("depthai");
+    m.doc() = "depthai-ros bindings";
+    auto point = message_class<geometry_msgs::msg::Point>(m, "Point");
     point.def(py::init<>());
     point.def_readwrite("x", &geometry_msgs::msg::Point::x);
     point.def_readwrite("y", &geometry_msgs::msg::Point::y);
     point.def_readwrite("z", &geometry_msgs::msg::Point::z);
 
-    py::class_<rclcpp::Node, rclcpp::Node::SharedPtr> node(m_ros, "ROSNode");
+    py::class_<rclcpp::Node, rclcpp::Node::SharedPtr> node(m, "ROSNode");
     node.def(py::init(
         [](std::string nodename, const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) { return std::make_shared<rclcpp::Node>(nodename, options); }));
-    py::class_<rclcpp::NodeOptions> nodeOptions(m_ros, "ROSNodeOptions");
+    py::class_<rclcpp::NodeOptions> nodeOptions(m, "ROSNodeOptions");
     nodeOptions.def(
         py::init([](bool useIntraProcessComms = true, std::string nodeName = "", std::string paramFile = "", remappingsMap remappings = remappingsMap()) {
             rclcpp::NodeOptions options;
@@ -219,14 +219,14 @@ void RosBindings::bind(pybind11::module& m, void* pCallstack) {
         py::arg("param_file") = "",
         py::arg("remappings") = remappingsMap());
 
-    py::class_<Consumer, std::shared_ptr<Consumer>, rclcpp::Node> consumer(m_ros, "Consumer");
+    py::class_<Consumer, std::shared_ptr<Consumer>, rclcpp::Node> consumer(m, "Consumer");
     consumer.def(py::init(
         [](std::string nodename, const rclcpp::NodeOptions& options, std::string input) { return std::make_shared<Consumer>(nodename, options, input); }));
-    py::class_<Producer, std::shared_ptr<Producer>, rclcpp::Node> producer(m_ros, "Producer");
+    py::class_<Producer, std::shared_ptr<Producer>, rclcpp::Node> producer(m, "Producer");
     producer.def(py::init(
         [](std::string nodename, const rclcpp::NodeOptions& options, std::string output) { return std::make_shared<Producer>(nodename, options, output); }));
 
-    py::class_<ROSContextManager, std::shared_ptr<ROSContextManager>> rosContextManager(m_ros, "ROSContextManager");
+    py::class_<ROSContextManager, std::shared_ptr<ROSContextManager>> rosContextManager(m, "ROSContextManager");
     rosContextManager.def(py::init([]() { return std::make_shared<ROSContextManager>(); }));
     rosContextManager.def("add_node", &ROSContextManager::addNode);
     rosContextManager.def("init", &ROSContextManager::init);
@@ -244,11 +244,11 @@ void RosBindings::bind(pybind11::module& m, void* pCallstack) {
 
     node.def("log", [](rclcpp::Node::SharedPtr n, std::string logmsg) { RCLCPP_INFO(n->get_logger(), logmsg.c_str()); });
 
-    m_ros.def("ros_ok", []() { return rclcpp::ok(); });
+    m.def("ros_ok", []() { return rclcpp::ok(); });
 
-    m_ros.def("shutdown", []() { rclcpp::shutdown(); });
+    m.def("shutdown", []() { rclcpp::shutdown(); });
 
-    py::class_<ImgStreamer, std::shared_ptr<ImgStreamer>> imgStreamer(m_ros, "ImgStreamer");
+    py::class_<ImgStreamer, std::shared_ptr<ImgStreamer>> imgStreamer(m, "ImgStreamer");
 
     imgStreamer.def(py::init([](rclcpp::Node::SharedPtr node,
                                 dai::CalibrationHandler calibHandler,
@@ -275,13 +275,13 @@ void RosBindings::bind(pybind11::module& m, void* pCallstack) {
     imgStreamer.def("publish", &ImgStreamer::publish);
     imgStreamer.def("convertFromBitStream", &ImgStreamer::convertFromBitstream);
 
-    py::enum_<ImuSyncMethod>(m_ros, "ImuSyncMethod")
+    py::enum_<ImuSyncMethod>(m, "ImuSyncMethod")
         .value("COPY", ImuSyncMethod::COPY)
         .value("LINEAR_INTERPOLATE_ACCEL", ImuSyncMethod::LINEAR_INTERPOLATE_ACCEL)
         .value("LINEAR_INTERPOLATE_GYRO", ImuSyncMethod::LINEAR_INTERPOLATE_GYRO)
         .export_values();
 
-    py::class_<ImuStreamer, std::shared_ptr<ImuStreamer>> imuStreamer(m_ros, "ImuStreamer");
+    py::class_<ImuStreamer, std::shared_ptr<ImuStreamer>> imuStreamer(m, "ImuStreamer");
     imuStreamer.def(py::init([](rclcpp::Node::SharedPtr node,
                                 const std::string& topicName,
                                 const std::string& frameName,
@@ -318,7 +318,7 @@ void RosBindings::bind(pybind11::module& m, void* pCallstack) {
                     py::arg("get_base_device_timestamp") = false);
     imuStreamer.def("publish", &ImuStreamer::publish);
 
-    py::class_<SpatialDetectionStreamer, std::shared_ptr<SpatialDetectionStreamer>> spatialDetectionStreamer(m_ros, "SpatialDetectionStreamer");
+    py::class_<SpatialDetectionStreamer, std::shared_ptr<SpatialDetectionStreamer>> spatialDetectionStreamer(m, "SpatialDetectionStreamer");
     spatialDetectionStreamer.def(py::init([](rclcpp::Node::SharedPtr node,
                                              const std::string& topicName,
                                              std::string frameName,
@@ -338,7 +338,7 @@ void RosBindings::bind(pybind11::module& m, void* pCallstack) {
                                  py::arg("get_base_device_timestamp") = false);
     spatialDetectionStreamer.def("publish", &SpatialDetectionStreamer::publish);
 
-    py::class_<DetectionStreamer, std::shared_ptr<DetectionStreamer>> detectionStreamer(m_ros, "DetectionStreamer");
+    py::class_<DetectionStreamer, std::shared_ptr<DetectionStreamer>> detectionStreamer(m, "DetectionStreamer");
     detectionStreamer.def(py::init([](rclcpp::Node::SharedPtr node,
                                       const std::string& topicName,
                                       std::string frameName,
@@ -357,7 +357,7 @@ void RosBindings::bind(pybind11::module& m, void* pCallstack) {
                           py::arg("get_base_device_timestamp") = false);
     detectionStreamer.def("publish", &DetectionStreamer::publish);
 
-    py::class_<TrackedFeaturesStreamer, std::shared_ptr<TrackedFeaturesStreamer>> trackedFeaturesStreamer(m_ros, "TrackedFeaturesStreamer");
+    py::class_<TrackedFeaturesStreamer, std::shared_ptr<TrackedFeaturesStreamer>> trackedFeaturesStreamer(m, "TrackedFeaturesStreamer");
     trackedFeaturesStreamer.def(
         py::init([](rclcpp::Node::SharedPtr node, const std::string& topicName, std::string frameName, bool getBaseDeviceTimestamp = false) {
             return std::make_shared<TrackedFeaturesStreamer>(node, topicName, frameName, getBaseDeviceTimestamp);
@@ -368,17 +368,17 @@ void RosBindings::bind(pybind11::module& m, void* pCallstack) {
         py::arg("get_base_device_timestamp") = false);
     trackedFeaturesStreamer.def("publish", &TrackedFeaturesStreamer::publish);
 
-    py::class_<rtabmap_slam::CoreWrapper, std::shared_ptr<rtabmap_slam::CoreWrapper>, rclcpp::Node> RTABMapCoreWrapper(m_ros, "RTABMapCoreWrapper");
+    py::class_<rtabmap_slam::CoreWrapper, std::shared_ptr<rtabmap_slam::CoreWrapper>, rclcpp::Node> RTABMapCoreWrapper(m, "RTABMapCoreWrapper");
     RTABMapCoreWrapper.def(py::init([](const rclcpp::NodeOptions& options) { return std::make_shared<rtabmap_slam::CoreWrapper>(options); }));
-    py::class_<spectacularAI::ros2::Node, std::shared_ptr<spectacularAI::ros2::Node>, rclcpp::Node> SpectacularAINode(m_ros, "SpectacularAINode");
+    py::class_<spectacularAI::ros2::Node, std::shared_ptr<spectacularAI::ros2::Node>, rclcpp::Node> SpectacularAINode(m, "SpectacularAINode");
     SpectacularAINode.def(py::init([](const rclcpp::NodeOptions& options) { return std::make_shared<spectacularAI::ros2::Node>(options); }));
 
-    py::class_<image_proc::RectifyNode, std::shared_ptr<image_proc::RectifyNode>, rclcpp::Node> ImageProcRectifyNode(m_ros, "ImageProcRectifyNode");
+    py::class_<image_proc::RectifyNode, std::shared_ptr<image_proc::RectifyNode>, rclcpp::Node> ImageProcRectifyNode(m, "ImageProcRectifyNode");
     ImageProcRectifyNode.def(py::init([](const rclcpp::NodeOptions& options) { return std::make_shared<image_proc::RectifyNode>(options); }));
     py::class_<laserscan_kinect::LaserScanKinectNode, std::shared_ptr<laserscan_kinect::LaserScanKinectNode>, rclcpp::Node> LaserScanKinectNode(
-        m_ros, "LaserScanKinectNode");
+        m, "LaserScanKinectNode");
     LaserScanKinectNode.def(py::init([](const rclcpp::NodeOptions& options) { return std::make_shared<laserscan_kinect::LaserScanKinectNode>(options); }));
-    py::class_<ira_laser_tools::LaserscanMerger, std::shared_ptr<ira_laser_tools::LaserscanMerger>, rclcpp::Node> LaserscanMerger(m_ros, "LaserscanMerger");
+    py::class_<ira_laser_tools::LaserscanMerger, std::shared_ptr<ira_laser_tools::LaserscanMerger>, rclcpp::Node> LaserscanMerger(m, "LaserscanMerger");
     LaserscanMerger.def(py::init([](const rclcpp::NodeOptions& options) { return std::make_shared<ira_laser_tools::LaserscanMerger>(options); }));
 };
 }  // namespace ros

@@ -208,8 +208,6 @@ class PYBIND11_EXPORT TrackedFeaturesStreamer {
     std::shared_ptr<TrackedFeaturesConverter> _trackedFeaturesConverter;
 };
 
-struct PYBIND11_EXPORT RosBindings {
-    static void bind(pybind11::module& m, void* pCallstack);
-};
+
 }  // namespace ros
 }  // namespace dai

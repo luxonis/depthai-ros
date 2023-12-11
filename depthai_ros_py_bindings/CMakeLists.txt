@@ -21,35 +21,26 @@ if(NOT OpenCV_FOUND)
   find_package(OpenCV ${opencv_version} REQUIRED COMPONENTS imgproc highgui calib3d)
 endif()
 
-
-message(STATUS "------------------------------------------")
-message(STATUS "Depthai Bridge is being built using AMENT.")
-message(STATUS "------------------------------------------")
-
 set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
 
-message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
-message(STATUS "CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
+
 find_package(ament_cmake REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(depthai_ros_msgs REQUIRED)
-set(DAI_ROS_BRIDGE_PATH "" CACHE STRING "Path to depthai-ros-bridge project")
-add_subdirectory(${DAI_ROS_BRIDGE_PATH} depthai_bridge)
+find_package(depthai REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(vision_msgs REQUIRED)
-hunter_add_package(TIFF)
-hunter_add_package(PNG)
 find_package(rtabmap_slam REQUIRED)
-set(spectacularai_ros2_DIR "" CACHE STRING "Path to spectacularai_ros2 project")
+find_package(pybind11 REQUIRED)
 find_package(spectacularai_ros2 REQUIRED)
 find_package(image_proc REQUIRED)
-set(laserscan_kinect_DIR "" CACHE STRING "Path to laserscan_kinect project")
 find_package(laserscan_kinect REQUIRED)
-set(ira_laser_tools_DIR "" CACHE STRING "Path to ira_laser_tools project")
 find_package(ira_laser_tools REQUIRED)
+find_package(depthai_bridge REQUIRED)
+
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 
@@ -62,6 +53,8 @@ include_directories(
 
 set(dependencies
   cv_bridge
+  depthai
+  depthai_bridge
   depthai_ros_msgs
   image_transport
   rclcpp
@@ -74,39 +67,51 @@ set(dependencies
   laserscan_kinect
   ira_laser_tools
   pybind11
-)
-add_library(${PROJECT_NAME} SHARED src/bindings.cpp)
-ament_target_dependencies(${PROJECT_NAME}
-  ${dependencies})
-set(DAI_ROS_BRIDGE_INCLUDE_DIR "${DAI_ROS_BRIDGE_PATH}/include")
-target_include_directories(${PROJECT_NAME} PUBLIC src ${DAI_ROS_BRIDGE_INCLUDE_DIR})
-
-target_link_libraries(${PROJECT_NAME}
-                      depthai_bridge
-                      depthai::core
-                      opencv_imgproc
-                      opencv_highgui
-                      opencv_calib3d)
-
-ament_export_targets(${PROJECT_NAME}Targets HAS_LIBRARY_TARGET)
-
-install(DIRECTORY include/
-        DESTINATION include/
+  Python3
 )
 
-install(TARGETS ${PROJECT_NAME}
-      EXPORT ${PROJECT_NAME}Targets
-              ARCHIVE DESTINATION lib
-              LIBRARY DESTINATION lib
-              RUNTIME DESTINATION bin
-              INCLUDES DESTINATION include
+function(ament_target_dependencies_private target)
+  if(NOT TARGET ${target})
+    message(FATAL_ERROR "ament_target_dependencies() the first argument must be a valid target name")
+  endif()
+  if(${ARGC} GREATER 0)
+    set(definitions "")
+    set(include_dirs "")
+    set(libraries "")
+    set(link_flags "")
+    foreach(package_name ${ARGN})
+      if(NOT ${${package_name}_FOUND})
+        message(FATAL_ERROR "ament_target_dependencies() the passed package name '${package_name}' was not found before")
+      endif()
+      list_append_unique(definitions ${${package_name}_DEFINITIONS})
+      list_append_unique(include_dirs ${${package_name}_INCLUDE_DIRS})
+      list(APPEND libraries ${${package_name}_LIBRARIES})
+      list_append_unique(link_flags ${${package_name}_LINK_FLAGS})
+    endforeach()
+    target_compile_definitions(${target}
+      PUBLIC ${definitions})
+    ament_include_directories_order(ordered_include_dirs ${include_dirs})
+    target_include_directories(${target}
+      PUBLIC ${ordered_include_dirs})
+    ament_libraries_deduplicate(unique_libraries ${libraries})
+    target_link_libraries(${target} PRIVATE
+      ${unique_libraries})
+    foreach(link_flag IN LISTS link_flags)
+      set_property(TARGET ${target} APPEND_STRING PROPERTY LINK_FLAGS " ${link_flag} ")
+    endforeach()
+  endif()
+endfunction()
 
+pybind11_add_module(dai_ros_py SHARED src/bindings.cpp)
+
+ament_target_dependencies_private(dai_ros_py ${dependencies})
+set_target_properties(dai_ros_py PROPERTIES
+  PREFIX ""
+  OUTPUT_NAME "dai_ros_py"
+  SUFFIX ".so"
 )
-install(EXPORT ${PROJECT_NAME}Targets
-      DESTINATION share/${PROJECT_NAME}/cmake)
-
-      ament_export_include_directories(include)
-      ament_export_libraries(${PROJECT_NAME})
-      ament_export_dependencies(${dependencies})
-
+ament_python_install_package(${PROJECT_NAME})
+install(TARGETS dai_ros_py
+        DESTINATION "${PYTHON_INSTALL_DIR}/${PROJECT_NAME}"
+        )
 ament_package()

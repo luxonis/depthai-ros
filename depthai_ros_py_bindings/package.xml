@@ -23,6 +23,8 @@
   <depend>pybind11_vendor</depend>
   <depend>libopencv-dev</depend>
   <depend>rtabmap_slam</depend>
+  <depend>laserscan_kinect</depend>
+  <depend>ira_laser_tools</depend>
   <export>
     <build_type>ament_cmake</build_type>
   </export>
