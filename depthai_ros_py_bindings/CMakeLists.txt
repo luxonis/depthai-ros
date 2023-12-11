@@ -53,7 +53,6 @@ include_directories(
 
 set(dependencies
   cv_bridge
-  depthai
   depthai_bridge
   depthai_ros_msgs
   image_transport
