@@ -41,7 +41,6 @@ find_package(laserscan_kinect REQUIRED)
 find_package(ira_laser_tools REQUIRED)
 find_package(depthai_bridge REQUIRED)
 
-
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 
 find_package(pybind11 REQUIRED)
@@ -53,7 +52,6 @@ include_directories(
 
 set(dependencies
   cv_bridge
-  depthai::core
   depthai_bridge
   depthai_ros_msgs
   image_transport
@@ -70,7 +68,7 @@ set(dependencies
   Python3
 )
 
-function(ament_target_dependencies_private target)
+function(ament_target_dependencies_public target)
   if(NOT TARGET ${target})
     message(FATAL_ERROR "ament_target_dependencies() the first argument must be a valid target name")
   endif()
@@ -94,7 +92,7 @@ function(ament_target_dependencies_private target)
     target_include_directories(${target}
       PUBLIC ${ordered_include_dirs})
     ament_libraries_deduplicate(unique_libraries ${libraries})
-    target_link_libraries(${target} PRIVATE
+    target_link_libraries(${target} PUBLIC
       ${unique_libraries})
     foreach(link_flag IN LISTS link_flags)
       set_property(TARGET ${target} APPEND_STRING PROPERTY LINK_FLAGS " ${link_flag} ")
@@ -102,9 +100,10 @@ function(ament_target_dependencies_private target)
   endif()
 endfunction()
 
-pybind11_add_module(dai_ros_py SHARED src/bindings.cpp)
+pybind11_add_module(dai_ros_py src/bindings.cpp)
 
-ament_target_dependencies_private(dai_ros_py ${dependencies}  )
+ament_target_dependencies_public(dai_ros_py ${dependencies})
+target_link_libraries(dai_ros_py PRIVATE depthai::core)
 set_target_properties(dai_ros_py PROPERTIES
   PREFIX ""
   OUTPUT_NAME "dai_ros_py"
@@ -114,4 +113,5 @@ ament_python_install_package(${PROJECT_NAME})
 install(TARGETS dai_ros_py
         DESTINATION "${PYTHON_INSTALL_DIR}/${PROJECT_NAME}"
         )
+ament_export_dependencies()
 ament_package()
