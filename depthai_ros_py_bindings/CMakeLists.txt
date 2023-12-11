@@ -53,6 +53,7 @@ include_directories(
 
 set(dependencies
   cv_bridge
+  depthai::core
   depthai_bridge
   depthai_ros_msgs
   image_transport
@@ -103,7 +104,7 @@ endfunction()
 
 pybind11_add_module(dai_ros_py SHARED src/bindings.cpp)
 
-ament_target_dependencies_private(dai_ros_py ${dependencies}  depthai::core)
+ament_target_dependencies_private(dai_ros_py ${dependencies}  )
 set_target_properties(dai_ros_py PROPERTIES
   PREFIX ""
   OUTPUT_NAME "dai_ros_py"
