@@ -76,7 +76,10 @@ add_library(
 )
 
 ament_target_dependencies(${COMMON_LIB_NAME} ${COMMON_DEPS})
-
+target_link_libraries(
+  ${COMMON_LIB_NAME}
+  depthai::core
+)
 set(SENSOR_LIB_NAME ${PROJECT_NAME}_sensor_nodes)
 add_library(
   ${SENSOR_LIB_NAME} SHARED
@@ -119,6 +122,7 @@ target_link_libraries(
   ${SENSOR_LIB_NAME}
   ${NN_LIB_NAME}
   ${COMMON_LIB_NAME}
+
 )
 
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::Camera")
