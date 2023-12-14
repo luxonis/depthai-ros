@@ -42,18 +42,20 @@
 
     <rosparam file="$(arg params_file)" />
     <node pkg="rosservice" if="$(optenv DEPTHAI_DEBUG 0)" type="rosservice" name="set_log_level" args="call --wait /oak_nodelet_manager/set_logger_level 'ros.depthai_ros_driver' 'debug'" />
-    <include unless="$(arg pass_tf_args_as_params)" file="$(find depthai_descriptions)/launch/urdf.launch">
-        <arg name="base_frame" value="$(arg  name)" />
-        <arg name="parent_frame" value="$(arg  parent_frame)"/>
-        <arg name="camera_model" value="$(arg  camera_model)"/>
-        <arg name="tf_prefix" value="$(arg  name)" />
-        <arg name="cam_pos_x" value="$(arg  cam_pos_x)" />
-        <arg name="cam_pos_y" value="$(arg  cam_pos_y)" />
-        <arg name="cam_pos_z" value="$(arg  cam_pos_z)" />
-        <arg name="cam_roll" value="$(arg  cam_roll)" />
-        <arg name="cam_pitch" value="$(arg  cam_pitch)" />
-        <arg name="cam_yaw" value="$(arg  cam_yaw)" />
-    </include>
+    <group if="$(arg pass_tf_args_as_params)">
+        <include file="$(find depthai_descriptions)/launch/urdf.launch">
+            <arg name="base_frame" value="$(arg  name)" />
+            <arg name="parent_frame" value="$(arg  parent_frame)"/>
+            <arg name="camera_model" value="$(arg  camera_model)"/>
+            <arg name="tf_prefix" value="$(arg  name)" />
+            <arg name="cam_pos_x" value="$(arg  cam_pos_x)" />
+            <arg name="cam_pos_y" value="$(arg  cam_pos_y)" />
+            <arg name="cam_pos_z" value="$(arg  cam_pos_z)" />
+            <arg name="cam_roll" value="$(arg  cam_roll)" />
+            <arg name="cam_pitch" value="$(arg  cam_pitch)" />
+            <arg name="cam_yaw" value="$(arg  cam_yaw)" />
+        </include>
+    </group>
 
     <node pkg="nodelet" type="nodelet" name="$(arg  name)_nodelet_manager"  launch-prefix="$(arg launch_prefix)" args="manager" output="screen">
         <remap from="/nodelet_manager/load_nodelet" to="$(arg name)/nodelet_manager/load_nodelet"/>
