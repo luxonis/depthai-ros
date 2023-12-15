@@ -147,16 +147,12 @@ void ROSContextManager::init(py::list args, const std::string& executorType) {
 }
 
 void ROSContextManager::shutdown() {
-    _executionThread.join();
     if(_executorType == "single_threaded") {
         _singleExecutor->cancel();
-        _singleExecutor.reset();
     } else if(_executorType == "multi_threaded") {
         _multiExecutor->cancel();
-        _multiExecutor.reset();
     } else
         throw std::runtime_error("Unknown executor type");
-    rclcpp::shutdown();
 }
 
 void ROSContextManager::addNode(rclcpp::Node::SharedPtr node) {
@@ -173,13 +169,12 @@ void ROSContextManager::spin() {
     if(_executorType == "single_threaded") {
         auto spin_node = [this]() { _singleExecutor->spin(); };
         _executionThread = std::thread(spin_node);
-        _executionThread.detach();
     } else if(_executorType == "multi_threaded") {
         auto spin_node = [this]() { _multiExecutor->spin(); };
         _executionThread = std::thread(spin_node);
-        _executionThread.detach();
     } else
         throw std::runtime_error("Unknown executor type");
+    _executionThread.detach();
 }
 
 PYBIND11_MODULE(dai_ros_py, m){
