@@ -6,6 +6,8 @@
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
 
+#include "ament_index_cpp/get_resource.hpp"
+#include "class_loader/class_loader.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "geometry_msgs/msg/point.hpp"
 #include "image_proc/rectify.hpp"
@@ -13,9 +15,10 @@
 #include "laserscan_kinect/laserscan_kinect_node.hpp"
 #include "pybind11/pybind11.h"
 #include "rclcpp/rclcpp.hpp"
-#include "rtabmap_slam/CoreWrapper.h"
+#include "rclcpp_components/node_factory.hpp"
+#include "rcpputils/filesystem_helper.hpp"
+#include "rcpputils/split.hpp"
 #include "spectacularai_ros2/ros2_plugin.hpp"
-
 namespace dai {
 namespace ros {
 namespace py = pybind11;
@@ -33,30 +36,39 @@ ImgStreamer::ImgStreamer(rclcpp::Node::SharedPtr node,
       _publishCompressed(false),
       _ipcEnabled(node->get_node_options().use_intra_process_comms()) {
     _imageConverter->setUpdateRosBaseTimeOnToRosMsg(true);
-    _callbackGroup = node->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
-    rclcpp::PublisherOptions opts;
-    opts.callback_group = _callbackGroup;
-    RCLCPP_INFO(node->get_logger(), "Creating publisher for '%s'", topicName.c_str());
-    _pub = node->create_publisher<sensor_msgs::msg::Image>(topicName + "/image_raw", 10, opts);
-    _pubCompressed = node->create_publisher<sensor_msgs::msg::CompressedImage>(topicName + "/compressed", 10, opts);
-    _pubCamInfo = node->create_publisher<sensor_msgs::msg::CameraInfo>(topicName + "/camera_info", 10, opts);
 
+    RCLCPP_INFO(node->get_logger(), "Creating publisher for '%s'", topicName.c_str());
+
+    if(_ipcEnabled) {
+        _callbackGroup = node->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+        rclcpp::PublisherOptions opts;
+        opts.callback_group = _callbackGroup;
+        _pub = node->create_publisher<sensor_msgs::msg::Image>(topicName, 10);
+        _pubCompressed = node->create_publisher<sensor_msgs::msg::CompressedImage>(topicName + "/compressed", 10);
+        _pubCamInfo = node->create_publisher<sensor_msgs::msg::CameraInfo>(topicName + "/camera_info", 10);
+    } else {
+        _pubCamera = image_transport::create_camera_publisher(node.get(), topicName);
+    }
     _camInfoMsg = _imageConverter->calibrationToCameraInfo(calibHandler, socket, width, height);
 }
 void ImgStreamer::publish(const std::string& name, std::shared_ptr<dai::ImgFrame> imgFrame) {
     auto imgMsg = _imageConverter->toRosMsgRawPtr(imgFrame);
     _camInfoMsg.header = imgMsg.header;
-    if(_publishCompressed) {
-        sensor_msgs::msg::CompressedImage compressedImgMsg;
-        compressedImgMsg.header = imgMsg.header;
-        compressedImgMsg.format = "jpeg";
-        size_t size = imgFrame->getData().size();
-        compressedImgMsg.data.resize(size);
-        compressedImgMsg.data.assign(imgFrame->getData().begin(), imgFrame->getData().end());
-        _pubCompressed->publish(compressedImgMsg);
+    if(_ipcEnabled) {
+        if(_publishCompressed) {
+            sensor_msgs::msg::CompressedImage compressedImgMsg;
+            compressedImgMsg.header = imgMsg.header;
+            compressedImgMsg.format = "jpeg";
+            size_t size = imgFrame->getData().size();
+            compressedImgMsg.data.resize(size);
+            compressedImgMsg.data.assign(imgFrame->getData().begin(), imgFrame->getData().end());
+            _pubCompressed->publish(compressedImgMsg);
+        }
+        _pub->publish(imgMsg);
+        _pubCamInfo->publish(_camInfoMsg);
+    } else {
+        _pubCamera.publish(imgMsg, _camInfoMsg);
     }
-    _pub->publish(imgMsg);
-    _pubCamInfo->publish(_camInfoMsg);
 }
 
 void ImgStreamer::convertFromBitstream(dai::RawImgFrame::Type type) {
@@ -165,6 +177,45 @@ void ROSContextManager::addNode(rclcpp::Node::SharedPtr node) {
     }
 }
 
+void ROSContextManager::addComposableNode(const std::string& packageName, const std::string& pluginName, const rclcpp::NodeOptions& options) {
+    std::string content;
+    std::string basePath;
+    auto resourcePath = ament_index_cpp::get_resource("rclcpp_components", packageName, content, &basePath);
+    std::string libraryPath;
+    std::vector<std::string> lines = rcpputils::split(content, '\n', true);
+    for(const auto& line : lines) {
+        std::vector<std::string> parts = rcpputils::split(line, ';');
+        if(parts.size() != 2) {
+            throw std::runtime_error("Invalid resource file");
+        }
+        libraryPath = parts[1];
+        if(!rcpputils::fs::path(libraryPath).is_absolute()) {
+            libraryPath = basePath + "/" + libraryPath;
+        }
+    }
+    RCLCPP_INFO(rclcpp::get_logger("dai_ros_py"), "Loading library '%s'", libraryPath.c_str());
+    auto libLoader = std::make_shared<class_loader::ClassLoader>(libraryPath);
+    std::shared_ptr<rclcpp_components::NodeFactory> nodeFactory;
+    auto classes = libLoader->getAvailableClasses<rclcpp_components::NodeFactory>();
+
+    std::string fqPluginName = "rclcpp_components::NodeFactoryTemplate<" + pluginName + ">";
+    for(const auto& clazz : classes) {
+        RCLCPP_INFO(rclcpp::get_logger("dai_ros_py"), "Found class: %s", clazz.c_str());
+        if(clazz == pluginName || clazz == fqPluginName) {
+            nodeFactory = libLoader->createInstance<rclcpp_components::NodeFactory>(clazz);
+        }
+    }
+    auto node = nodeFactory->create_node_instance(options);
+    if(_executorType == "single_threaded")
+        _singleExecutor->add_node(node.get_node_base_interface());
+    else if(_executorType == "multi_threaded")
+        _multiExecutor->add_node(node.get_node_base_interface());
+    else {
+        throw std::runtime_error("Unknown executor type");
+    }
+    _composableNodes.push_back(node);
+}
+
 void ROSContextManager::spin() {
     if(_executorType == "single_threaded") {
         auto spin_node = [this]() { _singleExecutor->spin(); };
@@ -177,8 +228,7 @@ void ROSContextManager::spin() {
     _executionThread.detach();
 }
 
-PYBIND11_MODULE(dai_ros_py, m){
-    py::module::import("depthai");
+PYBIND11_MODULE(dai_ros_py, m) {
     m.doc() = "depthai-ros bindings";
     auto point = message_class<geometry_msgs::msg::Point>(m, "Point");
     point.def(py::init<>());
@@ -191,7 +241,7 @@ PYBIND11_MODULE(dai_ros_py, m){
         [](std::string nodename, const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) { return std::make_shared<rclcpp::Node>(nodename, options); }));
     py::class_<rclcpp::NodeOptions> nodeOptions(m, "ROSNodeOptions");
     nodeOptions.def(
-        py::init([](bool useIntraProcessComms = true, std::string nodeName = "", std::string paramFile = "", remappingsMap remappings = remappingsMap()) {
+        py::init([](bool useIntraProcessComms = false, std::string nodeName = "", std::string paramFile = "", remappingsMap remappings = remappingsMap()) {
             rclcpp::NodeOptions options;
             options.use_intra_process_comms(useIntraProcessComms);
             std::vector<std::string> args;
@@ -209,7 +259,7 @@ PYBIND11_MODULE(dai_ros_py, m){
             options.arguments(args);
             return options;
         }),
-        py::arg("use_intra_process_comms") = true,
+        py::arg("use_intra_process_comms") = false,
         py::arg("node_name") = "",
         py::arg("param_file") = "",
         py::arg("remappings") = remappingsMap());
@@ -224,6 +274,7 @@ PYBIND11_MODULE(dai_ros_py, m){
     py::class_<ROSContextManager, std::shared_ptr<ROSContextManager>> rosContextManager(m, "ROSContextManager");
     rosContextManager.def(py::init([]() { return std::make_shared<ROSContextManager>(); }));
     rosContextManager.def("add_node", &ROSContextManager::addNode);
+    rosContextManager.def("add_composable_node", &ROSContextManager::addComposableNode);
     rosContextManager.def("init", &ROSContextManager::init);
     rosContextManager.def("shutdown", &ROSContextManager::shutdown);
     rosContextManager.def("spin", &ROSContextManager::spin);
@@ -363,16 +414,16 @@ PYBIND11_MODULE(dai_ros_py, m){
         py::arg("get_base_device_timestamp") = false);
     trackedFeaturesStreamer.def("publish", &TrackedFeaturesStreamer::publish);
 
-    py::class_<rtabmap_slam::CoreWrapper, std::shared_ptr<rtabmap_slam::CoreWrapper>, rclcpp::Node> RTABMapCoreWrapper(m, "RTABMapCoreWrapper");
-    RTABMapCoreWrapper.def(py::init([](const rclcpp::NodeOptions& options) { return std::make_shared<rtabmap_slam::CoreWrapper>(options); }));
     py::class_<spectacularAI::ros2::Node, std::shared_ptr<spectacularAI::ros2::Node>, rclcpp::Node> SpectacularAINode(m, "SpectacularAINode");
     SpectacularAINode.def(py::init([](const rclcpp::NodeOptions& options) { return std::make_shared<spectacularAI::ros2::Node>(options); }));
 
     py::class_<image_proc::RectifyNode, std::shared_ptr<image_proc::RectifyNode>, rclcpp::Node> ImageProcRectifyNode(m, "ImageProcRectifyNode");
     ImageProcRectifyNode.def(py::init([](const rclcpp::NodeOptions& options) { return std::make_shared<image_proc::RectifyNode>(options); }));
+
     py::class_<laserscan_kinect::LaserScanKinectNode, std::shared_ptr<laserscan_kinect::LaserScanKinectNode>, rclcpp::Node> LaserScanKinectNode(
         m, "LaserScanKinectNode");
     LaserScanKinectNode.def(py::init([](const rclcpp::NodeOptions& options) { return std::make_shared<laserscan_kinect::LaserScanKinectNode>(options); }));
+
     py::class_<ira_laser_tools::LaserscanMerger, std::shared_ptr<ira_laser_tools::LaserscanMerger>, rclcpp::Node> LaserscanMerger(m, "LaserscanMerger");
     LaserscanMerger.def(py::init([](const rclcpp::NodeOptions& options) { return std::make_shared<ira_laser_tools::LaserscanMerger>(options); }));
 };
