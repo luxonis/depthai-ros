@@ -18,7 +18,7 @@
 #include "rclcpp_components/node_factory.hpp"
 #include "rcpputils/filesystem_helper.hpp"
 #include "rcpputils/split.hpp"
-#include "spectacularai_ros2/ros2_plugin.hpp"
+
 namespace dai {
 namespace ros {
 namespace py = pybind11;
@@ -413,9 +413,6 @@ PYBIND11_MODULE(dai_ros_py, m) {
         py::arg("frame_name"),
         py::arg("get_base_device_timestamp") = false);
     trackedFeaturesStreamer.def("publish", &TrackedFeaturesStreamer::publish);
-
-    py::class_<spectacularAI::ros2::Node, std::shared_ptr<spectacularAI::ros2::Node>, rclcpp::Node> SpectacularAINode(m, "SpectacularAINode");
-    SpectacularAINode.def(py::init([](const rclcpp::NodeOptions& options) { return std::make_shared<spectacularAI::ros2::Node>(options); }));
 
     py::class_<image_proc::RectifyNode, std::shared_ptr<image_proc::RectifyNode>, rclcpp::Node> ImageProcRectifyNode(m, "ImageProcRectifyNode");
     ImageProcRectifyNode.def(py::init([](const rclcpp::NodeOptions& options) { return std::make_shared<image_proc::RectifyNode>(options); }));
