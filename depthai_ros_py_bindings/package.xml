@@ -25,6 +25,7 @@
   <depend>rtabmap_slam</depend>
   <depend>laserscan_kinect</depend>
   <depend>ira_laser_tools</depend>
+  <depend>nav_msgs</depend>
   <export>
     <build_type>ament_cmake</build_type>
   </export>
