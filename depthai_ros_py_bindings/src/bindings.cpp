@@ -10,9 +10,6 @@
 #include "class_loader/class_loader.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "geometry_msgs/msg/point.hpp"
-#include "image_proc/rectify.hpp"
-#include "ira_laser_tools/laserscan_multi_merger.hpp"
-#include "laserscan_kinect/laserscan_kinect_node.hpp"
 #include "pybind11/pybind11.h"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_components/node_factory.hpp"
@@ -414,15 +411,6 @@ PYBIND11_MODULE(dai_ros_py, m) {
         py::arg("get_base_device_timestamp") = false);
     trackedFeaturesStreamer.def("publish", &TrackedFeaturesStreamer::publish);
 
-    py::class_<image_proc::RectifyNode, std::shared_ptr<image_proc::RectifyNode>, rclcpp::Node> ImageProcRectifyNode(m, "ImageProcRectifyNode");
-    ImageProcRectifyNode.def(py::init([](const rclcpp::NodeOptions& options) { return std::make_shared<image_proc::RectifyNode>(options); }));
-
-    py::class_<laserscan_kinect::LaserScanKinectNode, std::shared_ptr<laserscan_kinect::LaserScanKinectNode>, rclcpp::Node> LaserScanKinectNode(
-        m, "LaserScanKinectNode");
-    LaserScanKinectNode.def(py::init([](const rclcpp::NodeOptions& options) { return std::make_shared<laserscan_kinect::LaserScanKinectNode>(options); }));
-
-    py::class_<ira_laser_tools::LaserscanMerger, std::shared_ptr<ira_laser_tools::LaserscanMerger>, rclcpp::Node> LaserscanMerger(m, "LaserscanMerger");
-    LaserscanMerger.def(py::init([](const rclcpp::NodeOptions& options) { return std::make_shared<ira_laser_tools::LaserscanMerger>(options); }));
 };
 }  // namespace ros
 }  // namespace dai
