@@ -266,11 +266,13 @@ PYBIND11_MODULE(dai_ros_py, m) {
                         }
 
                         if(!nodeName.empty()) {
-                            args.push_back("--ros-args --remap");
+                            args.push_back("--ros-args");
+                            args.push_back("--remap");
                             args.push_back("__node:=" + nodeName);
                         }
                         if(!ns.empty()) {
-                            args.push_back("--ros-args --remap");
+                            args.push_back("--ros-args");
+                            args.push_back("--remap");
                             args.push_back("__ns:=" + ns);
                         }
                         if(!remappings.empty()) {
