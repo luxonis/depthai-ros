@@ -191,16 +191,29 @@ void ROSContextManager::addComposableNode(const std::string& packageName, const 
         }
     }
     RCLCPP_INFO(rclcpp::get_logger("dai_ros_py"), "Loading library '%s'", libraryPath.c_str());
-    auto libLoader = std::make_shared<class_loader::ClassLoader>(libraryPath);
+    std::shared_ptr<class_loader::ClassLoader> libLoader;
+    try {
+        libLoader = std::make_shared<class_loader::ClassLoader>(libraryPath);
+    } catch(const std::exception& e) {
+        RCLCPP_ERROR(rclcpp::get_logger("dai_ros_py"), "Failed to load library '%s'. Reason: %s", libraryPath.c_str(), e.what());
+        return;
+    }
+
     std::shared_ptr<rclcpp_components::NodeFactory> nodeFactory;
     auto classes = libLoader->getAvailableClasses<rclcpp_components::NodeFactory>();
 
     std::string fqPluginName = "rclcpp_components::NodeFactoryTemplate<" + pluginName + ">";
+    bool foundClass = false;
     for(const auto& clazz : classes) {
         RCLCPP_INFO(rclcpp::get_logger("dai_ros_py"), "Found class: %s", clazz.c_str());
         if(clazz == pluginName || clazz == fqPluginName) {
             nodeFactory = libLoader->createInstance<rclcpp_components::NodeFactory>(clazz);
+            foundClass = true;
         }
+    }
+    if(!foundClass) {
+        RCLCPP_ERROR(rclcpp::get_logger("dai_ros_py"), "Failed to find class '%s' in library '%s'", pluginName.c_str(), libraryPath.c_str());
+        return;
     }
     auto node = nodeFactory->create_node_instance(options);
     if(_executorType == "single_threaded")
@@ -236,30 +249,45 @@ PYBIND11_MODULE(dai_ros_py, m) {
     py::class_<rclcpp::Node, rclcpp::Node::SharedPtr> node(m, "ROSNode");
     node.def(py::init(
         [](std::string nodename, const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) { return std::make_shared<rclcpp::Node>(nodename, options); }));
+
     py::class_<rclcpp::NodeOptions> nodeOptions(m, "ROSNodeOptions");
-    nodeOptions.def(
-        py::init([](bool useIntraProcessComms = false, std::string nodeName = "", std::string paramFile = "", remappingsMap remappings = remappingsMap()) {
-            rclcpp::NodeOptions options;
-            options.use_intra_process_comms(useIntraProcessComms);
-            std::vector<std::string> args;
-            if(!paramFile.empty()) {
-                args.push_back("--ros-args");
-                args.push_back("--params-file");
-                args.push_back(paramFile);
-            }
-            if(!remappings.empty()) {
-                for(auto& remap : remappings) {
-                    args.push_back("--remap");
-                    args.push_back(remap.first + ":=" + remap.second);
-                }
-            }
-            options.arguments(args);
-            return options;
-        }),
-        py::arg("use_intra_process_comms") = false,
-        py::arg("node_name") = "",
-        py::arg("param_file") = "",
-        py::arg("remappings") = remappingsMap());
+    nodeOptions.def(py::init([](std::string nodeName = "",
+                                std::string ns = "",
+                                std::string paramFile = "",
+                                remappingsMap remappings = remappingsMap(),
+                                bool useIntraProcessComms = false) {
+                        rclcpp::NodeOptions options;
+                        options.use_intra_process_comms(useIntraProcessComms);
+                        std::vector<std::string> args;
+                        if(!paramFile.empty()) {
+                            args.push_back("--ros-args");
+                            args.push_back("--params-file");
+                            args.push_back(paramFile);
+                        }
+
+                        if(!nodeName.empty()) {
+                            args.push_back("--ros-args --remap");
+                            args.push_back("__node:=" + nodeName);
+                        }
+                        if(!ns.empty()) {
+                            args.push_back("--ros-args --remap");
+                            args.push_back("__ns:=" + ns);
+                        }
+                        if(!remappings.empty()) {
+                            for(auto& remap : remappings) {
+                                args.push_back("--remap");
+                                args.push_back(remap.first + ":=" + remap.second);
+                            }
+                        }
+
+                        options.arguments(args);
+                        return options;
+                    }),
+                    py::arg("node_name") = "",
+                    py::arg("ns") = "",
+                    py::arg("param_file") = "",
+                    py::arg("remappings") = remappingsMap(),
+                    py::arg("use_intra_process_comms") = false);
 
     py::class_<Consumer, std::shared_ptr<Consumer>, rclcpp::Node> consumer(m, "Consumer");
     consumer.def(py::init(
@@ -410,7 +438,6 @@ PYBIND11_MODULE(dai_ros_py, m) {
         py::arg("frame_name"),
         py::arg("get_base_device_timestamp") = false);
     trackedFeaturesStreamer.def("publish", &TrackedFeaturesStreamer::publish);
-
 };
 }  // namespace ros
 }  // namespace dai
