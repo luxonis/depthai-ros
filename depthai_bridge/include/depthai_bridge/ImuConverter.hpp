@@ -174,8 +174,7 @@ class ImuConverter {
 
         msg.header.frame_id = _frameName;
 
-        // msg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, timestamp);
-        msg.header.stamp = rclcpp::Clock().now();
+        msg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, timestamp);
 
     }
 
@@ -187,8 +186,7 @@ class ImuConverter {
 
         msg.header.frame_id = _frameName;
 
-        // msg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, timestamp);
-        msg.header.stamp = rclcpp::Clock().now();
+        msg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, timestamp);
     }
 
     template <typename I, typename S, typename M>
@@ -198,8 +196,7 @@ class ImuConverter {
 
         msg.header.frame_id = _frameName;
 
-        // msg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, timestamp);
-        msg.header.stamp = rclcpp::Clock().now();
+        msg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, timestamp);
     }
 
     template <typename I, typename S, typename T, typename M>
@@ -210,8 +207,7 @@ class ImuConverter {
 
         msg.header.frame_id = _frameName;
 
-        // msg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, timestamp);
-        msg.header.stamp = rclcpp::Clock().now();
+        msg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, timestamp);
     }
 
     template <typename I, typename S, typename M>

@@ -33,7 +33,7 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
         tstamp = inNetData->getTimestamp();
     SpatialMessages::SpatialDetectionArray opDetectionMsg;
     opDetectionMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
-    // opDetectionMsg.header.stamp = rclcpp::Clock().now();
+
     opDetectionMsg.header.frame_id = _frameName;
     opDetectionMsg.detections.resize(inNetData->detections.size());
 
