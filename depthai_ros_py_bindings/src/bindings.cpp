@@ -189,6 +189,9 @@ void ROSContextManager::addComposableNode(const std::string& packageName, const 
         if(!rcpputils::fs::path(libraryPath).is_absolute()) {
             libraryPath = basePath + "/" + libraryPath;
         }
+        if(parts[0] == pluginName) {
+            break;
+        }
     }
     RCLCPP_INFO(rclcpp::get_logger("dai_ros_py"), "Loading library '%s'", libraryPath.c_str());
     std::shared_ptr<class_loader::ClassLoader> libLoader;
@@ -209,6 +212,8 @@ void ROSContextManager::addComposableNode(const std::string& packageName, const 
         if(clazz == pluginName || clazz == fqPluginName) {
             nodeFactory = libLoader->createInstance<rclcpp_components::NodeFactory>(clazz);
             foundClass = true;
+            RCLCPP_INFO(rclcpp::get_logger("dai_ros_py"), "Loaded class '%s' from library '%s'", pluginName.c_str(), libraryPath.c_str());
+            break;
         }
     }
     if(!foundClass) {
