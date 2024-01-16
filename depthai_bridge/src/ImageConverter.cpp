@@ -83,7 +83,8 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
     StdMsgs::Header header;
     header.frame_id = _frameName;
 
-    header.stamp = rclcpp::Clock().now();
+    header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp); //RAE doesn't output correct time
+
 
 
     if(_fromBitstream) {
