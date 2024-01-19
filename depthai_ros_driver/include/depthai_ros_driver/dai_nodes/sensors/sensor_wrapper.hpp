@@ -52,7 +52,7 @@ class SensorWrapper : public BaseNode {
 
    private:
     void subCB(const sensor_msgs::Image::ConstPtr& img);
-    std::unique_ptr<BaseNode> sensorNode, featureTrackerNode;
+    std::unique_ptr<BaseNode> sensorNode, featureTrackerNode, nnNode;
     std::unique_ptr<param_handlers::SensorParamHandler> ph;
     std::unique_ptr<dai::ros::ImageConverter> converter;
     ros::Subscriber sub;

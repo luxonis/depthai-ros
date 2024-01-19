@@ -100,7 +100,7 @@ sensor_msgs::CameraInfo getCalibInfo(
     try {
         info = converter.calibrationToCameraInfo(calibHandler, socket, width, height);
     } catch(std::runtime_error& e) {
-        ROS_ERROR("No calibration! Publishing empty camera_info.");
+        ROS_ERROR("No calibration for socket %d! Publishing empty camera_info.", static_cast<int>(socket));
     }
     return info;
 }

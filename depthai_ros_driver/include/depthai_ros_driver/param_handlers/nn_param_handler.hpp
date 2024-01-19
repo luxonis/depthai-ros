@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "depthai/pipeline/datatype/CameraControl.hpp"
+#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
 #include "nlohmann/json.hpp"
 
@@ -32,7 +33,7 @@ enum class NNFamily { Segmentation, Mobilenet, Yolo };
 }
 class NNParamHandler : public BaseParamHandler {
    public:
-    explicit NNParamHandler(ros::NodeHandle node, const std::string& name);
+    explicit NNParamHandler(ros::NodeHandle node, const std::string& name, const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A);
     ~NNParamHandler();
     nn::NNFamily getNNFamily();
     std::string getConfigPath();

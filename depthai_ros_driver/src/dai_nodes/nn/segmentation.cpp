@@ -12,6 +12,7 @@
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
+#include "depthai_ros_driver/utils.hpp"
 #include "image_transport/camera_publisher.h"
 #include "image_transport/image_transport.h"
 #include "ros/node_handle.h"
@@ -22,13 +23,13 @@ namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace nn {
 
-Segmentation::Segmentation(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline)
+Segmentation::Segmentation(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline, const dai::CameraBoardSocket& socket)
     : BaseNode(daiNodeName, node, pipeline), it(node) {
     ROS_DEBUG("Creating node %s", daiNodeName.c_str());
     setNames();
     segNode = pipeline->create<dai::node::NeuralNetwork>();
     imageManip = pipeline->create<dai::node::ImageManip>();
-    ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName);
+    ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName, socket);
     ph->declareParams(segNode, imageManip);
     imageManip->out.link(segNode->input);
     setXinXout(pipeline);
@@ -57,7 +58,7 @@ void Segmentation::setupQueues(std::shared_ptr<dai::Device> device) {
     nnPub = it.advertiseCamera(getName() + "/image_raw", 1);
     nnQ->addCallback(std::bind(&Segmentation::segmentationCB, this, std::placeholders::_1, std::placeholders::_2));
     if(ph->getParam<bool>("i_enable_passthrough")) {
-        auto tfPrefix = getTFPrefix("rgb");
+        auto tfPrefix = getTFPrefix(utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
 
         ptQ = device->getOutputQueue(ptQName, ph->getParam<int>("i_max_q_size"), false);
         imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);

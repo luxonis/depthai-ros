@@ -34,9 +34,10 @@ StereoParamHandler::StereoParamHandler(ros::NodeHandle node, const std::string& 
     };
 }
 
-void StereoParamHandler::updateSocketsFromParams(dai::CameraBoardSocket& left, dai::CameraBoardSocket& right) {
+void StereoParamHandler::updateSocketsFromParams(dai::CameraBoardSocket& left, dai::CameraBoardSocket& right, dai::CameraBoardSocket& align) {
     int newLeftS = getParam<int>("i_left_socket_id", static_cast<int>(left));
     int newRightS = getParam<int>("i_right_socket_id", static_cast<int>(right));
+    alignSocket = static_cast<dai::CameraBoardSocket>(declareAndLogParam<int>("i_board_socket_id", static_cast<int>(align)));
     if(newLeftS != static_cast<int>(left) || newRightS != static_cast<int>(right)) {
         ROS_WARN("Left or right socket changed, updating stereo node");
         ROS_WARN("Old left socket: %d, new left socket: %d", static_cast<int>(left), newLeftS);
@@ -75,17 +76,19 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<bool>("i_right_rect_add_exposure_offset", false);
     declareAndLogParam<int>("i_right_rect_exposure_offset", 0);
 
+    declareAndLogParam<bool>("i_enable_spatial_nn", false);
+    declareAndLogParam<std::string>("i_spatial_nn_source", "right");
+
     stereo->setLeftRightCheck(declareAndLogParam<bool>("i_lr_check", true));
     int width = 1280;
     int height = 720;
-    auto socket = static_cast<dai::CameraBoardSocket>(declareAndLogParam<int>("i_board_socket_id", static_cast<int>(dai::CameraBoardSocket::CAM_A)));
     std::string socketName;
     if(declareAndLogParam<bool>("i_align_depth", true)) {
-        socketName = utils::getSocketName(socket);
+        socketName = utils::getSocketName(alignSocket);
         width = getOtherNodeParam<int>(socketName, "i_width");
         height = getOtherNodeParam<int>(socketName, "i_height");
         declareAndLogParam<std::string>("i_socket_name", socketName);
-        stereo->setDepthAlign(socket);
+        stereo->setDepthAlign(alignSocket);
     }
 
     if(declareAndLogParam<bool>("i_set_input_size", false)) {
