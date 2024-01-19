@@ -8,6 +8,7 @@
 
 #include "depthai/pipeline/datatype/CameraControl.hpp"
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
+#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "nlohmann/json.hpp"
 
 namespace dai {
@@ -33,7 +34,7 @@ enum class NNFamily { Segmentation, Mobilenet, Yolo };
 }
 class NNParamHandler : public BaseParamHandler {
    public:
-    explicit NNParamHandler(rclcpp::Node* node, const std::string& name);
+    explicit NNParamHandler(rclcpp::Node* node, const std::string& name, const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A);
     ~NNParamHandler();
     nn::NNFamily getNNFamily();
     template <typename T>

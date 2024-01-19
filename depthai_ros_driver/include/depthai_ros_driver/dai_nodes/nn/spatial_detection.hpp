@@ -11,12 +11,14 @@
 #include "depthai/pipeline/node/ImageManip.hpp"
 #include "depthai/pipeline/node/SpatialDetectionNetwork.hpp"
 #include "depthai/pipeline/node/XLinkOut.hpp"
+#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_bridge/SpatialDetectionConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/nn_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
+#include "depthai_ros_driver/utils.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/node.hpp"
@@ -27,12 +29,12 @@ namespace nn {
 template <typename T>
 class SpatialDetection : public BaseNode {
    public:
-    SpatialDetection(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
+    SpatialDetection(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A) : BaseNode(daiNodeName, node, pipeline) {
         RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
         setNames();
         spatialNode = pipeline->create<T>();
         imageManip = pipeline->create<dai::node::ImageManip>();
-        ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName);
+        ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName, socket);
         ph->declareParams(spatialNode, imageManip);
         RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
         imageManip->out.link(spatialNode->input);
@@ -44,12 +46,15 @@ class SpatialDetection : public BaseNode {
     };
     void setupQueues(std::shared_ptr<dai::Device> device) override {
         nnQ = device->getOutputQueue(nnQName, ph->getParam<int>("i_max_q_size"), false);
-        auto tfPrefix = getTFPrefix("rgb");
+        RCLCPP_INFO(getROSNode()->get_logger(), "Setting up queues for %s", getName().c_str());
+        std::string socketName = utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))); 
+        RCLCPP_INFO(getROSNode()->get_logger(), "Socket name: %s", socketName.c_str());
+        auto tfPrefix = getTFPrefix(socketName);
         int width;
         int height;
         if(ph->getParam<bool>("i_disable_resize")) {
-            width = getROSNode()->get_parameter("rgb.i_preview_size").as_int();
-            height = getROSNode()->get_parameter("rgb.i_preview_size").as_int();
+            width = ph->getOtherNodeParam<int>(socketName, "i_preview_width");
+            height = ph->getOtherNodeParam<int>(socketName, "i_preview_height");
         } else {
             width = imageManip->initialConfig.getResizeConfig().width;
             height = imageManip->initialConfig.getResizeConfig().height;
@@ -80,8 +85,8 @@ class SpatialDetection : public BaseNode {
         }
 
         if(ph->getParam<bool>("i_enable_passthrough_depth")) {
-            dai::CameraBoardSocket socket = static_cast<dai::CameraBoardSocket>(getROSNode()->get_parameter("stereo.i_board_socket_id").as_int());
-            if(!getROSNode()->get_parameter("stereo.i_align_depth").as_bool()) {
+            dai::CameraBoardSocket socket = static_cast<dai::CameraBoardSocket>(ph->getOtherNodeParam<int>("stereo", "i_board_socket_id"));
+            if(!ph->getOtherNodeParam<bool>("stereo", "i_align_depth")) {
                 tfPrefix = getTFPrefix("right");
             };
             ptDepthQ = device->getOutputQueue(ptDepthQName, ph->getParam<int>("i_max_q_size"), false);
@@ -93,8 +98,8 @@ class SpatialDetection : public BaseNode {
                                                                        *ptDepthImageConverter,
                                                                        device,
                                                                        socket,
-                                                                       getROSNode()->get_parameter("stereo.i_width").as_int(),
-                                                                       getROSNode()->get_parameter("stereo.i_height").as_int()));
+                                                                       ph->getOtherNodeParam<int>("stereo", "i_width"),
+                                                                       ph->getOtherNodeParam<int>("stereo", "i_height")));
 
             ptDepthPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/passthrough_depth/image_raw");
             ptDepthQ->addCallback(
