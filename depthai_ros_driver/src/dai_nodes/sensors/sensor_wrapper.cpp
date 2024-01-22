@@ -4,11 +4,11 @@
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/XLinkIn.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/nn_wrapper.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/feature_tracker.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/mono.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/rgb.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
-#include "depthai_ros_driver/dai_nodes/nn/nn_wrapper.hpp"
 #include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
 #include "rclcpp/node.hpp"
 
@@ -54,8 +54,8 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
         }
         RCLCPP_DEBUG(node->get_logger(), "Node %s has sensor %s", daiNodeName.c_str(), sensorName.c_str());
         sensorData = *sensorIt;
-        if (device->getDeviceName() == "OAK-D-SR") {
-            (*sensorIt).color = true; // ov9282 is color sensor in this case
+        if(device->getDeviceName() == "OAK-D-SR") {
+            (*sensorIt).color = true;  // ov9282 is color sensor in this case
         }
         if((*sensorIt).color) {
             sensorNode = std::make_unique<RGB>(daiNodeName, node, pipeline, socket, (*sensorIt), publish);

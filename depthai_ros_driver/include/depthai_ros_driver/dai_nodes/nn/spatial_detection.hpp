@@ -5,13 +5,13 @@
 #include <vector>
 
 #include "camera_info_manager/camera_info_manager.hpp"
+#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai/device/DataQueue.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/ImageManip.hpp"
 #include "depthai/pipeline/node/SpatialDetectionNetwork.hpp"
 #include "depthai/pipeline/node/XLinkOut.hpp"
-#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_bridge/SpatialDetectionConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
@@ -29,7 +29,11 @@ namespace nn {
 template <typename T>
 class SpatialDetection : public BaseNode {
    public:
-    SpatialDetection(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A) : BaseNode(daiNodeName, node, pipeline) {
+    SpatialDetection(const std::string& daiNodeName,
+                     rclcpp::Node* node,
+                     std::shared_ptr<dai::Pipeline> pipeline,
+                     const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A)
+        : BaseNode(daiNodeName, node, pipeline) {
         RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
         setNames();
         spatialNode = pipeline->create<T>();
@@ -46,9 +50,7 @@ class SpatialDetection : public BaseNode {
     };
     void setupQueues(std::shared_ptr<dai::Device> device) override {
         nnQ = device->getOutputQueue(nnQName, ph->getParam<int>("i_max_q_size"), false);
-        RCLCPP_INFO(getROSNode()->get_logger(), "Setting up queues for %s", getName().c_str());
-        std::string socketName = utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))); 
-        RCLCPP_INFO(getROSNode()->get_logger(), "Socket name: %s", socketName.c_str());
+        std::string socketName = utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")));
         auto tfPrefix = getTFPrefix(socketName);
         int width;
         int height;

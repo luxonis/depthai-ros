@@ -41,7 +41,10 @@ namespace dai_nodes {
 namespace nn {
 class Segmentation : public BaseNode {
    public:
-    Segmentation(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A);
+    Segmentation(const std::string& daiNodeName,
+                 rclcpp::Node* node,
+                 std::shared_ptr<dai::Pipeline> pipeline,
+                 const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A);
     ~Segmentation();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;

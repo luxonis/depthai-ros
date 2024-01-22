@@ -7,13 +7,3 @@
       i_pipeline_type: RGBD
     nn:
       i_nn_config_path: depthai_ros_driver/mobilenet
-    left:
-      i_publish_topic: true
-    right:
-      i_publish_topic: true
-    stereo:
-      i_enable_spatial_nn: true
-    stereo_nn:
-      i_nn_config_path: depthai_ros_driver/mobilenet
-    # right_nn:
-      # i_nn_config_path: depthai_ros_driver/mobilenet

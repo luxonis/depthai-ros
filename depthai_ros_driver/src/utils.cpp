@@ -11,7 +11,6 @@ std::string getUpperCaseStr(const std::string& string) {
     return upper;
 }
 std::string getSocketName(dai::CameraBoardSocket socket) {
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "socket: %d", socket);
     return dai_nodes::sensor_helpers::socketNameMap.at(socket);
 }
 }  // namespace utils

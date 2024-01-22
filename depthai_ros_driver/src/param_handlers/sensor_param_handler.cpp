@@ -102,14 +102,15 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     colorCam->setInterleaved(declareAndLogParam<bool>("i_interleaved", false));
 
     bool setIspScale = true;
-    if (sensor.defaultResolution!="1080P" && sensor.defaultResolution!="1200P"){ // default disable ISP scaling since default resolution is not 1080P or 1200P
+    if(sensor.defaultResolution != "1080P"
+       && sensor.defaultResolution != "1200P") {  // default disable ISP scaling since default resolution is not 1080P or 1200P
         setIspScale = false;
     }
     if(declareAndLogParam<bool>("i_set_isp_scale", setIspScale)) {
         int num = 2;
         int den = 3;
         if(sensor.defaultResolution == "1200P") {
-            den = 5; // for improved performance
+            den = 5;  // for improved performance
         }
         num = declareAndLogParam<int>("i_isp_num", num);
         den = declareAndLogParam<int>("i_isp_den", den);
