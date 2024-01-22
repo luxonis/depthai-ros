@@ -1,0 +1,9 @@
+/oak:
+  ros__parameters:
+    camera:
+      i_nn_type: none
+      i_pipeline_type: Depth
+    right:
+      i_publish_topic: true
+    stereo:
+      i_extended_disp: true
