@@ -59,7 +59,7 @@ std::string PipelineGenerator::validatePipeline(const std::string& typeStr, int 
             return "RGB";
         }
     } else if(sensorNum == 2) {
-        if(pType != PipelineType::Stereo || pType != PipelineType::Depth) {
+        if(pType != PipelineType::Stereo && pType != PipelineType::Depth) {
             ROS_ERROR("Invalid pipeline chosen for camera as it has only stereo pair. Switching to DEPTH.");
             return "DEPTH";
         }
