@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "cv_bridge/cv_bridge.h"
+#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/parametersConfig.h"
 #include "image_transport/camera_publisher.h"
@@ -39,7 +40,10 @@ namespace dai_nodes {
 namespace nn {
 class Segmentation : public BaseNode {
    public:
-    Segmentation(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline);
+    Segmentation(const std::string& daiNodeName,
+                 ros::NodeHandle node,
+                 std::shared_ptr<dai::Pipeline> pipeline,
+                 const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A);
     ~Segmentation();
     void updateParams(parametersConfig& config) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;

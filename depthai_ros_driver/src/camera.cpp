@@ -59,7 +59,9 @@ void Camera::diagCB(const diagnostic_msgs::DiagnosticArray::ConstPtr& msg) {
         if(status.name == nodeletName + std::string(": sys_logger")) {
             if(status.level == diagnostic_msgs::DiagnosticStatus::ERROR) {
                 ROS_ERROR("Camera diagnostics error: %s", status.message.c_str());
-                restart();
+                if(ph->getParam<bool>("i_restart_on_diagnostics_error")) {
+                    restart();
+                }
             }
         }
     }
