@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-    <arg name="pass_tf_args_as_params" default="false" /> 
+    <arg name="publish_tf_from_calibration" default="false" />
     <arg name="imu_from_descr" default="false" />
     <arg name="override_cam_model" default="false" />
 
@@ -35,7 +35,7 @@
     <param name="$(arg name)/camera_i_cam_pitch" value="$(arg cam_pitch)"/>
     <param name="$(arg name)/camera_i_cam_yaw" value="$(arg cam_yaw)"/>
     <param name="$(arg name)/camera_i_imu_from_descr" value="$(arg imu_from_descr)"/>
-    <param name="$(arg name)/camera_i_publish_tf_from_calibration" value="$(arg pass_tf_args_as_params)"/>
+    <param name="$(arg name)/camera_i_publish_tf_from_calibration" value="$(arg publish_tf_from_calibration)"/>
 
     <arg name="launch_prefix" default=""/>
 
@@ -43,7 +43,7 @@
     <rosparam file="$(arg params_file)" />
     <node pkg="rosservice" if="$(optenv DEPTHAI_DEBUG 0)" type="rosservice" name="set_log_level" args="call --wait /oak_nodelet_manager/set_logger_level 'ros.depthai_ros_driver' 'debug'" />
     
-    <include unless="$(arg pass_tf_args_as_params)" file="$(find depthai_descriptions)/launch/urdf.launch">
+    <include unless="$(arg publish_tf_from_calibration)" file="$(find depthai_descriptions)/launch/urdf.launch">
         <arg name="base_frame" value="$(arg  name)" />
         <arg name="parent_frame" value="$(arg  parent_frame)"/>
         <arg name="camera_model" value="$(arg  camera_model)"/>
