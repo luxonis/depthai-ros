@@ -2,12 +2,12 @@
 
 #include <fstream>
 
+#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai/pipeline/node/DetectionNetwork.hpp"
 #include "depthai/pipeline/node/ImageManip.hpp"
 #include "depthai/pipeline/node/NeuralNetwork.hpp"
 #include "depthai/pipeline/node/SpatialDetectionNetwork.hpp"
 #include "depthai_ros_driver/utils.hpp"
-#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "nlohmann/json.hpp"
 #include "ros/node_handle.h"
 #include "ros/package.h"

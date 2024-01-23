@@ -38,7 +38,11 @@ class Detection : public BaseNode {
      * @param      node         The node
      * @param      pipeline     The pipeline
      */
-    Detection(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline,const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A) : BaseNode(daiNodeName, node, pipeline), it(node) {
+    Detection(const std::string& daiNodeName,
+              ros::NodeHandle node,
+              std::shared_ptr<dai::Pipeline> pipeline,
+              const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A)
+        : BaseNode(daiNodeName, node, pipeline), it(node) {
         ROS_DEBUG("Creating node %s", daiNodeName.c_str());
         setNames();
         detectionNode = pipeline->create<T>();
