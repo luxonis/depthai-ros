@@ -9,6 +9,8 @@
 #include "depthai/pipeline/node/VideoEncoder.hpp"
 #include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/nn_helpers.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/spatial_nn_wrapper.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/feature_tracker.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
@@ -30,7 +32,11 @@ Stereo::Stereo(const std::string& daiNodeName,
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     ph = std::make_unique<param_handlers::StereoParamHandler>(node, daiNodeName);
-    ph->updateSocketsFromParams(leftSocket, rightSocket);
+    auto alignSocket = dai::CameraBoardSocket::CAM_A;
+    if(device->getDeviceName() == "OAK-D-SR") {
+        alignSocket = dai::CameraBoardSocket::CAM_C;
+    }
+    ph->updateSocketsFromParams(leftSocket, rightSocket, alignSocket);
     auto features = device->getConnectedCameraFeatures();
     for(auto f : features) {
         if(f.socket == leftSocket) {
@@ -52,6 +58,20 @@ Stereo::Stereo(const std::string& daiNodeName,
     setXinXout(pipeline);
     left->link(stereoCamNode->left);
     right->link(stereoCamNode->right);
+
+    if(ph->getParam<bool>("i_enable_spatial_nn")) {
+        if(ph->getParam<std::string>("i_spatial_nn_source") == "left") {
+            nnNode = std::make_unique<SpatialNNWrapper>(getName() + "_spatial_nn", getROSNode(), pipeline, leftSensInfo.socket);
+            left->link(nnNode->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::input)),
+                       static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
+        } else {
+            nnNode = std::make_unique<SpatialNNWrapper>(getName() + "_spatial_nn", getROSNode(), pipeline, rightSensInfo.socket);
+            right->link(nnNode->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::input)),
+                        static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
+        }
+        stereoCamNode->depth.link(nnNode->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::inputDepth)));
+    }
+
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
 }
 Stereo::~Stereo() = default;
@@ -330,6 +350,9 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_right_rect_enable_feature_tracker")) {
         featureTrackerRightR->setupQueues(device);
     }
+    if(ph->getParam<bool>("i_enable_spatial_nn")) {
+        nnNode->setupQueues(device);
+    }
 }
 void Stereo::closeQueues() {
     left->closeQueues();
@@ -353,6 +376,9 @@ void Stereo::closeQueues() {
     }
     if(ph->getParam<bool>("i_right_rect_enable_feature_tracker")) {
         featureTrackerRightR->closeQueues();
+    }
+    if(ph->getParam<bool>("i_enable_spatial_nn")) {
+        nnNode->closeQueues();
     }
 }
 

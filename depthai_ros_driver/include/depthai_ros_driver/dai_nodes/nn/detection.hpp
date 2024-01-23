@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "camera_info_manager/camera_info_manager.hpp"
+#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai/device/DataQueue.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
@@ -16,6 +17,7 @@
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
+#include "depthai_ros_driver/utils.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/node.hpp"
@@ -35,12 +37,16 @@ class Detection : public BaseNode {
      * @param      node         The node
      * @param      pipeline     The pipeline
      */
-    Detection(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
+    Detection(const std::string& daiNodeName,
+              rclcpp::Node* node,
+              std::shared_ptr<dai::Pipeline> pipeline,
+              const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A)
+        : BaseNode(daiNodeName, node, pipeline) {
         RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
         setNames();
         detectionNode = pipeline->create<T>();
         imageManip = pipeline->create<dai::node::ImageManip>();
-        ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName);
+        ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName, socket);
         ph->declareParams(detectionNode, imageManip);
         RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
         imageManip->out.link(detectionNode->input);
@@ -55,12 +61,13 @@ class Detection : public BaseNode {
      */
     void setupQueues(std::shared_ptr<dai::Device> device) override {
         nnQ = device->getOutputQueue(nnQName, ph->getParam<int>("i_max_q_size"), false);
-        auto tfPrefix = getTFPrefix("rgb");
+        std::string socketName = utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")));
+        auto tfPrefix = getTFPrefix(socketName);
         int width;
         int height;
         if(ph->getParam<bool>("i_disable_resize")) {
-            width = getROSNode()->get_parameter("rgb.i_preview_size").as_int();
-            height = getROSNode()->get_parameter("rgb.i_preview_size").as_int();
+            width = ph->getOtherNodeParam<int>(socketName, "i_preview_width");
+            height = ph->getOtherNodeParam<int>(socketName, "i_preview_height");
         } else {
             width = imageManip->initialConfig.getResizeConfig().width;
             height = imageManip->initialConfig.getResizeConfig().height;

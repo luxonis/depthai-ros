@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
+#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai/pipeline/node/DetectionNetwork.hpp"
 #include "depthai/pipeline/node/ImageManip.hpp"
 #include "depthai/pipeline/node/NeuralNetwork.hpp"
@@ -15,12 +16,13 @@
 namespace depthai_ros_driver {
 namespace param_handlers {
 
-NNParamHandler::NNParamHandler(rclcpp::Node* node, const std::string& name) : BaseParamHandler(node, name) {
+NNParamHandler::NNParamHandler(rclcpp::Node* node, const std::string& name, const dai::CameraBoardSocket& socket) : BaseParamHandler(node, name) {
     nnFamilyMap = {
         {"segmentation", nn::NNFamily::Segmentation},
         {"mobilenet", nn::NNFamily::Mobilenet},
         {"YOLO", nn::NNFamily::Yolo},
     };
+    declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket));
 }
 NNParamHandler::~NNParamHandler() = default;
 nn::NNFamily NNParamHandler::getNNFamily() {

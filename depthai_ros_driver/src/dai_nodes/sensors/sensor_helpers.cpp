@@ -125,7 +125,7 @@ sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
     try {
         info = converter.calibrationToCameraInfo(calibHandler, socket, width, height);
     } catch(std::runtime_error& e) {
-        RCLCPP_ERROR(logger, "No calibration! Publishing empty camera_info.");
+        RCLCPP_ERROR(logger, "No calibration for socket %d! Publishing empty camera_info.", static_cast<int>(socket));
     }
     return info;
 }
