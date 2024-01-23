@@ -33,11 +33,11 @@ def launch_setup(context, *args, **kwargs):
     cam_yaw      = LaunchConfiguration('cam_yaw',       default = '0.0')
     use_composition = LaunchConfiguration('rsp_use_composition', default='true')
     imu_from_descr = LaunchConfiguration('imu_from_descr', default='false')
-    pass_tf_args_as_params = LaunchConfiguration('pass_tf_args_as_params', default='false')
+    publish_tf_from_calibration = LaunchConfiguration('publish_tf_from_calibration', default='false')
     override_cam_model = LaunchConfiguration('override_cam_model', default='false')
 
     tf_params = {}
-    if(pass_tf_args_as_params.perform(context) == 'true'):
+    if(publish_tf_from_calibration.perform(context) == 'true'):
         cam_model = ''
         if override_cam_model.perform(context) == 'true':
             cam_model = camera_model.perform(context)
@@ -92,7 +92,7 @@ def launch_setup(context, *args, **kwargs):
                               'cam_pitch': cam_pitch,
                               'cam_yaw': cam_yaw,
                               'use_composition': use_composition,
-                              'use_base_descr': pass_tf_args_as_params}.items()),
+                              'use_base_descr': publish_tf_from_calibration}.items()),
 
         ComposableNodeContainer(
             name=name+"_container",
@@ -132,7 +132,7 @@ def generate_launch_description():
         DeclareLaunchArgument("use_rviz", default_value='false'),
         DeclareLaunchArgument("rviz_config", default_value=os.path.join(depthai_prefix, "config", "rviz", "rgbd.rviz")),
         DeclareLaunchArgument("rsp_use_composition", default_value='true'),
-        DeclareLaunchArgument("pass_tf_args_as_params", default_value='false', description='Enables TF publishing from camera calibration file.'),
+        DeclareLaunchArgument("publish_tf_from_calibration", default_value='false', description='Enables TF publishing from camera calibration file.'),
         DeclareLaunchArgument("imu_from_descr", default_value='false', description='Enables IMU publishing from URDF.'),
         DeclareLaunchArgument("override_cam_model", default_value='false', description='Overrides camera model from calibration file.'),
         DeclareLaunchArgument("use_gdb", default_value='false'),
