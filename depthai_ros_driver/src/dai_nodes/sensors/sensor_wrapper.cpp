@@ -4,6 +4,7 @@
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/XLinkIn.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/nn_wrapper.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/feature_tracker.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/mono.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/rgb.hpp"
@@ -53,6 +54,9 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
         }
         RCLCPP_DEBUG(node->get_logger(), "Node %s has sensor %s", daiNodeName.c_str(), sensorName.c_str());
         sensorData = *sensorIt;
+        if(device->getDeviceName() == "OAK-D-SR") {
+            (*sensorIt).color = true;  // ov9282 is color sensor in this case
+        }
         if((*sensorIt).color) {
             sensorNode = std::make_unique<RGB>(daiNodeName, node, pipeline, socket, (*sensorIt), publish);
         } else {
@@ -62,6 +66,10 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
     if(ph->getParam<bool>("i_enable_feature_tracker")) {
         featureTrackerNode = std::make_unique<FeatureTracker>(daiNodeName + std::string("_feature_tracker"), node, pipeline);
         sensorNode->link(featureTrackerNode->getInput());
+    }
+    if(ph->getParam<bool>("i_enable_nn")) {
+        nnNode = std::make_unique<NNWrapper>(daiNodeName + std::string("_nn"), node, pipeline, static_cast<dai::CameraBoardSocket>(socketID));
+        sensorNode->link(nnNode->getInput(), static_cast<int>(link_types::RGBLinkType::preview));
     }
     RCLCPP_DEBUG(node->get_logger(), "Base node %s created", daiNodeName.c_str());
 }
@@ -96,6 +104,9 @@ void SensorWrapper::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_enable_feature_tracker")) {
         featureTrackerNode->setupQueues(device);
     }
+    if(ph->getParam<bool>("i_enable_nn")) {
+        nnNode->setupQueues(device);
+    }
 }
 void SensorWrapper::closeQueues() {
     if(ph->getParam<bool>("i_simulate_from_topic")) {
@@ -106,6 +117,9 @@ void SensorWrapper::closeQueues() {
     }
     if(ph->getParam<bool>("i_enable_feature_tracker")) {
         featureTrackerNode->closeQueues();
+    }
+    if(ph->getParam<bool>("i_enable_nn")) {
+        nnNode->closeQueues();
     }
 }
 

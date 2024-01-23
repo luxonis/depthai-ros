@@ -34,13 +34,11 @@ const std::vector<std::string> label_map = {
     "laptop",        "mouse",        "remote",        "keyboard",      "cell phone",  "microwave",   "oven",        "toaster",      "sink",
     "refrigerator",  "book",         "clock",         "vase",          "scissors",    "teddy bear",  "hair drier",  "toothbrush"};
 
-dai::Pipeline createPipeline(bool spatial_camera, bool syncNN, bool subpixel, std::string nnPath, int confidence, int LRchecktresh, std::string resolution) {
+dai::Pipeline createPipeline(bool syncNN, bool subpixel, std::string nnPath, int confidence, int LRchecktresh, std::string resolution) {
     dai::Pipeline pipeline;
     dai::node::MonoCamera::Properties::SensorResolution monoResolution;
     auto colorCam = pipeline.create<dai::node::ColorCamera>();
-    auto camRgb = pipeline.create<dai::node::ColorCamera>();  // non spatial add in
     auto spatialDetectionNetwork = pipeline.create<dai::node::YoloSpatialDetectionNetwork>();
-    auto detectionNetwork = pipeline.create<dai::node::YoloDetectionNetwork>();
     auto monoLeft = pipeline.create<dai::node::MonoCamera>();
     auto monoRight = pipeline.create<dai::node::MonoCamera>();
     auto stereo = pipeline.create<dai::node::StereoDepth>();
@@ -49,103 +47,70 @@ dai::Pipeline createPipeline(bool spatial_camera, bool syncNN, bool subpixel, st
     auto xoutRgb = pipeline.create<dai::node::XLinkOut>();
     auto xoutDepth = pipeline.create<dai::node::XLinkOut>();
     auto xoutNN = pipeline.create<dai::node::XLinkOut>();
-    auto nnOut = pipeline.create<dai::node::XLinkOut>();  // non spatial add in
 
     xoutRgb->setStreamName("preview");
     xoutNN->setStreamName("detections");
-    if(spatial_camera == true) {
-        xoutDepth->setStreamName("depth");
+    xoutDepth->setStreamName("depth");
 
-        colorCam->setPreviewSize(416, 416);
-        colorCam->setResolution(dai::ColorCameraProperties::SensorResolution::THE_1080_P);
-        colorCam->setInterleaved(false);
-        colorCam->setColorOrder(dai::ColorCameraProperties::ColorOrder::BGR);
+    colorCam->setPreviewSize(416, 416);
+    colorCam->setResolution(dai::ColorCameraProperties::SensorResolution::THE_1080_P);
+    colorCam->setInterleaved(false);
+    colorCam->setColorOrder(dai::ColorCameraProperties::ColorOrder::BGR);
 
-        if(resolution == "720p") {
-            monoResolution = dai::node::MonoCamera::Properties::SensorResolution::THE_720_P;
-        } else if(resolution == "400p") {
-            monoResolution = dai::node::MonoCamera::Properties::SensorResolution::THE_400_P;
-        } else if(resolution == "800p") {
-            monoResolution = dai::node::MonoCamera::Properties::SensorResolution::THE_800_P;
-        } else if(resolution == "480p") {
-            monoResolution = dai::node::MonoCamera::Properties::SensorResolution::THE_480_P;
-        } else {
-            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Invalid parameter. -> monoResolution: %s", resolution.c_str());
-            throw std::runtime_error("Invalid mono camera resolution.");
-        }
-
-        monoLeft->setResolution(monoResolution);
-        monoLeft->setBoardSocket(dai::CameraBoardSocket::CAM_B);
-        monoRight->setResolution(monoResolution);
-        monoRight->setBoardSocket(dai::CameraBoardSocket::CAM_C);
-
-        /// setting node configs
-        stereo->initialConfig.setConfidenceThreshold(confidence);
-        stereo->setRectifyEdgeFillColor(0);  // black, to better see the cutout
-        stereo->initialConfig.setLeftRightCheckThreshold(LRchecktresh);
-        stereo->setSubpixel(subpixel);
-        stereo->setDepthAlign(dai::CameraBoardSocket::CAM_A);
-
-        spatialDetectionNetwork->setBlobPath(nnPath);
-        spatialDetectionNetwork->setConfidenceThreshold(0.5f);
-        spatialDetectionNetwork->input.setBlocking(false);
-        spatialDetectionNetwork->setBoundingBoxScaleFactor(0.5);
-        spatialDetectionNetwork->setDepthLowerThreshold(100);
-        spatialDetectionNetwork->setDepthUpperThreshold(5000);
-
-        // yolo specific parameters
-        spatialDetectionNetwork->setNumClasses(80);
-        spatialDetectionNetwork->setCoordinateSize(4);
-        spatialDetectionNetwork->setAnchors({10, 14, 23, 27, 37, 58, 81, 82, 135, 169, 344, 319});
-        spatialDetectionNetwork->setAnchorMasks({{"side13", {3, 4, 5}}, {"side26", {1, 2, 3}}});
-        spatialDetectionNetwork->setIouThreshold(0.5f);
-
-        // Link plugins CAM -> STEREO -> XLINK
-        monoLeft->out.link(stereo->left);
-        monoRight->out.link(stereo->right);
-
-        // Link plugins CAM -> NN -> XLINK
-        colorCam->preview.link(spatialDetectionNetwork->input);
-        if(syncNN)
-            spatialDetectionNetwork->passthrough.link(xoutRgb->input);
-        else
-            colorCam->preview.link(xoutRgb->input);
-
-        spatialDetectionNetwork->out.link(xoutNN->input);
-
-        stereo->depth.link(spatialDetectionNetwork->inputDepth);
-        spatialDetectionNetwork->passthroughDepth.link(xoutDepth->input);
+    if(resolution == "720p") {
+        monoResolution = dai::node::MonoCamera::Properties::SensorResolution::THE_720_P;
+    } else if(resolution == "400p") {
+        monoResolution = dai::node::MonoCamera::Properties::SensorResolution::THE_400_P;
+    } else if(resolution == "800p") {
+        monoResolution = dai::node::MonoCamera::Properties::SensorResolution::THE_800_P;
+    } else if(resolution == "480p") {
+        monoResolution = dai::node::MonoCamera::Properties::SensorResolution::THE_480_P;
     } else {
-        xoutRgb->setStreamName("rgb");
-        nnOut->setStreamName("detections");
-
-        // Properties
-        camRgb->setPreviewSize(416, 416);
-        camRgb->setResolution(dai::ColorCameraProperties::SensorResolution::THE_1080_P);
-        camRgb->setInterleaved(false);
-        camRgb->setColorOrder(dai::ColorCameraProperties::ColorOrder::BGR);
-        camRgb->setFps(40);
-
-        // Network specific settings
-        detectionNetwork->setConfidenceThreshold(0.5f);
-        detectionNetwork->setNumClasses(80);
-        detectionNetwork->setCoordinateSize(4);
-        detectionNetwork->setAnchors({10, 14, 23, 27, 37, 58, 81, 82, 135, 169, 344, 319});
-        detectionNetwork->setAnchorMasks({{"side26", {1, 2, 3}}, {"side13", {3, 4, 5}}});
-        detectionNetwork->setIouThreshold(0.5f);
-        detectionNetwork->setBlobPath(nnPath);
-        detectionNetwork->setNumInferenceThreads(2);
-        detectionNetwork->input.setBlocking(false);
-
-        // Linking
-        camRgb->preview.link(detectionNetwork->input);
-        if(syncNN)
-            detectionNetwork->passthrough.link(xoutRgb->input);
-        else
-            camRgb->preview.link(xoutRgb->input);
-
-        detectionNetwork->out.link(nnOut->input);
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Invalid parameter. -> monoResolution: %s", resolution.c_str());
+        throw std::runtime_error("Invalid mono camera resolution.");
     }
+
+    monoLeft->setResolution(monoResolution);
+    monoLeft->setBoardSocket(dai::CameraBoardSocket::CAM_B);
+    monoRight->setResolution(monoResolution);
+    monoRight->setBoardSocket(dai::CameraBoardSocket::CAM_C);
+
+    /// setting node configs
+    stereo->initialConfig.setConfidenceThreshold(confidence);
+    stereo->setRectifyEdgeFillColor(0);  // black, to better see the cutout
+    stereo->initialConfig.setLeftRightCheckThreshold(LRchecktresh);
+    stereo->setSubpixel(subpixel);
+    stereo->setDepthAlign(dai::CameraBoardSocket::CAM_A);
+
+    spatialDetectionNetwork->setBlobPath(nnPath);
+    spatialDetectionNetwork->setConfidenceThreshold(0.5f);
+    spatialDetectionNetwork->input.setBlocking(false);
+    spatialDetectionNetwork->setBoundingBoxScaleFactor(0.5);
+    spatialDetectionNetwork->setDepthLowerThreshold(100);
+    spatialDetectionNetwork->setDepthUpperThreshold(5000);
+
+    // yolo specific parameters
+    spatialDetectionNetwork->setNumClasses(80);
+    spatialDetectionNetwork->setCoordinateSize(4);
+    spatialDetectionNetwork->setAnchors({10, 14, 23, 27, 37, 58, 81, 82, 135, 169, 344, 319});
+    spatialDetectionNetwork->setAnchorMasks({{"side13", {3, 4, 5}}, {"side26", {1, 2, 3}}});
+    spatialDetectionNetwork->setIouThreshold(0.5f);
+
+    // Link plugins CAM -> STEREO -> XLINK
+    monoLeft->out.link(stereo->left);
+    monoRight->out.link(stereo->right);
+
+    // Link plugins CAM -> NN -> XLINK
+    colorCam->preview.link(spatialDetectionNetwork->input);
+    if(syncNN)
+        spatialDetectionNetwork->passthrough.link(xoutRgb->input);
+    else
+        colorCam->preview.link(xoutRgb->input);
+
+    spatialDetectionNetwork->out.link(xoutNN->input);
+
+    stereo->depth.link(spatialDetectionNetwork->inputDepth);
+    spatialDetectionNetwork->passthroughDepth.link(xoutDepth->input);
 
     return pipeline;
 }
@@ -157,7 +122,7 @@ int main(int argc, char** argv) {
     std::string tfPrefix, resourceBaseFolder, nnPath;
     std::string camera_param_uri;
     std::string nnName(BLOB_NAME);  // Set your blob name for the model here
-    bool syncNN, subpixel, spatial_camera;
+    bool syncNN, subpixel;
     int confidence = 200, LRchecktresh = 5;
     std::string monoResolution = "400p";
 
@@ -179,7 +144,6 @@ int main(int argc, char** argv) {
     node->get_parameter("LRchecktresh", LRchecktresh);
     node->get_parameter("monoResolution", monoResolution);
     node->get_parameter("resourceBaseFolder", resourceBaseFolder);
-    node->get_parameter("spatial_camera", spatial_camera);
 
     if(resourceBaseFolder.empty()) {
         throw std::runtime_error("Send the path to the resouce folder containing NNBlob in \'resourceBaseFolder\' ");
@@ -192,7 +156,7 @@ int main(int argc, char** argv) {
     }
 
     nnPath = resourceBaseFolder + "/" + nnName;
-    dai::Pipeline pipeline = createPipeline(spatial_camera, syncNN, subpixel, nnPath, confidence, LRchecktresh, monoResolution);
+    dai::Pipeline pipeline = createPipeline(syncNN, subpixel, nnPath, confidence, LRchecktresh, monoResolution);
     dai::Device device(pipeline);
 
     auto colorQueue = device.getOutputQueue("preview", 30, false);

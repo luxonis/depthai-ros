@@ -28,6 +28,7 @@ void SensorParamHandler::declareCommonParams(dai::CameraBoardSocket socket) {
     socketID = static_cast<dai::CameraBoardSocket>(declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket), 0));
     declareAndLogParam<bool>("i_update_ros_base_time_on_ros_msg", false);
     declareAndLogParam<bool>("i_enable_feature_tracker", false);
+    declareAndLogParam<bool>("i_enable_nn", false);
     declareAndLogParam<bool>("i_enable_lazy_publisher", true);
     declareAndLogParam<bool>("i_add_exposure_offset", false);
     declareAndLogParam<int>("i_exposure_offset", 0);
@@ -99,9 +100,20 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     int height = colorCam->getResolutionHeight();
 
     colorCam->setInterleaved(declareAndLogParam<bool>("i_interleaved", false));
-    if(declareAndLogParam<bool>("i_set_isp_scale", true)) {
-        int num = declareAndLogParam<int>("i_isp_num", 2);
-        int den = declareAndLogParam<int>("i_isp_den", 3);
+
+    bool setIspScale = true;
+    if(sensor.defaultResolution != "1080P"
+       && sensor.defaultResolution != "1200P") {  // default disable ISP scaling since default resolution is not 1080P or 1200P
+        setIspScale = false;
+    }
+    if(declareAndLogParam<bool>("i_set_isp_scale", setIspScale)) {
+        int num = 2;
+        int den = 3;
+        if(sensor.defaultResolution == "1200P") {
+            den = 5;  // for improved performance
+        }
+        num = declareAndLogParam<int>("i_isp_num", num);
+        den = declareAndLogParam<int>("i_isp_den", den);
         width = (width * num + den - 1) / den;
         height = (height * num + den - 1) / den;
         colorCam->setIspScale(num, den);

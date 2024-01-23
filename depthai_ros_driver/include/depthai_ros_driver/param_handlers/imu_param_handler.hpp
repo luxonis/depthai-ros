@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "depthai-shared/properties/IMUProperties.hpp"
 #include "depthai/pipeline/datatype/CameraControl.hpp"
 #include "depthai-shared/properties/IMUProperties.hpp"
 #include "depthai_bridge/ImuConverter.hpp"
