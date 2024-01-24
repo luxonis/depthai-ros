@@ -11,7 +11,7 @@ Changelog for package depthai-ros
 * Added the option to run NN as part of sensor node
 * Added option to run Spatial NN as part of stereo node
 
-2.9.0 (2023-10-17)
+2.8.2 (2023-10-17)
 -------------------
 
 * Fixed default resolution for Stereo cameras
