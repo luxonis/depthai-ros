@@ -2,6 +2,16 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.9.0 (2024-01-24)
+-------------------
+
+* New documentation homepage
+* Updated support for LR and SR cameras
+* Added parameter to toggle restart on logging error
+* Changed argument for camera.launch file from `pass_tf_args_as_params` to `publish_tf_from_calibration` to be more explicit
+* Added the option to run NN as part of sensor node
+* Added option to run Spatial NN as part of stereo node
+
 2.8.2 (2023-10-17)
 -------------------
 
@@ -19,7 +29,6 @@ Changelog for package depthai-ros
 * Updated sensor socket logic
 * Fixed issues when running robot_state_publisher as component
 * Added missing tf2 dependencies
-
 
 2.8.0 (2023-09-01)
 -------------------
@@ -52,7 +61,7 @@ Changelog for package depthai-ros
 * Camera trigger mechanisms
 * Brightness filter
 
-2.7.2 (2023-5-08)
+2.7.2 (2023-05-08)
 -------------------
 * IMU improvements
 
