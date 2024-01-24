@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>depthai_ros_driver</name>
-  <version>2.8.2</version>
+  <version>2.9.0</version>
   <description>Depthai ROS Monolithic node.</description>
   <maintainer email="adam.serafin@luxonis.com">Adam Serafin</maintainer>
   <maintainer email="sachin@luxonis.com">Sachin Guruswamy</maintainer>
