@@ -3,6 +3,7 @@ Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 2.9.0 (2024-01-24)
+-------------------
 
 * New documentation homepage
 * Updated support for LR and SR cameras
