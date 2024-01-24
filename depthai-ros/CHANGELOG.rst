@@ -2,6 +2,16 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.9.0 (2024-01-24)
+-------------------
+
+* New documentation homepage
+* Updated support for LR and SR cameras
+* Added parameter to toggle restart on logging error
+* Changed argument for camera.launch file from `pass_tf_args_as_params` to `publish_tf_from_calibration` to be more explicit
+* Added the option to run NN as part of sensor node
+* Added option to run Spatial NN as part of stereo node
+
 2.8.2 (2023-10-17)
 -------------------
 
