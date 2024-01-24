@@ -55,12 +55,12 @@ std::string PipelineGenerator::validatePipeline(rclcpp::Node* node, const std::s
     auto pType = utils::getValFromMap(typeStr, pipelineTypeMap);
     if(sensorNum == 1) {
         if(pType != PipelineType::RGB) {
-            RCLCPP_ERROR(node->get_logger(), "Wrong pipeline chosen for camera as it has only one sensor. Switching to RGB.");
+            RCLCPP_ERROR(node->get_logger(), "Invalid pipeline chosen for camera as it has only one sensor. Switching to RGB.");
             return "RGB";
         }
     } else if(sensorNum == 2) {
         if(pType != PipelineType::Stereo && pType != PipelineType::Depth) {
-            RCLCPP_ERROR(node->get_logger(), "Wrong pipeline chosen for camera as it has only stereo pair. Switching to Depth.");
+            RCLCPP_ERROR(node->get_logger(), "Invalid pipeline chosen for camera as it has only stereo pair. Switching to Depth.");
             return "DEPTH";
         }
     }

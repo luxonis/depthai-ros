@@ -4,6 +4,7 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription, launch_description_sources
 from launch.actions import IncludeLaunchDescription
 from launch.actions import DeclareLaunchArgument
+from launch.conditions import IfCondition,UnlessCondition
 from launch.substitutions import LaunchConfiguration
 import launch_ros.actions
 import launch_ros.descriptions
@@ -131,7 +132,14 @@ def generate_launch_description():
         'monoResolution',
         default_value=monoResolution,
         description='Contains the resolution of the Mono Cameras. Available resolutions are 800p, 720p & 400p for OAK-D & 480p for OAK-D-Lite.')
-  
+
+    # declare_spatial_camera_cmd = DeclareLaunchArgument(
+    #     'spatial_camera',
+    #     default_value="true",
+    #     description='Enable spatial camera'
+    # )
+
+
     urdf_launch = IncludeLaunchDescription(
                             launch_description_sources.PythonLaunchDescriptionSource(
                                     os.path.join(urdf_launch_dir, 'urdf_launch.py')),
@@ -146,15 +154,32 @@ def generate_launch_description():
                                               'cam_pitch'   : cam_pitch,
                                               'cam_yaw'     : cam_yaw}.items())
     yolov4_spatial_node = launch_ros.actions.Node(
-            package='depthai_examples', executable='yolov4_spatial_node',
-            output='screen',
-            parameters=[{'tf_prefix': tf_prefix},
-                        {'camera_param_uri': camera_param_uri},
-                        {'sync_nn': sync_nn},
-                        {'nnName': nnName},
-                        {'resourceBaseFolder': resourceBaseFolder},
-                        {'monoResolution': monoResolution},
-                        {'spatial_camera': spatial_camera}])
+        package='depthai_examples', executable='yolov4_spatial_node',
+        output='screen',
+        parameters=[{'tf_prefix': tf_prefix},
+                    {'camera_param_uri': camera_param_uri},
+                    {'sync_nn': sync_nn},
+                    {'nnName': nnName},
+                    {'resourceBaseFolder': resourceBaseFolder},
+                    {'monoResolution': monoResolution},
+                    {'subpixel': subpixel},
+                    {'lrCheckTresh': lrCheckTresh},
+                    {'confidence': confidence},
+                    ],
+        condition=IfCondition(LaunchConfiguration('spatial_camera'))
+    )
+
+    yolov4_node = launch_ros.actions.Node(
+        package='depthai_examples', executable='yolov4_node',
+        output='screen',
+        parameters=[{'tf_prefix': tf_prefix},
+                    {'camera_param_uri': camera_param_uri},
+                    {'sync_nn': sync_nn},
+                    {'nnName': nnName},
+                    {'resourceBaseFolder': resourceBaseFolder},
+                    ],
+        condition=UnlessCondition(LaunchConfiguration('spatial_camera'))
+    )
 
     rviz_node = launch_ros.actions.Node(
             package='rviz2', executable='rviz2', output='screen',
@@ -181,11 +206,12 @@ def generate_launch_description():
     ld.add_action(declare_sync_nn_cmd)
     ld.add_action(urdf_launch)
 
-    if spatial_camera == True:
-        ld.add_action(declare_subpixel_cmd)
-        ld.add_action(declare_lrCheckTresh_cmd)
-        ld.add_action(declare_monoResolution_cmd)
+    ld.add_action(declare_subpixel_cmd)
+    ld.add_action(declare_lrCheckTresh_cmd)
+    ld.add_action(declare_monoResolution_cmd)
+
     ld.add_action(yolov4_spatial_node)
+    ld.add_action(yolov4_node)
 
     return ld
 
