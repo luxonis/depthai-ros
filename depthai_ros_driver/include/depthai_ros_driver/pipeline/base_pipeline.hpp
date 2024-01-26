@@ -50,7 +50,6 @@ class BasePipeline {
 
    protected:
     BasePipeline(){};
-    const std::string alphabet = "abcdefghijklmnopqrstuvwxyz";
     std::unordered_map<std::string, NNType> nnTypeMap = {
         {"", NNType::None},
         {"NONE", NNType::None},

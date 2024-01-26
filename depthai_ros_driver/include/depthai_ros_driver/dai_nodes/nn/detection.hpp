@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "camera_info_manager/camera_info_manager.hpp"
+#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai/device/DataQueue.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
@@ -16,6 +17,7 @@
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
+#include "depthai_ros_driver/utils.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/node.hpp"
@@ -27,27 +29,45 @@ namespace nn {
 template <typename T>
 class Detection : public BaseNode {
    public:
-    Detection(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
+    /**
+     * @brief      Constructor of the class Detection. Creates a DetectionNetwork node in the pipeline. Also creates an ImageManip node in the pipeline.
+     *             The ImageManip node is used to resize the input frames to the size required by the DetectionNetwork node.
+     *
+     * @param[in]  daiNodeName  The dai node name
+     * @param      node         The node
+     * @param      pipeline     The pipeline
+     */
+    Detection(const std::string& daiNodeName,
+              rclcpp::Node* node,
+              std::shared_ptr<dai::Pipeline> pipeline,
+              const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A)
+        : BaseNode(daiNodeName, node, pipeline) {
         RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
         setNames();
         detectionNode = pipeline->create<T>();
         imageManip = pipeline->create<dai::node::ImageManip>();
-        ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName);
+        ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName, socket);
         ph->declareParams(detectionNode, imageManip);
         RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
         imageManip->out.link(detectionNode->input);
         setXinXout(pipeline);
     }
     ~Detection() = default;
-
+    /**
+     * @brief      Sets up the queues for the DetectionNetwork node and the ImageManip node. Also sets up the publishers for the DetectionNetwork node and the
+     * ImageManip node.
+     *
+     * @param      device  The device
+     */
     void setupQueues(std::shared_ptr<dai::Device> device) override {
         nnQ = device->getOutputQueue(nnQName, ph->getParam<int>("i_max_q_size"), false);
-        auto tfPrefix = getTFPrefix("rgb");
+        std::string socketName = utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")));
+        auto tfPrefix = getTFPrefix(socketName);
         int width;
         int height;
         if(ph->getParam<bool>("i_disable_resize")) {
-            width = getROSNode()->get_parameter("rgb.i_preview_size").as_int();
-            height = getROSNode()->get_parameter("rgb.i_preview_size").as_int();
+            width = ph->getOtherNodeParam<int>(socketName, "i_preview_width");
+            height = ph->getOtherNodeParam<int>(socketName, "i_preview_height");
         } else {
             width = imageManip->initialConfig.getResizeConfig().width;
             height = imageManip->initialConfig.getResizeConfig().height;
@@ -74,22 +94,41 @@ class Detection : public BaseNode {
                                                                     height));
 
             ptPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/passthrough/image_raw");
-            ptQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager));
+            ptQ->addCallback(std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager));
         }
     };
+    /**
+     * @brief      Links the input of the DetectionNetwork node to the output of the ImageManip node.
+     *
+     * @param[in]  in        The input of the DetectionNetwork node
+     * @param[in]  linkType  The link type (not used)
+     */
     void link(dai::Node::Input in, int /*linkType*/) override {
         detectionNode->out.link(in);
     };
+    /**
+     * @brief      Gets the input of the DetectionNetwork node.
+     *
+     * @param[in]  linkType  The link type (not used)
+     *
+     * @return     The input of the DetectionNetwork node.
+     */
     dai::Node::Input getInput(int /*linkType*/) override {
         if(ph->getParam<bool>("i_disable_resize")) {
             return detectionNode->input;
         }
         return imageManip->inputImage;
     };
+
     void setNames() override {
         nnQName = getName() + "_nn";
         ptQName = getName() + "_pt";
     };
+    /**
+     * @brief      Sets the XLinkOut for the DetectionNetwork node and the ImageManip node. Additionally enables the passthrough.
+     *
+     * @param      pipeline  The pipeline
+     */
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override {
         xoutNN = pipeline->create<dai::node::XLinkOut>();
         xoutNN->setStreamName(nnQName);
@@ -100,6 +139,9 @@ class Detection : public BaseNode {
             detectionNode->passthrough.link(xoutPT->input);
         }
     };
+    /**
+     * @brief      Closes the queues for the DetectionNetwork node and the passthrough.
+     */
     void closeQueues() override {
         nnQ->close();
         if(ph->getParam<bool>("i_enable_passthrough")) {
@@ -112,6 +154,12 @@ class Detection : public BaseNode {
     };
 
    private:
+    /**
+     * @brief      Callback for the DetectionNetwork node. Converts the ImgDetections to Detection2DArray and publishes it.
+     *
+     * @param[in]  name  The name of the stream
+     * @param[in]  data  The DAI data
+     */
     void detectionCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
         auto inDet = std::dynamic_pointer_cast<dai::ImgDetections>(data);
         std::deque<vision_msgs::msg::Detection2DArray> deq;

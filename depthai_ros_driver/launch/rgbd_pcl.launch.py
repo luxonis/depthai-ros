@@ -16,7 +16,6 @@ def launch_setup(context, *args, **kwargs):
 
     name = LaunchConfiguration('name').perform(context)
     rgb_topic_name = name+'/rgb/image_raw'
-    print(LaunchConfiguration('rectify_rgb').perform(context))
     if LaunchConfiguration('rectify_rgb').perform(context)=='true':
         rgb_topic_name = name +'/rgb/image_rect'
     return [
@@ -72,6 +71,7 @@ def generate_launch_description():
     depthai_prefix = get_package_share_directory("depthai_ros_driver")
     declared_arguments = [
         DeclareLaunchArgument("name", default_value="oak"),
+        DeclareLaunchArgument("camera_model", default_value="OAK-D"),
         DeclareLaunchArgument("parent_frame", default_value="oak-d-base-frame"),
         DeclareLaunchArgument("cam_pos_x", default_value="0.0"),
         DeclareLaunchArgument("cam_pos_y", default_value="0.0"),

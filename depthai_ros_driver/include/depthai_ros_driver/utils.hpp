@@ -5,6 +5,11 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <vector>
+
+namespace dai {
+enum class CameraBoardSocket;
+}  // namespace dai
 
 namespace depthai_ros_driver {
 namespace utils {
@@ -23,5 +28,6 @@ T getValFromMap(const std::string& name, const std::unordered_map<std::string, T
     }
 }
 std::string getUpperCaseStr(const std::string& string);
+std::string getSocketName(dai::CameraBoardSocket socket);
 }  // namespace utils
 }  // namespace depthai_ros_driver

@@ -2,6 +2,47 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.9.0 (2024-01-24)
+-------------------
+
+* New documentation homepage
+* Updated support for LR and SR cameras
+* Added parameter to toggle restart on logging error
+* Changed argument for camera.launch file from `pass_tf_args_as_params` to `publish_tf_from_calibration` to be more explicit
+* Added the option to run NN as part of sensor node
+* Added option to run Spatial NN as part of stereo node
+
+2.8.2 (2023-10-17)
+-------------------
+
+* Fixed default resolution for Stereo cameras
+* Added CameraInfo update based on alpha scaling
+* Logger restart bugfix
+* URDF parameters fix
+
+2.8.1 (2023-09-12)
+-------------------
+
+* Added support for OpenCV Stereo order convention
+* Added disparity to depth use spec translation parameter
+* Updated sensor socket logic
+* Fixed issues when running robot_state_publisher as component
+* Added missing tf2 dependencies
+
+2.8.0 (2023-09-01)
+-------------------
+* Add camera image orientation param 
+* Performance update
+* Feature tracker
+* Handle USB speed when usb id is specified
+* Change misleading error to a clearer message
+* Watchdog 
+* Depth alignment update 
+* Synced stereo streams
+* Lazy Publishing 
+* Urdf loader
+* Add exposure offset
+
 2.7.5 (2023-08-07)
 -------------------
 * IMU sync fix

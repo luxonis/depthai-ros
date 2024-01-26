@@ -6,8 +6,10 @@
 
 #include "depthai-shared/datatype/RawImgFrame.hpp"
 #include "depthai-shared/properties/ColorCameraProperties.hpp"
+#include "depthai-shared/properties/MonoCameraProperties.hpp"
 #include "depthai-shared/properties/VideoEncoderProperties.hpp"
 #include "depthai/pipeline/datatype/ADatatype.hpp"
+#include "depthai/pipeline/datatype/CameraControl.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
 
@@ -38,24 +40,36 @@ enum class RGBLinkType { video, isp, preview };
 namespace sensor_helpers {
 struct ImageSensor {
     std::string name;
+    std::string defaultResolution;
     std::vector<std::string> allowedResolutions;
     bool color;
-    void getSizeFromResolution(const dai::ColorCameraProperties::SensorResolution& res, int& width, int& height);
 };
 extern std::vector<ImageSensor> availableSensors;
+extern const std::unordered_map<dai::CameraBoardSocket, std::string> socketNameMap;
+extern const std::unordered_map<std::string, dai::MonoCameraProperties::SensorResolution> monoResolutionMap;
+extern const std::unordered_map<std::string, dai::ColorCameraProperties::SensorResolution> rgbResolutionMap;
+extern const std::unordered_map<std::string, dai::CameraControl::FrameSyncMode> fSyncModeMap;
+extern const std::unordered_map<std::string, dai::CameraImageOrientation> cameraImageOrientationMap;
+void basicCameraPub(const std::string& /*name*/,
+                    const std::shared_ptr<dai::ADatatype>& data,
+                    dai::ros::ImageConverter& converter,
+                    image_transport::CameraPublisher& pub,
+                    std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager);
 
-void imgCB(const std::string& /*name*/,
-           const std::shared_ptr<dai::ADatatype>& data,
-           dai::ros::ImageConverter& converter,
-           image_transport::CameraPublisher& pub,
-           std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager);
+void cameraPub(const std::string& /*name*/,
+               const std::shared_ptr<dai::ADatatype>& data,
+               dai::ros::ImageConverter& converter,
+               image_transport::CameraPublisher& pub,
+               std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
+               bool lazyPub = true);
 
-void compressedImgCB(const std::string& /*name*/,
-                     const std::shared_ptr<dai::ADatatype>& data,
-                     dai::ros::ImageConverter& converter,
-                     image_transport::CameraPublisher& pub,
-                     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
-                     dai::RawImgFrame::Type dataType);
+void splitPub(const std::string& /*name*/,
+              const std::shared_ptr<dai::ADatatype>& data,
+              dai::ros::ImageConverter& converter,
+              rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr imgPub,
+              rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr infoPub,
+              std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
+              bool lazyPub = true);
 
 sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
                                           dai::ros::ImageConverter& converter,
@@ -66,6 +80,8 @@ sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
 std::shared_ptr<dai::node::VideoEncoder> createEncoder(std::shared_ptr<dai::Pipeline> pipeline,
                                                        int quality,
                                                        dai::VideoEncoderProperties::Profile profile = dai::VideoEncoderProperties::Profile::MJPEG);
+bool detectSubscription(const rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr& pub,
+                        const rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr& infoPub);
 }  // namespace sensor_helpers
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

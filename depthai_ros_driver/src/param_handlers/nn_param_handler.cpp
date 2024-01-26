@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
+#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai/pipeline/node/DetectionNetwork.hpp"
 #include "depthai/pipeline/node/ImageManip.hpp"
 #include "depthai/pipeline/node/NeuralNetwork.hpp"
@@ -15,12 +16,13 @@
 namespace depthai_ros_driver {
 namespace param_handlers {
 
-NNParamHandler::NNParamHandler(rclcpp::Node* node, const std::string& name) : BaseParamHandler(node, name) {
+NNParamHandler::NNParamHandler(rclcpp::Node* node, const std::string& name, const dai::CameraBoardSocket& socket) : BaseParamHandler(node, name) {
     nnFamilyMap = {
         {"segmentation", nn::NNFamily::Segmentation},
         {"mobilenet", nn::NNFamily::Mobilenet},
         {"YOLO", nn::NNFamily::Yolo},
     };
+    declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket));
 }
 NNParamHandler::~NNParamHandler() = default;
 nn::NNFamily NNParamHandler::getNNFamily() {
@@ -112,10 +114,12 @@ void NNParamHandler::setNNParams(nlohmann::json data, std::shared_ptr<dai::node:
 void NNParamHandler::setImageManip(const std::string& model_path, std::shared_ptr<dai::node::ImageManip> imageManip) {
     auto blob = dai::OpenVINO::Blob(model_path);
     auto firstInfo = blob.networkInputs.begin();
-    auto inputSize = firstInfo->second.dims[0];
-    if(inputSize > 590) {
+    auto inputWidth = firstInfo->second.dims[0];
+    auto inputHeight = firstInfo->second.dims[1];
+    if(inputWidth > 590 || inputHeight > 590) {
         std::ostringstream stream;
-        stream << "Current network input size is too large to resize. Please set following parameters: rgb.i_preview_size: " << inputSize;
+        stream << "Current network input size is too large to resize. Please set following parameters: rgb.i_preview_width: " << inputWidth;
+        stream << ", rgb.i_preview_height: " << inputHeight;
         stream << " and nn.i_disable_resize to true";
         throw std::runtime_error(stream.str());
     }
@@ -123,8 +127,8 @@ void NNParamHandler::setImageManip(const std::string& model_path, std::shared_pt
     imageManip->inputImage.setBlocking(false);
     imageManip->inputImage.setQueueSize(8);
     imageManip->setKeepAspectRatio(false);
-    RCLCPP_INFO(getROSNode()->get_logger(), "NN input size: %d x %d. Resizing input image in case of different dimensions.", inputSize, inputSize);
-    imageManip->initialConfig.setResize(inputSize, inputSize);
+    RCLCPP_INFO(getROSNode()->get_logger(), "NN input size: %d x %d. Resizing input image in case of different dimensions.", inputWidth, inputHeight);
+    imageManip->initialConfig.setResize(inputWidth, inputHeight);
 }
 std::string NNParamHandler::getModelPath(const nlohmann::json& data) {
     std::string modelPath;

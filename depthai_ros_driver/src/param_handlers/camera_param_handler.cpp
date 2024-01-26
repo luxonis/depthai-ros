@@ -35,6 +35,22 @@ void CameraParamHandler::declareParams() {
     declareAndLogParam<std::string>("i_external_calibration_path", "");
     declareAndLogParam<int>("i_laser_dot_brightness", 800, getRangedIntDescriptor(0, 1200));
     declareAndLogParam<int>("i_floodlight_brightness", 0, getRangedIntDescriptor(0, 1500));
+    declareAndLogParam<bool>("i_restart_on_diagnostics_error", false);
+
+    declareAndLogParam<bool>("i_publish_tf_from_calibration", false);
+    declareAndLogParam<std::string>("i_tf_camera_name", getROSNode()->get_name());
+    declareAndLogParam<std::string>("i_tf_camera_model", "");
+    declareAndLogParam<std::string>("i_tf_base_frame", "oak");
+    declareAndLogParam<std::string>("i_tf_parent_frame", "oak-d-base-frame");
+    declareAndLogParam<std::string>("i_tf_cam_pos_x", "0.0");
+    declareAndLogParam<std::string>("i_tf_cam_pos_y", "0.0");
+    declareAndLogParam<std::string>("i_tf_cam_pos_z", "0.0");
+    declareAndLogParam<std::string>("i_tf_cam_roll", "0.0");
+    declareAndLogParam<std::string>("i_tf_cam_pitch", "0.0");
+    declareAndLogParam<std::string>("i_tf_cam_yaw", "0.0");
+    declareAndLogParam<std::string>("i_tf_imu_from_descr", "false");
+    declareAndLogParam<std::string>("i_tf_custom_urdf_location", "");
+    declareAndLogParam<std::string>("i_tf_custom_xacro_args", "");
 }
 dai::CameraControl CameraParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& /*params*/) {
     dai::CameraControl ctrl;
