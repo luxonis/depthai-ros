@@ -61,8 +61,10 @@ void ImgStreamer::publish(const std::string& name, std::shared_ptr<dai::ImgFrame
             compressedImgMsg.data.assign(imgFrame->getData().begin(), imgFrame->getData().end());
             _pubCompressed->publish(compressedImgMsg);
         }
-        _pub->publish(imgMsg);
-        _pubCamInfo->publish(_camInfoMsg);
+        sensor_msgs::msg::CameraInfo::UniquePtr infoMsg = std::make_unique<sensor_msgs::msg::CameraInfo>(_camInfoMsg);
+        sensor_msgs::msg::Image::UniquePtr msg = std::make_unique<sensor_msgs::msg::Image>(imgMsg);
+        _pub->publish(std::move(msg));
+        _pubCamInfo->publish(std::move(infoMsg));
     } else {
         _pubCamera.publish(imgMsg, _camInfoMsg);
     }
