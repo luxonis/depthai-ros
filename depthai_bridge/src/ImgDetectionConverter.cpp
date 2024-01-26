@@ -34,8 +34,8 @@ void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetDa
 
     VisionMsgs::Detection2DArray opDetectionMsg;
 
-    // header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp); RAE doesn't output correct time
-    opDetectionMsg.header.stamp = rclcpp::Clock().now();
+    opDetectionMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp); 
+
     opDetectionMsg.header.frame_id = _frameName;
     opDetectionMsg.detections.resize(inNetData->detections.size());
 

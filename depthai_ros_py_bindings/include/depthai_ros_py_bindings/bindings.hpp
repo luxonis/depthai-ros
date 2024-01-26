@@ -30,6 +30,7 @@
 #include "std_msgs/msg/int32.hpp"
 #include "vision_msgs/msg/detection2_d_array.hpp"
 #include "vision_msgs/msg/detection3_d_array.hpp"
+#include "rclcpp_components/node_instance_wrapper.hpp"
 
 namespace dai {
 namespace ros {
@@ -106,9 +107,12 @@ class PYBIND11_EXPORT ROSContextManager {
     void init(py::list args, const std::string& executorType);
     void shutdown();
     void addNode(rclcpp::Node::SharedPtr node);
+    
+    void addComposableNode(const std::string& packageName, const std::string& pluginName, const rclcpp::NodeOptions& options);
     void spin();
 
    private:
+    std::vector<rclcpp_components::NodeInstanceWrapper> _composableNodes;
     std::string _executorType;
     std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> _singleExecutor;
     std::shared_ptr<rclcpp::executors::MultiThreadedExecutor> _multiExecutor;

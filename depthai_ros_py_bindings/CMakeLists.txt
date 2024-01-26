@@ -33,13 +33,10 @@ find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(vision_msgs REQUIRED)
-find_package(rtabmap_slam REQUIRED)
 find_package(pybind11 REQUIRED)
-find_package(spectacularai_ros2 REQUIRED)
 find_package(image_proc REQUIRED)
-find_package(laserscan_kinect REQUIRED)
-find_package(ira_laser_tools REQUIRED)
 find_package(depthai_bridge REQUIRED)
+find_package(rclcpp_components REQUIRED)
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 
@@ -56,14 +53,11 @@ set(dependencies
   depthai_ros_msgs
   image_transport
   rclcpp
+  rclcpp_components
   sensor_msgs
   std_msgs
   vision_msgs
-  rtabmap_slam
-  spectacularai_ros2
   image_proc
-  laserscan_kinect
-  ira_laser_tools
   pybind11
   Python3
 )
