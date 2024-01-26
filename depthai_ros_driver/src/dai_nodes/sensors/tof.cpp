@@ -12,6 +12,7 @@
 #include "depthai_ros_driver/param_handlers/tof_param_handler.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
+#include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {
@@ -43,7 +44,7 @@ void ToF::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 void ToF::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_publish_topic")) {
         tofQ = device->getOutputQueue(tofQName, ph->getParam<int>("i_max_q_size"), false);
-        auto tfPrefix = getTFPrefix(getName());
+        auto tfPrefix = getTFPrefix(utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
         imageConverter =
             std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
         imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
@@ -60,7 +61,13 @@ void ToF::setupQueues(std::shared_ptr<dai::Device> device) {
         } else {
             infoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
         }
-        tofQ->addCallback(std::bind(sensor_helpers::imgCB, std::placeholders::_1, std::placeholders::_2, *imageConverter, tofPub, infoManager));
+        tofQ->addCallback(std::bind(sensor_helpers::cameraPub,
+                                    std::placeholders::_1,
+                                    std::placeholders::_2,
+                                    *imageConverter,
+                                    tofPub,
+                                    infoManager,
+                                    ph->getParam<bool>("i_enable_lazy_publisher")));
     }
 }
 void ToF::closeQueues() {
