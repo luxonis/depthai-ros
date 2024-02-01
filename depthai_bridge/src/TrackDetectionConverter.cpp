@@ -21,7 +21,7 @@ TrackDetectionConverter::~TrackDetectionConverter() = default;
 
 void TrackDetectionConverter::toRosMsg(
 	std::shared_ptr<dai::Tracklets> trackData, 
-	std::deque<VisionMsgs::Detection2DArray>& opDetectionMsgs) {
+	std::deque<DepthaiMsgs::TrackDetection2DArray>& opDetectionMsgs) {
 
 	// setting the header
 	std::chrono::_V2::steady_clock::time_point tstamp;
@@ -30,7 +30,7 @@ void TrackDetectionConverter::toRosMsg(
 	else
 		tstamp = trackData->getTimestamp();
 
-	VisionMsgs::Detection2DArray opDetectionMsg;
+	DepthaiMsgs::TrackDetection2DArray opDetectionMsg;
 	opDetectionMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
 	opDetectionMsg.header.frame_id = _frameName;
 	opDetectionMsg.detections.resize(trackData->tracklets.size());
@@ -42,15 +42,15 @@ void TrackDetectionConverter::toRosMsg(
 		dai::Rect roi;
 		int xMin, yMin, xMax, yMax;
 
-		if (_normalized)
-			roi = t.roi;
-		else
+		// if (_normalized)
+		// 	roi = t.roi;
+		// else
 			roi = t.roi.denormalize(_width, _height);
 
-		xMin = t.roi.topLeft().x;
-		yMin = t.roi.topLeft().y;
-		xMax = t.roi.bottomRight().x;
-		yMax = t.roi.bottomRight().y;
+		xMin = roi.topLeft().x;
+		yMin = roi.topLeft().y;
+		xMax = roi.bottomRight().x;
+		yMax = roi.bottomRight().y;
 
 		float xSize = xMax - xMin;
 		float ySize = yMax - yMin;
@@ -83,6 +83,8 @@ void TrackDetectionConverter::toRosMsg(
 		std::stringstream track_id_str;
         track_id_str << "" << t.id;
 		opDetectionMsg.detections[i].tracking_id = track_id_str.str();
+		opDetectionMsg.detections[i].tracking_age = t.age;
+		opDetectionMsg.detections[i].tracking_status = static_cast<int32_t>(t.status);
 
 		// converting mm to meters since per ros rep-103 lenght should always be in meters
 		// opDetectionMsg.detections[i].position.x = 0;
@@ -93,17 +95,17 @@ void TrackDetectionConverter::toRosMsg(
     opDetectionMsgs.push_back(opDetectionMsg);
 }
 
-Detection2DArrayPtr TrackDetectionConverter::toRosMsgPtr(
+TrackDetection2DArrayPtr TrackDetectionConverter::toRosMsgPtr(
 	std::shared_ptr<dai::Tracklets> trackData) {
 
-	std::deque<VisionMsgs::Detection2DArray> msgQueue;
+	std::deque<DepthaiMsgs::TrackDetection2DArray> msgQueue;
     toRosMsg(trackData, msgQueue);
     auto msg = msgQueue.front();
 
 #ifdef IS_ROS2
-    Detection2DArrayPtr ptr = std::make_shared<VisionMsgs::Detection2DArray>(msg);
+    TrackDetection2DArrayPtr ptr = std::make_shared<DepthaiMsgs::TrackDetection2DArray>(msg);
 #else
-    Detection2DArrayPtr ptr = boost::make_shared<VisionMsgs::Detection2DArray>(msg);
+    TrackDetection2DArrayPtr ptr = boost::make_shared<DepthaiMsgs::TrackDetection2DArray>(msg);
 #endif
     return ptr;
 }

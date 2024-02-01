@@ -27,6 +27,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   # "msg/ImageMarkerArray.msg"
   "msg/SpatialDetection.msg"
   "msg/SpatialDetectionArray.msg"
+  "msg/TrackDetection2D.msg"
+  "msg/TrackDetection2DArray.msg"
   "srv/TriggerNamed.srv"
   "srv/NormalizedImageCrop.srv"
   DEPENDENCIES builtin_interfaces geometry_msgs std_msgs vision_msgs

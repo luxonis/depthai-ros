@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <vision_msgs/msg/detection2_d_array.hpp>
+#include <depthai_ros_msgs/msg/track_detection2_d_array.hpp>
 
 #include "depthai/pipeline/datatype/Tracklets.hpp"
 #include "rclcpp/time.hpp"
@@ -13,16 +14,18 @@ namespace dai {
 namespace ros {
 
 namespace VisionMsgs = vision_msgs::msg;
+namespace DepthaiMsgs = depthai_ros_msgs::msg;
 using Detection2DArrayPtr = VisionMsgs::Detection2DArray::SharedPtr;
+using TrackDetection2DArrayPtr = DepthaiMsgs::TrackDetection2DArray::SharedPtr;
 
 class TrackDetectionConverter {
 	public:
 		// DetectionConverter() = default;
 		TrackDetectionConverter(std::string frameName, int width, int height, bool normalized = false, bool getBaseDeviceTimestamp = false);
 		~TrackDetectionConverter();
-		void toRosMsg(std::shared_ptr<dai::Tracklets> trackData, std::deque<VisionMsgs::Detection2DArray>& opDetectionMsgs);
+		void toRosMsg(std::shared_ptr<dai::Tracklets> trackData, std::deque<DepthaiMsgs::TrackDetection2DArray>& opDetectionMsgs);
 
-		Detection2DArrayPtr toRosMsgPtr(std::shared_ptr<dai::Tracklets> trackData);
+		TrackDetection2DArrayPtr toRosMsgPtr(std::shared_ptr<dai::Tracklets> trackData);
 
 	private:
 		int _width, _height;
