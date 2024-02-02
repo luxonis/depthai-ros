@@ -54,7 +54,7 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
         }
         RCLCPP_DEBUG(node->get_logger(), "Node %s has sensor %s", daiNodeName.c_str(), sensorName.c_str());
         sensorData = *sensorIt;
-        if(device->getDeviceName() == "OAK-D-SR") {
+        if(device->getDeviceName() == "OAK-D-SR" || device->getDeviceName() == "OAK-D-SR-POE"){
             (*sensorIt).color = true;  // ov9282 is color sensor in this case
         }
         if((*sensorIt).color) {
