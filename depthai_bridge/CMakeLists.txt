@@ -61,6 +61,7 @@ file(GLOB LIB_SRC
 "src/ImageConverter.cpp"
 "src/ImgDetectionConverter.cpp"
 "src/SpatialDetectionConverter.cpp"
+"src/SpatialDetection2DConverter.cpp"
 "src/ImuConverter.cpp"
 "src/TrackDetectionConverter.cpp"
 )

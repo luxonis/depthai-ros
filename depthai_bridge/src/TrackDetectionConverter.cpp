@@ -36,7 +36,7 @@ void TrackDetectionConverter::toRosMsg(
 	opDetectionMsg.detections.resize(trackData->tracklets.size());
 
 	// publishing
-	for(int i = 0; i < trackData->tracklets.size(); ++i)
+	for (int i = 0; i < trackData->tracklets.size(); ++i)
 	{
 		dai::Tracklet t = trackData->tracklets[i];
 		dai::Rect roi;
