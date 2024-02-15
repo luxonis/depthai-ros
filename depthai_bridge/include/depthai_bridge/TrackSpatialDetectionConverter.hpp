@@ -19,22 +19,21 @@ using Detection2DArrayPtr = VisionMsgs::Detection2DArray::SharedPtr;
 using TrackDetection2DArrayPtr = DepthaiMsgs::TrackDetection2DArray::SharedPtr;
 
 class TrackSpatialDetectionConverter {
-	public:
-		// DetectionConverter() = default;
-		TrackSpatialDetectionConverter(std::string frameName, int width, int height, bool normalized = false, float thresh = 0.0, bool getBaseDeviceTimestamp = false);
-		~TrackSpatialDetectionConverter();
-		void toRosMsg(std::shared_ptr<dai::Tracklets> trackData, std::deque<DepthaiMsgs::TrackDetection2DArray>& opDetectionMsgs);
+   public:
+    TrackSpatialDetectionConverter(std::string frameName, int width, int height, bool normalized = false, float thresh = 0.0, bool getBaseDeviceTimestamp = false);
+    ~TrackSpatialDetectionConverter();
+    void toRosMsg(std::shared_ptr<dai::Tracklets> trackData, std::deque<DepthaiMsgs::TrackDetection2DArray>& opDetectionMsgs);
 
-		TrackDetection2DArrayPtr toRosMsgPtr(std::shared_ptr<dai::Tracklets> trackData);
+    TrackDetection2DArrayPtr toRosMsgPtr(std::shared_ptr<dai::Tracklets> trackData);
 
-	private:
-		int _width, _height;
-		const std::string _frameName;
-		bool _normalized;
-		float _thresh;
-		std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
-		rclcpp::Time _rosBaseTime;
-		bool _getBaseDeviceTimestamp;
+   private:
+    int _width, _height;
+    const std::string _frameName;
+    bool _normalized;
+    float _thresh;
+    std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
+    rclcpp::Time _rosBaseTime;
+    bool _getBaseDeviceTimestamp;
 };
 
 /** TODO(sachin): Do we need to have ros msg -> dai bounding box ?

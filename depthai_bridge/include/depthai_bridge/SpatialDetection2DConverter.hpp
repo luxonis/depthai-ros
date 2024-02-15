@@ -16,19 +16,19 @@ namespace VisionMsgs = vision_msgs::msg;
 using SpatialDetection2DArrayPtr = VisionMsgs::Detection2DArray;
 
 class SpatialDetection2DConverter {
-	public:
-		SpatialDetection2DConverter(std::string frameName, int width, int height, bool normalized = false, bool getBaseDeviceTimestamp = false);
-		~SpatialDetection2DConverter();
-		void toRosVisionMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData, std::deque<VisionMsgs::Detection2DArray>& opDetectionMsg);
+   public:
+    SpatialDetection2DConverter(std::string frameName, int width, int height, bool normalized = false, bool getBaseDeviceTimestamp = false);
+    ~SpatialDetection2DConverter();
+    void toRosVisionMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData, std::deque<VisionMsgs::Detection2DArray>& opDetectionMsg);
 
-	private:
-		int _width, _height;
-		const std::string _frameName;
-		bool _normalized;
-		std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
+   private:
+    int _width, _height;
+    const std::string _frameName;
+    bool _normalized;
+    std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
 
-		rclcpp::Time _rosBaseTime;
-		bool _getBaseDeviceTimestamp;
+    rclcpp::Time _rosBaseTime;
+    bool _getBaseDeviceTimestamp;
 };
 
 /** TODO(sachin): Do we need to have ros msg -> dai bounding box ?
