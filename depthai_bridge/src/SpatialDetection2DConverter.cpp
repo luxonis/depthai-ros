@@ -38,14 +38,16 @@ void SpatialDetection2DConverter::toRosVisionMsg(
 	// publishing
 	for (int i = 0; i < inNetData->detections.size(); ++i)
 	{
-		int xMin, yMin, xMax, yMax;
+		float xMin, yMin, xMax, yMax;
 		if(_normalized)
 		{
 			xMin = inNetData->detections[i].xmin;
 			yMin = inNetData->detections[i].ymin;
 			xMax = inNetData->detections[i].xmax;
 			yMax = inNetData->detections[i].ymax;
-		} else {
+		}
+		else
+		{
 			xMin = inNetData->detections[i].xmin * _width;
 			yMin = inNetData->detections[i].ymin * _height;
 			xMax = inNetData->detections[i].xmax * _width;

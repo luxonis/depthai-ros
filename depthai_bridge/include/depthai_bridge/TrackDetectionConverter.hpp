@@ -21,7 +21,7 @@ using TrackDetection2DArrayPtr = DepthaiMsgs::TrackDetection2DArray::SharedPtr;
 class TrackDetectionConverter {
 	public:
 		// DetectionConverter() = default;
-		TrackDetectionConverter(std::string frameName, int width, int height, bool normalized = false, bool getBaseDeviceTimestamp = false);
+		TrackDetectionConverter(std::string frameName, int width, int height, bool normalized = false, float thresh = 0.0, bool getBaseDeviceTimestamp = false);
 		~TrackDetectionConverter();
 		void toRosMsg(std::shared_ptr<dai::Tracklets> trackData, std::deque<DepthaiMsgs::TrackDetection2DArray>& opDetectionMsgs);
 
@@ -31,6 +31,7 @@ class TrackDetectionConverter {
 		int _width, _height;
 		const std::string _frameName;
 		bool _normalized;
+		float _thresh;
 		std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
 		rclcpp::Time _rosBaseTime;
 		bool _getBaseDeviceTimestamp;

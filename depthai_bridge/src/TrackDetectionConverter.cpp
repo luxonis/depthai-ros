@@ -7,11 +7,12 @@ namespace dai {
 
 namespace ros {
 
-TrackDetectionConverter::TrackDetectionConverter(std::string frameName, int width, int height, bool normalized, bool getBaseDeviceTimestamp)
+TrackDetectionConverter::TrackDetectionConverter(std::string frameName, int width, int height, bool normalized, float thresh, bool getBaseDeviceTimestamp)
 	:	_frameName(frameName),
 		_width(width),
 		_height(height),
 		_normalized(normalized),
+		_thresh(thresh),
 		_steadyBaseTime(std::chrono::steady_clock::now()),
 		_getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
 		_rosBaseTime = rclcpp::Clock().now();
@@ -40,11 +41,11 @@ void TrackDetectionConverter::toRosMsg(
 	{
 		dai::Tracklet t = trackData->tracklets[i];
 		dai::Rect roi;
-		int xMin, yMin, xMax, yMax;
+		float xMin, yMin, xMax, yMax;
 
-		// if (_normalized)
-		// 	roi = t.roi;
-		// else
+		if (_normalized)
+			roi = t.roi;
+		else
 			roi = t.roi.denormalize(_width, _height);
 
 		xMin = roi.topLeft().x;
@@ -67,7 +68,7 @@ void TrackDetectionConverter::toRosMsg(
 		opDetectionMsg.detections[i].results[0].id = t.label;
 #endif
 
-		opDetectionMsg.detections[i].results[0].score = -1.0;
+		opDetectionMsg.detections[i].results[0].score = _thresh;
 
 #ifdef IS_HUMBLE
 		opDetectionMsg.detections[i].bbox.center.position.x = xCenter;

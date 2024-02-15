@@ -32,8 +32,8 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
 
     // TODO(Sachin): check if this works fine for normalized detection
     // publishing
-    for(int i = 0; i < inNetData->detections.size(); ++i) {
-        int xMin, yMin, xMax, yMax;
+    for (int i = 0; i < inNetData->detections.size(); ++i) {
+        float xMin, yMin, xMax, yMax;
         if(_normalized) {
             xMin = inNetData->detections[i].xmin;
             yMin = inNetData->detections[i].ymin;
