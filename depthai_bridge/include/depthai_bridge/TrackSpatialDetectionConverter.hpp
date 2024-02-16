@@ -3,8 +3,8 @@
 #include <deque>
 #include <memory>
 #include <string>
-#include <vision_msgs/msg/detection2_d_array.hpp>
-#include <depthai_ros_msgs/msg/track_detection2_d_array.hpp>
+#include "vision_msgs/msg/detection2_d_array.hpp"
+#include "depthai_ros_msgs/msg/track_detection2_d_array.hpp"
 
 #include "depthai/pipeline/datatype/Tracklets.hpp"
 #include "rclcpp/time.hpp"
@@ -35,14 +35,6 @@ class TrackSpatialDetectionConverter {
     rclcpp::Time _rosBaseTime;
     bool _getBaseDeviceTimestamp;
 };
-
-/** TODO(sachin): Do we need to have ros msg -> dai bounding box ?
- * is there any situation where we would need to have xlinkin to take bounding
- * box as input. One scenario would to take this as input and use ImageManip
- * node to crop the roi of the image. Since it is not available yet. Leaving
- * it out for now to speed up on other tasks feel free to raise a issue if you
- * feel that feature is good to have...
- */
 
 }  // namespace ros
 

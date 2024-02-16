@@ -34,7 +34,6 @@ void SpatialDetection2DConverter::toRosVisionMsg(
     opDetectionMsg.header.frame_id = _frameName;
     opDetectionMsg.detections.resize(inNetData->detections.size());
 
-    // TODO(Sachin): check if this works fine for normalized detection
     // publishing
     for (int i = 0; i < inNetData->detections.size(); ++i)
     {

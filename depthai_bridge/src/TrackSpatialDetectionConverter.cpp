@@ -1,4 +1,4 @@
-#include <depthai_bridge/TrackSpatialDetectionConverter.hpp>
+#include "depthai_bridge/TrackSpatialDetectionConverter.hpp"
 
 #include "depthai_bridge/depthaiUtility.hpp"
 #include "depthai/depthai.hpp"
@@ -60,26 +60,15 @@ void TrackSpatialDetectionConverter::toRosMsg(
 
         opDetectionMsg.detections[i].results.resize(1);
 
-#if defined(IS_GALACTIC) || defined(IS_HUMBLE)
-        opDetectionMsg.detections[i].results[0].class_id = std::to_string(t.label);
-#elif IS_ROS2
         opDetectionMsg.detections[i].results[0].id = std::to_string(t.label);
-#else
-        opDetectionMsg.detections[i].results[0].id = t.label;
-#endif
 
         opDetectionMsg.detections[i].results[0].score = _thresh;
 
-#ifdef IS_HUMBLE
-        opDetectionMsg.detections[i].bbox.center.position.x = xCenter;
-        opDetectionMsg.detections[i].bbox.center.position.y = yCenter;
-#else
         opDetectionMsg.detections[i].bbox.center.x = xCenter;
         opDetectionMsg.detections[i].bbox.center.y = yCenter;
-#endif
-
         opDetectionMsg.detections[i].bbox.size_x = xSize;
         opDetectionMsg.detections[i].bbox.size_y = ySize;
+
         opDetectionMsg.detections[i].is_tracking = true;
         std::stringstream track_id_str;
         track_id_str << "" << t.id;
@@ -103,11 +92,8 @@ TrackDetection2DArrayPtr TrackSpatialDetectionConverter::toRosMsgPtr(
     toRosMsg(trackData, msgQueue);
     auto msg = msgQueue.front();
 
-#ifdef IS_ROS2
     TrackDetection2DArrayPtr ptr = std::make_shared<DepthaiMsgs::TrackDetection2DArray>(msg);
-#else
-    TrackDetection2DArrayPtr ptr = boost::make_shared<DepthaiMsgs::TrackDetection2DArray>(msg);
-#endif
+
     return ptr;
 }
 
