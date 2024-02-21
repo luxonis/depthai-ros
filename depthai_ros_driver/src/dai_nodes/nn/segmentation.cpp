@@ -12,6 +12,7 @@
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
+#include "depthai_ros_driver/utils.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/node.hpp"
@@ -22,13 +23,13 @@ namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace nn {
 
-Segmentation::Segmentation(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline)
+Segmentation::Segmentation(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, const dai::CameraBoardSocket& socket)
     : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     segNode = pipeline->create<dai::node::NeuralNetwork>();
     imageManip = pipeline->create<dai::node::ImageManip>();
-    ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName);
+    ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName, socket);
     ph->declareParams(segNode, imageManip);
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
     imageManip->out.link(segNode->input);
@@ -58,7 +59,7 @@ void Segmentation::setupQueues(std::shared_ptr<dai::Device> device) {
     nnPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
     nnQ->addCallback(std::bind(&Segmentation::segmentationCB, this, std::placeholders::_1, std::placeholders::_2));
     if(ph->getParam<bool>("i_enable_passthrough")) {
-        auto tfPrefix = getTFPrefix("rgb");
+        auto tfPrefix = getTFPrefix(utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
         ptQ = device->getOutputQueue(ptQName, ph->getParam<int>("i_max_q_size"), false);
         imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(

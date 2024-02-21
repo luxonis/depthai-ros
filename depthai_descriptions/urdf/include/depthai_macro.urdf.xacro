@@ -12,6 +12,10 @@
         <xacro:property name="has_imu" value="false" />
         <xacro:property name="baseline" value="0.075" />
 
+        <xacro:if value="${model in ['OAK-D-SR']}">
+            <xacro:property name="baseline" value="0.02" />
+        </xacro:if>
+
         <xacro:if value="${model in ['OAK-D', 'OAK-D-PRO', 'OAK-D-POE']}">
             <xacro:property name="has_imu" value="true" />
         </xacro:if>
@@ -19,58 +23,98 @@
         <xacro:base camera_name="${camera_name}" parent="${parent}" camera_model="${camera_model}" base_frame="${base_frame}" cam_pos_x="${cam_pos_x}" cam_pos_y="${cam_pos_y}" cam_pos_z="${cam_pos_z}" cam_roll="${cam_roll}" cam_pitch="${cam_pitch}" cam_yaw="${cam_yaw}" has_imu="${has_imu}"/>
 
         <!-- RGB Camera -->
-        <link name="${camera_name}_rgb_camera_frame" />
+        <xacro:unless value="${model in ['OAK-D-SR']}">
+            <link name="${camera_name}_rgb_camera_frame" />
 
-        <joint name="${camera_name}_rgb_camera_joint" type="fixed">
-            <parent link="${base_frame}"/>
-            <child link="${camera_name}_rgb_camera_frame"/>
-            <origin xyz="0 0 0" rpy="0 0 0" />
-        </joint>
+            <joint name="${camera_name}_rgb_camera_joint" type="fixed">
+                <parent link="${base_frame}"/>
+                <child link="${camera_name}_rgb_camera_frame"/>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+            </joint>
 
-        <link name="${camera_name}_rgb_camera_optical_frame"/>
+            <link name="${camera_name}_rgb_camera_optical_frame"/>
 
-        <joint name="${camera_name}_rgb_camera_optical_joint" type="fixed">
-            <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
-            <parent link="${camera_name}_rgb_camera_frame"/>
-            <child link="${camera_name}_rgb_camera_optical_frame"/>
-        </joint>
+            <joint name="${camera_name}_rgb_camera_optical_joint" type="fixed">
+                <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
+                <parent link="${camera_name}_rgb_camera_frame"/>
+                <child link="${camera_name}_rgb_camera_optical_frame"/>
+            </joint>
+        </xacro:unless>
+        <xacro:unless value="${model in ['OAK-D-LR']}">
 
-        <!-- Left Camera -->
-        <link name="${camera_name}_left_camera_frame" />
+            <!-- Left Camera -->
+            <link name="${camera_name}_left_camera_frame" />
 
-        <joint name="${camera_name}_left_camera_joint" type="fixed">
-            <parent link="${base_frame}"/>
-            <child link="${camera_name}_left_camera_frame"/>
-            <origin xyz="0 ${baseline/2} 0" rpy="0 0 0" />
-        </joint>
+            <joint name="${camera_name}_left_camera_joint" type="fixed">
+                <parent link="${base_frame}"/>
+                <child link="${camera_name}_left_camera_frame"/>
+                <origin xyz="0 ${baseline/2} 0" rpy="0 0 0" />
+            </joint>
 
-        <link name="${camera_name}_left_camera_optical_frame"/>
+            <link name="${camera_name}_left_camera_optical_frame"/>
 
-        <joint name="${camera_name}_left_camera_optical_joint" type="fixed">
-            <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
-            <parent link="${camera_name}_left_camera_frame"/>
-            <child link="${camera_name}_left_camera_optical_frame"/>
-        </joint>
-
-
-        <!-- right Camera -->
-        <link name="${camera_name}_right_camera_frame" />
-
-        <joint name="${camera_name}_right_camera_joint" type="fixed">
-            <parent link="${base_frame}"/>
-            <child link="${camera_name}_right_camera_frame"/>
-            <origin xyz="0 -${baseline/2} 0" rpy="0 0 0" />
-        </joint>
-
-        <link name="${camera_name}_right_camera_optical_frame"/>
-
-        <joint name="${camera_name}_right_camera_optical_joint" type="fixed">
-            <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
-            <parent link="${camera_name}_right_camera_frame"/>
-            <child link="${camera_name}_right_camera_optical_frame"/>
-        </joint>
+            <joint name="${camera_name}_left_camera_optical_joint" type="fixed">
+                <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
+                <parent link="${camera_name}_left_camera_frame"/>
+                <child link="${camera_name}_left_camera_optical_frame"/>
+            </joint>
 
 
+            <!-- right Camera -->
+            <link name="${camera_name}_right_camera_frame" />
+
+            <joint name="${camera_name}_right_camera_joint" type="fixed">
+                <parent link="${base_frame}"/>
+                <child link="${camera_name}_right_camera_frame"/>
+                <origin xyz="0 -${baseline/2} 0" rpy="0 0 0" />
+            </joint>
+
+            <link name="${camera_name}_right_camera_optical_frame"/>
+
+            <joint name="${camera_name}_right_camera_optical_joint" type="fixed">
+                <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
+                <parent link="${camera_name}_right_camera_frame"/>
+                <child link="${camera_name}_right_camera_optical_frame"/>
+            </joint>
+
+        </xacro:unless>
+
+        <xacro:if value="${model in ['OAK-D-LR']}">
+
+            <!-- left Camera -->
+            <link name="${camera_name}_left_camera_frame" />
+
+            <joint name="${camera_name}_left_camera_joint" type="fixed">
+                <parent link="${base_frame}"/>
+                <child link="${camera_name}_left_camera_frame"/>
+                <origin xyz="0 0.1 0" rpy="0 0 0" />
+            </joint>
+
+            <link name="${camera_name}_left_camera_optical_frame"/>
+
+            <joint name="${camera_name}_left_camera_optical_joint" type="fixed">
+                <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
+                <parent link="${camera_name}_left_camera_frame"/>
+                <child link="${camera_name}_left_camera_optical_frame"/>
+            </joint>
+
+            <!-- right Camera -->
+            <link name="${camera_name}_right_camera_frame" />
+
+            <joint name="${camera_name}_right_camera_joint" type="fixed">
+                <parent link="${base_frame}"/>
+                <child link="${camera_name}_right_camera_frame"/>
+                <origin xyz="0 -0.05 0" rpy="0 0 0" />
+            </joint>
+
+            <link name="${camera_name}_right_camera_optical_frame"/>
+
+            <joint name="${camera_name}_right_camera_optical_joint" type="fixed">
+                <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
+                <parent link="${camera_name}_right_camera_frame"/>
+                <child link="${camera_name}_right_camera_optical_frame"/>
+            </joint>
+        </xacro:if>
     </xacro:macro>
 
 </robot>

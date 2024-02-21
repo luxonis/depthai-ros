@@ -26,13 +26,14 @@ class StereoParamHandler : public BaseParamHandler {
     ~StereoParamHandler();
     void declareParams(std::shared_ptr<dai::node::StereoDepth> stereo);
     dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;
-    void updateSocketsFromParams(dai::CameraBoardSocket& left, dai::CameraBoardSocket& right);
+    void updateSocketsFromParams(dai::CameraBoardSocket& left, dai::CameraBoardSocket& right, dai::CameraBoardSocket& align);
 
    private:
     std::unordered_map<std::string, dai::node::StereoDepth::PresetMode> depthPresetMap;
     std::unordered_map<std::string, dai::StereoDepthConfig::CostMatching::DisparityWidth> disparityWidthMap;
     std::unordered_map<std::string, dai::StereoDepthConfig::PostProcessing::DecimationFilter::DecimationMode> decimationModeMap;
     std::unordered_map<std::string, dai::StereoDepthConfig::PostProcessing::TemporalFilter::PersistencyMode> temporalPersistencyMap;
+    dai::CameraBoardSocket alignSocket;
 };
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver

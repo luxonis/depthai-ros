@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
-project(depthai_examples VERSION 2.8.2 LANGUAGES CXX C)
+project(depthai_examples VERSION 2.9.0 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -101,9 +101,11 @@ dai_add_node_ros2(stereo_inertial_node src/stereo_inertial_publisher.cpp)
 dai_add_node_ros2(feature_tracker src/feature_tracker_publisher.cpp)
 dai_add_node_ros2(stereo_node src/stereo_publisher.cpp)
 dai_add_node_ros2(yolov4_spatial_node src/yolov4_spatial_publisher.cpp)
+dai_add_node_ros2(yolov4_node src/yolov4_publisher.cpp)
 
 target_compile_definitions(mobilenet_node PRIVATE BLOB_NAME="${mobilenet_blob_name}")
 target_compile_definitions(yolov4_spatial_node PRIVATE BLOB_NAME="${tiny_yolo_v4_blob_name}")
+target_compile_definitions(yolov4_node PRIVATE BLOB_NAME="${tiny_yolo_v4_blob_name}")
 target_compile_definitions(stereo_inertial_node PRIVATE BLOB_NAME="${tiny_yolo_v4_blob_name}")
 
 if($ENV{ROS_DISTRO} STREQUAL "galactic")
@@ -124,6 +126,7 @@ install(TARGETS
         stereo_inertial_node
         stereo_node
         yolov4_spatial_node
+        yolov4_node
         feature_tracker
         DESTINATION lib/${PROJECT_NAME})
 

@@ -34,7 +34,7 @@ enum class NNFamily { Segmentation, Mobilenet, Yolo };
 }
 class NNParamHandler : public BaseParamHandler {
    public:
-    explicit NNParamHandler(rclcpp::Node* node, const std::string& name);
+    explicit NNParamHandler(rclcpp::Node* node, const std::string& name, const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A);
     ~NNParamHandler();
     nn::NNFamily getNNFamily();
     template <typename T>

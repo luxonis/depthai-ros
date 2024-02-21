@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 
 namespace dai {
@@ -25,7 +26,10 @@ namespace dai_nodes {
 
 class NNWrapper : public BaseNode {
    public:
-    explicit NNWrapper(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
+    explicit NNWrapper(const std::string& daiNodeName,
+                       rclcpp::Node* node,
+                       std::shared_ptr<dai::Pipeline> pipeline,
+                       const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A);
     ~NNWrapper();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;

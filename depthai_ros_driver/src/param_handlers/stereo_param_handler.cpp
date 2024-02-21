@@ -39,9 +39,10 @@ StereoParamHandler::StereoParamHandler(rclcpp::Node* node, const std::string& na
 
 StereoParamHandler::~StereoParamHandler() = default;
 
-void StereoParamHandler::updateSocketsFromParams(dai::CameraBoardSocket& left, dai::CameraBoardSocket& right) {
+void StereoParamHandler::updateSocketsFromParams(dai::CameraBoardSocket& left, dai::CameraBoardSocket& right, dai::CameraBoardSocket& align) {
     int newLeftS = declareAndLogParam<int>("i_left_socket_id", static_cast<int>(left));
     int newRightS = declareAndLogParam<int>("i_right_socket_id", static_cast<int>(right));
+    alignSocket = static_cast<dai::CameraBoardSocket>(declareAndLogParam<int>("i_board_socket_id", static_cast<int>(align)));
     if(newLeftS != static_cast<int>(left) || newRightS != static_cast<int>(right)) {
         RCLCPP_WARN(getROSNode()->get_logger(), "Left or right socket changed, updating stereo node");
         RCLCPP_WARN(getROSNode()->get_logger(), "Old left socket: %d, new left socket: %d", static_cast<int>(left), newLeftS);
@@ -78,14 +79,15 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<bool>("i_right_rect_enable_feature_tracker", false);
     declareAndLogParam<bool>("i_right_rect_add_exposure_offset", false);
     declareAndLogParam<int>("i_right_rect_exposure_offset", 0);
+    declareAndLogParam<bool>("i_enable_spatial_nn", false);
+    declareAndLogParam<std::string>("i_spatial_nn_source", "right");
 
     stereo->setLeftRightCheck(declareAndLogParam<bool>("i_lr_check", true));
     int width = 1280;
     int height = 720;
-    auto socket = static_cast<dai::CameraBoardSocket>(declareAndLogParam<int>("i_board_socket_id", static_cast<int>(dai::CameraBoardSocket::CAM_A)));
     std::string socketName;
     if(declareAndLogParam<bool>("i_align_depth", true)) {
-        socketName = utils::getSocketName(socket);
+        socketName = utils::getSocketName(alignSocket);
         try {
             width = getROSNode()->get_parameter(socketName + ".i_width").as_int();
             height = getROSNode()->get_parameter(socketName + ".i_height").as_int();
@@ -93,7 +95,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
             RCLCPP_ERROR(getROSNode()->get_logger(), "%s parameters not set, defaulting to 1280x720 unless specified otherwise.", socketName.c_str());
         }
         declareAndLogParam<std::string>("i_socket_name", socketName);
-        stereo->setDepthAlign(socket);
+        stereo->setDepthAlign(alignSocket);
     }
 
     if(declareAndLogParam<bool>("i_set_input_size", false)) {

@@ -93,7 +93,7 @@ class Stereo : public BaseNode {
     std::shared_ptr<dai::node::VideoEncoder> stereoEnc, leftRectEnc, rightRectEnc;
     std::unique_ptr<SensorWrapper> left;
     std::unique_ptr<SensorWrapper> right;
-    std::unique_ptr<BaseNode> featureTrackerLeftR, featureTrackerRightR;
+    std::unique_ptr<BaseNode> featureTrackerLeftR, featureTrackerRightR, nnNode;
     std::unique_ptr<param_handlers::StereoParamHandler> ph;
     std::shared_ptr<dai::DataOutputQueue> stereoQ, leftRectQ, rightRectQ;
     std::shared_ptr<dai::node::XLinkOut> xoutStereo, xoutLeftRect, xoutRightRect;
