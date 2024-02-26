@@ -20,6 +20,7 @@
   <depend>visualization_msgs</depend>
   <depend>depthai_ros_msgs</depend>
   <depend>image_geometry</depend>
+  <depend>rtabmap_msgs</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

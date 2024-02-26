@@ -20,6 +20,7 @@ ament_auto_add_library(
   src/wls_filter.cpp
   src/feature_tracker_overlay.cpp
   src/features_3d.cpp
+  src/rtabmap_sync.cpp
   src/rectify.cpp
   src/utils.cpp
 )
@@ -35,6 +36,7 @@ rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::SpatialBB")
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::FeatureTrackerOverlay")
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::Features3D")
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::Rectify")
+rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::RTABMapSync")
 
 install(DIRECTORY launch config DESTINATION share/${PROJECT_NAME})
 install(
