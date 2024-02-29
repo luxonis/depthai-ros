@@ -4,9 +4,9 @@
 #include <memory>
 #include <string>
 
+#include "depthai/pipeline/datatype/SpatialImgDetections.hpp"
 #include "rclcpp/time.hpp"
 #include "vision_msgs/msg/detection2_d_array.hpp"
-#include "depthai/pipeline/datatype/SpatialImgDetections.hpp"
 
 namespace dai {
 
