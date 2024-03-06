@@ -16,7 +16,7 @@
             <xacro:property name="baseline" value="0.02" />
         </xacro:if>
 
-        <xacro:if value="${model in ['OAK-D', 'OAK-D-PRO', 'OAK-D-POE']}">
+        <xacro:if value="${model in ['OAK-D', 'OAK-D-PRO', 'OAK-D-POE', 'OAK-D-SR', 'OAK-D-LR']}">
             <xacro:property name="has_imu" value="true" />
         </xacro:if>
 
