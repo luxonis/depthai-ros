@@ -1,17 +1,16 @@
 #include <cstdio>
 #include <iostream>
 
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp/node.hpp"
-#include "rclcpp/executors.hpp"
-#include "sensor_msgs/msg/image.hpp"
 #include "camera_info_manager/camera_info_manager.hpp"
-#include "vision_msgs/msg/detection2_d_array.hpp"
-#include "depthai_ros_msgs/msg/track_detection2_d_array.hpp"
-
 #include "depthai_bridge/BridgePublisher.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_bridge/TrackDetectionConverter.hpp"
+#include "depthai_ros_msgs/msg/track_detection2_d_array.hpp"
+#include "rclcpp/executors.hpp"
+#include "rclcpp/node.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "sensor_msgs/msg/image.hpp"
+#include "vision_msgs/msg/detection2_d_array.hpp"
 
 // Inludes common necessary includes for development using depthai library
 #include "depthai/device/DataQueue.hpp"
@@ -19,9 +18,9 @@
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/ColorCamera.hpp"
 #include "depthai/pipeline/node/MonoCamera.hpp"
+#include "depthai/pipeline/node/ObjectTracker.hpp"
 #include "depthai/pipeline/node/SpatialDetectionNetwork.hpp"
 #include "depthai/pipeline/node/StereoDepth.hpp"
-#include "depthai/pipeline/node/ObjectTracker.hpp"
 #include "depthai/pipeline/node/XLinkOut.hpp"
 
 const std::vector<std::string> label_map = {
@@ -73,17 +72,14 @@ dai::Pipeline createPipeline(std::string nnPath, bool fullFrameTracking) {
     colorCam->preview.link(detectionNetwork->input);
     tracker->passthroughTrackerFrame.link(xoutRgb->input);
 
-    if (fullFrameTracking)
-    {
-      colorCam->setPreviewKeepAspectRatio(false);
-      colorCam->video.link(tracker->inputTrackerFrame);
-      //tracker->inputTrackerFrame.setBlocking(false);
-      // do not block the pipeline if it's too slow on full frame
-      //tracker->inputTrackerFrame.setQueueSize(2);
-    }
-    else
-    {
-      detectionNetwork->passthrough.link(tracker->inputTrackerFrame);
+    if(fullFrameTracking) {
+        colorCam->setPreviewKeepAspectRatio(false);
+        colorCam->video.link(tracker->inputTrackerFrame);
+        // tracker->inputTrackerFrame.setBlocking(false);
+        // do not block the pipeline if it's too slow on full frame
+        // tracker->inputTrackerFrame.setQueueSize(2);
+    } else {
+        detectionNetwork->passthrough.link(tracker->inputTrackerFrame);
     }
 
     detectionNetwork->passthrough.link(tracker->inputDetectionFrame);
@@ -140,28 +136,24 @@ int main(int argc, char** argv) {
 
     dai::rosBridge::ImageConverter rgbConverter(tfPrefix + "_rgb_camera_optical_frame", false);
     auto rgbCameraInfo = rgbConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::RGB, -1, -1);
-    dai::rosBridge::BridgePublisher<sensor_msgs::msg::Image, dai::ImgFrame> rgbPublish(
-        colorQueue,
-        node,
-        std::string("color/image"),
-        std::bind(&dai::rosBridge::ImageConverter::toRosMsg,
-                  &rgbConverter,  // since the converter has the same frame name
-                                  // and image type is also same we can reuse it
-                  std::placeholders::_1,
-                  std::placeholders::_2),
-        30,
-        rgbCameraInfo,
-        "color");
+    dai::rosBridge::BridgePublisher<sensor_msgs::msg::Image, dai::ImgFrame> rgbPublish(colorQueue,
+                                                                                       node,
+                                                                                       std::string("color/image"),
+                                                                                       std::bind(&dai::rosBridge::ImageConverter::toRosMsg,
+                                                                                                 &rgbConverter,  // since the converter has the same frame name
+                                                                                                                 // and image type is also same we can reuse it
+                                                                                                 std::placeholders::_1,
+                                                                                                 std::placeholders::_2),
+                                                                                       30,
+                                                                                       rgbCameraInfo,
+                                                                                       "color");
 
     dai::rosBridge::TrackDetectionConverter trackConverter(tfPrefix + "_rgb_camera_optical_frame", 416, 416, fullFrameTracking, 0.01);
     dai::rosBridge::BridgePublisher<depthai_ros_msgs::msg::TrackDetection2DArray, dai::Tracklets> trackPublish(
         trackQueue,
         node,
         std::string("color/yolov4_tracklets"),
-        std::bind(&dai::rosBridge::TrackDetectionConverter::toRosMsg,
-                  &trackConverter,
-                  std::placeholders::_1,
-                  std::placeholders::_2),
+        std::bind(&dai::rosBridge::TrackDetectionConverter::toRosMsg, &trackConverter, std::placeholders::_1, std::placeholders::_2),
         30);
 
     rgbPublish.addPublisherCallback();

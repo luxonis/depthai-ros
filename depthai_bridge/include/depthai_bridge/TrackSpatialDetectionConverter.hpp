@@ -20,7 +20,8 @@ using TrackDetection2DArrayPtr = DepthaiMsgs::TrackDetection2DArray::SharedPtr;
 
 class TrackSpatialDetectionConverter {
    public:
-    TrackSpatialDetectionConverter(std::string frameName, int width, int height, bool normalized = false, float thresh = 0.0, bool getBaseDeviceTimestamp = false);
+    TrackSpatialDetectionConverter(
+        std::string frameName, int width, int height, bool normalized = false, float thresh = 0.0, bool getBaseDeviceTimestamp = false);
     ~TrackSpatialDetectionConverter();
     void toRosMsg(std::shared_ptr<dai::Tracklets> trackData, std::deque<DepthaiMsgs::TrackDetection2DArray>& opDetectionMsgs);
 

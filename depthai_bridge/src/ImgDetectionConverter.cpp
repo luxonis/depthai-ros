@@ -32,20 +32,15 @@ void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetDa
     opDetectionMsg.header.frame_id = _frameName;
     opDetectionMsg.detections.resize(inNetData->detections.size());
 
-    // TODO(Sachin): check if this works fine for normalized detection
     // publishing
-    for (int i = 0; i < inNetData->detections.size(); ++i)
-	{
+    for(int i = 0; i < inNetData->detections.size(); ++i) {
         float xMin, yMin, xMax, yMax;
-        if(_normalized)
-		{
+        if(_normalized) {
             xMin = inNetData->detections[i].xmin;
             yMin = inNetData->detections[i].ymin;
             xMax = inNetData->detections[i].xmax;
             yMax = inNetData->detections[i].ymax;
-        }
-		else
-		{
+        } else {
             xMin = inNetData->detections[i].xmin * _width;
             yMin = inNetData->detections[i].ymin * _height;
             xMax = inNetData->detections[i].xmax * _width;
