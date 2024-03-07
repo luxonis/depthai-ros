@@ -15,7 +15,8 @@ namespace ros {
 
 class TrackSpatialDetectionConverter {
    public:
-    TrackSpatialDetectionConverter(std::string frameName, int width, int height, bool normalized = false, float thresh = 0.0, bool getBaseDeviceTimestamp = false);
+    TrackSpatialDetectionConverter(
+        std::string frameName, int width, int height, bool normalized = false, float thresh = 0.0, bool getBaseDeviceTimestamp = false);
     ~TrackSpatialDetectionConverter();
 
     /**
