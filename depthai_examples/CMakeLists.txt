@@ -100,10 +100,14 @@ dai_add_node_ros2(rgb_stereo_node src/rgb_stereo_node.cpp)
 dai_add_node_ros2(stereo_inertial_node src/stereo_inertial_publisher.cpp)
 dai_add_node_ros2(stereo_node src/stereo_publisher.cpp)
 dai_add_node_ros2(yolov4_spatial_node src/yolov4_spatial_publisher.cpp)
+dai_add_node_ros2(tracker_yolov4_node src/tracker_yolov4_publisher.cpp)
+dai_add_node_ros2(tracker_yolov4_spatial_node src/tracker_yolov4_spatial_publisher.cpp)
 
 target_compile_definitions(mobilenet_node PRIVATE BLOB_NAME="${mobilenet_blob_name}")
 target_compile_definitions(yolov4_spatial_node PRIVATE BLOB_NAME="${tiny_yolo_v4_blob_name}")
 target_compile_definitions(stereo_inertial_node PRIVATE BLOB_NAME="${tiny_yolo_v4_blob_name}")
+target_compile_definitions(tracker_yolov4_node PRIVATE BLOB_NAME="${tiny_yolo_v4_blob_name}")
+target_compile_definitions(tracker_yolov4_spatial_node PRIVATE BLOB_NAME="${tiny_yolo_v4_blob_name}")
 
 if($ENV{ROS_DISTRO} STREQUAL "galactic")
   target_compile_definitions(rgb_stereo_node PRIVATE IS_GALACTIC)
@@ -123,6 +127,8 @@ install(TARGETS
         stereo_inertial_node
         stereo_node
         yolov4_spatial_node
+        tracker_yolov4_node
+        tracker_yolov4_spatial_node
         DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

@@ -30,10 +30,9 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
     opDetectionMsg.header.frame_id = _frameName;
     opDetectionMsg.detections.resize(inNetData->detections.size());
 
-    // TODO(Sachin): check if this works fine for normalized detection
     // publishing
     for(int i = 0; i < inNetData->detections.size(); ++i) {
-        int xMin, yMin, xMax, yMax;
+        float xMin, yMin, xMax, yMax;
         if(_normalized) {
             xMin = inNetData->detections[i].xmin;
             yMin = inNetData->detections[i].ymin;
