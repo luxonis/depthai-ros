@@ -21,7 +21,7 @@
             <visual>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <mesh filename="package://depthai_descriptions/urdf/models/${model}.stl" />
+                    <mesh filename="file://$(find depthai_descriptions)/urdf/models/${model}.stl" />
                 </geometry>
                 <material name="mat">
                     <color rgba="${r} ${g} ${b} ${a}"/>
