@@ -5,6 +5,7 @@
 #include "image_transport/image_transport.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
 #include "sensor_msgs/msg/image.hpp"
+#include "ffmpeg_image_transport_msgs/msg/ffmpeg_packet.hpp"
 
 namespace dai {
 class Pipeline;
@@ -63,16 +64,17 @@ class RGB : public BaseNode {
     std::unique_ptr<dai::ros::ImageConverter> imageConverter;
     image_transport::CameraPublisher rgbPubIT, previewPubIT;
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr rgbPub, previewPub;
+    rclcpp::Publisher<ffmpeg_image_transport_msgs::msg::FFMPEGPacket>::SharedPtr h264Pub;
     rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr rgbInfoPub, previewInfoPub;
     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager, previewInfoManager;
     std::shared_ptr<dai::node::ColorCamera> colorCamNode;
-    std::shared_ptr<dai::node::VideoEncoder> videoEnc;
+    std::shared_ptr<dai::node::VideoEncoder> videoEnc, videoEncH264;
     std::unique_ptr<param_handlers::SensorParamHandler> ph;
-    std::shared_ptr<dai::DataOutputQueue> colorQ, previewQ;
+    std::shared_ptr<dai::DataOutputQueue> colorQ, previewQ, h264Q;
     std::shared_ptr<dai::DataInputQueue> controlQ;
-    std::shared_ptr<dai::node::XLinkOut> xoutColor, xoutPreview;
+    std::shared_ptr<dai::node::XLinkOut> xoutColor, xoutPreview, xoutH264;
     std::shared_ptr<dai::node::XLinkIn> xinControl;
-    std::string ispQName, previewQName, controlQName;
+    std::string ispQName, previewQName, controlQName, h264QName;
 };
 
 }  // namespace dai_nodes
