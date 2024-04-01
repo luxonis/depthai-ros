@@ -7,7 +7,7 @@ RUN apt-get update \
    && apt-get -y install --no-install-recommends software-properties-common git libusb-1.0-0-dev wget zsh python3-colcon-common-extensions
 
 # install latest
-RUN apt-get install ros-${ROS_DISTRO}-depthai
+RUN apt-get -y install ros-${ROS_DISTRO}-depthai
 
 ENV DEBIAN_FRONTEND=dialog
 RUN sh -c "$(wget https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)"
