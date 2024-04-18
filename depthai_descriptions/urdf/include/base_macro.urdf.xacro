@@ -4,7 +4,21 @@
 
     <xacro:macro name="base" params="camera_name camera_model parent base_frame 
                                            cam_pos_x cam_pos_y cam_pos_z 
-                                           cam_roll cam_pitch cam_yaw has_imu r:=0.8 g:=0.8 b:=0.8 a:=0.8 ">
+                                           cam_roll cam_pitch cam_yaw has_imu r:=0.8 g:=0.8 b:=0.8 a:=0.8 simulation:=false">
+
+        <xacro:if value="${simulation}">
+            <xacro:property
+            name="file_prefix"
+            value="file://$(find depthai_descriptions)"
+            />
+        </xacro:if>
+        <xacro:unless value="${simulation}">
+            <xacro:property
+            name="file_prefix"
+            value="package://depthai_descriptions"
+            />
+        </xacro:unless>
+
         <!-- base_link of the sensor-->
         <link name="${base_frame}"/>
         <xacro:property name="M_PI" value="3.1415926535897931" />
@@ -21,7 +35,7 @@
             <visual>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <mesh filename="file://$(find depthai_descriptions)/urdf/models/${model}.stl" />
+                    <mesh filename="${file_prefix}/urdf/models/${model}.stl" />
                 </geometry>
                 <material name="mat">
                     <color rgba="${r} ${g} ${b} ${a}"/>
