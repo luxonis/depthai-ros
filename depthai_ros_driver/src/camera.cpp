@@ -198,12 +198,19 @@ void Camera::startDevice() {
             } else {
                 std::vector<dai::DeviceInfo> availableDevices = dai::Device::getAllAvailableDevices();
                 if(availableDevices.size() == 0) {
-                    throw std::runtime_error("No devices detected!");
+                    // autodiscovery might not work so try connecting via IP directly if set
+                    if(!ip.empty()) {
+                        dai::DeviceInfo info(ip);
+                        RCLCPP_INFO(this->get_logger(), "No devices detected by autodiscovery, trying to connect to camera via IP: %s", ip.c_str());
+                        availableDevices.push_back(info);
+                    } else {
+                        throw std::runtime_error("No devices detected!");
+                    }
                 }
                 dai::UsbSpeed speed = ph->getUSBSpeed();
                 for(const auto& info : availableDevices) {
                     if(!mxid.empty() && info.getMxId() == mxid) {
-                        RCLCPP_INFO(this->get_logger(), "Connecting to the camera using mxid: %s", mxid.c_str());
+                        RCLCPP_INFO(this->get_logger(), "Connecting to the camera using mxid: %s...", mxid.c_str());
                         if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
                             device = std::make_shared<dai::Device>(info, speed);
                             camRunning = true;
@@ -211,12 +218,12 @@ void Camera::startDevice() {
                             throw std::runtime_error("Device is already booted in different process.");
                         }
                     } else if(!ip.empty() && info.name == ip) {
-                        RCLCPP_INFO(this->get_logger(), "Connecting to the camera using ip: %s", ip.c_str());
+                        RCLCPP_INFO(this->get_logger(), "Connecting to the camera using IP: %s...", ip.c_str());
                         if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
                             device = std::make_shared<dai::Device>(info);
                             camRunning = true;
                         } else if(info.state == X_LINK_BOOTED) {
-                            throw std::runtime_error("Device is already booted in different process.");
+                            throw std::runtime_error("Device is already booted in different process...");
                         }
                     } else if(!usb_id.empty() && info.name == usb_id) {
                         RCLCPP_INFO(this->get_logger(), "Connecting to the camera using USB ID: %s", usb_id.c_str());
