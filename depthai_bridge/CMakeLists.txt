@@ -93,6 +93,10 @@ if($ENV{ROS_DISTRO} STREQUAL "humble")
   target_compile_definitions(${PROJECT_NAME} PRIVATE IS_HUMBLE)
 endif()
 
+if($ENV{ROS_DISTRO} STREQUAL "jazzy")
+  target_compile_definitions(${PROJECT_NAME} PRIVATE IS_JAZZY)
+endif()
+
 target_link_libraries(${PROJECT_NAME}
                       depthai::core
                       opencv_imgproc
