@@ -4,7 +4,7 @@
 
     <xacro:macro name="depthai_camera" params="camera_name camera_model parent base_frame 
                                            cam_pos_x cam_pos_y cam_pos_z 
-                                           cam_roll cam_pitch cam_yaw r:=0.8 g:=0.8 b:=0.8 a:=0.8 ">
+                                           cam_roll cam_pitch cam_yaw r:=0.8 g:=0.8 b:=0.8 a:=0.8 simulation:=false">
 
         <xacro:include filename="$(find depthai_descriptions)/urdf/include/base_macro.urdf.xacro"/>
         <xacro:property name="M_PI" value="3.1415926535897931" />
@@ -20,7 +20,7 @@
             <xacro:property name="has_imu" value="true" />
         </xacro:if>
 
-        <xacro:base camera_name="${camera_name}" parent="${parent}" camera_model="${camera_model}" base_frame="${base_frame}" cam_pos_x="${cam_pos_x}" cam_pos_y="${cam_pos_y}" cam_pos_z="${cam_pos_z}" cam_roll="${cam_roll}" cam_pitch="${cam_pitch}" cam_yaw="${cam_yaw}" has_imu="${has_imu}"/>
+        <xacro:base camera_name="${camera_name}" parent="${parent}" camera_model="${camera_model}" base_frame="${base_frame}" cam_pos_x="${cam_pos_x}" cam_pos_y="${cam_pos_y}" cam_pos_z="${cam_pos_z}" cam_roll="${cam_roll}" cam_pitch="${cam_pitch}" cam_yaw="${cam_yaw}" has_imu="${has_imu}" simulation="${simulation}"/>
 
         <!-- RGB Camera -->
         <xacro:unless value="${model in ['OAK-D-SR']}">
