@@ -46,6 +46,7 @@ find_package(composition_interfaces REQUIRED)
 set(dependencies
   ament_index_cpp
   camera_info_manager
+  ament_index_cpp
   cv_bridge
   depthai_ros_msgs
   image_transport
