@@ -14,6 +14,7 @@
   <depend>libboost-dev</depend>
   <depend>rclcpp</depend>
 
+  <depend>ament_index_cpp</depend>
   <depend>cv_bridge</depend>
   <depend>camera_info_manager</depend>
   <depend>depthai</depend>

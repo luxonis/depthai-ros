@@ -27,6 +27,7 @@ message(STATUS "------------------------------------------")
 
 set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
 
+find_package(ament_index_cpp REQUIRED)
 find_package(camera_info_manager REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(depthai_ros_msgs REQUIRED)
@@ -43,6 +44,7 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(composition_interfaces REQUIRED)
 
 set(dependencies
+  ament_index_cpp
   camera_info_manager
   cv_bridge
   depthai_ros_msgs
