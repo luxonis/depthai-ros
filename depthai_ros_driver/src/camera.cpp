@@ -253,7 +253,7 @@ void Camera::startDevice() {
     } else {
         RCLCPP_INFO(this->get_logger(),
                     "PoE camera detected. Consider enabling low bandwidth for specific image topics (see "
-                    "readme).");
+                    "Readme->DepthAI ROS Driver->Specific camera configurations).");
     }
 }
 
