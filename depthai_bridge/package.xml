@@ -11,8 +11,6 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <build_depend>ament_index_cpp</build_depend>
-
   <depend>libboost-dev</depend>
   <depend>rclcpp</depend>
 
