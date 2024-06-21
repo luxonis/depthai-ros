@@ -14,6 +14,7 @@ class ADatatype;
 namespace node {
 class Camera;
 class ToF;
+class ImageAlign;
 class XLinkIn;
 class XLinkOut;
 class VideoEncoder;
@@ -55,6 +56,7 @@ class ToF : public BaseNode {
     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
     std::shared_ptr<dai::node::Camera> camNode;
     std::shared_ptr<dai::node::ToF> tofNode;
+    std::shared_ptr<dai::node::ImageAlign> alignNode;
     std::unique_ptr<param_handlers::ToFParamHandler> ph;
     std::shared_ptr<dai::DataOutputQueue> tofQ;
     std::shared_ptr<dai::node::XLinkOut> xoutTof;

@@ -12,9 +12,11 @@
 namespace depthai_ros_driver {
 namespace param_handlers {
 ToFParamHandler::ToFParamHandler(rclcpp::Node* node, const std::string& name) : BaseParamHandler(node, name) {
-    fModMap = {{"F_MOD_ALL", dai::ToFConfig::DepthParams::TypeFMod::F_MOD_ALL},
-               {"F_MOD_MIN", dai::ToFConfig::DepthParams::TypeFMod::F_MOD_MIN},
-               {"F_MOD_MAX", dai::ToFConfig::DepthParams::TypeFMod::F_MOD_MAX}};
+
+    medianFilterMap = {{"MEDIAN_OFF", dai::MedianFilter::MEDIAN_OFF},
+                       {"KERNEL_3x3", dai::MedianFilter::KERNEL_3x3},
+                       {"KERNEL_5x5", dai::MedianFilter::KERNEL_5x5},
+                       {"KERNEL_7x7", dai::MedianFilter::KERNEL_7x7}};
 }
 ToFParamHandler::~ToFParamHandler() = default;
 void ToFParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, std::shared_ptr<dai::node::ToF> tof) {
@@ -23,10 +25,30 @@ void ToFParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, std:
     cam->setBoardSocket(static_cast<dai::CameraBoardSocket>(socket));
     declareAndLogParam<int>("i_width", 640);
     declareAndLogParam<int>("i_height", 480);
+    cam->setFps(declareAndLogParam<int>("i_fps", 30));
     auto tofConf = tof->initialConfig.get();
-    tofConf.depthParams.avgPhaseShuffle = declareAndLogParam<bool>("i_avg_phase_shuffle", false);
-    tofConf.depthParams.minimumAmplitude = declareAndLogParam<double>("i_minimum_amplitude", 3.0);
-    tofConf.depthParams.freqModUsed = utils::getValFromMap(declareAndLogParam<std::string>("i_freq_mod_used", "F_MOD_MAX"), fModMap);
+    if(declareAndLogParam<bool>("i_enable_optical_correction", false)) {
+        tofConf.enableOpticalCorrection = true;
+    }
+    if(declareAndLogParam<bool>("i_enable_fppn_correction", false)) {
+        tofConf.enableFPPNCorrection = true;
+    }
+    if(declareAndLogParam<bool>("i_enable_temperature_correction", false)) {
+        tofConf.enableTemperatureCorrection = true;
+    }
+    if(declareAndLogParam<bool>("i_enable_wiggle_correction", false)) {
+        tofConf.enableWiggleCorrection = true;
+    }
+    if(declareAndLogParam<bool>("i_enable_phase_unwrapping", false)) {
+        tofConf.enablePhaseUnwrapping = true;
+    }
+
+    tofConf.enablePhaseShuffleTemporalFilter = declareAndLogParam<bool>("i_enable_phase_shuffle_temporal_filter", true);
+    tofConf.phaseUnwrappingLevel = declareAndLogParam<int>("i_phase_unwrapping_level", 4);
+    tofConf.phaseUnwrapErrorThreshold = declareAndLogParam<int>("i_phase_unwrap_error_threshold", 100);
+    std::vector<dai::MedianFilter> medianSettings = { dai::MedianFilter::MEDIAN_OFF, dai::MedianFilter::KERNEL_3x3, dai::MedianFilter::KERNEL_5x5, dai::MedianFilter::KERNEL_7x7 };
+    tofConf.median = utils::getValFromMap(declareAndLogParam<std::string>("i_median_filter", "MEDIAN_OFF"), medianFilterMap);
+
     tof->initialConfig.set(tofConf);
 }
 

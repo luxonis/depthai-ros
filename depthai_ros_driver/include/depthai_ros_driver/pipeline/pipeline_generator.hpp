@@ -18,7 +18,7 @@ class Node;
 
 namespace depthai_ros_driver {
 namespace pipeline_gen {
-enum class PipelineType { RGB, RGBD, RGBStereo, Stereo, Depth, CamArray, StereoToF };
+enum class PipelineType { RGB, RGBD, RGBStereo, Stereo, Depth, CamArray, DepthToF, StereoToF, ToF, RGBToF };
 
 class PipelineGenerator {
    public:
@@ -32,7 +32,7 @@ class PipelineGenerator {
      *
      * @return     The validated pipeline type.
      */
-    std::string validatePipeline(rclcpp::Node* node, const std::string& typeStr, int sensorNum);
+    std::string validatePipeline(rclcpp::Node* node, const std::string& typeStr, int sensorNum, const std::string& deviceName);
     /**
      * @brief      Creates the pipeline by using a plugin. Plugin types need to be of type depthai_ros_driver::pipeline_gen::BasePipeline.
      *
@@ -59,14 +59,20 @@ class PipelineGenerator {
                                                                {"STEREO", "depthai_ros_driver::pipeline_gen::Stereo"},
                                                                {"DEPTH", "depthai_ros_driver::pipeline_gen::Depth"},
                                                                {"CAMARRAY", "depthai_ros_driver::pipeline_gen::CamArray"},
-                                                               {"STEREOTOF", "depthai_ros_driver::pipeline_gen::StereoToF"}};
+                                                               {"DEPTHTOF", "depthai_ros_driver::pipeline_gen::DepthToF"},
+                                                               {"STEREOTOF", "depthai_ros_driver::pipeline_gen::StereoToF"},
+                                                               {"TOF", "depthai_ros_driver::pipeline_gen::ToF"},
+                                                               {"RGBTOF", "depthai_ros_driver::pipeline_gen::RGBToF"}};
     std::unordered_map<std::string, PipelineType> pipelineTypeMap{{"RGB", PipelineType::RGB},
                                                                   {"RGBD", PipelineType::RGBD},
                                                                   {"RGBSTEREO", PipelineType::RGBStereo},
                                                                   {"STEREO", PipelineType::Stereo},
                                                                   {"DEPTH", PipelineType::Depth},
                                                                   {"CAMARRAY", PipelineType::CamArray},
-                                                                  {"STEREOTOF", PipelineType::StereoToF}};
+                                                                  {"DEPTHTOF", PipelineType::DepthToF},
+                                                                  {"STEREOTOF", PipelineType::StereoToF},
+                                                                  {"TOF", PipelineType::ToF},
+                                                                  {"RGBTOF", PipelineType::RGBToF}};
 };
 }  // namespace pipeline_gen
 }  // namespace depthai_ros_driver

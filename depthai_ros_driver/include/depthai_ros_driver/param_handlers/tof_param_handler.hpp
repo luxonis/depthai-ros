@@ -29,7 +29,7 @@ class ToFParamHandler : public BaseParamHandler {
     ~ToFParamHandler();
     void declareParams(std::shared_ptr<dai::node::Camera> cam, std::shared_ptr<dai::node::ToF> tof);
     dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;
-    std::unordered_map<std::string, dai::ToFConfig::DepthParams::TypeFMod> fModMap;
+    std::unordered_map<std::string, dai::MedianFilter> medianFilterMap;
 };
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver

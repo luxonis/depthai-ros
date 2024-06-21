@@ -23,7 +23,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
     // Check if one of the default types.
     try {
         std::string pTypeUpCase = utils::getUpperCaseStr(pipelineType);
-        auto pTypeValidated = validatePipeline(node, pTypeUpCase, device->getCameraSensorNames().size());
+        auto pTypeValidated = validatePipeline(node, pTypeUpCase, device->getCameraSensorNames().size(), device->getDeviceName());
         pluginType = utils::getValFromMap(pTypeValidated, pluginTypeMap);
     } catch(std::out_of_range& e) {
         RCLCPP_DEBUG(node->get_logger(), "Pipeline type [%s] not found in base types, trying to load as a plugin.", pipelineType.c_str());
@@ -52,8 +52,11 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
     return daiNodes;
 }
 
-std::string PipelineGenerator::validatePipeline(rclcpp::Node* node, const std::string& typeStr, int sensorNum) {
+std::string PipelineGenerator::validatePipeline(rclcpp::Node* node, const std::string& typeStr, int sensorNum, const std::string& deviceName) {
     auto pType = utils::getValFromMap(typeStr, pipelineTypeMap);
+    if(deviceName == "OAK-D-SR-POE") {
+        RCLCPP_WARN(node->get_logger(), "OAK-D-SR-POE device detected. Pipeline types other than StereoToF/ToF/RGBToF might not work without reconfiguration.");
+    }
     if(sensorNum == 1) {
         if(pType != PipelineType::RGB) {
             RCLCPP_ERROR(node->get_logger(), "Invalid pipeline chosen for camera as it has only one sensor. Switching to RGB.");

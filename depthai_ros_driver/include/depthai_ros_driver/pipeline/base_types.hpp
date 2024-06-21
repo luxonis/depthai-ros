@@ -61,7 +61,28 @@ class CamArray : public BasePipeline {
                                                                      std::shared_ptr<dai::Pipeline> pipeline,
                                                                      const std::string& nnType) override;
 };
-class StereoToF : public BasePipeline {
+class DepthToF : public BasePipeline {
+   public:
+    std::vector<std::unique_ptr<dai_nodes::BaseNode>> createPipeline(rclcpp::Node* node,
+                                                                     std::shared_ptr<dai::Device> device,
+                                                                     std::shared_ptr<dai::Pipeline> pipeline,
+                                                                     const std::string& nnType) override;
+};
+class StereoToF: public BasePipeline {
+   public:
+    std::vector<std::unique_ptr<dai_nodes::BaseNode>> createPipeline(rclcpp::Node* node,
+                                                                     std::shared_ptr<dai::Device> device,
+                                                                     std::shared_ptr<dai::Pipeline> pipeline,
+                                                                     const std::string& nnType) override;
+};
+class ToF : public BasePipeline {
+   public:
+    std::vector<std::unique_ptr<dai_nodes::BaseNode>> createPipeline(rclcpp::Node* node,
+                                                                     std::shared_ptr<dai::Device> device,
+                                                                     std::shared_ptr<dai::Pipeline> pipeline,
+                                                                     const std::string& nnType) override;
+};
+class RGBToF : public BasePipeline {
    public:
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> createPipeline(rclcpp::Node* node,
                                                                      std::shared_ptr<dai::Device> device,
