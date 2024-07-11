@@ -20,6 +20,8 @@ class WLSFilter : public rclcpp::Node {
                const sensor_msgs::msg::CameraInfo::ConstSharedPtr& disp_info,
                const sensor_msgs::msg::Image::ConstSharedPtr& leftImg);
 
+    OnSetParametersCallbackHandle::SharedPtr paramCBHandle;
+    rcl_interfaces::msg::SetParametersResult parameterCB(const std::vector<rclcpp::Parameter>& params);
     message_filters::Subscriber<sensor_msgs::msg::Image> disparityImgSub;
     message_filters::Subscriber<sensor_msgs::msg::Image> leftImgSub;
 
@@ -28,5 +30,6 @@ class WLSFilter : public rclcpp::Node {
     std::unique_ptr<message_filters::Synchronizer<syncPolicy>> sync;
     cv::Ptr<cv::ximgproc::DisparityWLSFilter> filter;
     image_transport::CameraPublisher depthPub;
+    double maxDisparity;
 };
 }  // namespace depthai_filters
