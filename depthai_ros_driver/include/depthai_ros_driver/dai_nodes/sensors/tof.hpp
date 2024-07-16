@@ -41,12 +41,13 @@ namespace dai_nodes {
 
 class ToF : public BaseNode {
    public:
-    explicit ToF(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
+    explicit ToF(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, dai::CameraBoardSocket boardSocket = dai::CameraBoardSocket::CAM_A);
     ~ToF();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(dai::Node::Input in, int linkType = 0) override;
-    void setNames() override;
+	dai::Node::Input getInput(int linkType=0) override;
+	void setNames() override;
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
 
@@ -60,6 +61,7 @@ class ToF : public BaseNode {
     std::unique_ptr<param_handlers::ToFParamHandler> ph;
     std::shared_ptr<dai::DataOutputQueue> tofQ;
     std::shared_ptr<dai::node::XLinkOut> xoutTof;
+	dai::CameraBoardSocket boardSocket;
     std::string tofQName;
 };
 

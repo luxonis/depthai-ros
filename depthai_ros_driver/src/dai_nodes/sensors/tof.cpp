@@ -5,23 +5,27 @@
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/Camera.hpp"
+#include "depthai/pipeline/node/ImageAlign.hpp"
 #include "depthai/pipeline/node/ToF.hpp"
 #include "depthai/pipeline/node/XLinkIn.hpp"
 #include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/param_handlers/tof_param_handler.hpp"
+#include "depthai_ros_driver/utils.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/image_transport.hpp"
-#include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-ToF::ToF(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
+ToF::ToF(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, dai::CameraBoardSocket socket)
+    : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     camNode = pipeline->create<dai::node::Camera>();
     tofNode = pipeline->create<dai::node::ToF>();
+    alignNode = pipeline->create<dai::node::ImageAlign>();
+    boardSocket = socket;
     ph = std::make_unique<param_handlers::ToFParamHandler>(node, daiNodeName);
     ph->declareParams(camNode, tofNode);
     setXinXout(pipeline);
@@ -37,14 +41,19 @@ void ToF::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
         xoutTof = pipeline->create<dai::node::XLinkOut>();
         xoutTof->setStreamName(tofQName);
         camNode->raw.link(tofNode->input);
-        tofNode->depth.link(xoutTof->input);
+        if(boardSocket == dai::CameraBoardSocket::CAM_A) {
+            tofNode->depth.link(xoutTof->input);
+        } else {
+            tofNode->depth.link(alignNode->input);
+            alignNode->outputAligned.link(xoutTof->input);
+        }
     }
 }
 
 void ToF::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_publish_topic")) {
         tofQ = device->getOutputQueue(tofQName, ph->getParam<int>("i_max_q_size"), false);
-        auto tfPrefix = getTFPrefix(utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
+        auto tfPrefix = getTFPrefix(utils::getSocketName(boardSocket));
         imageConverter =
             std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
         imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
@@ -74,6 +83,10 @@ void ToF::closeQueues() {
     if(ph->getParam<bool>("i_publish_topic")) {
         tofQ->close();
     }
+}
+
+dai::Node::Input ToF::getInput(int /*linkType*/) {
+    return alignNode->inputAlignTo;
 }
 
 void ToF::link(dai::Node::Input in, int /*linkType*/) {

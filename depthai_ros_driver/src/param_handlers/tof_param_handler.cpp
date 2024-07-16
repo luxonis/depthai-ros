@@ -21,11 +21,10 @@ ToFParamHandler::ToFParamHandler(rclcpp::Node* node, const std::string& name) : 
 ToFParamHandler::~ToFParamHandler() = default;
 void ToFParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, std::shared_ptr<dai::node::ToF> tof) {
     declareAndLogParam<bool>("i_publish_topic", true);
-    int socket = declareAndLogParam<int>("i_board_socket_id", 0);
+    int socket = declareAndLogParam<int>("i_board_socket_id", static_cast<int>(dai::CameraBoardSocket::CAM_A));
     cam->setBoardSocket(static_cast<dai::CameraBoardSocket>(socket));
-    declareAndLogParam<int>("i_width", 640);
-    declareAndLogParam<int>("i_height", 480);
-    cam->setFps(declareAndLogParam<int>("i_fps", 30));
+    cam->setSize(declareAndLogParam<int>("i_width", 640), declareAndLogParam<int>("i_height", 480));
+	cam->setFps(declareAndLogParam<int>("i_fps", 30));
     auto tofConf = tof->initialConfig.get();
     if(declareAndLogParam<bool>("i_enable_optical_correction", false)) {
         tofConf.enableOpticalCorrection = true;
