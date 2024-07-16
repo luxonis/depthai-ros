@@ -89,6 +89,9 @@ void cameraPub(const std::string& /*name*/,
     if(rclcpp::ok() && (!lazyPub || pub.getNumSubscribers() > 0)) {
         auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
         auto info = infoManager->getCameraInfo();
+		// print the info message
+		RCLCPP_INFO(rclcpp::get_logger("oak"), "info width: %d", info.width);
+		RCLCPP_INFO(rclcpp::get_logger("oak"), "info height: %d", info.height);
         auto rawMsg = converter.toRosMsgRawPtr(img, info);
         info.header = rawMsg.header;
         pub.publish(rawMsg, info);
