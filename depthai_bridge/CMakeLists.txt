@@ -72,6 +72,8 @@ file(GLOB LIB_SRC
 "src/ImuConverter.cpp"
 "src/TFPublisher.cpp"
 "src/TrackedFeaturesConverter.cpp"
+"src/TrackDetectionConverter.cpp"
+"src/TrackSpatialDetectionConverter.cpp"
 )
 
 add_library(${PROJECT_NAME} SHARED ${LIB_SRC})
