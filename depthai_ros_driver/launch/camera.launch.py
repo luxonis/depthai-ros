@@ -105,6 +105,7 @@ def launch_setup(context, *args, **kwargs):
                         plugin="depthai_ros_driver::Camera",
                         name=name,
                         parameters=[params_file, tf_params],
+                        extra_arguments=[{'use_intra_process_comms': True}]
                     )
             ],
             arguments=['--ros-args', '--log-level', log_level],

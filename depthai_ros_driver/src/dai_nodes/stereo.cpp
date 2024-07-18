@@ -266,6 +266,7 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     stereoIM->setCameraInfo(info);
     stereoQ = device->getOutputQueue(stereoQName, ph->getParam<int>("i_max_q_size"), false);
     if(ipcEnabled()) {
+		RCLCPP_INFO(getROSNode()->get_logger(), "IPC enabled");
         stereoPub = getROSNode()->create_publisher<sensor_msgs::msg::Image>("~/" + getName() + "/image_raw", 10);
         stereoInfoPub = getROSNode()->create_publisher<sensor_msgs::msg::CameraInfo>("~/" + getName() + "/camera_info", 10);
         stereoQ->addCallback(std::bind(sensor_helpers::splitPub,

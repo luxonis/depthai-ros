@@ -47,7 +47,8 @@ def launch_setup(context, *args, **kwargs):
                                     ('image_rect', name+'/rgb/image_rect'),
                                     ('image_rect/compressed', name+'/rgb/image_rect/compressed'),
                                     ('image_rect/compressedDepth', name+'/rgb/image_rect/compressedDepth'),
-                                    ('image_rect/theora', name+'/rgb/image_rect/theora')]
+                                    ('image_rect/theora', name+'/rgb/image_rect/theora')],
+                        extra_arguments=[{'use_intra_process_comms': True}]
                     )
             ]),
         LoadComposableNodes(
@@ -60,7 +61,8 @@ def launch_setup(context, *args, **kwargs):
                     remappings=[('depth_registered/image_rect', name+'/stereo/image_raw'),
                                 ('rgb/image_rect_color', rgb_topic_name),
                                 ('rgb/camera_info', name+'/rgb/camera_info'),
-                                ('points', name+'/points')]
+                                ('points', name+'/points')],
+                        extra_arguments=[{'use_intra_process_comms': True}]
                     ),
             ],
         ),
