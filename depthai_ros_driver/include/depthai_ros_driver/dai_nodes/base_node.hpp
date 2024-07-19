@@ -1,5 +1,6 @@
 #pragma once
 
+#include <depthai-shared/common/CameraBoardSocket.hpp>
 #include <memory>
 #include <string>
 
@@ -65,6 +66,7 @@ class BaseNode {
      */
     std::string getTFPrefix(const std::string& frameName = "");
     bool ipcEnabled();
+    std::string getSocketName(dai::CameraBoardSocket socket);
 
    private:
     rclcpp::Node* baseNode;

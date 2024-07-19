@@ -59,7 +59,7 @@ void Segmentation::setupQueues(std::shared_ptr<dai::Device> device) {
     nnPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
     nnQ->addCallback(std::bind(&Segmentation::segmentationCB, this, std::placeholders::_1, std::placeholders::_2));
     if(ph->getParam<bool>("i_enable_passthrough")) {
-        auto tfPrefix = getTFPrefix(utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
+        auto tfPrefix = getTFPrefix(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
         ptQ = device->getOutputQueue(ptQName, ph->getParam<int>("i_max_q_size"), false);
         imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(

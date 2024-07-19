@@ -36,6 +36,7 @@ void CameraParamHandler::declareParams() {
     declareAndLogParam<int>("i_laser_dot_brightness", 800, getRangedIntDescriptor(0, 1200));
     declareAndLogParam<int>("i_floodlight_brightness", 0, getRangedIntDescriptor(0, 1500));
     declareAndLogParam<bool>("i_restart_on_diagnostics_error", false);
+	declareAndLogParam<bool>("i_rs_compat", false);
 
     declareAndLogParam<bool>("i_publish_tf_from_calibration", false);
     declareAndLogParam<std::string>("i_tf_camera_name", getROSNode()->get_name());

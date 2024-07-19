@@ -1,4 +1,7 @@
 #pragma once
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
+#include <depthai-shared/common/CameraBoardSocket.hpp>
+
 #include "depthai/pipeline/datatype/CameraControl.hpp"
 #include "rcl_interfaces/msg/parameter_descriptor.hpp"
 #include "rclcpp/node.hpp"
@@ -15,10 +18,7 @@ inline rcl_interfaces::msg::ParameterDescriptor getRangedIntDescriptor(uint16_t 
 }
 class BaseParamHandler {
    public:
-    BaseParamHandler(rclcpp::Node* node, const std::string& name) {
-        baseName = name;
-        baseNode = node;
-    };
+    BaseParamHandler(rclcpp::Node* node, const std::string& name) : baseName(name), baseNode(node){};
     virtual ~BaseParamHandler() = default;
     virtual dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) = 0;
     std::string getName() {
@@ -43,6 +43,10 @@ class BaseParamHandler {
     std::string getFullParamName(const std::string& daiNodeName, const std::string& paramName) {
         std::string name = daiNodeName + "." + paramName;
         return name;
+    }
+
+    std::string getSocketName(dai::CameraBoardSocket socket) {
+        return dai_nodes::sensor_helpers::getSocketName(getROSNode(), socket);
     }
 
    protected:

@@ -28,7 +28,8 @@ class BasePipeline {
    public:
     ~BasePipeline() = default;
     std::unique_ptr<dai_nodes::BaseNode> createNN(rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, dai_nodes::BaseNode& daiNode) {
-        auto nn = std::make_unique<dai_nodes::NNWrapper>("nn", node, pipeline);
+        using namespace dai_nodes::sensor_helpers;
+        auto nn = std::make_unique<dai_nodes::NNWrapper>(getNodeName(node, NodeNameEnum::NN), node, pipeline);
         daiNode.link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
         return nn;
     }
@@ -36,7 +37,8 @@ class BasePipeline {
                                                          std::shared_ptr<dai::Pipeline> pipeline,
                                                          dai_nodes::BaseNode& daiNode,
                                                          dai_nodes::BaseNode& daiStereoNode) {
-        auto nn = std::make_unique<dai_nodes::SpatialNNWrapper>("nn", node, pipeline);
+        using namespace dai_nodes::sensor_helpers;
+        auto nn = std::make_unique<dai_nodes::SpatialNNWrapper>(getNodeName(node, NodeNameEnum::NN), node, pipeline);
         daiNode.link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::input)),
                      static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
         daiStereoNode.link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::inputDepth)));

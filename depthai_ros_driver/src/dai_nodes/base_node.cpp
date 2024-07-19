@@ -3,6 +3,8 @@
 #include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
+#include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {
@@ -28,6 +30,10 @@ std::string BaseNode::getName() {
 
 bool BaseNode::ipcEnabled() {
     return intraProcessEnabled;
+}
+
+std::string BaseNode::getSocketName(dai::CameraBoardSocket socket) {
+    return sensor_helpers::getSocketName(getROSNode(), socket);
 }
 
 std::string BaseNode::getTFPrefix(const std::string& frameName) {

@@ -87,7 +87,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     int height = 720;
     std::string socketName;
     if(declareAndLogParam<bool>("i_align_depth", true)) {
-        socketName = utils::getSocketName(alignSocket);
+        socketName = getSocketName(alignSocket);
         try {
             width = getROSNode()->get_parameter(socketName + ".i_width").as_int();
             height = getROSNode()->get_parameter(socketName + ".i_height").as_int();

@@ -49,10 +49,10 @@ Stereo::Stereo(const std::string& daiNodeName,
     }
     RCLCPP_DEBUG(node->get_logger(),
                  "Creating stereo node with left sensor %s and right sensor %s",
-                 utils::getSocketName(leftSensInfo.socket).c_str(),
-                 utils::getSocketName(rightSensInfo.socket).c_str());
-    left = std::make_unique<SensorWrapper>(utils::getSocketName(leftSensInfo.socket), node, pipeline, device, leftSensInfo.socket, false);
-    right = std::make_unique<SensorWrapper>(utils::getSocketName(rightSensInfo.socket), node, pipeline, device, rightSensInfo.socket, false);
+                 getSocketName(leftSensInfo.socket).c_str(),
+                 getSocketName(rightSensInfo.socket).c_str());
+    left = std::make_unique<SensorWrapper>(getSocketName(leftSensInfo.socket), node, pipeline, device, leftSensInfo.socket, false);
+    right = std::make_unique<SensorWrapper>(getSocketName(rightSensInfo.socket), node, pipeline, device, rightSensInfo.socket, false);
     stereoCamNode = pipeline->create<dai::node::StereoDepth>();
     ph->declareParams(stereoCamNode);
     setXinXout(pipeline);
@@ -143,7 +143,7 @@ void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
                             rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr infoPub,
                             image_transport::CameraPublisher& pubIT,
                             bool isLeft) {
-    auto sensorName = utils::getSocketName(sensorInfo.socket);
+    auto sensorName = getSocketName(sensorInfo.socket);
     auto tfPrefix = getTFPrefix(sensorName);
     conv = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
     conv->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
@@ -218,7 +218,7 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_align_depth")) {
         tfPrefix = getTFPrefix(ph->getParam<std::string>("i_socket_name"));
     } else {
-        tfPrefix = getTFPrefix(utils::getSocketName(rightSensInfo.socket).c_str());
+        tfPrefix = getTFPrefix(getSocketName(rightSensInfo.socket).c_str());
     }
     stereoConv = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
     stereoConv->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));

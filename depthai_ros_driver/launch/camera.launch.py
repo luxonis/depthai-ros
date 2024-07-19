@@ -22,7 +22,14 @@ def launch_setup(context, *args, **kwargs):
     params_file = LaunchConfiguration("params_file")
     camera_model = LaunchConfiguration('camera_model',  default = 'OAK-D')
 
+    real_sense_compat = LaunchConfiguration('rs_compat', default='false')
+
+    namespace = LaunchConfiguration('namespace', default='')
     name = LaunchConfiguration('name').perform(context)
+    print(real_sense_compat.perform(context))
+    if real_sense_compat.perform(context) == 'true':
+        name = 'camera'
+        namespace = 'camera'
 
     parent_frame = LaunchConfiguration('parent_frame',  default = 'oak-d-base-frame')
     cam_pos_x    = LaunchConfiguration('cam_pos_x',     default = '0.0')
@@ -96,7 +103,7 @@ def launch_setup(context, *args, **kwargs):
 
         ComposableNodeContainer(
             name=name+"_container",
-            namespace="",
+            namespace=namespace,
             package="rclcpp_components",
             executable="component_container",
             composable_node_descriptions=[
@@ -104,7 +111,7 @@ def launch_setup(context, *args, **kwargs):
                         package="depthai_ros_driver",
                         plugin="depthai_ros_driver::Camera",
                         name=name,
-                        parameters=[params_file, tf_params],
+                    parameters=[params_file, tf_params, {"rs_compat": real_sense_compat.perform(context)}],
                     )
             ],
             arguments=['--ros-args', '--log-level', log_level],
@@ -120,6 +127,7 @@ def generate_launch_description():
 
     declared_arguments = [
         DeclareLaunchArgument("name", default_value="oak"),
+        DeclareLaunchArgument("namespace", default_value=""),
         DeclareLaunchArgument("parent_frame", default_value="oak-d-base-frame"),
         DeclareLaunchArgument("camera_model", default_value="OAK-D"),
         DeclareLaunchArgument("cam_pos_x", default_value="0.0"),
@@ -137,7 +145,8 @@ def generate_launch_description():
         DeclareLaunchArgument("override_cam_model", default_value='false', description='Overrides camera model from calibration file.'),
         DeclareLaunchArgument("use_gdb", default_value='false'),
         DeclareLaunchArgument("use_valgrind", default_value='false'),
-        DeclareLaunchArgument("use_perf", default_value='false')
+        DeclareLaunchArgument("use_perf", default_value='false'),
+        DeclareLaunchArgument("rs_compat", default_value='false', description='Enables compatibility with RealSense nodes.')
     ]
 
     return LaunchDescription(

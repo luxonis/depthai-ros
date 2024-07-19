@@ -38,6 +38,7 @@ namespace link_types {
 enum class RGBLinkType { video, isp, preview };
 };
 namespace sensor_helpers {
+enum class NodeNameEnum { RGB, Left, Right, Stereo, IMU, NN };
 struct ImageSensor {
     std::string name;
     std::string defaultResolution;
@@ -46,10 +47,15 @@ struct ImageSensor {
 };
 extern std::vector<ImageSensor> availableSensors;
 extern const std::unordered_map<dai::CameraBoardSocket, std::string> socketNameMap;
+extern const std::unordered_map<dai::CameraBoardSocket, std::string> rsSocketNameMap;
+extern const std::unordered_map<NodeNameEnum, std::string> rsNodeNameMap;
+extern const std::unordered_map<NodeNameEnum, std::string> NodeNameMap;
 extern const std::unordered_map<std::string, dai::MonoCameraProperties::SensorResolution> monoResolutionMap;
 extern const std::unordered_map<std::string, dai::ColorCameraProperties::SensorResolution> rgbResolutionMap;
 extern const std::unordered_map<std::string, dai::CameraControl::FrameSyncMode> fSyncModeMap;
 extern const std::unordered_map<std::string, dai::CameraImageOrientation> cameraImageOrientationMap;
+std::string getSocketName(rclcpp::Node* node, dai::CameraBoardSocket socket);
+std::string getNodeName(rclcpp::Node* node, NodeNameEnum name);
 void basicCameraPub(const std::string& /*name*/,
                     const std::shared_ptr<dai::ADatatype>& data,
                     dai::ros::ImageConverter& converter,

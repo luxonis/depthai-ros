@@ -204,7 +204,7 @@ void Camera::startDevice() {
                 for(const auto& info : availableDevices) {
                     if(!mxid.empty() && info.getMxId() == mxid) {
                         RCLCPP_INFO(this->get_logger(), "Connecting to the camera using mxid: %s", mxid.c_str());
-                        if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
+                       if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
                             device = std::make_shared<dai::Device>(info, speed);
                             camRunning = true;
                         } else if(info.state == X_LINK_BOOTED) {
@@ -252,8 +252,18 @@ void Camera::startDevice() {
 
 void Camera::setIR() {
     if(ph->getParam<bool>("i_enable_ir") && !device->getIrDrivers().empty()) {
-        device->setIrLaserDotProjectorBrightness(ph->getParam<int>("i_laser_dot_brightness"));
-        device->setIrFloodLightBrightness(ph->getParam<int>("i_floodlight_brightness"));
+		// Normalize laserdot brightness to 0-1 range, max value can be 1200mA
+		float laserdotBrightness = float(ph->getParam<int>("i_laser_dot_brightness"));
+		if(laserdotBrightness > 1.0) {
+			laserdotBrightness = 1200.0 / laserdotBrightness;
+		}
+		// Normalize floodlight brightness to 0-1 range, max value can be 1500mA
+		float floodlightBrightness = float(ph->getParam<int>("i_floodlight_brightness"));
+		if(floodlightBrightness > 1.0) {
+			floodlightBrightness = 1500.0 / floodlightBrightness;
+		}
+        device->setIrFloodLightIntensity(laserdotBrightness);
+        device->setIrFloodLightIntensity(floodlightBrightness);
     }
 }
 
@@ -261,9 +271,17 @@ rcl_interfaces::msg::SetParametersResult Camera::parameterCB(const std::vector<r
     for(const auto& p : params) {
         if(ph->getParam<bool>("i_enable_ir") && !device->getIrDrivers().empty()) {
             if(p.get_name() == ph->getFullParamName("i_laser_dot_brightness")) {
-                device->setIrLaserDotProjectorBrightness(p.get_value<int>());
+				float laserdotBrightness = float(p.get_value<int>());
+				if(laserdotBrightness > 1.0) {
+					laserdotBrightness = 1200.0 / laserdotBrightness;
+				}
+                device->setIrLaserDotProjectorIntensity(laserdotBrightness);
             } else if(p.get_name() == ph->getFullParamName("i_floodlight_brightness")) {
-                device->setIrFloodLightBrightness(p.get_value<int>());
+				float floodlightBrightness = float(p.get_value<int>());
+				if(floodlightBrightness > 1.0) {
+					floodlightBrightness = 1500.0 / floodlightBrightness;
+				}
+                device->setIrFloodLightIntensity(floodlightBrightness);
             }
         }
     }

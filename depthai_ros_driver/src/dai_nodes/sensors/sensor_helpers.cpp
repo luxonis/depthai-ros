@@ -31,6 +31,45 @@ const std::unordered_map<dai::CameraBoardSocket, std::string> socketNameMap = {
     {dai::CameraBoardSocket::CAM_D, "left_back"},
     {dai::CameraBoardSocket::CAM_E, "right_back"},
 };
+const std::unordered_map<dai::CameraBoardSocket, std::string> rsSocketNameMap = {
+    {dai::CameraBoardSocket::AUTO, "color"},
+    {dai::CameraBoardSocket::CAM_A, "color"},
+    {dai::CameraBoardSocket::CAM_B, "infra2"},
+    {dai::CameraBoardSocket::CAM_C, "infra1"},
+    {dai::CameraBoardSocket::CAM_D, "infra4"},
+    {dai::CameraBoardSocket::CAM_E, "infra3"},
+};
+const std::unordered_map<NodeNameEnum, std::string> rsNodeNameMap = {
+    {NodeNameEnum::RGB, "color"},
+    {NodeNameEnum::Left, "infra2"},
+    {NodeNameEnum::Right, "infra1"},
+    {NodeNameEnum::Stereo, "stereo"},
+    {NodeNameEnum::IMU, "imu"},
+    {NodeNameEnum::NN, "nn"},
+};
+
+const std::unordered_map<NodeNameEnum, std::string> NodeNameMap = {
+    {NodeNameEnum::RGB, "rgb"},
+    {NodeNameEnum::Left, "left"},
+    {NodeNameEnum::Right, "right"},
+    {NodeNameEnum::Stereo, "stereo"},
+    {NodeNameEnum::IMU, "imu"},
+    {NodeNameEnum::NN, "nn"},
+};
+
+bool rsCompabilityMode(rclcpp::Node* node) {
+    return node->get_parameter("camera.i_rs_compat").as_bool();
+}
+std::string getNodeName(rclcpp::Node* node, NodeNameEnum name) {
+    if(rsCompabilityMode(node)) {
+        return rsNodeNameMap.at(name);
+    }
+    return NodeNameMap.at(name);
+}
+
+std::string getSocketName(rclcpp::Node, dai::CameraBoardSocket socket) {
+    return socketNameMap.at(socket);
+}
 const std::unordered_map<std::string, dai::MonoCameraProperties::SensorResolution> monoResolutionMap = {
     {"400P", dai::MonoCameraProperties::SensorResolution::THE_400_P},
     {"480P", dai::MonoCameraProperties::SensorResolution::THE_480_P},

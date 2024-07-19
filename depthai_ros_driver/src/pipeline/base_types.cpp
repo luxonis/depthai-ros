@@ -21,11 +21,12 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGB::createPipeline(rclcpp::No
                                                                       std::shared_ptr<dai::Device> device,
                                                                       std::shared_ptr<dai::Pipeline> pipeline,
                                                                       const std::string& nnType) {
+    using namespace dai_nodes::sensor_helpers;
     std::string nTypeUpCase = utils::getUpperCaseStr(nnType);
     auto nType = utils::getValFromMap(nTypeUpCase, nnTypeMap);
 
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
-    auto rgb = std::make_unique<dai_nodes::SensorWrapper>("rgb", node, pipeline, device, dai::CameraBoardSocket::CAM_A);
+    auto rgb = std::make_unique<dai_nodes::SensorWrapper>(getNodeName(node, NodeNameEnum::RGB), node, pipeline, device, dai::CameraBoardSocket::CAM_A);
     switch(nType) {
         case NNType::None:
             break;
@@ -47,12 +48,13 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBD::createPipeline(rclcpp::N
                                                                        std::shared_ptr<dai::Device> device,
                                                                        std::shared_ptr<dai::Pipeline> pipeline,
                                                                        const std::string& nnType) {
+    using namespace dai_nodes::sensor_helpers;
     std::string nTypeUpCase = utils::getUpperCaseStr(nnType);
     auto nType = utils::getValFromMap(nTypeUpCase, nnTypeMap);
 
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
-    auto rgb = std::make_unique<dai_nodes::SensorWrapper>("rgb", node, pipeline, device, dai::CameraBoardSocket::CAM_A);
-    auto stereo = std::make_unique<dai_nodes::Stereo>("stereo", node, pipeline, device);
+    auto rgb = std::make_unique<dai_nodes::SensorWrapper>(getNodeName(node, NodeNameEnum::RGB), node, pipeline, device, dai::CameraBoardSocket::CAM_A);
+    auto stereo = std::make_unique<dai_nodes::Stereo>(getNodeName(node, NodeNameEnum::Stereo), node, pipeline, device);
     switch(nType) {
         case NNType::None:
             break;
@@ -77,13 +79,14 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBStereo::createPipeline(rclc
                                                                             std::shared_ptr<dai::Device> device,
                                                                             std::shared_ptr<dai::Pipeline> pipeline,
                                                                             const std::string& nnType) {
+    using namespace dai_nodes::sensor_helpers;
     std::string nTypeUpCase = utils::getUpperCaseStr(nnType);
     auto nType = utils::getValFromMap(nTypeUpCase, nnTypeMap);
 
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
-    auto rgb = std::make_unique<dai_nodes::SensorWrapper>("rgb", node, pipeline, device, dai::CameraBoardSocket::CAM_A);
-    auto left = std::make_unique<dai_nodes::SensorWrapper>("left", node, pipeline, device, dai::CameraBoardSocket::CAM_B);
-    auto right = std::make_unique<dai_nodes::SensorWrapper>("right", node, pipeline, device, dai::CameraBoardSocket::CAM_C);
+    auto rgb = std::make_unique<dai_nodes::SensorWrapper>(getNodeName(node, NodeNameEnum::RGB), node, pipeline, device, dai::CameraBoardSocket::CAM_A);
+    auto left = std::make_unique<dai_nodes::SensorWrapper>(getNodeName(node, NodeNameEnum::Left), node, pipeline, device, dai::CameraBoardSocket::CAM_B);
+    auto right = std::make_unique<dai_nodes::SensorWrapper>(getNodeName(node, NodeNameEnum::Right), node, pipeline, device, dai::CameraBoardSocket::CAM_C);
     switch(nType) {
         case NNType::None:
             break;
@@ -107,9 +110,10 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> Stereo::createPipeline(rclcpp:
                                                                          std::shared_ptr<dai::Device> device,
                                                                          std::shared_ptr<dai::Pipeline> pipeline,
                                                                          const std::string& /*nnType*/) {
+    using namespace dai_nodes::sensor_helpers;
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
-    auto left = std::make_unique<dai_nodes::SensorWrapper>("left", node, pipeline, device, dai::CameraBoardSocket::CAM_B);
-    auto right = std::make_unique<dai_nodes::SensorWrapper>("right", node, pipeline, device, dai::CameraBoardSocket::CAM_C);
+    auto left = std::make_unique<dai_nodes::SensorWrapper>(getNodeName(node, NodeNameEnum::Left), node, pipeline, device, dai::CameraBoardSocket::CAM_B);
+    auto right = std::make_unique<dai_nodes::SensorWrapper>(getNodeName(node, NodeNameEnum::Right), node, pipeline, device, dai::CameraBoardSocket::CAM_C);
     daiNodes.push_back(std::move(left));
     daiNodes.push_back(std::move(right));
     return daiNodes;
@@ -118,8 +122,9 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> Depth::createPipeline(rclcpp::
                                                                         std::shared_ptr<dai::Device> device,
                                                                         std::shared_ptr<dai::Pipeline> pipeline,
                                                                         const std::string& /*nnType*/) {
+    using namespace dai_nodes::sensor_helpers;
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
-    auto stereo = std::make_unique<dai_nodes::Stereo>("stereo", node, pipeline, device);
+    auto stereo = std::make_unique<dai_nodes::Stereo>(getNodeName(node, NodeNameEnum::Stereo), node, pipeline, device);
     daiNodes.push_back(std::move(stereo));
     return daiNodes;
 }
@@ -127,10 +132,11 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> CamArray::createPipeline(rclcp
                                                                            std::shared_ptr<dai::Device> device,
                                                                            std::shared_ptr<dai::Pipeline> pipeline,
                                                                            const std::string& /*nnType*/) {
+    using namespace dai_nodes::sensor_helpers;
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
 
     for(auto& feature : device->getConnectedCameraFeatures()) {
-        auto name = utils::getSocketName(feature.socket);
+        auto name = getSocketName(node, feature.socket);
         auto daiNode = std::make_unique<dai_nodes::SensorWrapper>(name, node, pipeline, device, feature.socket);
         daiNodes.push_back(std::move(daiNode));
     };
