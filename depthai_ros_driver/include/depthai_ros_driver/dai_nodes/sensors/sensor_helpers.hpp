@@ -54,6 +54,7 @@ extern const std::unordered_map<std::string, dai::MonoCameraProperties::SensorRe
 extern const std::unordered_map<std::string, dai::ColorCameraProperties::SensorResolution> rgbResolutionMap;
 extern const std::unordered_map<std::string, dai::CameraControl::FrameSyncMode> fSyncModeMap;
 extern const std::unordered_map<std::string, dai::CameraImageOrientation> cameraImageOrientationMap;
+bool rsCompabilityMode(rclcpp::Node* node);
 std::string getSocketName(rclcpp::Node* node, dai::CameraBoardSocket socket);
 std::string getNodeName(rclcpp::Node* node, NodeNameEnum name);
 void basicCameraPub(const std::string& /*name*/,

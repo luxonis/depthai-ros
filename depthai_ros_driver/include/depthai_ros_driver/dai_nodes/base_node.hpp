@@ -65,8 +65,15 @@ class BaseNode {
      * @param[in]  frameName  The frame name
      */
     std::string getTFPrefix(const std::string& frameName = "");
+	/**
+	 * @brief    Append ROS node name to the frameName given and append optical frame suffix to it.
+	 *
+	 * @param[in]  frameName  The frame name
+	 */
+	std::string getOpticalTFPrefix(const std::string& frameName = "");
     bool ipcEnabled();
     std::string getSocketName(dai::CameraBoardSocket socket);
+	bool rsCompabilityMode();
 
    private:
     rclcpp::Node* baseNode;

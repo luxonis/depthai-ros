@@ -144,8 +144,8 @@ void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
                             image_transport::CameraPublisher& pubIT,
                             bool isLeft) {
     auto sensorName = getSocketName(sensorInfo.socket);
-    auto tfPrefix = getTFPrefix(sensorName);
-    conv = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
+    auto tfPrefix = getOpticalTFPrefix(sensorName);
+    conv = std::make_unique<dai::ros::ImageConverter>(tfPrefix , false, ph->getParam<bool>("i_get_base_device_timestamp"));
     conv->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
     bool lowBandwidth = ph->getParam<bool>(isLeft ? "i_left_rect_low_bandwidth" : "i_right_rect_low_bandwidth");
     if(lowBandwidth) {
@@ -216,11 +216,11 @@ void Stereo::setupRightRectQueue(std::shared_ptr<dai::Device> device) {
 void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     std::string tfPrefix;
     if(ph->getParam<bool>("i_align_depth")) {
-        tfPrefix = getTFPrefix(ph->getParam<std::string>("i_socket_name"));
+        tfPrefix = getOpticalTFPrefix(ph->getParam<std::string>("i_socket_name"));
     } else {
-        tfPrefix = getTFPrefix(getSocketName(rightSensInfo.socket).c_str());
+        tfPrefix = getOpticalTFPrefix(getSocketName(rightSensInfo.socket).c_str());
     }
-    stereoConv = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false, ph->getParam<bool>("i_get_base_device_timestamp"));
+    stereoConv = std::make_unique<dai::ros::ImageConverter>(tfPrefix , false, ph->getParam<bool>("i_get_base_device_timestamp"));
     stereoConv->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
     if(ph->getParam<bool>("i_low_bandwidth")) {
         stereoConv->convertFromBitstream(dai::RawImgFrame::Type::RAW8);

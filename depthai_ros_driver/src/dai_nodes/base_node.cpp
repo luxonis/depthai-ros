@@ -32,6 +32,10 @@ bool BaseNode::ipcEnabled() {
     return intraProcessEnabled;
 }
 
+bool BaseNode::rsCompabilityMode() {
+    return sensor_helpers::rsCompabilityMode(getROSNode());
+}
+
 std::string BaseNode::getSocketName(dai::CameraBoardSocket socket) {
     return sensor_helpers::getSocketName(getROSNode(), socket);
 }
@@ -40,6 +44,13 @@ std::string BaseNode::getTFPrefix(const std::string& frameName) {
     return std::string(getROSNode()->get_name()) + "_" + frameName;
 }
 
+std::string BaseNode::getOpticalTFPrefix(const std::string& frameName) {
+	std::string suffix = "_camera_optical_frame";
+	if(sensor_helpers::rsCompabilityMode(getROSNode())) {
+		suffix = "_optical_frame";
+	}
+    return getTFPrefix(frameName) + suffix;
+}
 dai::Node::Input BaseNode::getInput(int /*linkType = 0*/) {
     throw(std::runtime_error("getInput() not implemented"));
 };

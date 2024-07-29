@@ -59,9 +59,9 @@ void Segmentation::setupQueues(std::shared_ptr<dai::Device> device) {
     nnPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
     nnQ->addCallback(std::bind(&Segmentation::segmentationCB, this, std::placeholders::_1, std::placeholders::_2));
     if(ph->getParam<bool>("i_enable_passthrough")) {
-        auto tfPrefix = getTFPrefix(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
+        auto tfPrefix = getOpticalTFPrefix(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
         ptQ = device->getOutputQueue(ptQName, ph->getParam<int>("i_max_q_size"), false);
-        imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
+        imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix, false);
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
             getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
         infoManager->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
@@ -94,7 +94,8 @@ void Segmentation::segmentationCB(const std::string& /*name*/, const std::shared
     sensor_msgs::msg::Image img_msg;
     std_msgs::msg::Header header;
     header.stamp = getROSNode()->get_clock()->now();
-    header.frame_id = std::string(getROSNode()->get_name()) + "_rgb_camera_optical_frame";
+	auto tfPrefix = getOpticalTFPrefix(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
+    header.frame_id = tfPrefix;
     nnInfo.header = header;
     imgBridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, cv_frame);
     imgBridge.toImageMsg(img_msg);

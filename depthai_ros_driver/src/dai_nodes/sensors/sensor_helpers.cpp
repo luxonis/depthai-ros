@@ -67,7 +67,10 @@ std::string getNodeName(rclcpp::Node* node, NodeNameEnum name) {
     return NodeNameMap.at(name);
 }
 
-std::string getSocketName(rclcpp::Node, dai::CameraBoardSocket socket) {
+std::string getSocketName(rclcpp::Node* node, dai::CameraBoardSocket socket) {
+    if(rsCompabilityMode(node)) {
+        return rsSocketNameMap.at(socket);
+    }
     return socketNameMap.at(socket);
 }
 const std::unordered_map<std::string, dai::MonoCameraProperties::SensorResolution> monoResolutionMap = {

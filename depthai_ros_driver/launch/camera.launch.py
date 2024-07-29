@@ -111,7 +111,7 @@ def launch_setup(context, *args, **kwargs):
                         package="depthai_ros_driver",
                         plugin="depthai_ros_driver::Camera",
                         name=name,
-                    parameters=[params_file, tf_params, {"rs_compat": real_sense_compat.perform(context)}],
+                    parameters=[params_file, tf_params, {"camera.i_rs_compat": real_sense_compat.perform(context)== 'true'}],
                     )
             ],
             arguments=['--ros-args', '--log-level', log_level],
