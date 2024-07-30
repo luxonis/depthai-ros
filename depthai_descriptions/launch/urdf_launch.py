@@ -1,11 +1,12 @@
+import os
+
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
-from launch_ros.actions import Node, LoadComposableNodes
-from launch_ros.descriptions import ComposableNode
-from launch.substitutions import LaunchConfiguration, Command
 from launch.conditions import IfCondition, UnlessCondition
-from ament_index_python.packages import get_package_share_directory
-import os
+from launch.substitutions import Command, LaunchConfiguration
+from launch_ros.actions import LoadComposableNodes, Node
+from launch_ros.descriptions import ComposableNode
 
 
 def launch_setup(context, *args, **kwargs):
@@ -29,6 +30,7 @@ def launch_setup(context, *args, **kwargs):
     cam_pitch = LaunchConfiguration('cam_pitch',     default='0.0')
     cam_yaw = LaunchConfiguration('cam_yaw',       default='1.5708')
     namespace = LaunchConfiguration('namespace',     default='')
+    rs_compat = LaunchConfiguration('rs_compat', default='false')
     use_composition = LaunchConfiguration('use_composition', default='false')
 
     name = LaunchConfiguration('tf_prefix').perform(context)
@@ -52,17 +54,19 @@ def launch_setup(context, *args, **kwargs):
                     'cam_pos_z:=', cam_pos_z, ' ',
                     'cam_roll:=', cam_roll, ' ',
                     'cam_pitch:=', cam_pitch, ' ',
-                    'cam_yaw:=', cam_yaw
+                    'cam_yaw:=', cam_yaw, ' ',
+                    'rs_compat:=', rs_compat
                 ])}]
             ),
             LoadComposableNodes(
-            target_container=name+"_container",
+            target_container=namespace.perform(context)+"/"+name+'_container',
             condition=IfCondition(use_composition),
             composable_node_descriptions=[
                 ComposableNode(
                     package='robot_state_publisher',
                     plugin='robot_state_publisher::RobotStatePublisher',
                     name=name+'_state_publisher',
+                    namespace=namespace,
                     parameters=[{'robot_description': Command(
                         [
                             'xacro', ' ', xacro_path, ' ',
@@ -75,7 +79,8 @@ def launch_setup(context, *args, **kwargs):
                             'cam_pos_z:=', cam_pos_z, ' ',
                             'cam_roll:=', cam_roll, ' ',
                             'cam_pitch:=', cam_pitch, ' ',
-                            'cam_yaw:=', cam_yaw
+                            'cam_yaw:=', cam_yaw, ' ',
+                            'rs_compat:=', rs_compat
                         ])}]
                 )])
             ]
@@ -143,8 +148,11 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'use_base_descr',
             default_value='false',
-            description='Launch base description. Default value will be false'
-        )
+            description='Launch base description. Default value will be false'),
+        DeclareLaunchArgument(
+                'rs_compat',
+                default_value='false',
+                description='Enable RealSense compatibility mode. Default value will be false'),
     ]
 
     return LaunchDescription(

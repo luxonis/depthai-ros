@@ -2,10 +2,11 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
+from launch.actions import (DeclareLaunchArgument, IncludeLaunchDescription,
+                            OpaqueFunction)
+from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
-from launch.conditions import IfCondition
 from launch_ros.actions import ComposableNodeContainer, Node
 from launch_ros.descriptions import ComposableNode
 
@@ -15,23 +16,27 @@ def launch_setup(context, *args, **kwargs):
     if(context.environment.get('DEPTHAI_DEBUG')=='1'):
         log_level='debug'
 
-    
 
     urdf_launch_dir = os.path.join(get_package_share_directory('depthai_descriptions'), 'launch')
     
     params_file = LaunchConfiguration("params_file")
     camera_model = LaunchConfiguration('camera_model',  default = 'OAK-D')
 
-    real_sense_compat = LaunchConfiguration('rs_compat', default='false')
+    rs_compat = LaunchConfiguration('rs_compat', default='false')
 
     namespace = LaunchConfiguration('namespace', default='')
     name = LaunchConfiguration('name').perform(context)
-    print(real_sense_compat.perform(context))
-    if real_sense_compat.perform(context) == 'true':
-        name = 'camera'
-        namespace = 'camera'
+    parent_frame = LaunchConfiguration('parent_frame',  default = 'oak-d-base-frame').perform(context)
 
-    parent_frame = LaunchConfiguration('parent_frame',  default = 'oak-d-base-frame')
+    if rs_compat.perform(context) == 'true':
+        if name == 'oak':
+            name = 'camera'
+        if namespace.perform(context) == '':
+            namespace = 'camera'
+        if parent_frame == 'oak-d-base-frame':
+            parent_frame = name+'_link'
+
+
     cam_pos_x    = LaunchConfiguration('cam_pos_x',     default = '0.0')
     cam_pos_y    = LaunchConfiguration('cam_pos_y',     default = '0.0')
     cam_pos_z    = LaunchConfiguration('cam_pos_z',     default = '0.0')
@@ -88,7 +93,8 @@ def launch_setup(context, *args, **kwargs):
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 os.path.join(urdf_launch_dir, 'urdf_launch.py')),
-            launch_arguments={'tf_prefix': name,
+            launch_arguments={'namespace': namespace,
+                              'tf_prefix': name,
                               'camera_model': camera_model,
                               'base_frame': name,
                               'parent_frame': parent_frame,
@@ -99,7 +105,8 @@ def launch_setup(context, *args, **kwargs):
                               'cam_pitch': cam_pitch,
                               'cam_yaw': cam_yaw,
                               'use_composition': use_composition,
-                              'use_base_descr': publish_tf_from_calibration}.items()),
+                              'use_base_descr': publish_tf_from_calibration,
+                              'rs_compat': rs_compat}.items()),
 
         ComposableNodeContainer(
             name=name+"_container",
@@ -111,7 +118,8 @@ def launch_setup(context, *args, **kwargs):
                         package="depthai_ros_driver",
                         plugin="depthai_ros_driver::Camera",
                         name=name,
-                    parameters=[params_file, tf_params, {"camera.i_rs_compat": real_sense_compat.perform(context)== 'true'}],
+                        namespace=namespace,
+                    parameters=[params_file, tf_params, {"camera.i_rs_compat": rs_compat.perform(context)== 'true'}],
                     )
             ],
             arguments=['--ros-args', '--log-level', log_level],
@@ -152,6 +160,3 @@ def generate_launch_description():
     return LaunchDescription(
         declared_arguments + [OpaqueFunction(function=launch_setup)]
     )
-
-
-
