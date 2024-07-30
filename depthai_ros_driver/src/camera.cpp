@@ -53,7 +53,8 @@ void Camera::onConfigure() {
                                                         ph->getParam<std::string>("i_tf_cam_yaw"),
                                                         ph->getParam<std::string>("i_tf_imu_from_descr"),
                                                         ph->getParam<std::string>("i_tf_custom_urdf_location"),
-                                                        ph->getParam<std::string>("i_tf_custom_xacro_args"));
+                                                        ph->getParam<std::string>("i_tf_custom_xacro_args"),
+														ph->getParam<bool>("i_rs_compat"));
     }
     diagSub = this->create_subscription<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10, std::bind(&Camera::diagCB, this, std::placeholders::_1));
     RCLCPP_INFO(this->get_logger(), "Camera ready!");

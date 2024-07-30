@@ -43,7 +43,7 @@ const std::unordered_map<NodeNameEnum, std::string> rsNodeNameMap = {
     {NodeNameEnum::RGB, "color"},
     {NodeNameEnum::Left, "infra2"},
     {NodeNameEnum::Right, "infra1"},
-    {NodeNameEnum::Stereo, "stereo"},
+    {NodeNameEnum::Stereo, "depth"},
     {NodeNameEnum::IMU, "imu"},
     {NodeNameEnum::NN, "nn"},
 };

@@ -27,7 +27,8 @@ class TFPublisher {
                          const std::string& camYaw,
                          const std::string& imuFromDescr,
                          const std::string& customURDFLocation,
-                         const std::string& customXacroArgs);
+                         const std::string& customXacroArgs,
+                         const bool rsCompatibilityMode);
     /**
      * @brief Obtain URDF description by running Xacro with provided arguments.
      */
@@ -65,30 +66,37 @@ class TFPublisher {
      */
     bool modelNameAvailable();
     std::string getCamSocketName(int socketNum);
-    std::unique_ptr<rclcpp::AsyncParametersClient> _paramClient;
-    std::shared_ptr<tf2_ros::StaticTransformBroadcaster> _tfPub;
-    std::string _camName;
-    std::string _camModel;
-    std::string _baseFrame;
-    std::string _parentFrame;
-    std::string _camPosX;
-    std::string _camPosY;
-    std::string _camPosZ;
-    std::string _camRoll;
-    std::string _camPitch;
-    std::string _camYaw;
-    std::string _imuFromDescr;
-    std::string _customURDFLocation;
-    std::string _customXacroArgs;
-    std::vector<dai::CameraFeatures> _camFeatures;
-    rclcpp::Logger _logger;
-    const std::unordered_map<dai::CameraBoardSocket, std::string> _socketNameMap = {
+    std::unique_ptr<rclcpp::AsyncParametersClient> paramClient;
+    std::shared_ptr<tf2_ros::StaticTransformBroadcaster> tfPub;
+    std::string camName;
+    std::string camModel;
+    std::string baseFrame;
+    std::string parentFrame;
+    std::string camPosX;
+    std::string camPosY;
+    std::string camPosZ;
+    std::string camRoll;
+    std::string camPitch;
+    std::string camYaw;
+    std::string imuFromDescr;
+    std::string customURDFLocation;
+    std::string customXacroArgs;
+    std::vector<dai::CameraFeatures> camFeatures;
+    bool rsCompatibilityMode;
+    rclcpp::Logger logger;
+    const std::unordered_map<dai::CameraBoardSocket, std::string> socketNameMap = {
         {dai::CameraBoardSocket::AUTO, "rgb"},
         {dai::CameraBoardSocket::CAM_A, "rgb"},
         {dai::CameraBoardSocket::CAM_B, "left"},
         {dai::CameraBoardSocket::CAM_C, "right"},
         {dai::CameraBoardSocket::CAM_D, "left_back"},
         {dai::CameraBoardSocket::CAM_E, "right_back"},
+    };
+    const std::unordered_map<dai::CameraBoardSocket, std::string> rsSocketNameMap = {
+        {dai::CameraBoardSocket::AUTO, "color"},
+        {dai::CameraBoardSocket::CAM_A, "color"},
+        {dai::CameraBoardSocket::CAM_B, "infra2"},
+        {dai::CameraBoardSocket::CAM_C, "infra1"},
     };
 };
 }  // namespace ros
