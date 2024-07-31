@@ -41,8 +41,10 @@ Stereo::Stereo(const std::string& daiNodeName,
     for(auto f : features) {
         if(f.socket == leftSocket) {
             leftSensInfo = f;
+			leftSensInfo.name = getSocketName(leftSocket);
         } else if(f.socket == rightSocket) {
             rightSensInfo = f;
+			rightSensInfo.name = getSocketName(rightSocket);
         } else {
             continue;
         }

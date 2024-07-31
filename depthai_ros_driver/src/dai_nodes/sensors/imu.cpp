@@ -52,19 +52,23 @@ void Imu::setupQueues(std::shared_ptr<dai::Device> device) {
                                                             enableMagn,
                                                             ph->getParam<bool>("i_get_base_device_timestamp"));
     imuConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
+	std::string topicSuffix = "/data";
+	if(rsCompabilityMode()) {
+		topicSuffix = "";
+	}
     switch(msgType) {
         case param_handlers::imu::ImuMsgType::IMU: {
-            rosImuPub = getROSNode()->create_publisher<sensor_msgs::msg::Imu>("~/" + getName() + "/data", 10, options);
+            rosImuPub = getROSNode()->create_publisher<sensor_msgs::msg::Imu>("~/" + getName() + topicSuffix, 10, options);
             imuQ->addCallback(std::bind(&Imu::imuRosQCB, this, std::placeholders::_1, std::placeholders::_2));
             break;
         }
         case param_handlers::imu::ImuMsgType::IMU_WITH_MAG: {
-            daiImuPub = getROSNode()->create_publisher<depthai_ros_msgs::msg::ImuWithMagneticField>("~/" + getName() + "/data", 10, options);
+            daiImuPub = getROSNode()->create_publisher<depthai_ros_msgs::msg::ImuWithMagneticField>("~/" + getName() + topicSuffix, 10, options);
             imuQ->addCallback(std::bind(&Imu::imuDaiRosQCB, this, std::placeholders::_1, std::placeholders::_2));
             break;
         }
         case param_handlers::imu::ImuMsgType::IMU_WITH_MAG_SPLIT: {
-            rosImuPub = getROSNode()->create_publisher<sensor_msgs::msg::Imu>("~/" + getName() + "/data", 10, options);
+            rosImuPub = getROSNode()->create_publisher<sensor_msgs::msg::Imu>("~/" + getName() + topicSuffix, 10, options);
             magPub = getROSNode()->create_publisher<sensor_msgs::msg::MagneticField>("~/" + getName() + "/mag", 10, options);
             imuQ->addCallback(std::bind(&Imu::imuMagQCB, this, std::placeholders::_1, std::placeholders::_2));
             break;
