@@ -2,18 +2,39 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import (DeclareLaunchArgument, IncludeLaunchDescription,
-                            OpaqueFunction)
+from launch.actions import (
+    DeclareLaunchArgument,
+    IncludeLaunchDescription,
+    OpaqueFunction,
+)
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import (ComposableNodeContainer, LoadComposableNodes,
-                                Node)
+from launch_ros.actions import ComposableNodeContainer, LoadComposableNodes, Node
 from launch_ros.descriptions import ComposableNode
 
 
 def is_launch_config_true(context, name):
     return LaunchConfiguration(name).perform(context) == "true"
+
+
+def setup_launch_prefix(context, *args, **kwargs):
+    use_gdb = LaunchConfiguration("use_gdb", default="false")
+    use_valgrind = LaunchConfiguration("use_valgrind", default="false")
+    use_perf = LaunchConfiguration("use_perf", default="false")
+
+    launch_prefix = ""
+
+    if use_gdb.perform(context) == "true":
+        launch_prefix += "gdb -ex run --args "
+    if use_valgrind.perform(context) == "true":
+        launch_prefix += "valgrind --tool=callgrind"
+    if use_perf.perform(context) == "true":
+        launch_prefix += (
+            "perf record -g --call-graph dwarf --output=perf.out.node_name.data --"
+        )
+
+    return launch_prefix
 
 
 def launch_setup(context, *args, **kwargs):
@@ -25,27 +46,43 @@ def launch_setup(context, *args, **kwargs):
         get_package_share_directory("depthai_descriptions"), "launch"
     )
 
-    params_file = LaunchConfiguration("params_file")
-    camera_model = LaunchConfiguration("camera_model", default="OAK-D")
-
-    rs_compat = LaunchConfiguration("rs_compat", default="false")
-
-    namespace = LaunchConfiguration("namespace", default="")
-    name = LaunchConfiguration("name").perform(context)
     parent_frame = LaunchConfiguration(
         "parent_frame", default="oak-d-base-frame"
     ).perform(context)
+    cam_pos_x = LaunchConfiguration("cam_pos_x", default="0.0")
+    cam_pos_y = LaunchConfiguration("cam_pos_y", default="0.0")
+    cam_pos_z = LaunchConfiguration("cam_pos_z", default="0.0")
+    cam_roll = LaunchConfiguration("cam_roll", default="0.0")
+    cam_pitch = LaunchConfiguration("cam_pitch", default="0.0")
+    cam_yaw = LaunchConfiguration("cam_yaw", default="0.0")
+    use_composition = LaunchConfiguration("rsp_use_composition", default="true")
+    imu_from_descr = LaunchConfiguration("imu_from_descr", default="false")
+    publish_tf_from_calibration = LaunchConfiguration(
+        "publish_tf_from_calibration", default="false"
+    )
+    override_cam_model = LaunchConfiguration("override_cam_model", default="false")
+    params_file = LaunchConfiguration("params_file")
+    camera_model = LaunchConfiguration("camera_model", default="OAK-D")
+    rs_compat = LaunchConfiguration("rs_compat", default="false")
+    pointcloud_enable = LaunchConfiguration("pointcloud.enable", default="false")
+    namespace = LaunchConfiguration("namespace", default="")
+    name = LaunchConfiguration("name").perform(context)
 
+    # If RealSense compatibility is enabled, we need to override some parameters, topics and node names
     parameter_overrides = {}
-    color_topic_node_name = name + "/rgb"
+    color_sens_name = "rgb"
+    stereo_sens_name = "stereo"
+    points_topic_name = f"{name}/points"
     if rs_compat.perform(context) == "true":
-        color_topic_node_name = name + "/color"
+        color_sens_name = "color"
+        stereo_sens_name = "depth"
         if name == "oak":
             name = "camera"
+        points_topic_name = f"{name}/depth/color/points"
         if namespace.perform(context) == "":
             namespace = "camera"
         if parent_frame == "oak-d-base-frame":
-            parent_frame = name + "_link"
+            parent_frame = f"{name}_link"
         parameter_overrides = {
             "camera": {
                 "i_rs_compat": True,
@@ -71,19 +108,6 @@ def launch_setup(context, *args, **kwargs):
                 "i_publish_topic": is_launch_config_true(context, "enable_infra2"),
             }
 
-    cam_pos_x = LaunchConfiguration("cam_pos_x", default="0.0")
-    cam_pos_y = LaunchConfiguration("cam_pos_y", default="0.0")
-    cam_pos_z = LaunchConfiguration("cam_pos_z", default="0.0")
-    cam_roll = LaunchConfiguration("cam_roll", default="0.0")
-    cam_pitch = LaunchConfiguration("cam_pitch", default="0.0")
-    cam_yaw = LaunchConfiguration("cam_yaw", default="0.0")
-    use_composition = LaunchConfiguration("rsp_use_composition", default="true")
-    imu_from_descr = LaunchConfiguration("imu_from_descr", default="false")
-    publish_tf_from_calibration = LaunchConfiguration(
-        "publish_tf_from_calibration", default="false"
-    )
-    override_cam_model = LaunchConfiguration("override_cam_model", default="false")
-
     tf_params = {}
     if publish_tf_from_calibration.perform(context) == "true":
         cam_model = ""
@@ -106,20 +130,8 @@ def launch_setup(context, *args, **kwargs):
             }
         }
 
-    use_gdb = LaunchConfiguration("use_gdb", default="false")
-    use_valgrind = LaunchConfiguration("use_valgrind", default="false")
-    use_perf = LaunchConfiguration("use_perf", default="false")
+    launch_prefix = setup_launch_prefix(context)
 
-    launch_prefix = ""
-
-    if use_gdb.perform(context) == "true":
-        launch_prefix += "gdb -ex run --args "
-    if use_valgrind.perform(context) == "true":
-        launch_prefix += "valgrind --tool=callgrind"
-    if use_perf.perform(context) == "true":
-        launch_prefix += (
-            "perf record -g --call-graph dwarf --output=perf.out.node_name.data --"
-        )
     return [
         Node(
             condition=IfCondition(LaunchConfiguration("use_rviz").perform(context)),
@@ -151,7 +163,7 @@ def launch_setup(context, *args, **kwargs):
             }.items(),
         ),
         ComposableNodeContainer(
-            name=name + "_container",
+            name=f"{name}_container",
             namespace=namespace,
             package="rclcpp_components",
             executable="component_container",
@@ -172,37 +184,44 @@ def launch_setup(context, *args, **kwargs):
             prefix=[launch_prefix],
             output="both",
         ),
-
         LoadComposableNodes(
-            condition=IfCondition(LaunchConfiguration("rectify_rgb")),
-            target_container=name+"_container",
+            target_container=f"{namespace}/{name}_container",
             composable_node_descriptions=[
-                    ComposableNode(
-                        package="image_proc",
-                        plugin="image_proc::RectifyNode",
-                        name="rectify_color_node",
-                        namespace=namespace,
-                        remappings=[('image', 'image_raw'),
-                                    ('camera_info', name+'/rgb/camera_info'),
-                                    ('image_rect', name+'/rgb/image_rect'),
-                                    ('image_rect/compressed', name+'/rgb/image_rect/compressed'),
-                                    ('image_rect/compressedDepth', name+'/rgb/image_rect/compressedDepth'),
-                                    ('image_rect/theora', name+'/rgb/image_rect/theora')]
-                    )
-            ]),
-        LoadComposableNodes(
-            target_container=name+"_container",
-            composable_node_descriptions=[
-                    ComposableNode(
-                    package='depth_image_proc',
-                    plugin='depth_image_proc::PointCloudXyzrgbNode',
-                    name='point_cloud_xyzrgb_node',
+                ComposableNode(
+                    package="image_proc",
+                    plugin="image_proc::RectifyNode",
+                    name="rectify_color_node",
                     namespace=namespace,
-                    remappings=[('depth_registered/image_rect', name+'/stereo/image_raw'),
-                                ('rgb/image_rect_color', rgb_topic_name),
-                                ('rgb/camera_info', name+'/rgb/camera_info'),
-                                ('points', name+'/points')]
-                    ),
+                    remappings=[
+                        ("image", f"{name}/{color_sens_name}/image_raw"),
+                        ("camera_info", f"{name}/{color_sens_name}/camera_info"),
+                        ("image_rect", f"{name}/{color_sens_name}/image_rect"),
+                        ("image_rect/compressed", f"{name}/{color_sens_name}/image_rect/compressed"),
+                        (
+                            "image_rect/compressedDepth",
+                            f"{name}/{color_sens_name}/image_rect/compressedDepth",
+                        ),
+                        ("image_rect/theora", f"{name}/{color_sens_name}/image_rect/theora"),
+                    ],
+                )
+            ],
+        ),
+        LoadComposableNodes(
+            condition=IfCondition(pointcloud_enable),
+            target_container=f"{namespace}/{name}_container",
+            composable_node_descriptions=[
+                ComposableNode(
+                    package="depth_image_proc",
+                    plugin="depth_image_proc::PointCloudXyzrgbNode",
+                    name="point_cloud_xyzrgb_node",
+                    namespace=namespace,
+                    remappings=[
+                        ("depth_registered/image_rect", f"{name}/{stereo_sens_name}/image_raw"),
+                        ("rgb/image_rect_color", f"{name}/{color_sens_name}/image_rect"),
+                        ("rgb/camera_info", f"{name}/{color_sens_name}/camera_info"),
+                        ("points", points_topic_name),
+                    ],
+                ),
             ],
         ),
     ]
