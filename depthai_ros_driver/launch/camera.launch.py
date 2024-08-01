@@ -65,7 +65,7 @@ def launch_setup(context, *args, **kwargs):
     camera_model = LaunchConfiguration("camera_model", default="OAK-D")
     rs_compat = LaunchConfiguration("rs_compat", default="false")
     pointcloud_enable = LaunchConfiguration("pointcloud.enable", default="false")
-    namespace = LaunchConfiguration("namespace", default="")
+    namespace = LaunchConfiguration("namespace", default="").perform(context)
     name = LaunchConfiguration("name").perform(context)
 
     # If RealSense compatibility is enabled, we need to override some parameters, topics and node names
@@ -79,7 +79,7 @@ def launch_setup(context, *args, **kwargs):
         if name == "oak":
             name = "camera"
         points_topic_name = f"{name}/depth/color/points"
-        if namespace.perform(context) == "":
+        if namespace== "":
             namespace = "camera"
         if parent_frame == "oak-d-base-frame":
             parent_frame = f"{name}_link"
@@ -196,12 +196,18 @@ def launch_setup(context, *args, **kwargs):
                         ("image", f"{name}/{color_sens_name}/image_raw"),
                         ("camera_info", f"{name}/{color_sens_name}/camera_info"),
                         ("image_rect", f"{name}/{color_sens_name}/image_rect"),
-                        ("image_rect/compressed", f"{name}/{color_sens_name}/image_rect/compressed"),
+                        (
+                            "image_rect/compressed",
+                            f"{name}/{color_sens_name}/image_rect/compressed",
+                        ),
                         (
                             "image_rect/compressedDepth",
                             f"{name}/{color_sens_name}/image_rect/compressedDepth",
                         ),
-                        ("image_rect/theora", f"{name}/{color_sens_name}/image_rect/theora"),
+                        (
+                            "image_rect/theora",
+                            f"{name}/{color_sens_name}/image_rect/theora",
+                        ),
                     ],
                 )
             ],
@@ -216,8 +222,14 @@ def launch_setup(context, *args, **kwargs):
                     name="point_cloud_xyzrgb_node",
                     namespace=namespace,
                     remappings=[
-                        ("depth_registered/image_rect", f"{name}/{stereo_sens_name}/image_raw"),
-                        ("rgb/image_rect_color", f"{name}/{color_sens_name}/image_rect"),
+                        (
+                            "depth_registered/image_rect",
+                            f"{name}/{stereo_sens_name}/image_raw",
+                        ),
+                        (
+                            "rgb/image_rect_color",
+                            f"{name}/{color_sens_name}/image_rect",
+                        ),
                         ("rgb/camera_info", f"{name}/{color_sens_name}/camera_info"),
                         ("points", points_topic_name),
                     ],
