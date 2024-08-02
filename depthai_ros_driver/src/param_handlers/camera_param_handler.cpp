@@ -7,7 +7,7 @@
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-CameraParamHandler::CameraParamHandler(rclcpp::Node* node, const std::string& name) : BaseParamHandler(node, name) {
+CameraParamHandler::CameraParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name) : BaseParamHandler(node, name) {
     usbSpeedMap = {
         {"LOW", dai::UsbSpeed::LOW},
         {"FULL", dai::UsbSpeed::FULL},

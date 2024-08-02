@@ -15,19 +15,19 @@
 namespace depthai_ros_driver {
 namespace dai_nodes {
 RGB::RGB(const std::string& daiNodeName,
-         rclcpp::Node* node,
+         std::shared_ptr<rclcpp::Node> node,
          std::shared_ptr<dai::Pipeline> pipeline,
          dai::CameraBoardSocket socket = dai::CameraBoardSocket::CAM_A,
          sensor_helpers::ImageSensor sensor = {"IMX378", "4k", {"12mp", "4k"}, true},
          bool publish = true)
     : BaseNode(daiNodeName, node, pipeline) {
-    RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
+    RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     colorCamNode = pipeline->create<dai::node::ColorCamera>();
     ph = std::make_unique<param_handlers::SensorParamHandler>(node, daiNodeName, socket);
     ph->declareParams(colorCamNode, sensor, publish);
     setXinXout(pipeline);
-    RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
+    RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
 }
 RGB::~RGB() = default;
 void RGB::setNames() {

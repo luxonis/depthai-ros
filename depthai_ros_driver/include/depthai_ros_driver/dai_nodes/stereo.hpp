@@ -50,7 +50,7 @@ class ImagePubliser;
 class Stereo : public BaseNode {
    public:
     explicit Stereo(const std::string& daiNodeName,
-                    rclcpp::Node* node,
+                    std::shared_ptr<rclcpp::Node> node,
                     std::shared_ptr<dai::Pipeline> pipeline,
                     std::shared_ptr<dai::Device> device,
                     dai::CameraBoardSocket leftSocket = dai::CameraBoardSocket::CAM_B,

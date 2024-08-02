@@ -11,19 +11,20 @@ namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace sensor_helpers {
 
-ImagePublisher::ImagePublisher(rclcpp::Node* node,
+ImagePublisher::ImagePublisher(std::shared_ptr<rclcpp::Node> node,
                                const std::string& name,
                                bool lazyPub,
                                bool ipcEnabled,
                                std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
-                               std::shared_ptr<dai::ros::ImageConverter> converter)
+                               std::shared_ptr<dai::ros::ImageConverter> converter,
+							   const std::string& topicSuffix)
     : name(name), lazyPub(lazyPub), ipcEnabled(ipcEnabled), infoManager(infoManager), converter(converter) {
     if(ipcEnabled) {
         auto qos = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable();
-        imgPub = node->create_publisher<sensor_msgs::msg::Image>(name + "/image_raw", qos);
+        imgPub = node->create_publisher<sensor_msgs::msg::Image>(name + topicSuffix, qos);
         infoPub = node->create_publisher<sensor_msgs::msg::CameraInfo>(name + "/camera_info", qos);
     } else {
-        imgPubIT = image_transport::create_camera_publisher(node, name + "/image_raw");
+        imgPubIT = image_transport::create_camera_publisher(node.get(), name + topicSuffix);
     }
 }
 
@@ -104,17 +105,17 @@ const std::unordered_map<NodeNameEnum, std::string> NodeNameMap = {
     {NodeNameEnum::NN, "nn"},
 };
 
-bool rsCompabilityMode(rclcpp::Node* node) {
+bool rsCompabilityMode(std::shared_ptr<rclcpp::Node> node) {
     return node->get_parameter("camera.i_rs_compat").as_bool();
 }
-std::string getNodeName(rclcpp::Node* node, NodeNameEnum name) {
+std::string getNodeName(std::shared_ptr<rclcpp::Node> node, NodeNameEnum name) {
     if(rsCompabilityMode(node)) {
         return rsNodeNameMap.at(name);
     }
     return NodeNameMap.at(name);
 }
 
-std::string getSocketName(rclcpp::Node* node, dai::CameraBoardSocket socket) {
+std::string getSocketName(std::shared_ptr<rclcpp::Node> node, dai::CameraBoardSocket socket) {
     if(rsCompabilityMode(node)) {
         return rsSocketNameMap.at(socket);
     }

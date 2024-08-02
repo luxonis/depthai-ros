@@ -13,15 +13,15 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-Imu::Imu(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device)
+Imu::Imu(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device)
     : BaseNode(daiNodeName, node, pipeline) {
-    RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
+    RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     imuNode = pipeline->create<dai::node::IMU>();
     ph = std::make_unique<param_handlers::ImuParamHandler>(node, daiNodeName);
     ph->declareParams(imuNode, device->getConnectedIMU());
     setXinXout(pipeline);
-    RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
+    RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
 }
 Imu::~Imu() = default;
 void Imu::setNames() {

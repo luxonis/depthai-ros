@@ -17,7 +17,7 @@
 namespace depthai_ros_driver {
 namespace pipeline_gen {
 
-std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGB::createPipeline(rclcpp::Node* node,
+std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGB::createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                       std::shared_ptr<dai::Device> device,
                                                                       std::shared_ptr<dai::Pipeline> pipeline,
                                                                       const std::string& nnType) {
@@ -44,7 +44,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGB::createPipeline(rclcpp::No
     daiNodes.push_back(std::move(rgb));
     return daiNodes;
 }
-std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBD::createPipeline(rclcpp::Node* node,
+std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBD::createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                        std::shared_ptr<dai::Device> device,
                                                                        std::shared_ptr<dai::Pipeline> pipeline,
                                                                        const std::string& nnType) {
@@ -75,7 +75,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBD::createPipeline(rclcpp::N
     daiNodes.push_back(std::move(stereo));
     return daiNodes;
 }
-std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBStereo::createPipeline(rclcpp::Node* node,
+std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBStereo::createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                             std::shared_ptr<dai::Device> device,
                                                                             std::shared_ptr<dai::Pipeline> pipeline,
                                                                             const std::string& nnType) {
@@ -106,7 +106,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBStereo::createPipeline(rclc
     daiNodes.push_back(std::move(right));
     return daiNodes;
 }
-std::vector<std::unique_ptr<dai_nodes::BaseNode>> Stereo::createPipeline(rclcpp::Node* node,
+std::vector<std::unique_ptr<dai_nodes::BaseNode>> Stereo::createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                          std::shared_ptr<dai::Device> device,
                                                                          std::shared_ptr<dai::Pipeline> pipeline,
                                                                          const std::string& /*nnType*/) {
@@ -118,7 +118,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> Stereo::createPipeline(rclcpp:
     daiNodes.push_back(std::move(right));
     return daiNodes;
 }
-std::vector<std::unique_ptr<dai_nodes::BaseNode>> Depth::createPipeline(rclcpp::Node* node,
+std::vector<std::unique_ptr<dai_nodes::BaseNode>> Depth::createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                         std::shared_ptr<dai::Device> device,
                                                                         std::shared_ptr<dai::Pipeline> pipeline,
                                                                         const std::string& /*nnType*/) {
@@ -128,7 +128,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> Depth::createPipeline(rclcpp::
     daiNodes.push_back(std::move(stereo));
     return daiNodes;
 }
-std::vector<std::unique_ptr<dai_nodes::BaseNode>> CamArray::createPipeline(rclcpp::Node* node,
+std::vector<std::unique_ptr<dai_nodes::BaseNode>> CamArray::createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                            std::shared_ptr<dai::Device> device,
                                                                            std::shared_ptr<dai::Pipeline> pipeline,
                                                                            const std::string& /*nnType*/) {

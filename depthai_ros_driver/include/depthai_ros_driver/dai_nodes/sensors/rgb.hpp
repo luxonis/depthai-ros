@@ -1,10 +1,6 @@
 #pragma once
 
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
-#include "image_transport/camera_publisher.hpp"
-#include "image_transport/image_transport.hpp"
-#include "sensor_msgs/msg/camera_info.hpp"
-#include "sensor_msgs/msg/image.hpp"
 
 namespace dai {
 class Pipeline;
@@ -47,7 +43,7 @@ class ImagePublisher;
 class RGB : public BaseNode {
    public:
     explicit RGB(const std::string& daiNodeName,
-                 rclcpp::Node* node,
+                 std::shared_ptr<rclcpp::Node> node,
                  std::shared_ptr<dai::Pipeline> pipeline,
                  dai::CameraBoardSocket socket,
                  sensor_helpers::ImageSensor sensor,

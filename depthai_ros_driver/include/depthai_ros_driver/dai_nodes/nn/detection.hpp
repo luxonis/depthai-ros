@@ -17,9 +17,6 @@
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
-#include "depthai_ros_driver/utils.hpp"
-#include "image_transport/camera_publisher.hpp"
-#include "image_transport/image_transport.hpp"
 #include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {
@@ -38,17 +35,17 @@ class Detection : public BaseNode {
      * @param      pipeline     The pipeline
      */
     Detection(const std::string& daiNodeName,
-              rclcpp::Node* node,
+              std::shared_ptr<rclcpp::Node> node,
               std::shared_ptr<dai::Pipeline> pipeline,
               const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A)
         : BaseNode(daiNodeName, node, pipeline) {
-        RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
+        RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
         setNames();
         detectionNode = pipeline->create<T>();
         imageManip = pipeline->create<dai::node::ImageManip>();
         ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName, socket);
         ph->declareParams(detectionNode, imageManip);
-        RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
+        RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
         imageManip->out.link(detectionNode->input);
         setXinXout(pipeline);
     }
@@ -92,8 +89,9 @@ class Detection : public BaseNode {
                                                                     width,
                                                                     height));
 
-            ptPub = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/passthrough/image_raw");
-            ptQ->addCallback(std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager));
+            ptPub = std::make_shared<sensor_helpers::ImagePublisher>(
+                getROSNode(), "~/" + getName() + "passthrough", true, ipcEnabled(), infoManager, imageConverter);
+            ptPub->addQueueCB(ptQ);
         }
     };
     /**
@@ -172,8 +170,8 @@ class Detection : public BaseNode {
     std::unique_ptr<dai::ros::ImgDetectionConverter> detConverter;
     std::vector<std::string> labelNames;
     rclcpp::Publisher<vision_msgs::msg::Detection2DArray>::SharedPtr detPub;
-    std::unique_ptr<dai::ros::ImageConverter> imageConverter;
-    image_transport::CameraPublisher ptPub;
+    std::shared_ptr<dai::ros::ImageConverter> imageConverter;
+    std::shared_ptr<sensor_helpers::ImagePublisher> ptPub;
     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
     std::shared_ptr<T> detectionNode;
     std::shared_ptr<dai::node::ImageManip> imageManip;

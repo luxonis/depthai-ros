@@ -32,7 +32,7 @@ class PipelineGenerator {
      *
      * @return     The validated pipeline type.
      */
-    std::string validatePipeline(rclcpp::Node* node, const std::string& typeStr, int sensorNum);
+    std::string validatePipeline(std::shared_ptr<rclcpp::Node> node, const std::string& typeStr, int sensorNum);
     /**
      * @brief      Creates the pipeline by using a plugin. Plugin types need to be of type depthai_ros_driver::pipeline_gen::BasePipeline.
      *
@@ -45,7 +45,7 @@ class PipelineGenerator {
      *
      * @return     Vector BaseNodes created.
      */
-    std::vector<std::unique_ptr<dai_nodes::BaseNode>> createPipeline(rclcpp::Node* node,
+    std::vector<std::unique_ptr<dai_nodes::BaseNode>> createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                      std::shared_ptr<dai::Device> device,
                                                                      std::shared_ptr<dai::Pipeline> pipeline,
                                                                      const std::string& pipelineType,

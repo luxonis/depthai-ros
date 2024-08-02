@@ -4,15 +4,19 @@
 #include "geometry_msgs/msg/quaternion.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "nlohmann/json.hpp"
-#include "rclcpp/node.hpp"
 #include "rclcpp/parameter_client.hpp"
+#include "rclcpp/logger.hpp"
 #include "tf2_ros/static_transform_broadcaster.h"
+
+namespace rclcpp{
+class Node;
+}  // namespace rclcpp
 
 namespace dai {
 namespace ros {
 class TFPublisher {
    public:
-    explicit TFPublisher(rclcpp::Node* node,
+    explicit TFPublisher(std::shared_ptr<rclcpp::Node> node,
                          const dai::CalibrationHandler& calHandler,
                          const std::vector<dai::CameraFeatures>& camFeatures,
                          const std::string& camName,
@@ -54,13 +58,13 @@ class TFPublisher {
      * Frame names are based on socket names and use following convention: [base_frame]_[socket_name]_camera_frame and
      * [base_frame]_[socket_name]_camera_optical_frame
      */
-    void publishCamTransforms(nlohmann::json camData, rclcpp::Node* node);
+    void publishCamTransforms(nlohmann::json camData, std::shared_ptr<rclcpp::Node> node);
     /**
      * @brief Publish IMU transform based on calibration data.
      * Frame name is based on IMU name and uses following convention: [base_frame]_imu_frame.
      * If IMU extrinsics are not set, warning is printed out and imu frame is published with zero translation and rotation.
      */
-    void publishImuTransform(nlohmann::json json, rclcpp::Node* node);
+    void publishImuTransform(nlohmann::json json, std::shared_ptr<rclcpp::Node> node);
     /**
      * @brief Check if model STL file is available in depthai_descriptions package.
      */

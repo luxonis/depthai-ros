@@ -10,7 +10,7 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-NNWrapper::NNWrapper(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline, const dai::CameraBoardSocket& socket)
+NNWrapper::NNWrapper(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline, const dai::CameraBoardSocket& socket)
     : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s base", daiNodeName.c_str());
     ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName, socket);

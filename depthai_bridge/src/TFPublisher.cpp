@@ -20,7 +20,7 @@
 
 namespace dai {
 namespace ros {
-TFPublisher::TFPublisher(rclcpp::Node* node,
+TFPublisher::TFPublisher(std::shared_ptr<rclcpp::Node> node,
                          const dai::CalibrationHandler& calHandler,
                          const std::vector<dai::CameraFeatures>& camFeatures,
                          const std::string& camName,
@@ -36,7 +36,7 @@ TFPublisher::TFPublisher(rclcpp::Node* node,
                          const std::string& imuFromDescr,
                          const std::string& customURDFLocation,
                          const std::string& customXacroArgs,
-						 const bool rsCompatibilityMode)
+                         const bool rsCompatibilityMode)
     : camName(camName),
       camModel(camModel),
       baseFrame(baseFrame),
@@ -51,7 +51,7 @@ TFPublisher::TFPublisher(rclcpp::Node* node,
       imuFromDescr(imuFromDescr),
       customURDFLocation(customURDFLocation),
       customXacroArgs(customXacroArgs),
-	  rsCompatibilityMode(rsCompatibilityMode),
+      rsCompatibilityMode(rsCompatibilityMode),
       logger(node->get_logger()) {
     tfPub = std::make_shared<tf2_ros::StaticTransformBroadcaster>(node);
 
@@ -73,7 +73,7 @@ void TFPublisher::publishDescription() {
     RCLCPP_INFO(logger, "Published URDF");
 }
 
-void TFPublisher::publishCamTransforms(nlohmann::json camData, rclcpp::Node* node) {
+void TFPublisher::publishCamTransforms(nlohmann::json camData, std::shared_ptr<rclcpp::Node> node) {
     for(auto& cam : camData) {
         geometry_msgs::msg::TransformStamped ts;
         geometry_msgs::msg::TransformStamped opticalTS;
@@ -107,7 +107,7 @@ void TFPublisher::publishCamTransforms(nlohmann::json camData, rclcpp::Node* nod
         tfPub->sendTransform(opticalTS);
     }
 }
-void TFPublisher::publishImuTransform(nlohmann::json json, rclcpp::Node* node) {
+void TFPublisher::publishImuTransform(nlohmann::json json, std::shared_ptr<rclcpp::Node> node) {
     geometry_msgs::msg::TransformStamped ts;
     ts.header.stamp = node->get_clock()->now();
     auto imuExtr = json["imuExtrinsics"];
@@ -129,9 +129,9 @@ void TFPublisher::publishImuTransform(nlohmann::json json, rclcpp::Node* node) {
 }
 
 std::string TFPublisher::getCamSocketName(int socketNum) {
-	if(rsCompatibilityMode) {
-		return rsSocketNameMap.at(static_cast<dai::CameraBoardSocket>(socketNum));
-	}
+    if(rsCompatibilityMode) {
+        return rsSocketNameMap.at(static_cast<dai::CameraBoardSocket>(socketNum));
+    }
     return socketNameMap.at(static_cast<dai::CameraBoardSocket>(socketNum));
 }
 

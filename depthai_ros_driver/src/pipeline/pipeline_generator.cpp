@@ -11,7 +11,7 @@
 
 namespace depthai_ros_driver {
 namespace pipeline_gen {
-std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipeline(rclcpp::Node* node,
+std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                                     std::shared_ptr<dai::Device> device,
                                                                                     std::shared_ptr<dai::Pipeline> pipeline,
                                                                                     const std::string& pipelineType,
@@ -51,7 +51,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
     return daiNodes;
 }
 
-std::string PipelineGenerator::validatePipeline(rclcpp::Node* node, const std::string& typeStr, int sensorNum) {
+std::string PipelineGenerator::validatePipeline(std::shared_ptr<rclcpp::Node> node, const std::string& typeStr, int sensorNum) {
     auto pType = utils::getValFromMap(typeStr, pipelineTypeMap);
     if(sensorNum == 1) {
         if(pType != PipelineType::RGB) {

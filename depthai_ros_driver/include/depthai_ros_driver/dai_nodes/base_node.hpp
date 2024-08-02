@@ -5,6 +5,7 @@
 #include <string>
 
 #include "depthai/pipeline/Node.hpp"
+#include "rclcpp/logger.hpp"
 
 namespace dai {
 class Pipeline;
@@ -27,7 +28,7 @@ class BaseNode {
      * @param      node         The node
      * @param      pipeline     The pipeline
      */
-    BaseNode(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
+    BaseNode(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline);
     virtual ~BaseNode();
     virtual void updateParams(const std::vector<rclcpp::Parameter>& params);
     virtual void link(dai::Node::Input in, int linkType = 0);
@@ -46,13 +47,13 @@ class BaseNode {
     virtual void closeQueues() = 0;
 
     void setNodeName(const std::string& daiNodeName);
-    void setROSNodePointer(rclcpp::Node* node);
+    void setROSNodePointer(std::shared_ptr<rclcpp::Node> node);
     /**
      * @brief      Gets the ROS node pointer.
      *
      * @return     The ROS node pointer.
      */
-    rclcpp::Node* getROSNode();
+    std::shared_ptr<rclcpp::Node> getROSNode();
     /**
      * @brief      Gets the name of the node.
      *
@@ -74,11 +75,12 @@ class BaseNode {
     bool ipcEnabled();
     std::string getSocketName(dai::CameraBoardSocket socket);
 	bool rsCompabilityMode();
-
+	rclcpp::Logger getLogger();
    private:
-    rclcpp::Node* baseNode;
+    std::shared_ptr<rclcpp::Node> baseNode;
     std::string baseDAINodeName;
     bool intraProcessEnabled;
+	rclcpp::Logger logger;
 };
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

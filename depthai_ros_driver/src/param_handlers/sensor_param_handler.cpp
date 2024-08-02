@@ -11,7 +11,7 @@
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-SensorParamHandler::SensorParamHandler(rclcpp::Node* node, const std::string& name, dai::CameraBoardSocket socket) : BaseParamHandler(node, name) {
+SensorParamHandler::SensorParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name, dai::CameraBoardSocket socket) : BaseParamHandler(node, name) {
     declareCommonParams(socket);
 };
 SensorParamHandler::~SensorParamHandler() = default;

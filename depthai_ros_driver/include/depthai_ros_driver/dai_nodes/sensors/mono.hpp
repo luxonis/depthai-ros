@@ -42,7 +42,7 @@ class ImagePublisher;
 class Mono : public BaseNode {
    public:
     explicit Mono(const std::string& daiNodeName,
-                  rclcpp::Node* node,
+                  std::shared_ptr<rclcpp::Node> node,
                   std::shared_ptr<dai::Pipeline> pipeline,
                   dai::CameraBoardSocket socket,
                   sensor_helpers::ImageSensor sensor,

@@ -42,12 +42,13 @@ enum class RGBLinkType { video, isp, preview };
 namespace sensor_helpers {
 class ImagePublisher {
    public:
-    ImagePublisher(rclcpp::Node* node,
+    ImagePublisher(std::shared_ptr<rclcpp::Node> node,
                    const std::string& name,
                    bool lazyPub,
                    bool ipcEnabled,
                    std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
-                   std::shared_ptr<dai::ros::ImageConverter> converter);
+                   std::shared_ptr<dai::ros::ImageConverter> converter,
+				   const std::string& topicSuffix = "/image_raw");
     ~ImagePublisher();
     void addQueueCB(const std::shared_ptr<dai::DataOutputQueue>& queue);
     void removeQueueCB();
@@ -81,9 +82,9 @@ extern const std::unordered_map<std::string, dai::MonoCameraProperties::SensorRe
 extern const std::unordered_map<std::string, dai::ColorCameraProperties::SensorResolution> rgbResolutionMap;
 extern const std::unordered_map<std::string, dai::CameraControl::FrameSyncMode> fSyncModeMap;
 extern const std::unordered_map<std::string, dai::CameraImageOrientation> cameraImageOrientationMap;
-bool rsCompabilityMode(rclcpp::Node* node);
-std::string getSocketName(rclcpp::Node* node, dai::CameraBoardSocket socket);
-std::string getNodeName(rclcpp::Node* node, NodeNameEnum name);
+bool rsCompabilityMode(std::shared_ptr<rclcpp::Node> node);
+std::string getSocketName(std::shared_ptr<rclcpp::Node> node, dai::CameraBoardSocket socket);
+std::string getNodeName(std::shared_ptr<rclcpp::Node> node, NodeNameEnum name);
 void basicCameraPub(const std::string& /*name*/,
                     const std::shared_ptr<dai::ADatatype>& data,
                     dai::ros::ImageConverter& converter,

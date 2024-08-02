@@ -9,19 +9,17 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-BaseNode::BaseNode(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> /*pipeline*/) {
-    setNodeName(daiNodeName);
-    setROSNodePointer(node);
+BaseNode::BaseNode(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> /*pipeline*/) : baseNode(node), baseDAINodeName(daiNodeName), logger(node->get_logger()) {
     intraProcessEnabled = node->get_node_options().use_intra_process_comms();
 };
 BaseNode::~BaseNode() = default;
 void BaseNode::setNodeName(const std::string& daiNodeName) {
     baseDAINodeName = daiNodeName;
 };
-void BaseNode::setROSNodePointer(rclcpp::Node* node) {
+void BaseNode::setROSNodePointer(std::shared_ptr<rclcpp::Node> node) {
     baseNode = node;
 };
-rclcpp::Node* BaseNode::getROSNode() {
+std::shared_ptr<rclcpp::Node> BaseNode::getROSNode() {
     return baseNode;
 };
 std::string BaseNode::getName() {
@@ -30,6 +28,9 @@ std::string BaseNode::getName() {
 
 bool BaseNode::ipcEnabled() {
     return intraProcessEnabled;
+}
+rclcpp::Logger BaseNode::getLogger() {
+	return logger;
 }
 
 bool BaseNode::rsCompabilityMode() {

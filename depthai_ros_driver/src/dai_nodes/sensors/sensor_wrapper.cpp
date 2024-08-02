@@ -15,7 +15,7 @@
 namespace depthai_ros_driver {
 namespace dai_nodes {
 SensorWrapper::SensorWrapper(const std::string& daiNodeName,
-                             rclcpp::Node* node,
+                             std::shared_ptr<rclcpp::Node> node,
                              std::shared_ptr<dai::Pipeline> pipeline,
                              std::shared_ptr<dai::Device> device,
                              dai::CameraBoardSocket socket,

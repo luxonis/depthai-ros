@@ -18,7 +18,7 @@ inline rcl_interfaces::msg::ParameterDescriptor getRangedIntDescriptor(uint16_t 
 }
 class BaseParamHandler {
    public:
-    BaseParamHandler(rclcpp::Node* node, const std::string& name) : baseName(name), baseNode(node){};
+    BaseParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name) : baseName(name), baseNode(node){};
     virtual ~BaseParamHandler() = default;
     virtual dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) = 0;
     std::string getName() {
@@ -50,7 +50,7 @@ class BaseParamHandler {
     }
 
    protected:
-    rclcpp::Node* getROSNode() {
+    std::shared_ptr<rclcpp::Node> getROSNode() {
         return baseNode;
     }
     template <typename T>
@@ -114,7 +114,7 @@ class BaseParamHandler {
         RCLCPP_DEBUG(baseNode->get_logger(), "Setting param %s with value %s", name.c_str(), ss.str().c_str());
     }
     std::string baseName;
-    rclcpp::Node* baseNode;
+    std::shared_ptr<rclcpp::Node> baseNode;
 };
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver

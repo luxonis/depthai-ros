@@ -9,7 +9,7 @@
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-StereoParamHandler::StereoParamHandler(rclcpp::Node* node, const std::string& name) : BaseParamHandler(node, name) {
+StereoParamHandler::StereoParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name) : BaseParamHandler(node, name) {
     depthPresetMap = {
         {"HIGH_ACCURACY", dai::node::StereoDepth::PresetMode::HIGH_ACCURACY},
         {"HIGH_DENSITY", dai::node::StereoDepth::PresetMode::HIGH_DENSITY},

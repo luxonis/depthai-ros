@@ -19,13 +19,13 @@
 namespace depthai_ros_driver {
 namespace dai_nodes {
 Stereo::Stereo(const std::string& daiNodeName,
-               rclcpp::Node* node,
+               std::shared_ptr<rclcpp::Node> node,
                std::shared_ptr<dai::Pipeline> pipeline,
                std::shared_ptr<dai::Device> device,
                dai::CameraBoardSocket leftSocket,
                dai::CameraBoardSocket rightSocket)
     : BaseNode(daiNodeName, node, pipeline) {
-    RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
+    RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     ph = std::make_unique<param_handlers::StereoParamHandler>(node, daiNodeName);
     auto alignSocket = dai::CameraBoardSocket::CAM_A;
@@ -45,7 +45,7 @@ Stereo::Stereo(const std::string& daiNodeName,
             continue;
         }
     }
-    RCLCPP_DEBUG(node->get_logger(),
+    RCLCPP_DEBUG(getLogger(),
                  "Creating stereo node with left sensor %s and right sensor %s",
                  getSocketName(leftSensInfo.socket).c_str(),
                  getSocketName(rightSensInfo.socket).c_str());
@@ -70,7 +70,7 @@ Stereo::Stereo(const std::string& daiNodeName,
         stereoCamNode->depth.link(nnNode->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::inputDepth)));
     }
 
-    RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
+    RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
 }
 Stereo::~Stereo() = default;
 void Stereo::setNames() {
