@@ -4,11 +4,58 @@
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/VideoEncoder.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
+#include "image_transport/image_transport.hpp"
 #include "rclcpp/logger.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace sensor_helpers {
+
+ImagePublisher::ImagePublisher(rclcpp::Node* node,
+                               const std::string& name,
+                               bool lazyPub,
+                               bool ipcEnabled,
+                               std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
+                               std::shared_ptr<dai::ros::ImageConverter> converter)
+    : name(name), lazyPub(lazyPub), ipcEnabled(ipcEnabled), infoManager(infoManager), converter(converter) {
+    if(ipcEnabled) {
+        auto qos = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable();
+        imgPub = node->create_publisher<sensor_msgs::msg::Image>(name + "/image_raw", qos);
+        infoPub = node->create_publisher<sensor_msgs::msg::CameraInfo>(name + "/camera_info", qos);
+    } else {
+        imgPubIT = image_transport::create_camera_publisher(node, name + "/image_raw");
+    }
+}
+
+ImagePublisher::~ImagePublisher() = default;
+
+void ImagePublisher::addQueueCB(const std::shared_ptr<dai::DataOutputQueue>& queue) {
+    dataQ = queue;
+    cbID = dataQ->addCallback([this](const std::shared_ptr<dai::ADatatype>& data) { publish(data); });
+}
+
+void ImagePublisher::removeQueueCB() {
+    if(dataQ) {
+        dataQ->removeCallback(cbID);
+    }
+}
+
+void ImagePublisher::publish(const std::shared_ptr<dai::ADatatype>& data) {
+    if(rclcpp::ok()) {
+        auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
+        auto info = infoManager->getCameraInfo();
+        auto rawMsg = converter->toRosMsgRawPtr(img, info);
+        info.header = rawMsg.header;
+        if(ipcEnabled && (!lazyPub || detectSubscription(imgPub, infoPub))) {
+            sensor_msgs::msg::CameraInfo::UniquePtr infoMsg = std::make_unique<sensor_msgs::msg::CameraInfo>(info);
+            sensor_msgs::msg::Image::UniquePtr msg = std::make_unique<sensor_msgs::msg::Image>(rawMsg);
+            imgPub->publish(std::move(msg));
+            infoPub->publish(std::move(infoMsg));
+        } else {
+            if(!lazyPub || imgPubIT.getNumSubscribers() > 0) imgPubIT.publish(rawMsg, info);
+        }
+    }
+}
 
 std::vector<ImageSensor> availableSensors = {{"IMX378", "1080P", {"12MP", "4K", "1080P"}, true},
                                              {"OV9282", "720P", {"800P", "720P", "400P"}, false},

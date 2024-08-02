@@ -41,6 +41,7 @@ namespace dai_nodes {
 
 namespace sensor_helpers {
 struct ImageSensor;
+class ImagePublisher;
 }
 
 class RGB : public BaseNode {
@@ -60,10 +61,8 @@ class RGB : public BaseNode {
     void closeQueues() override;
 
    private:
-    std::unique_ptr<dai::ros::ImageConverter> imageConverter;
-    image_transport::CameraPublisher rgbPubIT, previewPubIT;
-    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr rgbPub, previewPub;
-    rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr rgbInfoPub, previewInfoPub;
+    std::shared_ptr<dai::ros::ImageConverter> imageConverter;
+	std::shared_ptr<sensor_helpers::ImagePublisher> rgbPub, previewPub;
     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager, previewInfoManager;
     std::shared_ptr<dai::node::ColorCamera> colorCamNode;
     std::shared_ptr<dai::node::VideoEncoder> videoEnc;

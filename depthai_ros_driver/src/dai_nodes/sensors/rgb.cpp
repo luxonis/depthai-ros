@@ -1,7 +1,6 @@
 #include "depthai_ros_driver/dai_nodes/sensors/rgb.hpp"
 
 #include "camera_info_manager/camera_info_manager.hpp"
-#include "depthai/device/DataQueue.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/ColorCamera.hpp"
@@ -11,9 +10,6 @@
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
-#include "depthai_ros_driver/utils.hpp"
-#include "image_transport/camera_publisher.hpp"
-#include "image_transport/image_transport.hpp"
 #include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {
@@ -97,28 +93,9 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
             infoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
         }
         colorQ = device->getOutputQueue(ispQName, ph->getParam<int>("i_max_q_size"), false);
-        if(ipcEnabled()) {
-            rgbPub = getROSNode()->create_publisher<sensor_msgs::msg::Image>("~/" + getName() + "/image_raw", 10);
-            rgbInfoPub = getROSNode()->create_publisher<sensor_msgs::msg::CameraInfo>("~/" + getName() + "/camera_info", 10);
-            colorQ->addCallback(std::bind(sensor_helpers::splitPub,
-                                          std::placeholders::_1,
-                                          std::placeholders::_2,
-                                          *imageConverter,
-                                          rgbPub,
-                                          rgbInfoPub,
-                                          infoManager,
-                                          ph->getParam<bool>("i_enable_lazy_publisher")));
-
-        } else {
-            rgbPubIT = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/image_raw");
-            colorQ->addCallback(std::bind(sensor_helpers::cameraPub,
-                                          std::placeholders::_1,
-                                          std::placeholders::_2,
-                                          *imageConverter,
-                                          rgbPubIT,
-                                          infoManager,
-                                          ph->getParam<bool>("i_enable_lazy_publisher")));
-        }
+        rgbPub = std::make_shared<sensor_helpers::ImagePublisher>(
+            getROSNode(), "~/" + getName(), ph->getParam<bool>("i_enable_lazy_publisher"), ipcEnabled(), infoManager, imageConverter);
+        rgbPub->addQueueCB(colorQ);
     }
     if(ph->getParam<bool>("i_enable_preview")) {
         previewQ = device->getOutputQueue(previewQName, ph->getParam<int>("i_max_q_size"), false);
@@ -138,22 +115,9 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         } else {
             previewInfoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
         }
-        if(ipcEnabled()) {
-            previewPubIT = image_transport::create_camera_publisher(getROSNode(), "~/" + getName() + "/preview/image_raw");
-            previewQ->addCallback(
-                std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *imageConverter, previewPubIT, previewInfoManager));
-        } else {
-            previewPub = getROSNode()->create_publisher<sensor_msgs::msg::Image>("~/" + getName() + "/preview/image_raw", 10);
-            previewInfoPub = getROSNode()->create_publisher<sensor_msgs::msg::CameraInfo>("~/" + getName() + "/preview/camera_info", 10);
-            previewQ->addCallback(std::bind(sensor_helpers::splitPub,
-                                            std::placeholders::_1,
-                                            std::placeholders::_2,
-                                            *imageConverter,
-                                            previewPub,
-                                            previewInfoPub,
-                                            previewInfoManager,
-                                            ph->getParam<bool>("i_enable_lazy_publisher")));
-        }
+        previewPub = std::make_shared<sensor_helpers::ImagePublisher>(
+            getROSNode(), "~/" + getName(), ph->getParam<bool>("i_enable_lazy_publisher"), ipcEnabled(), previewInfoManager, imageConverter);
+        previewPub->addQueueCB(previewQ);
     };
     controlQ = device->getInputQueue(controlQName);
 }

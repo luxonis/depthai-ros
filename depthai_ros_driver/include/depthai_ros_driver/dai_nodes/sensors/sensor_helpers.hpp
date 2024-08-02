@@ -12,10 +12,12 @@
 #include "depthai/pipeline/datatype/CameraControl.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
+#include "sensor_msgs/msg/image.hpp"
 
 namespace dai {
 class Device;
 class Pipeline;
+class DataOutputQueue;
 namespace node {
 class VideoEncoder;
 }
@@ -38,6 +40,31 @@ namespace link_types {
 enum class RGBLinkType { video, isp, preview };
 };
 namespace sensor_helpers {
+class ImagePublisher {
+   public:
+    ImagePublisher(rclcpp::Node* node,
+                   const std::string& name,
+                   bool lazyPub,
+                   bool ipcEnabled,
+                   std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
+                   std::shared_ptr<dai::ros::ImageConverter> converter);
+    ~ImagePublisher();
+    void addQueueCB(const std::shared_ptr<dai::DataOutputQueue>& queue);
+    void removeQueueCB();
+    void publish(const std::shared_ptr<dai::ADatatype>& data);
+
+   private:
+    std::string name;
+    bool lazyPub;
+    bool ipcEnabled;
+    std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
+    std::shared_ptr<dai::ros::ImageConverter> converter;
+    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr imgPub;
+    rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr infoPub;
+    image_transport::CameraPublisher imgPubIT;
+    std::shared_ptr<dai::DataOutputQueue> dataQ;
+    int cbID;
+};
 enum class NodeNameEnum { RGB, Left, Right, Stereo, IMU, NN };
 struct ImageSensor {
     std::string name;
@@ -65,7 +92,7 @@ void basicCameraPub(const std::string& /*name*/,
 
 void cameraPub(const std::string& /*name*/,
                const std::shared_ptr<dai::ADatatype>& data,
-               dai::ros::ImageConverter& converter,
+               std::shared_ptr<dai::ros::ImageConverter> converter,
                image_transport::CameraPublisher& pub,
                std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
                bool lazyPub = true);

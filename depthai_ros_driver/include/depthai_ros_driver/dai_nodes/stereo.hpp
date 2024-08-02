@@ -4,13 +4,10 @@
 #include <string>
 #include <vector>
 
+
 #include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai-shared/common/CameraFeatures.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
-#include "image_transport/camera_publisher.hpp"
-#include "image_transport/image_transport.hpp"
-#include "sensor_msgs/msg/camera_info.hpp"
-#include "sensor_msgs/msg/image.hpp"
 
 namespace dai {
 class Pipeline;
@@ -47,6 +44,9 @@ namespace link_types {
 enum class StereoLinkType { left, right };
 };
 
+namespace sensor_helpers {
+class ImagePubliser;
+}
 class Stereo : public BaseNode {
    public:
     explicit Stereo(const std::string& daiNodeName,
@@ -57,7 +57,7 @@ class Stereo : public BaseNode {
                     dai::CameraBoardSocket rightSocket = dai::CameraBoardSocket::CAM_C);
     ~Stereo();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
-    void setupQueues(std::shared_ptr<dai::Device> device) override;
+    void setupQueues(std::shared_ptr<dai::Device> dvice) override;
     void link(dai::Node::Input in, int linkType = 0) override;
     dai::Node::Input getInput(int linkType = 0) override;
     void setNames() override;
@@ -71,12 +71,10 @@ class Stereo : public BaseNode {
     void setupRectQueue(std::shared_ptr<dai::Device> device,
                         dai::CameraFeatures& sensorInfo,
                         const std::string& queueName,
-                        std::unique_ptr<dai::ros::ImageConverter>& conv,
-                        std::shared_ptr<camera_info_manager::CameraInfoManager>& im,
-                        std::shared_ptr<dai::DataOutputQueue>& q,
-                        rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub,
-                        rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr infoPub,
-                        image_transport::CameraPublisher& pubIT,
+                        std::shared_ptr<dai::ros::ImageConverter> conv,
+                        std::shared_ptr<camera_info_manager::CameraInfoManager> im,
+                        std::shared_ptr<dai::DataOutputQueue> q,
+                        std::shared_ptr<sensor_helpers::ImagePublisher> pub,
                         bool isLeft);
     /*
      * This callback is used to synchronize left and right rectified frames
@@ -84,10 +82,8 @@ class Stereo : public BaseNode {
      * If they are not synchronized, it prints a warning message
      */
     void syncTimerCB();
-    std::unique_ptr<dai::ros::ImageConverter> stereoConv, leftRectConv, rightRectConv;
-    image_transport::CameraPublisher stereoPubIT, leftRectPubIT, rightRectPubIT;
-    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr stereoPub, leftRectPub, rightRectPub;
-    rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr stereoInfoPub, leftRectInfoPub, rightRectInfoPub;
+    std::shared_ptr<dai::ros::ImageConverter> stereoConv, leftRectConv, rightRectConv;
+	std::shared_ptr<sensor_helpers::ImagePublisher> stereoPub, leftRectPub, rightRectPub;
     std::shared_ptr<camera_info_manager::CameraInfoManager> stereoIM, leftRectIM, rightRectIM;
     std::shared_ptr<dai::node::StereoDepth> stereoCamNode;
     std::shared_ptr<dai::node::VideoEncoder> stereoEnc, leftRectEnc, rightRectEnc;

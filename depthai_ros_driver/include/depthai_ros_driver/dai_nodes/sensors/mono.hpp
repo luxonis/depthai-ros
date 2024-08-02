@@ -1,11 +1,6 @@
 #pragma once
 
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
-#include "image_transport/camera_publisher.hpp"
-#include "image_transport/image_transport.hpp"
-#include "sensor_msgs/msg/camera_info.hpp"
-#include "sensor_msgs/msg/image.hpp"
 
 namespace dai {
 class Pipeline;
@@ -38,6 +33,11 @@ namespace param_handlers {
 class SensorParamHandler;
 }
 namespace dai_nodes {
+namespace sensor_helpers {
+struct ImageSensor;
+class ImagePublisher;
+}
+
 
 class Mono : public BaseNode {
    public:
@@ -56,10 +56,8 @@ class Mono : public BaseNode {
     void closeQueues() override;
 
    private:
-    std::unique_ptr<dai::ros::ImageConverter> imageConverter;
-    image_transport::CameraPublisher monoPubIT;
-    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr monoPub;
-    rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr infoPub;
+    std::shared_ptr<dai::ros::ImageConverter> imageConverter;
+	std::shared_ptr<sensor_helpers::ImagePublisher> imagePublisher;
     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
     std::shared_ptr<dai::node::MonoCamera> monoCamNode;
     std::shared_ptr<dai::node::VideoEncoder> videoEnc;
