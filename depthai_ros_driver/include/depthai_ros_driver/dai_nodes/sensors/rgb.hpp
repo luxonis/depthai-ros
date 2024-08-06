@@ -55,6 +55,7 @@ class RGB : public BaseNode {
     void setNames() override;
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
+	std::shared_ptr<sensor_helpers::ImagePublisher> getPublisher(int linkType=0) override;
 
    private:
     std::shared_ptr<dai::ros::ImageConverter> imageConverter;

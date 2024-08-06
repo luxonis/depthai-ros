@@ -42,17 +42,23 @@ enum class RGBLinkType { video, isp, preview };
 namespace sensor_helpers {
 class ImagePublisher {
    public:
-    ImagePublisher(std::shared_ptr<rclcpp::Node> node,
-                   const std::string& name,
-                   bool lazyPub,
-                   bool ipcEnabled,
-                   std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
-                   std::shared_ptr<dai::ros::ImageConverter> converter,
-				   const std::string& topicSuffix = "/image_raw");
+	ImagePublisher(){};
     ~ImagePublisher();
+	void setup(std::shared_ptr<rclcpp::Node> node,
+				   const std::string& name,
+				   bool lazyPub,
+				   bool ipcEnabled,
+				   std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
+				   std::shared_ptr<dai::ros::ImageConverter> converter,
+				   const std::string& topicSuffix = "/image_raw");
     void addQueueCB(const std::shared_ptr<dai::DataOutputQueue>& queue);
     void removeQueueCB();
     void publish(const std::shared_ptr<dai::ADatatype>& data);
+	void setQueueName(const std::string& name);
+	void setSynced(bool sync);
+    std::string getQueueName();
+    void publish(std::pair<sensor_msgs::msg::Image::UniquePtr, sensor_msgs::msg::CameraInfo::UniquePtr> data);
+    std::pair<sensor_msgs::msg::Image::UniquePtr, sensor_msgs::msg::CameraInfo::UniquePtr> convertData(const std::shared_ptr<dai::ADatatype> data);
 
    private:
     std::string name;
@@ -65,6 +71,8 @@ class ImagePublisher {
     image_transport::CameraPublisher imgPubIT;
     std::shared_ptr<dai::DataOutputQueue> dataQ;
     int cbID;
+	std::string qName;
+	bool synced;
 };
 enum class NodeNameEnum { RGB, Left, Right, Stereo, IMU, NN };
 struct ImageSensor {

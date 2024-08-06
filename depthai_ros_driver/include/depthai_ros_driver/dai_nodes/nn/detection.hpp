@@ -89,8 +89,7 @@ class Detection : public BaseNode {
                                                                     width,
                                                                     height));
 
-            ptPub = std::make_shared<sensor_helpers::ImagePublisher>(
-                getROSNode(), "~/" + getName() + "passthrough", true, ipcEnabled(), infoManager, imageConverter);
+            ptPub->setup(getROSNode(), "~/" + getName() + "passthrough", true, ipcEnabled(), infoManager, imageConverter);
             ptPub->addQueueCB(ptQ);
         }
     };
@@ -135,6 +134,7 @@ class Detection : public BaseNode {
             xoutPT->setStreamName(ptQName);
             detectionNode->passthrough.link(xoutPT->input);
         }
+        ptPub = std::make_shared<sensor_helpers::ImagePublisher>();
     };
     /**
      * @brief      Closes the queues for the DetectionNetwork node and the passthrough.

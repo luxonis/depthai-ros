@@ -38,8 +38,7 @@ void Mono::setNames() {
 
 void Mono::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     if(ph->getParam<bool>("i_publish_topic")) {
-        xoutMono = pipeline->create<dai::node::XLinkOut>();
-        xoutMono->setStreamName(monoQName);
+		xoutMono = setupXout(pipeline, monoQName);
         if(ph->getParam<bool>("i_low_bandwidth")) {
             videoEnc = sensor_helpers::createEncoder(pipeline, ph->getParam<int>("i_low_bandwidth_quality"));
             monoCamNode->out.link(videoEnc->input);
@@ -51,6 +50,7 @@ void Mono::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     xinControl = pipeline->create<dai::node::XLinkIn>();
     xinControl->setStreamName(controlQName);
     xinControl->out.link(monoCamNode->inputControl);
+    imagePublisher = std::make_shared<sensor_helpers::ImagePublisher>();
 }
 
 void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
@@ -81,9 +81,9 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
             infoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
         }
         monoQ = device->getOutputQueue(monoQName, ph->getParam<int>("i_max_q_size"), false);
-		imagePublisher = std::make_shared<sensor_helpers::ImagePublisher>(getROSNode(), getName(), ph->getParam<bool>("i_enable_lazy_publisher"), ipcEnabled(),  infoManager, imageConverter);
-		imagePublisher->addQueueCB(monoQ);
-	}
+        imagePublisher->setup(getROSNode(), getName(), ph->getParam<bool>("i_enable_lazy_publisher"), ipcEnabled(), infoManager, imageConverter);
+        imagePublisher->addQueueCB(monoQ);
+    }
     controlQ = device->getInputQueue(controlQName);
 }
 void Mono::closeQueues() {
@@ -95,6 +95,10 @@ void Mono::closeQueues() {
 
 void Mono::link(dai::Node::Input in, int /*linkType*/) {
     monoCamNode->out.link(in);
+}
+
+std::shared_ptr<sensor_helpers::ImagePublisher> Mono::getPublisher(int linkType) {
+    return imagePublisher;
 }
 
 void Mono::updateParams(const std::vector<rclcpp::Parameter>& params) {

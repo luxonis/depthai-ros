@@ -131,6 +131,13 @@ void SensorWrapper::link(dai::Node::Input in, int linkType) {
     }
 }
 
+std::shared_ptr<sensor_helpers::ImagePublisher> SensorWrapper::getPublisher(int linkType) {
+	if(ph->getParam<bool>("i_disable_node")) {
+		return nullptr;
+	}
+	return sensorNode->getPublisher(linkType);
+}
+
 void SensorWrapper::updateParams(const std::vector<rclcpp::Parameter>& params) {
     sensorNode->updateParams(params);
 }

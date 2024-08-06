@@ -38,8 +38,7 @@ void RGB::setNames() {
 
 void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     if(ph->getParam<bool>("i_publish_topic")) {
-        xoutColor = pipeline->create<dai::node::XLinkOut>();
-        xoutColor->setStreamName(ispQName);
+		xoutColor = setupXout(pipeline, ispQName);
         if(ph->getParam<bool>("i_low_bandwidth")) {
             videoEnc = sensor_helpers::createEncoder(pipeline, ph->getParam<int>("i_low_bandwidth_quality"));
             colorCamNode->video.link(videoEnc->input);
@@ -52,15 +51,14 @@ void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
         }
     }
     if(ph->getParam<bool>("i_enable_preview")) {
-        xoutPreview = pipeline->create<dai::node::XLinkOut>();
-        xoutPreview->setStreamName(previewQName);
-        xoutPreview->input.setQueueSize(2);
-        xoutPreview->input.setBlocking(false);
+		xoutPreview = setupXout(pipeline, previewQName);
         colorCamNode->preview.link(xoutPreview->input);
     }
     xinControl = pipeline->create<dai::node::XLinkIn>();
     xinControl->setStreamName(controlQName);
     xinControl->out.link(colorCamNode->inputControl);
+    previewPub = std::make_shared<sensor_helpers::ImagePublisher>();
+    rgbPub = std::make_shared<sensor_helpers::ImagePublisher>();
 }
 
 void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
@@ -93,12 +91,10 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
             infoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
         }
         colorQ = device->getOutputQueue(ispQName, ph->getParam<int>("i_max_q_size"), false);
-        rgbPub = std::make_shared<sensor_helpers::ImagePublisher>(
-            getROSNode(), "~/" + getName(), ph->getParam<bool>("i_enable_lazy_publisher"), ipcEnabled(), infoManager, imageConverter);
+        rgbPub->setup(getROSNode(), "~/" + getName(), ph->getParam<bool>("i_enable_lazy_publisher"), ipcEnabled(), infoManager, imageConverter);
         rgbPub->addQueueCB(colorQ);
     }
     if(ph->getParam<bool>("i_enable_preview")) {
-        previewQ = device->getOutputQueue(previewQName, ph->getParam<int>("i_max_q_size"), false);
 
         previewInfoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
             getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + previewQName).get(), previewQName);
@@ -115,8 +111,8 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         } else {
             previewInfoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
         }
-        previewPub = std::make_shared<sensor_helpers::ImagePublisher>(
-            getROSNode(), "~/" + getName(), ph->getParam<bool>("i_enable_lazy_publisher"), ipcEnabled(), previewInfoManager, imageConverter);
+        previewPub->setup(getROSNode(), "~/" + getName(), ph->getParam<bool>("i_enable_lazy_publisher"), ipcEnabled(), previewInfoManager, imageConverter);
+        previewQ = device->getOutputQueue(previewQName, ph->getParam<int>("i_max_q_size"), false);
         previewPub->addQueueCB(previewQ);
     };
     controlQ = device->getInputQueue(controlQName);
@@ -142,6 +138,12 @@ void RGB::link(dai::Node::Input in, int linkType) {
     } else {
         throw std::runtime_error("Link type not supported");
     }
+}
+
+std::shared_ptr<sensor_helpers::ImagePublisher> RGB::getPublisher(int linkType) {
+    rgbPub->setQueueName(ispQName);
+	rgbPub->setSynced(true);
+    return rgbPub;
 }
 
 void RGB::updateParams(const std::vector<rclcpp::Parameter>& params) {

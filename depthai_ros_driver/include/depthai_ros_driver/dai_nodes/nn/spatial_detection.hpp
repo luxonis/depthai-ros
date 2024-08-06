@@ -78,7 +78,7 @@ class SpatialDetection : public BaseNode {
                                                                   width,
                                                                   height));
 
-			ptPub = std::make_shared<sensor_helpers::ImagePublisher>(getROSNode(), "~/" + getName() + "/passthrough", true, ipcEnabled(), ptInfoMan, ptImageConverter);
+			ptPub->setup(getROSNode(), "~/" + getName() + "/passthrough", true, ipcEnabled(), ptInfoMan, ptImageConverter);
 			ptPub->addQueueCB(ptQ);
         }
 
@@ -99,8 +99,7 @@ class SpatialDetection : public BaseNode {
                                                                        ph->getOtherNodeParam<int>("stereo", "i_width"),
                                                                        ph->getOtherNodeParam<int>("stereo", "i_height")));
 
-			ptDepthPub = std::make_shared<sensor_helpers::ImagePublisher>(
-				getROSNode(), "~/" + getName() + "/passthrough_depth", true, ipcEnabled(), ptDepthInfoMan, ptDepthImageConverter);
+				ptDepthPub->setup(getROSNode(), "~/" + getName() + "/passthrough_depth", true, ipcEnabled(), ptDepthInfoMan, ptDepthImageConverter);
 			ptDepthPub->addQueueCB(ptDepthQ);
         }
     };
@@ -130,11 +129,13 @@ class SpatialDetection : public BaseNode {
             xoutPT = pipeline->create<dai::node::XLinkOut>();
             xoutPT->setStreamName(ptQName);
             spatialNode->passthrough.link(xoutPT->input);
+			ptPub = std::make_shared<sensor_helpers::ImagePublisher>();
         }
         if(ph->getParam<bool>("i_enable_passthrough_depth")) {
             xoutPTDepth = pipeline->create<dai::node::XLinkOut>();
             xoutPTDepth->setStreamName(ptDepthQName);
             spatialNode->passthroughDepth.link(xoutPTDepth->input);
+			ptDepthPub = std::make_shared<sensor_helpers::ImagePublisher>();
         }
     };
     void closeQueues() override {

@@ -5,13 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "depthai-shared/common/CameraBoardSocket.hpp"
-#include "depthai-shared/common/CameraFeatures.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
-#include "image_transport/camera_publisher.hpp"
-#include "image_transport/image_transport.hpp"
-#include "sensor_msgs/msg/camera_info.hpp"
-#include "sensor_msgs/msg/image.hpp"
+#include "depthai_ros_driver/dai_nodes/base_node.hpp"
 
 namespace dai {
 class Pipeline;
@@ -43,15 +37,21 @@ class Sync : public BaseNode {
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(dai::Node::Input in, int linkType = 0) override;
-    dai::Node::Input getInput(int linkType = 0) override;
+    dai::Node::Input getInputByName(const std::string& name = "") override;
     void setNames() override;
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
+	void addPublisher(std::shared_ptr<sensor_helpers::ImagePublisher> publisher);
+	std::vector<std::string> getSyncNames();
 
    private:
     std::shared_ptr<dai::node::Sync> syncNode;
+	std::string syncOutputName;
     std::shared_ptr<dai::node::XLinkOut> xoutFrame;
+	std::shared_ptr<dai::DataOutputQueue> outQueue;
     void publishOutputs();
+	std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> publishers;
+	std::vector<std::string> syncNames;
 };
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

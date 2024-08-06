@@ -11,14 +11,18 @@ namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace sensor_helpers {
 
-ImagePublisher::ImagePublisher(std::shared_ptr<rclcpp::Node> node,
-                               const std::string& name,
-                               bool lazyPub,
-                               bool ipcEnabled,
-                               std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
-                               std::shared_ptr<dai::ros::ImageConverter> converter,
-							   const std::string& topicSuffix)
-    : name(name), lazyPub(lazyPub), ipcEnabled(ipcEnabled), infoManager(infoManager), converter(converter) {
+void ImagePublisher::setup(std::shared_ptr<rclcpp::Node> node,
+                           const std::string& name,
+                           bool lazyPub,
+                           bool ipcEnabled,
+                           std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
+                           std::shared_ptr<dai::ros::ImageConverter> converter,
+                           const std::string& topicSuffix) {
+    this->name = name;
+    this->lazyPub = lazyPub;
+    this->ipcEnabled = ipcEnabled;
+    this->infoManager = infoManager;
+    this->converter = converter;
     if(ipcEnabled) {
         auto qos = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable();
         imgPub = node->create_publisher<sensor_msgs::msg::Image>(name + topicSuffix, qos);
@@ -31,13 +35,45 @@ ImagePublisher::ImagePublisher(std::shared_ptr<rclcpp::Node> node,
 ImagePublisher::~ImagePublisher() = default;
 
 void ImagePublisher::addQueueCB(const std::shared_ptr<dai::DataOutputQueue>& queue) {
+	if(synced){
+		return;
+	}
     dataQ = queue;
+    qName = queue->getName();
     cbID = dataQ->addCallback([this](const std::shared_ptr<dai::ADatatype>& data) { publish(data); });
 }
 
 void ImagePublisher::removeQueueCB() {
     if(dataQ) {
         dataQ->removeCallback(cbID);
+    }
+}
+
+std::string ImagePublisher::getQueueName() {
+    return qName;
+}
+void ImagePublisher::setQueueName(const std::string& name) {
+    qName = name;
+}
+void ImagePublisher::setSynced(bool sync) {
+	synced = sync;
+}
+std::pair<sensor_msgs::msg::Image::UniquePtr, sensor_msgs::msg::CameraInfo::UniquePtr> ImagePublisher::convertData(const std::shared_ptr<dai::ADatatype> data) {
+    auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
+    auto info = infoManager->getCameraInfo();
+    auto rawMsg = converter->toRosMsgRawPtr(img, info);
+    info.header = rawMsg.header;
+    sensor_msgs::msg::CameraInfo::UniquePtr infoMsg = std::make_unique<sensor_msgs::msg::CameraInfo>(info);
+    sensor_msgs::msg::Image::UniquePtr msg = std::make_unique<sensor_msgs::msg::Image>(rawMsg);
+    return {std::move(msg), std::move(infoMsg)};
+}
+
+void ImagePublisher::publish(std::pair<sensor_msgs::msg::Image::UniquePtr, sensor_msgs::msg::CameraInfo::UniquePtr> data) {
+    if(ipcEnabled && (!lazyPub || detectSubscription(imgPub, infoPub))) {
+        imgPub->publish(std::move(data.first));
+        infoPub->publish(std::move(data.second));
+    } else {
+        if(!lazyPub || imgPubIT.getNumSubscribers() > 0) imgPubIT.publish(*data.first, *data.second);
     }
 }
 

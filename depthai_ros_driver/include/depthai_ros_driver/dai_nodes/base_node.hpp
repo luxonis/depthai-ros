@@ -10,6 +10,9 @@
 namespace dai {
 class Pipeline;
 class Device;
+namespace node {
+class XLinkOut;
+}  // namespace node
 }  // namespace dai
 
 namespace rclcpp {
@@ -19,6 +22,9 @@ class Parameter;
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
+namespace sensor_helpers {
+class ImagePublisher;
+}  // namespace sensor_helpers
 class BaseNode {
    public:
     /**
@@ -33,6 +39,8 @@ class BaseNode {
     virtual void updateParams(const std::vector<rclcpp::Parameter>& params);
     virtual void link(dai::Node::Input in, int linkType = 0);
     virtual dai::Node::Input getInput(int linkType = 0);
+	virtual dai::Node::Input getInputByName(const std::string& name="");
+	virtual std::shared_ptr<sensor_helpers::ImagePublisher> getPublisher(int linkType = 0);
     virtual void setupQueues(std::shared_ptr<dai::Device> device) = 0;
     /**
      * @brief      Sets the names of the queues.
@@ -45,6 +53,7 @@ class BaseNode {
      */
     virtual void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) = 0;
     virtual void closeQueues() = 0;
+	std::shared_ptr<dai::node::XLinkOut> setupXout(std::shared_ptr<dai::Pipeline> pipeline, const std::string& name);
 
     void setNodeName(const std::string& daiNodeName);
     void setROSNodePointer(std::shared_ptr<rclcpp::Node> node);

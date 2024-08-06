@@ -41,7 +41,7 @@ class StereoParamHandler;
 
 namespace dai_nodes {
 namespace link_types {
-enum class StereoLinkType { left, right };
+enum class StereoLinkType { stereo, left, right };
 };
 
 namespace sensor_helpers {
@@ -58,11 +58,12 @@ class Stereo : public BaseNode {
     ~Stereo();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> dvice) override;
-    void link(dai::Node::Input in, int linkType = 0) override;
+    void link(dai::Node::Input in, int linkType = 1) override;
     dai::Node::Input getInput(int linkType = 0) override;
     void setNames() override;
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
+	std::shared_ptr<sensor_helpers::ImagePublisher> getPublisher(int linkType=0) override;
 
    private:
     void setupStereoQueue(std::shared_ptr<dai::Device> device);
