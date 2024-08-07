@@ -127,8 +127,11 @@ void Stereo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
         stereoCamNode->rectifiedRight.link(featureTrackerRightR->getInput());
     }
     stereoPub = std::make_shared<sensor_helpers::ImagePublisher>();
+	stereoPub->setQueueName(stereoQName);
 	leftRectPub = std::make_shared<sensor_helpers::ImagePublisher>();
+	leftRectPub->setQueueName(leftRectQName);
 	rightRectPub = std::make_shared<sensor_helpers::ImagePublisher>();
+	rightRectPub->setQueueName(rightRectQName);
 }
 
 void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
@@ -326,22 +329,21 @@ void Stereo::link(dai::Node::Input in, int linkType) {
 	}	
 }
 
-std::shared_ptr<sensor_helpers::ImagePublisher> Stereo::getPublisher(int linkType) {
-	if(linkType == static_cast<int>(link_types::StereoLinkType::stereo)) {
-		stereoPub->setQueueName(stereoQName);
+std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> Stereo::getPublishers() {
+	std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> pubs;
+	if(ph->getParam<bool>("i_synced")) {
 		stereoPub->setSynced(true);
-		return stereoPub;
-	} else if(linkType == static_cast<int>(link_types::StereoLinkType::left)) {
-		leftRectPub->setQueueName(leftRectQName);
-		leftRectPub->setSynced(true);
-		return leftRectPub;
-	} else if(linkType == static_cast<int>(link_types::StereoLinkType::right)) {
-		rightRectPub->setQueueName(rightRectQName);
-		rightRectPub->setSynced(true);
-		return rightRectPub;
-	} else {
-		throw std::runtime_error("Wrong link type specified!");
+		pubs.push_back(stereoPub);
 	}
+	if(ph->getParam<bool>("i_left_rect_synced")) {
+		leftRectPub->setSynced(true);
+		pubs.push_back(leftRectPub);
+	}
+	if(ph->getParam<bool>("i_right_rect_synced")) {
+		rightRectPub->setSynced(true);
+		pubs.push_back(rightRectPub);
+	}
+	return pubs;
 }
 
 dai::Node::Input Stereo::getInput(int linkType) {

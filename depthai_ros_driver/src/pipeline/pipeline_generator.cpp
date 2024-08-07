@@ -53,9 +53,10 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
         for(auto& daiNode : daiNodes) {
             if(daiNode->getName() == syncName) {
 				RCLCPP_INFO(node->get_logger(), "Linking %s to sync node.", syncName.c_str());
-                auto pub = daiNode->getPublisher();
-                sync->addPublisher(pub);
+                auto pubs = daiNode->getPublishers();
+				std::for_each(pubs.begin(), pubs.end(), [&sync, &daiNode](auto& pub) { sync->addPublisher(pub); 
                 daiNode->link(sync->getInputByName(pub->getQueueName()));
+				});
             }
         }
     }

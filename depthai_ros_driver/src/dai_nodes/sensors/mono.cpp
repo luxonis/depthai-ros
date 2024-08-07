@@ -51,6 +51,7 @@ void Mono::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     xinControl->setStreamName(controlQName);
     xinControl->out.link(monoCamNode->inputControl);
     imagePublisher = std::make_shared<sensor_helpers::ImagePublisher>();
+	imagePublisher->setQueueName(monoQName);
 }
 
 void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
@@ -97,8 +98,9 @@ void Mono::link(dai::Node::Input in, int /*linkType*/) {
     monoCamNode->out.link(in);
 }
 
-std::shared_ptr<sensor_helpers::ImagePublisher> Mono::getPublisher(int linkType) {
-    return imagePublisher;
+std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> Mono::getPublishers() {
+	imagePublisher->setSynced(true);
+    return std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>>{imagePublisher};
 }
 
 void Mono::updateParams(const std::vector<rclcpp::Parameter>& params) {

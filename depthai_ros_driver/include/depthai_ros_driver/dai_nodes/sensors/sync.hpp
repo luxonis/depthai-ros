@@ -16,11 +16,7 @@ class ImgFrame;
 namespace node {
 class Sync;
 class XLinkOut;
-class VideoEncoder;
 }  // namespace node
-namespace ros {
-class ImageConverter;
-}
 }  // namespace dai
 
 namespace rclcpp {
@@ -29,12 +25,14 @@ class Parameter;
 }  // namespace rclcpp
 
 namespace depthai_ros_driver {
+namespace param_handlers {
+class SyncParamHandler;
+}
 namespace dai_nodes {
 class Sync : public BaseNode {
    public:
     explicit Sync(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline);
     ~Sync();
-    void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(dai::Node::Input in, int linkType = 0) override;
     dai::Node::Input getInputByName(const std::string& name = "") override;
@@ -45,6 +43,7 @@ class Sync : public BaseNode {
 	std::vector<std::string> getSyncNames();
 
    private:
+	std::unique_ptr<param_handlers::SyncParamHandler> paramHandler;
     std::shared_ptr<dai::node::Sync> syncNode;
 	std::string syncOutputName;
     std::shared_ptr<dai::node::XLinkOut> xoutFrame;

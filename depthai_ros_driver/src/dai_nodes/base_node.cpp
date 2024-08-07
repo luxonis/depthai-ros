@@ -59,7 +59,7 @@ dai::Node::Input BaseNode::getInput(int /*linkType = 0*/) {
 };
 
 dai::Node::Input BaseNode::getInputByName(const std::string& /*name*/) {
-    throw(std::runtime_error("getInput() not implemented"));
+    throw(std::runtime_error("getInputByName() not implemented"));
 };
 
 void BaseNode::closeQueues() {
@@ -91,7 +91,7 @@ void BaseNode::link(dai::Node::Input /*in*/, int /*linkType = 0*/) {
     throw(std::runtime_error("link() not implemented"));
 };
 
-std::shared_ptr<sensor_helpers::ImagePublisher> BaseNode::getPublisher(int /*linkType = 0*/) {
+std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> BaseNode::getPublishers() {
     throw(std::runtime_error("getPublisher() not implemented"));
 };
 void BaseNode::updateParams(const std::vector<rclcpp::Parameter>& /*params*/) {

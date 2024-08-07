@@ -59,6 +59,7 @@ void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     xinControl->out.link(colorCamNode->inputControl);
     previewPub = std::make_shared<sensor_helpers::ImagePublisher>();
     rgbPub = std::make_shared<sensor_helpers::ImagePublisher>();
+    rgbPub->setQueueName(ispQName);
 }
 
 void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
@@ -140,10 +141,9 @@ void RGB::link(dai::Node::Input in, int linkType) {
     }
 }
 
-std::shared_ptr<sensor_helpers::ImagePublisher> RGB::getPublisher(int linkType) {
-    rgbPub->setQueueName(ispQName);
+std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> RGB::getPublishers() {
 	rgbPub->setSynced(true);
-    return rgbPub;
+    return std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>>{rgbPub};
 }
 
 void RGB::updateParams(const std::vector<rclcpp::Parameter>& params) {
