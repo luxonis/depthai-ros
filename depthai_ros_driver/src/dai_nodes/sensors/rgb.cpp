@@ -37,29 +37,33 @@ void RGB::setNames() {
 }
 
 void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
-    if(ph->getParam<bool>("i_publish_topic")) {
-		xoutColor = setupXout(pipeline, ispQName);
-        if(ph->getParam<bool>("i_low_bandwidth")) {
-            videoEnc = sensor_helpers::createEncoder(pipeline, ph->getParam<int>("i_low_bandwidth_quality"));
-            colorCamNode->video.link(videoEnc->input);
-            videoEnc->bitstream.link(xoutColor->input);
+    bool outputIsp = ph->getParam<bool>("i_output_isp");
+    auto rgbLinkChoice = [&](auto& input) {
+        if(outputIsp) {
+            colorCamNode->isp.link(input);
         } else {
-            if(ph->getParam<bool>("i_output_isp"))
-                colorCamNode->isp.link(xoutColor->input);
-            else
-                colorCamNode->video.link(xoutColor->input);
+            colorCamNode->video.link(input);
         }
+    };
+    if(ph->getParam<bool>("i_publish_topic")) {
+        setupOutput(pipeline,
+                    ispQName,
+                    xoutColor,
+                    videoEnc,
+                    rgbPub,
+                    rgbLinkChoice,
+                    ph->getParam<bool>("i_synced"),
+                    ph->getParam<bool>("i_low_bandwidth"),
+                    ph->getParam<int>("i_low_bandwidth_quality"));
     }
     if(ph->getParam<bool>("i_enable_preview")) {
-		xoutPreview = setupXout(pipeline, previewQName);
+        xoutPreview = setupXout(pipeline, previewQName);
         colorCamNode->preview.link(xoutPreview->input);
     }
     xinControl = pipeline->create<dai::node::XLinkIn>();
     xinControl->setStreamName(controlQName);
     xinControl->out.link(colorCamNode->inputControl);
     previewPub = std::make_shared<sensor_helpers::ImagePublisher>();
-    rgbPub = std::make_shared<sensor_helpers::ImagePublisher>();
-    rgbPub->setQueueName(ispQName);
 }
 
 void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
@@ -67,7 +71,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         auto tfPrefix = getOpticalTFPrefix(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
             getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
-        imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix, false, ph->getParam<bool>("i_get_base_device_timestamp"));
+        imageConverter = std::make_shared<dai::ros::ImageConverter>(tfPrefix, false, ph->getParam<bool>("i_get_base_device_timestamp"));
         imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
         if(ph->getParam<bool>("i_low_bandwidth")) {
             imageConverter->convertFromBitstream(dai::RawImgFrame::Type::BGR888i);
@@ -91,12 +95,14 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         } else {
             infoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
         }
-        colorQ = device->getOutputQueue(ispQName, ph->getParam<int>("i_max_q_size"), false);
+
         rgbPub->setup(getROSNode(), "~/" + getName(), ph->getParam<bool>("i_enable_lazy_publisher"), ipcEnabled(), infoManager, imageConverter);
-        rgbPub->addQueueCB(colorQ);
+        if(!ph->getParam<bool>("i_synced")) {
+            colorQ = device->getOutputQueue(ispQName, ph->getParam<int>("i_max_q_size"), false);
+            rgbPub->addQueueCB(colorQ);
+        }
     }
     if(ph->getParam<bool>("i_enable_preview")) {
-
         previewInfoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
             getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + previewQName).get(), previewQName);
         auto tfPrefix = getOpticalTFPrefix(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
@@ -142,8 +148,11 @@ void RGB::link(dai::Node::Input in, int linkType) {
 }
 
 std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> RGB::getPublishers() {
-	rgbPub->setSynced(true);
-    return std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>>{rgbPub};
+    std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> publishers;
+    if(ph->getParam<bool>("i_synced")) {
+        publishers.push_back(rgbPub);
+    }
+    return publishers;
 }
 
 void RGB::updateParams(const std::vector<rclcpp::Parameter>& params) {

@@ -26,7 +26,7 @@ def setup_launch_prefix(context, *args, **kwargs):
     launch_prefix = ""
 
     if use_gdb.perform(context) == "true":
-        launch_prefix += "gdb -ex run --args "
+        launch_prefix += "xterm -e gdb -ex run --args"
     if use_valgrind.perform(context) == "true":
         launch_prefix += "valgrind --tool=callgrind"
     if use_perf.perform(context) == "true":

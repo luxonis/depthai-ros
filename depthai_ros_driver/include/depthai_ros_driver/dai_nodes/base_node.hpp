@@ -12,6 +12,7 @@ class Pipeline;
 class Device;
 namespace node {
 class XLinkOut;
+class VideoEncoder;
 }  // namespace node
 }  // namespace dai
 
@@ -39,8 +40,8 @@ class BaseNode {
     virtual void updateParams(const std::vector<rclcpp::Parameter>& params);
     virtual void link(dai::Node::Input in, int linkType = 0);
     virtual dai::Node::Input getInput(int linkType = 0);
-	virtual dai::Node::Input getInputByName(const std::string& name="");
-	virtual std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers();
+    virtual dai::Node::Input getInputByName(const std::string& name = "");
+    virtual std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers();
     virtual void setupQueues(std::shared_ptr<dai::Device> device) = 0;
     /**
      * @brief      Sets the names of the queues.
@@ -52,8 +53,17 @@ class BaseNode {
      * @param      pipeline  The pipeline
      */
     virtual void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) = 0;
+    void setupOutput(std::shared_ptr<dai::Pipeline> pipeline,
+                     const std::string& qName,
+                     std::shared_ptr<dai::node::XLinkOut>& xout,
+                     std::shared_ptr<dai::node::VideoEncoder>& encoder,
+					 std::shared_ptr<sensor_helpers::ImagePublisher>& pub,
+                     std::function<void(dai::Node::Input& input)> nodeLink,
+                     bool isSynced,
+                     bool isLowBandwidth,
+                     int quality);
     virtual void closeQueues() = 0;
-	std::shared_ptr<dai::node::XLinkOut> setupXout(std::shared_ptr<dai::Pipeline> pipeline, const std::string& name);
+    std::shared_ptr<dai::node::XLinkOut> setupXout(std::shared_ptr<dai::Pipeline> pipeline, const std::string& name);
 
     void setNodeName(const std::string& daiNodeName);
     void setROSNodePointer(std::shared_ptr<rclcpp::Node> node);
@@ -75,21 +85,22 @@ class BaseNode {
      * @param[in]  frameName  The frame name
      */
     std::string getTFPrefix(const std::string& frameName = "");
-	/**
-	 * @brief    Append ROS node name to the frameName given and append optical frame suffix to it.
-	 *
-	 * @param[in]  frameName  The frame name
-	 */
-	std::string getOpticalTFPrefix(const std::string& frameName = "");
+    /**
+     * @brief    Append ROS node name to the frameName given and append optical frame suffix to it.
+     *
+     * @param[in]  frameName  The frame name
+     */
+    std::string getOpticalTFPrefix(const std::string& frameName = "");
     bool ipcEnabled();
     std::string getSocketName(dai::CameraBoardSocket socket);
-	bool rsCompabilityMode();
-	rclcpp::Logger getLogger();
+    bool rsCompabilityMode();
+    rclcpp::Logger getLogger();
+
    private:
     std::shared_ptr<rclcpp::Node> baseNode;
     std::string baseDAINodeName;
     bool intraProcessEnabled;
-	rclcpp::Logger logger;
+    rclcpp::Logger logger;
 };
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

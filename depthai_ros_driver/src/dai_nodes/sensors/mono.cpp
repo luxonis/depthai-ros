@@ -38,26 +38,26 @@ void Mono::setNames() {
 
 void Mono::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     if(ph->getParam<bool>("i_publish_topic")) {
-		xoutMono = setupXout(pipeline, monoQName);
-        if(ph->getParam<bool>("i_low_bandwidth")) {
-            videoEnc = sensor_helpers::createEncoder(pipeline, ph->getParam<int>("i_low_bandwidth_quality"));
-            monoCamNode->out.link(videoEnc->input);
-            videoEnc->bitstream.link(xoutMono->input);
-        } else {
-            monoCamNode->out.link(xoutMono->input);
-        }
+        setupOutput(
+            pipeline,
+            monoQName,
+            xoutMono,
+            videoEnc,
+            imagePublisher,
+            [&](auto& input) { monoCamNode->out.link(input); },
+            ph->getParam<bool>("i_synced"),
+            ph->getParam<bool>("i_low_bandwidth"),
+            ph->getParam<int>("i_low_bandwidth_quality"));
     }
     xinControl = pipeline->create<dai::node::XLinkIn>();
     xinControl->setStreamName(controlQName);
     xinControl->out.link(monoCamNode->inputControl);
-    imagePublisher = std::make_shared<sensor_helpers::ImagePublisher>();
-	imagePublisher->setQueueName(monoQName);
 }
 
 void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_publish_topic")) {
         auto tfPrefix = getOpticalTFPrefix(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
-        imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix, false, ph->getParam<bool>("i_get_base_device_timestamp"));
+        imageConverter = std::make_shared<dai::ros::ImageConverter>(tfPrefix, false, ph->getParam<bool>("i_get_base_device_timestamp"));
         imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
         if(ph->getParam<bool>("i_low_bandwidth")) {
             imageConverter->convertFromBitstream(dai::RawImgFrame::Type::GRAY8);
@@ -81,9 +81,11 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
         } else {
             infoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
         }
-        monoQ = device->getOutputQueue(monoQName, ph->getParam<int>("i_max_q_size"), false);
         imagePublisher->setup(getROSNode(), getName(), ph->getParam<bool>("i_enable_lazy_publisher"), ipcEnabled(), infoManager, imageConverter);
-        imagePublisher->addQueueCB(monoQ);
+        if(ph->getParam<bool>("i_synced")) {
+            monoQ = device->getOutputQueue(monoQName, ph->getParam<int>("i_max_q_size"), false);
+            imagePublisher->addQueueCB(monoQ);
+        }
     }
     controlQ = device->getInputQueue(controlQName);
 }
@@ -99,8 +101,11 @@ void Mono::link(dai::Node::Input in, int /*linkType*/) {
 }
 
 std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> Mono::getPublishers() {
-	imagePublisher->setSynced(true);
-    return std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>>{imagePublisher};
+    std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> publishers;
+    if(ph->getParam<bool>("i_publish_topic")) {
+        publishers.push_back(imagePublisher);
+    }
+    return publishers;
 }
 
 void Mono::updateParams(const std::vector<rclcpp::Parameter>& params) {

@@ -1,9 +1,10 @@
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
-#include "depthai/pipeline/node/XLinkOut.hpp"
 
 #include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/node/VideoEncoder.hpp"
+#include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/node.hpp"
@@ -67,12 +68,41 @@ void BaseNode::closeQueues() {
 };
 
 std::shared_ptr<dai::node::XLinkOut> BaseNode::setupXout(std::shared_ptr<dai::Pipeline> pipeline, const std::string& name) {
-	auto xout = pipeline->create<dai::node::XLinkOut>();
-	xout->setStreamName(name);
-	xout->input.setBlocking(false);
-	xout->input.setWaitForMessage(false);
-	xout->input.setQueueSize(0);
-	return xout;
+    auto xout = pipeline->create<dai::node::XLinkOut>();
+    xout->setStreamName(name);
+    xout->input.setBlocking(false);
+    xout->input.setWaitForMessage(false);
+    xout->input.setQueueSize(0);
+    return xout;
+};
+void BaseNode::setupOutput(std::shared_ptr<dai::Pipeline> pipeline,
+                           const std::string& qName,
+                           std::shared_ptr<dai::node::XLinkOut>& xout,
+                           std::shared_ptr<dai::node::VideoEncoder>& encoder,
+						   std::shared_ptr<sensor_helpers::ImagePublisher>& pub,
+                           std::function<void(dai::Node::Input& input)> nodeLink,
+                           bool isSynced,
+                           bool isLowBandwidth,
+                           int quality) {
+    if(!isSynced) {
+        xout = setupXout(pipeline, qName);
+    }
+
+    if(isLowBandwidth) {
+        encoder = sensor_helpers::createEncoder(pipeline, quality);
+        nodeLink(encoder->input);
+
+        if(!isSynced) {
+            encoder->bitstream.link(xout->input);
+        }
+    } else {
+        if(!isSynced) {
+            nodeLink(xout->input);
+        }
+    }
+	pub = std::make_shared<sensor_helpers::ImagePublisher>();
+	pub->setQueueName(qName);
+	pub->setSynced(isSynced);
 };
 
 void BaseNode::setNames() {
@@ -92,7 +122,7 @@ void BaseNode::link(dai::Node::Input /*in*/, int /*linkType = 0*/) {
 };
 
 std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> BaseNode::getPublishers() {
-    throw(std::runtime_error("getPublisher() not implemented"));
+	return std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>>();
 };
 void BaseNode::updateParams(const std::vector<rclcpp::Parameter>& /*params*/) {
     return;
