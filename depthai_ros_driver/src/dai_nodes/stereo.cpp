@@ -80,42 +80,62 @@ void Stereo::setNames() {
 }
 
 void Stereo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
-    if(ph->getParam<bool>("i_publish_topic")) {
-		xoutStereo = setupXout(pipeline, stereoQName);
-        if(ph->getParam<bool>("i_low_bandwidth")) {
-            stereoEnc = sensor_helpers::createEncoder(pipeline, ph->getParam<int>("i_low_bandwidth_quality"));
-            stereoCamNode->disparity.link(stereoEnc->input);
-            stereoEnc->bitstream.link(xoutStereo->input);
+    auto setupOutput = [&](const std::string& qName, const std::string& prefix, auto& xout, auto& encoder, auto nodeLink, auto defaultLink) {
+        bool isSynced = ph->getParam<bool>(prefix + "_synced");
+        bool isLowBandwidth = ph->getParam<bool>(prefix + "_low_bandwidth");
+        bool outputDisparity = ph->getParam<bool>(prefix + "_output_disparity");
+
+        if(!isSynced) {
+            xout = setupXout(pipeline, qName);
+        }
+
+        if(isLowBandwidth) {
+            encoder = sensor_helpers::createEncoder(pipeline, ph->getParam<int>(prefix + "_low_bandwidth_quality"));
+            nodeLink(encoder->input);
+
+            if(!isSynced) {
+                encoder->bitstream.link(xout->input);
+            }
+        } else if(outputDisparity) {
+            if(!isSynced) {
+                nodeLink(xout->input);
+            }
         } else {
-            if(ph->getParam<bool>("i_output_disparity")) {
-                stereoCamNode->disparity.link(xoutStereo->input);
-            } else {
-                stereoCamNode->depth.link(xoutStereo->input);
+            if(!isSynced) {
+                defaultLink(xout->input);
             }
         }
+    };
+
+    if(ph->getParam<bool>("i_publish_topic")) {
+        setupOutput(
+            stereoQName,
+            "i",
+            xoutStereo,
+            stereoEnc,
+            [&](auto input) { stereoCamNode->disparity.link(input); },
+            [&](auto input) { stereoCamNode->depth.link(input); });
     }
+
     if(ph->getParam<bool>("i_publish_left_rect") || ph->getParam<bool>("i_publish_synced_rect_pair")) {
-		xoutLeftRect = setupXout(pipeline, leftRectQName);
-        if(ph->getParam<bool>("i_left_rect_low_bandwidth")) {
-            leftRectEnc = sensor_helpers::createEncoder(pipeline, ph->getParam<int>("i_left_rect_low_bandwidth_quality"));
-            stereoCamNode->rectifiedLeft.link(leftRectEnc->input);
-            leftRectEnc->bitstream.link(xoutLeftRect->input);
-        } else {
-            stereoCamNode->rectifiedLeft.link(xoutLeftRect->input);
-        }
+        setupOutput(
+            leftRectQName,
+            "i_left_rect",
+            xoutLeftRect,
+            leftRectEnc,
+            [&](auto input) { stereoCamNode->rectifiedLeft.link(input); },
+            [&](auto /*input*/) { /* No default link needed for rectified left */ });
     }
 
     if(ph->getParam<bool>("i_publish_right_rect") || ph->getParam<bool>("i_publish_synced_rect_pair")) {
-		xoutRightRect = setupXout(pipeline, rightRectQName);
-        if(ph->getParam<bool>("i_right_rect_low_bandwidth")) {
-            rightRectEnc = sensor_helpers::createEncoder(pipeline, ph->getParam<int>("i_right_rect_low_bandwidth_quality"));
-            stereoCamNode->rectifiedRight.link(rightRectEnc->input);
-            rightRectEnc->bitstream.link(xoutRightRect->input);
-        } else {
-            stereoCamNode->rectifiedRight.link(xoutRightRect->input);
-        }
+        setupOutput(
+            rightRectQName,
+            "i_right_rect",
+            xoutRightRect,
+            rightRectEnc,
+            [&](auto input) { stereoCamNode->rectifiedRight.link(input); },
+            [&](auto /*input*/) { /* No default link needed for rectified right */ });
     }
-
     if(ph->getParam<bool>("i_left_rect_enable_feature_tracker")) {
         featureTrackerLeftR = std::make_unique<FeatureTracker>(leftSensInfo.name + std::string("_rect_feature_tracker"), getROSNode(), pipeline);
 
@@ -127,11 +147,11 @@ void Stereo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
         stereoCamNode->rectifiedRight.link(featureTrackerRightR->getInput());
     }
     stereoPub = std::make_shared<sensor_helpers::ImagePublisher>();
-	stereoPub->setQueueName(stereoQName);
-	leftRectPub = std::make_shared<sensor_helpers::ImagePublisher>();
-	leftRectPub->setQueueName(leftRectQName);
-	rightRectPub = std::make_shared<sensor_helpers::ImagePublisher>();
-	rightRectPub->setQueueName(rightRectQName);
+    stereoPub->setQueueName(stereoQName);
+    leftRectPub = std::make_shared<sensor_helpers::ImagePublisher>();
+    leftRectPub->setQueueName(leftRectQName);
+    rightRectPub = std::make_shared<sensor_helpers::ImagePublisher>();
+    rightRectPub->setQueueName(rightRectQName);
 }
 
 void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
@@ -182,7 +202,7 @@ void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
     // if publish synced pair is set to true then we skip individual publishing of left and right rectified frames
     bool addCallback = !ph->getParam<bool>("i_publish_synced_rect_pair");
 
-	pub->setup(getROSNode(), "~/" + sensorName, ph->getParam<bool>("i_enable_lazy_publisher"), ipcEnabled(), im, conv);
+    pub->setup(getROSNode(), "~/" + sensorName, ph->getParam<bool>("i_enable_lazy_publisher"), ipcEnabled(), im, conv);
     if(addCallback) {
         pub->addQueueCB(q);
     }
@@ -247,9 +267,11 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     }
 
     stereoIM->setCameraInfo(info);
-    // stereoQ = device->getOutputQueue(stereoQName, ph->getParam<int>("i_max_q_size"), false);
-        stereoPub->setup(getROSNode(), "~/" + getName(), ph->getParam<bool>("i_enable_lazy_publisher"), ipcEnabled(), stereoIM, stereoConv);
-    // stereoPub->addQueueCB(stereoQ);
+    stereoPub->setup(getROSNode(), "~/" + getName(), ph->getParam<bool>("i_enable_lazy_publisher"), ipcEnabled(), stereoIM, stereoConv);
+	if(!ph->getParam<bool>("i_synced")) {
+		stereoQ = device->getOutputQueue(stereoQName, ph->getParam<int>("i_max_q_size"), false);
+		stereoPub->addQueueCB(stereoQ);
+	}
 }
 void Stereo::syncTimerCB() {
     auto left = leftRectQ->get<dai::ImgFrame>();
@@ -318,32 +340,32 @@ void Stereo::closeQueues() {
 }
 
 void Stereo::link(dai::Node::Input in, int linkType) {
-	if(linkType == static_cast<int>(link_types::StereoLinkType::stereo)) {
-		stereoCamNode->depth.link(in);
-	} else if(linkType == static_cast<int>(link_types::StereoLinkType::left)) {
-		stereoCamNode->rectifiedLeft.link(in);
-	} else if(linkType == static_cast<int>(link_types::StereoLinkType::right)) {
-		stereoCamNode->rectifiedRight.link(in);
-	} else {
-		throw std::runtime_error("Wrong link type specified!");
-	}	
+    if(linkType == static_cast<int>(link_types::StereoLinkType::stereo)) {
+        stereoCamNode->depth.link(in);
+    } else if(linkType == static_cast<int>(link_types::StereoLinkType::left)) {
+        stereoCamNode->rectifiedLeft.link(in);
+    } else if(linkType == static_cast<int>(link_types::StereoLinkType::right)) {
+        stereoCamNode->rectifiedRight.link(in);
+    } else {
+        throw std::runtime_error("Wrong link type specified!");
+    }
 }
 
 std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> Stereo::getPublishers() {
-	std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> pubs;
-	if(ph->getParam<bool>("i_synced")) {
-		stereoPub->setSynced(true);
-		pubs.push_back(stereoPub);
-	}
-	if(ph->getParam<bool>("i_left_rect_synced")) {
-		leftRectPub->setSynced(true);
-		pubs.push_back(leftRectPub);
-	}
-	if(ph->getParam<bool>("i_right_rect_synced")) {
-		rightRectPub->setSynced(true);
-		pubs.push_back(rightRectPub);
-	}
-	return pubs;
+    std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> pubs;
+    if(ph->getParam<bool>("i_synced")) {
+        stereoPub->setSynced(true);
+        pubs.push_back(stereoPub);
+    }
+    if(ph->getParam<bool>("i_left_rect_synced")) {
+        leftRectPub->setSynced(true);
+        pubs.push_back(leftRectPub);
+    }
+    if(ph->getParam<bool>("i_right_rect_synced")) {
+        rightRectPub->setSynced(true);
+        pubs.push_back(rightRectPub);
+    }
+    return pubs;
 }
 
 dai::Node::Input Stereo::getInput(int linkType) {

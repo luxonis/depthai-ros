@@ -73,6 +73,7 @@ add_library(
   src/param_handlers/sensor_param_handler.cpp
   src/param_handlers/feature_tracker_param_handler.cpp
   src/param_handlers/stereo_param_handler.cpp
+  src/param_handlers/sync_param_handler.cpp
 )
 
 ament_target_dependencies(${COMMON_LIB_NAME} ${COMMON_DEPS})

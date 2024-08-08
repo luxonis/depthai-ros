@@ -84,7 +84,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
 
     declareAndLogParam<bool>("i_enable_spatial_nn", false);
     declareAndLogParam<std::string>("i_spatial_nn_source", "right");
-	declareAndLogParam<bool>("i_synced", false);
+	declareAndLogParam<bool>("i_synced", true);
 
     stereo->setLeftRightCheck(declareAndLogParam<bool>("i_lr_check", true));
     int width = 1280;
