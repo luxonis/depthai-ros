@@ -71,10 +71,6 @@ class Stereo : public BaseNode {
     void setupRightRectQueue(std::shared_ptr<dai::Device> device);
     void setupRectQueue(std::shared_ptr<dai::Device> device,
                         dai::CameraFeatures& sensorInfo,
-                        const std::string& queueName,
-                        std::shared_ptr<dai::ros::ImageConverter> conv,
-                        std::shared_ptr<camera_info_manager::CameraInfoManager> im,
-                        std::shared_ptr<dai::DataOutputQueue> q,
                         std::shared_ptr<sensor_helpers::ImagePublisher> pub,
                         bool isLeft);
     /*
@@ -83,16 +79,14 @@ class Stereo : public BaseNode {
      * If they are not synchronized, it prints a warning message
      */
     void syncTimerCB();
-    std::shared_ptr<dai::ros::ImageConverter> stereoConv, leftRectConv, rightRectConv;
 	std::shared_ptr<sensor_helpers::ImagePublisher> stereoPub, leftRectPub, rightRectPub;
-    std::shared_ptr<camera_info_manager::CameraInfoManager> stereoIM, leftRectIM, rightRectIM;
     std::shared_ptr<dai::node::StereoDepth> stereoCamNode;
     std::shared_ptr<dai::node::VideoEncoder> stereoEnc, leftRectEnc, rightRectEnc;
     std::unique_ptr<SensorWrapper> left;
     std::unique_ptr<SensorWrapper> right;
     std::unique_ptr<BaseNode> featureTrackerLeftR, featureTrackerRightR, nnNode;
     std::unique_ptr<param_handlers::StereoParamHandler> ph;
-    std::shared_ptr<dai::DataOutputQueue> stereoQ, leftRectQ, rightRectQ;
+    std::shared_ptr<dai::DataOutputQueue> leftRectQ, rightRectQ;
     std::shared_ptr<dai::node::XLinkOut> xoutStereo, xoutLeftRect, xoutRightRect;
     std::string stereoQName, leftRectQName, rightRectQName;
     dai::CameraFeatures leftSensInfo, rightSensInfo;

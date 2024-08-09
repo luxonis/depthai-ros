@@ -66,20 +66,20 @@ class SpatialDetection : public BaseNode {
         detPub = getROSNode()->template create_publisher<vision_msgs::msg::Detection3DArray>("~/" + getName() + "/spatial_detections", 10, options);
 
         if(ph->getParam<bool>("i_enable_passthrough")) {
-            ptQ = device->getOutputQueue(ptQName, ph->getParam<int>("i_max_q_size"), false);
-            ptImageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix, false);
-            ptImageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
-            ptInfoMan = std::make_shared<camera_info_manager::CameraInfoManager>(
-                getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
-            ptInfoMan->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
-                                                                  *ptImageConverter,
-                                                                  device,
-                                                                  static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")),
-                                                                  width,
-                                                                  height));
+			sensor_helpers::ImgConverterConfig convConf;
+			convConf.tfPrefix = tfPrefix;
+			convConf.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
+			convConf.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
 
-			ptPub->setup(getROSNode(), "~/" + getName() + "/passthrough", true, ipcEnabled(), ptInfoMan, ptImageConverter);
-			ptPub->addQueueCB(ptQ);
+			sensor_helpers::ImgPublisherConfig pubConf;
+			pubConf.width = width;
+			pubConf.height = height;
+			pubConf.daiNodeName = getName();
+			pubConf.topicName = "~/" + getName();
+			pubConf.topicSuffix = "passthrough";
+			pubConf.socket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"));
+
+			ptPub->setup(device, convConf, pubConf);
         }
 
         if(ph->getParam<bool>("i_enable_passthrough_depth")) {
@@ -87,20 +87,20 @@ class SpatialDetection : public BaseNode {
             if(!ph->getOtherNodeParam<bool>("stereo", "i_align_depth")) {
                 tfPrefix = getTFPrefix("right");
             };
-            ptDepthQ = device->getOutputQueue(ptDepthQName, ph->getParam<int>("i_max_q_size"), false);
-            ptDepthImageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix, false);
-            ptDepthImageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
-            ptDepthInfoMan = std::make_shared<camera_info_manager::CameraInfoManager>(
-                getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
-            ptDepthInfoMan->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
-                                                                       *ptDepthImageConverter,
-                                                                       device,
-                                                                       socket,
-                                                                       ph->getOtherNodeParam<int>("stereo", "i_width"),
-                                                                       ph->getOtherNodeParam<int>("stereo", "i_height")));
+			sensor_helpers::ImgConverterConfig convConf;
+			convConf.tfPrefix = tfPrefix;
+			convConf.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
+			convConf.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
 
-				ptDepthPub->setup(getROSNode(), "~/" + getName() + "/passthrough_depth", true, ipcEnabled(), ptDepthInfoMan, ptDepthImageConverter);
-			ptDepthPub->addQueueCB(ptDepthQ);
+			sensor_helpers::ImgPublisherConfig pubConf;
+			pubConf.width = ph->getOtherNodeParam<int>(sensor_helpers::getNodeName(getROSNode(), sensor_helpers::NodeNameEnum::Stereo), "i_width");
+			pubConf.height = ph->getOtherNodeParam<int>(sensor_helpers::getNodeName(getROSNode(), sensor_helpers::NodeNameEnum::Stereo), "i_height");
+			pubConf.daiNodeName = getName();
+			pubConf.topicName = "~/" + getName();
+			pubConf.topicSuffix = "/passthrough_depth";
+			pubConf.socket = socket;
+
+			ptDepthPub->setup(device, convConf, pubConf);
         }
     };
     void link(dai::Node::Input in, int /*linkType = 0*/) override {
@@ -126,16 +126,10 @@ class SpatialDetection : public BaseNode {
         xoutNN->setStreamName(nnQName);
         spatialNode->out.link(xoutNN->input);
         if(ph->getParam<bool>("i_enable_passthrough")) {
-            xoutPT = pipeline->create<dai::node::XLinkOut>();
-            xoutPT->setStreamName(ptQName);
-            spatialNode->passthrough.link(xoutPT->input);
-			ptPub = std::make_shared<sensor_helpers::ImagePublisher>();
+            setupOutput(pipeline, ptQName, xoutPT, nullptr, ptPub, [&](dai::Node::Input& input) { spatialNode->passthrough.link(input); }, false, false, 50);
         }
         if(ph->getParam<bool>("i_enable_passthrough_depth")) {
-            xoutPTDepth = pipeline->create<dai::node::XLinkOut>();
-            xoutPTDepth->setStreamName(ptDepthQName);
-            spatialNode->passthroughDepth.link(xoutPTDepth->input);
-			ptDepthPub = std::make_shared<sensor_helpers::ImagePublisher>();
+            setupOutput(pipeline, ptDepthQName, xoutPTDepth, nullptr, ptDepthPub, [&](dai::Node::Input& input) { spatialNode->passthroughDepth.link(input); }, false, false, 50);
         }
     };
     void closeQueues() override {

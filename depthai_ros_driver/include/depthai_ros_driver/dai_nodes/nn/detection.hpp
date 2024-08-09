@@ -69,6 +69,7 @@ class Detection : public BaseNode {
             width = imageManip->initialConfig.getResizeConfig().width;
             height = imageManip->initialConfig.getResizeConfig().height;
         }
+
         detConverter = std::make_unique<dai::ros::ImgDetectionConverter>(tfPrefix, width, height, false, ph->getParam<bool>("i_get_base_device_timestamp"));
         detConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
         rclcpp::PublisherOptions options;
@@ -77,20 +78,18 @@ class Detection : public BaseNode {
         nnQ->addCallback(std::bind(&Detection::detectionCB, this, std::placeholders::_1, std::placeholders::_2));
 
         if(ph->getParam<bool>("i_enable_passthrough")) {
-            ptQ = device->getOutputQueue(ptQName, ph->getParam<int>("i_max_q_size"), false);
-            imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix, false);
-            imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
-            infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
-                getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
-            infoManager->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
-                                                                    *imageConverter,
-                                                                    device,
-                                                                    static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")),
-                                                                    width,
-                                                                    height));
+            sensor_helpers::ImgConverterConfig convConf;
+            convConf.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
+            convConf.tfPrefix = tfPrefix;
+            convConf.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
 
-            ptPub->setup(getROSNode(), "~/" + getName() + "passthrough", true, ipcEnabled(), infoManager, imageConverter);
-            ptPub->addQueueCB(ptQ);
+            sensor_helpers::ImgPublisherConfig pubConf;
+            pubConf.daiNodeName = getName();
+            pubConf.topicName = "~/" + getName();
+            pubConf.topicSuffix = "passthrough";
+            pubConf.socket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"));
+
+            ptPub->setup(device, convConf, pubConf);
         }
     };
     /**
@@ -130,11 +129,8 @@ class Detection : public BaseNode {
         xoutNN->setStreamName(nnQName);
         detectionNode->out.link(xoutNN->input);
         if(ph->getParam<bool>("i_enable_passthrough")) {
-            xoutPT = pipeline->create<dai::node::XLinkOut>();
-            xoutPT->setStreamName(ptQName);
-            detectionNode->passthrough.link(xoutPT->input);
+            setupOutput(pipeline, ptQName, xoutPT, nullptr, ptPub, [&](dai::Node::Input& input) { detectionNode->passthrough.link(input); }, false, false, 50);
         }
-        ptPub = std::make_shared<sensor_helpers::ImagePublisher>();
     };
     /**
      * @brief      Closes the queues for the DetectionNetwork node and the passthrough.

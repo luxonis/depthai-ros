@@ -69,67 +69,58 @@ void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_publish_topic")) {
         auto tfPrefix = getOpticalTFPrefix(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
-        infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
-            getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
-        imageConverter = std::make_shared<dai::ros::ImageConverter>(tfPrefix, false, ph->getParam<bool>("i_get_base_device_timestamp"));
-        imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
-        if(ph->getParam<bool>("i_low_bandwidth")) {
-            imageConverter->convertFromBitstream(dai::RawImgFrame::Type::BGR888i);
-        }
-        if(ph->getParam<bool>("i_add_exposure_offset")) {
-            auto offset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
-            imageConverter->addExposureOffset(offset);
-        }
+		sensor_helpers::ImgConverterConfig convConfig;
+		convConfig.tfPrefix = tfPrefix;
+		convConfig.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
+		convConfig.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
+		convConfig.lowBandwidth = ph->getParam<bool>("i_low_bandwidth");
+		convConfig.encoding = dai::RawImgFrame::Type::BGR888i;
+		convConfig.addExposureOffset = ph->getParam<bool>("i_add_exposure_offset");
+		convConfig.expOffset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
+		convConfig.reverseSocketOrder = ph->getParam<bool>("i_reverse_stereo_socket_order");
 
-        if(ph->getParam<bool>("i_reverse_stereo_socket_order")) {
-            imageConverter->reverseStereoSocketOrder();
-        }
+		sensor_helpers::ImgPublisherConfig pubConfig;
+		pubConfig.daiNodeName = getName();
+		pubConfig.topicName = "~/" + getName();
+		pubConfig.lazyPub = ph->getParam<bool>("i_enable_lazy_publisher");
+		pubConfig.socket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"));
+		pubConfig.calibrationFile = ph->getParam<std::string>("i_calibration_file");
+		pubConfig.rectified = false;
+		pubConfig.width = ph->getParam<int>("i_width");
+		pubConfig.height = ph->getParam<int>("i_height");
+		pubConfig.maxQSize = ph->getParam<int>("i_max_q_size");
 
-        if(ph->getParam<std::string>("i_calibration_file").empty()) {
-            infoManager->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
-                                                                    *imageConverter,
-                                                                    device,
-                                                                    static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")),
-                                                                    ph->getParam<int>("i_width"),
-                                                                    ph->getParam<int>("i_height")));
-        } else {
-            infoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
-        }
-
-        rgbPub->setup(getROSNode(), "~/" + getName(), ph->getParam<bool>("i_enable_lazy_publisher"), ipcEnabled(), infoManager, imageConverter);
-        if(!ph->getParam<bool>("i_synced")) {
-            colorQ = device->getOutputQueue(ispQName, ph->getParam<int>("i_max_q_size"), false);
-            rgbPub->addQueueCB(colorQ);
-        }
+		rgbPub->setup(device, convConfig, pubConfig);
     }
     if(ph->getParam<bool>("i_enable_preview")) {
-        previewInfoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
-            getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + previewQName).get(), previewQName);
         auto tfPrefix = getOpticalTFPrefix(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
-        imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix, false);
-        imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
-        if(ph->getParam<std::string>("i_calibration_file").empty()) {
-            previewInfoManager->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
-                                                                           *imageConverter,
-                                                                           device,
-                                                                           static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")),
-                                                                           ph->getParam<int>("i_preview_size"),
-                                                                           ph->getParam<int>("i_preview_size")));
-        } else {
-            previewInfoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
-        }
-        previewPub->setup(getROSNode(), "~/" + getName(), ph->getParam<bool>("i_enable_lazy_publisher"), ipcEnabled(), previewInfoManager, imageConverter);
-        previewQ = device->getOutputQueue(previewQName, ph->getParam<int>("i_max_q_size"), false);
-        previewPub->addQueueCB(previewQ);
+		sensor_helpers::ImgConverterConfig convConfig;
+		convConfig.tfPrefix = tfPrefix;
+		convConfig.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
+		convConfig.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
+
+		sensor_helpers::ImgPublisherConfig pubConfig;
+		pubConfig.daiNodeName = getName();
+		pubConfig.topicName = "~/" + getName();
+		pubConfig.lazyPub = ph->getParam<bool>("i_enable_lazy_publisher");
+		pubConfig.socket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"));
+		pubConfig.calibrationFile = ph->getParam<std::string>("i_calibration_file");
+		pubConfig.rectified = false;
+		pubConfig.width = ph->getParam<int>("i_preview_width");
+		pubConfig.height = ph->getParam<int>("i_preview_height");
+		pubConfig.maxQSize = ph->getParam<int>("i_max_q_size");
+		pubConfig.topicSuffix = "/preview/image_raw";
+
+		previewPub->setup(device, convConfig, pubConfig);
     };
     controlQ = device->getInputQueue(controlQName);
 }
 
 void RGB::closeQueues() {
     if(ph->getParam<bool>("i_publish_topic")) {
-        colorQ->close();
+        rgbPub->closeQueue();
         if(ph->getParam<bool>("i_enable_preview")) {
-            previewQ->close();
+			previewPub->closeQueue();
         }
     }
     controlQ->close();

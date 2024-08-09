@@ -100,9 +100,7 @@ void BaseNode::setupOutput(std::shared_ptr<dai::Pipeline> pipeline,
             nodeLink(xout->input);
         }
     }
-	pub = std::make_shared<sensor_helpers::ImagePublisher>();
-	pub->setQueueName(qName);
-	pub->setSynced(isSynced);
+	pub = std::make_shared<sensor_helpers::ImagePublisher>(getROSNode(), qName, isSynced, ipcEnabled());
 };
 
 void BaseNode::setNames() {

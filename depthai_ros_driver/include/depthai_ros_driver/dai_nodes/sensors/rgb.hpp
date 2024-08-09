@@ -58,13 +58,10 @@ class RGB : public BaseNode {
 	std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
 
    private:
-    std::shared_ptr<dai::ros::ImageConverter> imageConverter;
 	std::shared_ptr<sensor_helpers::ImagePublisher> rgbPub, previewPub;
-    std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager, previewInfoManager;
     std::shared_ptr<dai::node::ColorCamera> colorCamNode;
     std::shared_ptr<dai::node::VideoEncoder> videoEnc;
     std::unique_ptr<param_handlers::SensorParamHandler> ph;
-    std::shared_ptr<dai::DataOutputQueue> colorQ, previewQ;
     std::shared_ptr<dai::DataInputQueue> controlQ;
     std::shared_ptr<dai::node::XLinkOut> xoutColor, xoutPreview;
     std::shared_ptr<dai::node::XLinkIn> xinControl;

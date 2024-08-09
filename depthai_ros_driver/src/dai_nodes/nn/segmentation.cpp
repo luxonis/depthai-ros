@@ -65,7 +65,7 @@ void Segmentation::setupQueues(std::shared_ptr<dai::Device> device) {
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
             getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
         infoManager->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
-                                                                *imageConverter,
+                                                                imageConverter,
                                                                 device,
                                                                 dai::CameraBoardSocket::CAM_A,
                                                                 imageManip->initialConfig.getResizeWidth(),

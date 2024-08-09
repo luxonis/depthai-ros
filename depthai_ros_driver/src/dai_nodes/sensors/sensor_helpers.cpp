@@ -1,4 +1,5 @@
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
+
 #include <depthai/pipeline/node/XLinkOut.hpp>
 
 #include "camera_info_manager/camera_info_manager.hpp"
@@ -12,42 +13,81 @@ namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace sensor_helpers {
 
-void ImagePublisher::setup(std::shared_ptr<rclcpp::Node> node,
-                           const std::string& name,
-                           bool lazyPub,
-                           bool ipcEnabled,
-                           std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
-                           std::shared_ptr<dai::ros::ImageConverter> converter,
-                           const std::string& topicSuffix) {
-    this->name = name;
-    this->lazyPub = lazyPub;
-    this->ipcEnabled = ipcEnabled;
-    this->infoManager = infoManager;
-    this->converter = converter;
+ImagePublisher::ImagePublisher(std::shared_ptr<rclcpp::Node> node, const std::string& qName, bool synced, bool ipcEnabled)
+    : node(node), qName(qName), ipcEnabled(ipcEnabled), synced(synced) {}
+void ImagePublisher::setup(std::shared_ptr<dai::Device> device, const ImgConverterConfig& convConf, const ImgPublisherConfig& pubConf) {
+    convConfig = convConf;
+    pubConfig = pubConf;
+    createImageConverter(device);
+    createInfoManager(device);
     if(ipcEnabled) {
         auto qos = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable();
-        imgPub = node->create_publisher<sensor_msgs::msg::Image>(name + topicSuffix, qos);
-        infoPub = node->create_publisher<sensor_msgs::msg::CameraInfo>(name + "/camera_info", qos);
+        imgPub = node->create_publisher<sensor_msgs::msg::Image>(pubConfig.topicName + pubConfig.topicSuffix, qos);
+        infoPub = node->create_publisher<sensor_msgs::msg::CameraInfo>(pubConfig.topicName + "/camera_info", qos);
     } else {
-        imgPubIT = image_transport::create_camera_publisher(node.get(), name + topicSuffix);
+        imgPubIT = image_transport::create_camera_publisher(node.get(), pubConfig.topicName + pubConfig.topicSuffix);
+    }
+    dataQ = device->getOutputQueue(getQueueName(), pubConf.maxQSize, pubConf.qBlocking);
+    addQueueCB(dataQ);
+}
+
+void ImagePublisher::createImageConverter(std::shared_ptr<dai::Device> device) {
+    converter = std::make_shared<dai::ros::ImageConverter>(convConfig.tfPrefix, convConfig.interleaved, convConfig.getBaseDeviceTimestamp);
+    converter->setUpdateRosBaseTimeOnToRosMsg(convConfig.updateROSBaseTimeOnRosMsg);
+    if(convConfig.lowBandwidth) {
+        converter->convertFromBitstream(convConfig.encoding);
+    }
+    if(convConfig.addExposureOffset) {
+        converter->addExposureOffset(convConfig.expOffset);
+    }
+    if(convConfig.reverseSocketOrder) {
+        converter->reverseStereoSocketOrder();
+    }
+    if(convConfig.alphaScalingEnabled) {
+        converter->setAlphaScaling(convConfig.alphaScaling);
+    }
+    if(convConfig.outputDisparity) {
+        auto calHandler = device->readCalibration();
+        double baseline = calHandler.getBaselineDistance(pubConfig.leftSocket, pubConfig.rightSocket, false);
+        if(convConfig.reverseSocketOrder) {
+            baseline = calHandler.getBaselineDistance(pubConfig.rightSocket, pubConfig.leftSocket, false);
+        }
+        converter->convertDispToDepth(baseline);
     }
 }
 
-ImagePublisher::~ImagePublisher() = default;
+void ImagePublisher::createInfoManager(std::shared_ptr<dai::Device> device) {
+    infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
+        node->create_sub_node(std::string(node->get_name()) + "/" + pubConfig.daiNodeName).get(), "/" + pubConfig.daiNodeName + pubConfig.infoMgrSuffix);
+    if(pubConfig.calibrationFile.empty()) {
+        auto info = sensor_helpers::getCalibInfo(node->get_logger(), converter, device, pubConfig.socket, pubConfig.width, pubConfig.height);
+        if(pubConfig.rectified) {
+            std::fill(info.d.begin(), info.d.end(), 0.0);
+            std::fill(info.k.begin(), info.k.end(), 0.0);
+            info.r[0] = info.r[4] = info.r[8] = 1.0;
+        }
+        infoManager->setCameraInfo(info);
+    } else {
+        infoManager->loadCameraInfo(pubConfig.calibrationFile);
+    }
+};
+ImagePublisher::~ImagePublisher() {
+    closeQueue();
+};
 
+void ImagePublisher::closeQueue() {
+    if(dataQ) dataQ->close();
+}
+std::shared_ptr<dai::DataOutputQueue> ImagePublisher::getQueue() {
+	return dataQ;
+}
 void ImagePublisher::addQueueCB(const std::shared_ptr<dai::DataOutputQueue>& queue) {
-	if(synced){
-		return;
-	}
+    if(synced) {
+        return;
+    }
     dataQ = queue;
     qName = queue->getName();
     cbID = dataQ->addCallback([this](const std::shared_ptr<dai::ADatatype>& data) { publish(data); });
-}
-
-void ImagePublisher::removeQueueCB() {
-    if(dataQ) {
-        dataQ->removeCallback(cbID);
-    }
 }
 
 std::string ImagePublisher::getQueueName() {
@@ -57,7 +97,7 @@ void ImagePublisher::setQueueName(const std::string& name) {
     qName = name;
 }
 void ImagePublisher::setSynced(bool sync) {
-	synced = sync;
+    synced = sync;
 }
 std::pair<sensor_msgs::msg::Image::UniquePtr, sensor_msgs::msg::CameraInfo::UniquePtr> ImagePublisher::convertData(const std::shared_ptr<dai::ADatatype> data) {
     auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
@@ -70,11 +110,11 @@ std::pair<sensor_msgs::msg::Image::UniquePtr, sensor_msgs::msg::CameraInfo::Uniq
 }
 
 void ImagePublisher::publish(std::pair<sensor_msgs::msg::Image::UniquePtr, sensor_msgs::msg::CameraInfo::UniquePtr> data) {
-    if(ipcEnabled && (!lazyPub || detectSubscription(imgPub, infoPub))) {
+    if(ipcEnabled && (!pubConfig.lazyPub || detectSubscription(imgPub, infoPub))) {
         imgPub->publish(std::move(data.first));
         infoPub->publish(std::move(data.second));
     } else {
-        if(!lazyPub || imgPubIT.getNumSubscribers() > 0) imgPubIT.publish(*data.first, *data.second);
+        if(!pubConfig.lazyPub || imgPubIT.getNumSubscribers() > 0) imgPubIT.publish(*data.first, *data.second);
     }
 }
 
@@ -84,13 +124,13 @@ void ImagePublisher::publish(const std::shared_ptr<dai::ADatatype>& data) {
         auto info = infoManager->getCameraInfo();
         auto rawMsg = converter->toRosMsgRawPtr(img, info);
         info.header = rawMsg.header;
-        if(ipcEnabled && (!lazyPub || detectSubscription(imgPub, infoPub))) {
+        if(ipcEnabled && (!pubConfig.lazyPub || detectSubscription(imgPub, infoPub))) {
             sensor_msgs::msg::CameraInfo::UniquePtr infoMsg = std::make_unique<sensor_msgs::msg::CameraInfo>(info);
             sensor_msgs::msg::Image::UniquePtr msg = std::make_unique<sensor_msgs::msg::Image>(rawMsg);
             imgPub->publish(std::move(msg));
             infoPub->publish(std::move(infoMsg));
         } else {
-            if(!lazyPub || imgPubIT.getNumSubscribers() > 0) imgPubIT.publish(rawMsg, info);
+            if(!pubConfig.lazyPub || imgPubIT.getNumSubscribers() > 0) imgPubIT.publish(rawMsg, info);
         }
     }
 }
@@ -242,7 +282,7 @@ void splitPub(const std::string& /*name*/,
 }
 
 sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
-                                          dai::ros::ImageConverter& converter,
+                                          std::shared_ptr<dai::ros::ImageConverter> converter,
                                           std::shared_ptr<dai::Device> device,
                                           dai::CameraBoardSocket socket,
                                           int width,
@@ -250,12 +290,13 @@ sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
     sensor_msgs::msg::CameraInfo info;
     auto calibHandler = device->readCalibration();
     try {
-        info = converter.calibrationToCameraInfo(calibHandler, socket, width, height);
+        info = converter->calibrationToCameraInfo(calibHandler, socket, width, height);
     } catch(std::runtime_error& e) {
         RCLCPP_ERROR(logger, "No calibration for socket %d! Publishing empty camera_info.", static_cast<int>(socket));
     }
     return info;
 }
+
 std::shared_ptr<dai::node::VideoEncoder> createEncoder(std::shared_ptr<dai::Pipeline> pipeline, int quality, dai::VideoEncoderProperties::Profile profile) {
     auto enc = pipeline->create<dai::node::VideoEncoder>();
     enc->setQuality(quality);
