@@ -64,7 +64,7 @@ void Sync::setupQueues(std::shared_ptr<dai::Device> device) {
     });
 }
 
-void Sync::link(dai::Node::Input in, int linkType) {
+void Sync::link(dai::Node::Input in, int /* linkType */) {
     syncNode->out.link(in);
 }
 

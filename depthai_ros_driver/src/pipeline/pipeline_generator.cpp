@@ -49,17 +49,16 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
     auto sysLogger = std::make_unique<dai_nodes::SysLogger>("sys_logger", node, pipeline);
     daiNodes.push_back(std::move(sysLogger));
     auto sync = std::make_unique<dai_nodes::Sync>("sync", node, pipeline);
-        for(auto& daiNode : daiNodes) {
-            auto pubs = daiNode->getPublishers();
-            RCLCPP_INFO(node->get_logger(), "Number of publishers found for %s: %d", daiNode->getName().c_str(), pubs.size());
-            if(pubs.empty()) {
-                RCLCPP_WARN(node->get_logger(), "No publishers found for %s.", daiNode->getName().c_str());
-            } else {
-                std::for_each(pubs.begin(), pubs.end(), [&sync, &daiNode](auto& pub) {
-                    sync->addPublisher(pub);
-                    daiNode->link(sync->getInputByName(pub->getQueueName()));
-                });
-            }
+    for(auto& daiNode : daiNodes) {
+        auto pubs = daiNode->getPublishers();
+        RCLCPP_INFO(node->get_logger(), "Number of synced publishers found for %s: %zu", daiNode->getName().c_str(), pubs.size());
+        if(pubs.empty()) {
+        } else {
+            std::for_each(pubs.begin(), pubs.end(), [&sync](auto& pub) {
+                sync->addPublisher(pub);
+                pub->link(sync->getInputByName(pub->getQueueName()));
+            });
+        }
     }
     daiNodes.push_back(std::move(sync));
     RCLCPP_INFO(node->get_logger(), "Finished setting up pipeline.");

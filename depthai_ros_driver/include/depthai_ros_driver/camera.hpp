@@ -77,10 +77,10 @@ class Camera : public rclcpp::Node {
      * Runs onConfigure();
      */
     void start();
-	/*
-	 * Since we cannot use shared_from this before the object is initialized, we need to use a timer to start the device.
-	 */
-	void indirectStart();
+    /*
+     * Since we cannot use shared_from this before the object is initialized, we need to use a timer to start the device.
+     */
+    void indirectStart();
     void restart();
     void diagCB(const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg);
 
@@ -93,8 +93,8 @@ class Camera : public rclcpp::Node {
     std::shared_ptr<dai::Device> device;
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
     bool camRunning = false;
-	bool initialized = false;
+    bool initialized = false;
     std::unique_ptr<dai::ros::TFPublisher> tfPub;
-	rclcpp::TimerBase::SharedPtr startTimer;
+    rclcpp::TimerBase::SharedPtr startTimer;
 };
 }  // namespace depthai_ros_driver

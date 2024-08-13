@@ -11,7 +11,8 @@
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-SensorParamHandler::SensorParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name, dai::CameraBoardSocket socket) : BaseParamHandler(node, name) {
+SensorParamHandler::SensorParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name, dai::CameraBoardSocket socket)
+    : BaseParamHandler(node, name) {
     declareCommonParams(socket);
 };
 SensorParamHandler::~SensorParamHandler() = default;
@@ -33,7 +34,7 @@ void SensorParamHandler::declareCommonParams(dai::CameraBoardSocket socket) {
     declareAndLogParam<bool>("i_add_exposure_offset", false);
     declareAndLogParam<int>("i_exposure_offset", 0);
     declareAndLogParam<bool>("i_reverse_stereo_socket_order", false);
-	declareAndLogParam<bool>("i_synced", true);
+    declareAndLogParam<bool>("i_synced", true);
 }
 
 void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> monoCam, dai_nodes::sensor_helpers::ImageSensor sensor, bool publish) {

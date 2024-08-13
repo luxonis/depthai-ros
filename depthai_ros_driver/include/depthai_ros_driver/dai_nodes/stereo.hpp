@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 
-
 #include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai-shared/common/CameraFeatures.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
@@ -20,19 +19,12 @@ class StereoDepth;
 class XLinkOut;
 class VideoEncoder;
 }  // namespace node
-namespace ros {
-class ImageConverter;
-}
 }  // namespace dai
 
 namespace rclcpp {
 class Node;
 class Parameter;
 }  // namespace rclcpp
-
-namespace camera_info_manager {
-class CameraInfoManager;
-}
 
 namespace depthai_ros_driver {
 namespace param_handlers {
@@ -63,23 +55,20 @@ class Stereo : public BaseNode {
     void setNames() override;
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
-	std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
+    std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
 
    private:
     void setupStereoQueue(std::shared_ptr<dai::Device> device);
     void setupLeftRectQueue(std::shared_ptr<dai::Device> device);
     void setupRightRectQueue(std::shared_ptr<dai::Device> device);
-    void setupRectQueue(std::shared_ptr<dai::Device> device,
-                        dai::CameraFeatures& sensorInfo,
-                        std::shared_ptr<sensor_helpers::ImagePublisher> pub,
-                        bool isLeft);
+    void setupRectQueue(std::shared_ptr<dai::Device> device, dai::CameraFeatures& sensorInfo, std::shared_ptr<sensor_helpers::ImagePublisher> pub, bool isLeft);
     /*
      * This callback is used to synchronize left and right rectified frames
      * It is called every 10ms and it publishes the frames if they are synchronized
      * If they are not synchronized, it prints a warning message
      */
     void syncTimerCB();
-	std::shared_ptr<sensor_helpers::ImagePublisher> stereoPub, leftRectPub, rightRectPub;
+    std::shared_ptr<sensor_helpers::ImagePublisher> stereoPub, leftRectPub, rightRectPub;
     std::shared_ptr<dai::node::StereoDepth> stereoCamNode;
     std::shared_ptr<dai::node::VideoEncoder> stereoEnc, leftRectEnc, rightRectEnc;
     std::unique_ptr<SensorWrapper> left;

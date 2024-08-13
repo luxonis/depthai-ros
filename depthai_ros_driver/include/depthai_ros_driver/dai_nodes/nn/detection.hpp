@@ -129,7 +129,7 @@ class Detection : public BaseNode {
         xoutNN->setStreamName(nnQName);
         detectionNode->out.link(xoutNN->input);
         if(ph->getParam<bool>("i_enable_passthrough")) {
-            setupOutput(pipeline, ptQName, xoutPT, nullptr, ptPub, [&](dai::Node::Input& input) { detectionNode->passthrough.link(input); }, false, false, 50);
+            ptPub = setupOutput(pipeline, ptQName, [&](dai::Node::Input input) { detectionNode->passthrough.link(input); });
         }
     };
     /**

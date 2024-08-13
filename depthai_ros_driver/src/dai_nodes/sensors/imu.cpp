@@ -52,10 +52,10 @@ void Imu::setupQueues(std::shared_ptr<dai::Device> device) {
                                                             enableMagn,
                                                             ph->getParam<bool>("i_get_base_device_timestamp"));
     imuConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
-	std::string topicSuffix = "/data";
-	if(rsCompabilityMode()) {
-		topicSuffix = "";
-	}
+    std::string topicSuffix = "/data";
+    if(rsCompabilityMode()) {
+        topicSuffix = "";
+    }
     switch(msgType) {
         case param_handlers::imu::ImuMsgType::IMU: {
             rosImuPub = getROSNode()->create_publisher<sensor_msgs::msg::Imu>("~/" + getName() + topicSuffix, 10, options);

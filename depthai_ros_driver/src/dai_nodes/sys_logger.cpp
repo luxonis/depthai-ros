@@ -10,7 +10,8 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-SysLogger::SysLogger(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
+SysLogger::SysLogger(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline)
+    : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     sysNode = pipeline->create<dai::node::SystemLogger>();

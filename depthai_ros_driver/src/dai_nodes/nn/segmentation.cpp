@@ -23,7 +23,10 @@ namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace nn {
 
-Segmentation::Segmentation(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline, const dai::CameraBoardSocket& socket)
+Segmentation::Segmentation(const std::string& daiNodeName,
+                           std::shared_ptr<rclcpp::Node> node,
+                           std::shared_ptr<dai::Pipeline> pipeline,
+                           const dai::CameraBoardSocket& socket)
     : BaseNode(daiNodeName, node, pipeline) {
     RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
     setNames();
@@ -94,7 +97,7 @@ void Segmentation::segmentationCB(const std::string& /*name*/, const std::shared
     sensor_msgs::msg::Image img_msg;
     std_msgs::msg::Header header;
     header.stamp = getROSNode()->get_clock()->now();
-	auto tfPrefix = getOpticalTFPrefix(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
+    auto tfPrefix = getOpticalTFPrefix(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
     header.frame_id = tfPrefix;
     nnInfo.header = header;
     imgBridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, cv_frame);

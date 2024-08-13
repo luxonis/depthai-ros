@@ -38,13 +38,10 @@ void Mono::setNames() {
 
 void Mono::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     if(ph->getParam<bool>("i_publish_topic")) {
-        setupOutput(
+        imagePublisher = setupOutput(
             pipeline,
             monoQName,
-            xoutMono,
-            videoEnc,
-            imagePublisher,
-            [&](auto& input) { monoCamNode->out.link(input); },
+            [&](auto input) { monoCamNode->out.link(input); },
             ph->getParam<bool>("i_synced"),
             ph->getParam<bool>("i_low_bandwidth"),
             ph->getParam<int>("i_low_bandwidth_quality"));
@@ -57,34 +54,34 @@ void Mono::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_publish_topic")) {
         auto tfPrefix = getOpticalTFPrefix(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
-		sensor_helpers::ImgConverterConfig convConf;
-		convConf.tfPrefix = tfPrefix;
-		convConf.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
-		convConf.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
-		convConf.lowBandwidth = ph->getParam<bool>("i_low_bandwidth");
-		convConf.encoding = dai::RawImgFrame::Type::GRAY8;
-		convConf.addExposureOffset = ph->getParam<bool>("i_add_exposure_offset");
-		convConf.expOffset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
-		convConf.reverseSocketOrder = ph->getParam<bool>("i_reverse_stereo_socket_order");
+        sensor_helpers::ImgConverterConfig convConf;
+        convConf.tfPrefix = tfPrefix;
+        convConf.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
+        convConf.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
+        convConf.lowBandwidth = ph->getParam<bool>("i_low_bandwidth");
+        convConf.encoding = dai::RawImgFrame::Type::GRAY8;
+        convConf.addExposureOffset = ph->getParam<bool>("i_add_exposure_offset");
+        convConf.expOffset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
+        convConf.reverseSocketOrder = ph->getParam<bool>("i_reverse_stereo_socket_order");
 
-		sensor_helpers::ImgPublisherConfig pubConf;
-		pubConf.daiNodeName = getName();
-		pubConf.topicName = "~/"+ getName();
-		pubConf.lazyPub = ph->getParam<bool>("i_enable_lazy_publisher");
-		pubConf.socket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"));
-		pubConf.calibrationFile = ph->getParam<std::string>("i_calibration_file");
-		pubConf.rectified = false;
-		pubConf.width = ph->getParam<int>("i_width");
-		pubConf.height = ph->getParam<int>("i_height");
-		pubConf.maxQSize = ph->getParam<int>("i_max_q_size");
-		
-		imagePublisher->setup(device, convConf, pubConf);
+        sensor_helpers::ImgPublisherConfig pubConf;
+        pubConf.daiNodeName = getName();
+        pubConf.topicName = "~/" + getName();
+        pubConf.lazyPub = ph->getParam<bool>("i_enable_lazy_publisher");
+        pubConf.socket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"));
+        pubConf.calibrationFile = ph->getParam<std::string>("i_calibration_file");
+        pubConf.rectified = false;
+        pubConf.width = ph->getParam<int>("i_width");
+        pubConf.height = ph->getParam<int>("i_height");
+        pubConf.maxQSize = ph->getParam<int>("i_max_q_size");
+
+        imagePublisher->setup(device, convConf, pubConf);
     }
     controlQ = device->getInputQueue(controlQName);
 }
 void Mono::closeQueues() {
     if(ph->getParam<bool>("i_publish_topic")) {
-        monoQ->close();
+        imagePublisher->closeQueue();
     }
     controlQ->close();
 }

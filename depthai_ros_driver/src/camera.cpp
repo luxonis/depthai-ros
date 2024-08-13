@@ -19,9 +19,7 @@ Camera::Camera(const rclcpp::NodeOptions& options) : rclcpp::Node("camera", opti
         onConfigure();
         startTimer->cancel();
     });
-	rclcpp::on_shutdown([this]() {
-		stop();
-	});
+    rclcpp::on_shutdown([this]() { stop(); });
 }
 Camera::~Camera() {
     stop();

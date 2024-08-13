@@ -81,7 +81,7 @@ void Stereo::setNames() {
 
 void Stereo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     bool outputDisparity = ph->getParam<bool>("i_output_disparity");
-    auto stereoLinkChoice = [&](auto& input) {
+    auto stereoLinkChoice = [&](auto input) {
         if(outputDisparity) {
             stereoCamNode->disparity.link(input);
         } else {
@@ -90,24 +90,14 @@ void Stereo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     };
 
     if(ph->getParam<bool>("i_publish_topic")) {
-        setupOutput(pipeline,
-                    stereoQName,
-                    xoutStereo,
-                    stereoEnc,
-                    stereoPub,
-                    stereoLinkChoice,
-                    ph->getParam<bool>("i_synced"),
-                    ph->getParam<bool>("i_low_bandwidth"),
-                    ph->getParam<int>("i_quality"));
+        stereoPub = setupOutput(
+            pipeline, stereoQName, stereoLinkChoice, ph->getParam<bool>("i_synced"), ph->getParam<bool>("i_low_bandwidth"), ph->getParam<int>("i_quality"));
     }
 
     if(ph->getParam<bool>("i_publish_left_rect") || ph->getParam<bool>("i_publish_synced_rect_pair")) {
-        setupOutput(
+        leftRectPub = setupOutput(
             pipeline,
             leftRectQName,
-            xoutLeftRect,
-            leftRectEnc,
-            leftRectPub,
             [&](auto input) { stereoCamNode->rectifiedLeft.link(input); },
             ph->getParam<bool>("i_left_rect_synced"),
             ph->getParam<bool>("i_left_rect_low_bandwidth"),
@@ -115,12 +105,9 @@ void Stereo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     }
 
     if(ph->getParam<bool>("i_publish_right_rect") || ph->getParam<bool>("i_publish_synced_rect_pair")) {
-        setupOutput(
+        rightRectPub = setupOutput(
             pipeline,
             rightRectQName,
-            xoutRightRect,
-            rightRectEnc,
-            rightRectPub,
             [&](auto input) { stereoCamNode->rectifiedRight.link(input); },
             ph->getParam<bool>("i_right_rect_synced"),
             ph->getParam<bool>("i_right_rect_low_bandwidth"),
@@ -156,21 +143,21 @@ void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
     convConfig.expOffset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>(isLeft ? "i_left_rect_exposure_offset" : "i_right_rect_exposure_offset"));
     convConfig.reverseSocketOrder = ph->getParam<bool>("i_reverse_stereo_socket_order");
 
-	sensor_helpers::ImgPublisherConfig pubConfig;
-	pubConfig.daiNodeName = sensorName;
-	pubConfig.rectified = true;
-	pubConfig.width =ph->getOtherNodeParam<int>(sensorName, "i_width");
-	pubConfig.height = ph->getOtherNodeParam<int>(sensorName, "i_height");
-	pubConfig.topicName = "~/" + sensorName; 
-	pubConfig.maxQSize = ph->getOtherNodeParam<int>(sensorName, "i_max_q_size");
-	pubConfig.socket = sensorInfo.socket;	
-	pubConfig.infoMgrSuffix = "rect";
+    sensor_helpers::ImgPublisherConfig pubConfig;
+    pubConfig.daiNodeName = sensorName;
+    pubConfig.rectified = true;
+    pubConfig.width = ph->getOtherNodeParam<int>(sensorName, "i_width");
+    pubConfig.height = ph->getOtherNodeParam<int>(sensorName, "i_height");
+    pubConfig.topicName = "~/" + sensorName;
+    pubConfig.maxQSize = ph->getOtherNodeParam<int>(sensorName, "i_max_q_size");
+    pubConfig.socket = sensorInfo.socket;
+    pubConfig.infoMgrSuffix = "rect";
 
-	pub->setup(device, convConfig, pubConfig);
+    pub->setup(device, convConfig, pubConfig);
 }
 
 void Stereo::setupLeftRectQueue(std::shared_ptr<dai::Device> device) {
-    setupRectQueue(device, leftSensInfo,  leftRectPub, true);
+    setupRectQueue(device, leftSensInfo, leftRectPub, true);
 }
 
 void Stereo::setupRightRectQueue(std::shared_ptr<dai::Device> device) {
@@ -184,33 +171,33 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     } else {
         tfPrefix = getOpticalTFPrefix(getSocketName(rightSensInfo.socket).c_str());
     }
-	sensor_helpers::ImgConverterConfig convConfig;
-	convConfig.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
-	convConfig.tfPrefix = tfPrefix;
-	convConfig.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
-	convConfig.lowBandwidth = ph->getParam<bool>("i_low_bandwidth");
-	convConfig.encoding = dai::RawImgFrame::Type::RAW8;
-	convConfig.addExposureOffset = ph->getParam<bool>("i_add_exposure_offset");
-	convConfig.expOffset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
-	convConfig.reverseSocketOrder = ph->getParam<bool>("i_reverse_stereo_socket_order");
-	convConfig.alphaScalingEnabled = ph->getParam<bool>("i_enable_alpha_scaling");
-	convConfig.alphaScaling = ph->getParam<double>("i_alpha_scaling");
-	convConfig.outputDisparity = ph->getParam<bool>("i_output_disparity");
-	
-	sensor_helpers::ImgPublisherConfig pubConf;
-	pubConf.rectified = !convConfig.alphaScalingEnabled;
-	pubConf.width = ph->getParam<int>("i_width");
-	pubConf.height = ph->getParam<int>("i_height");
-	pubConf.socket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"));
-	pubConf.calibrationFile = ph->getParam<std::string>("i_calibration_file");
-	pubConf.leftSocket = leftSensInfo.socket;
-	pubConf.rightSocket = rightSensInfo.socket;
-	pubConf.lazyPub = ph->getParam<bool>("i_enable_lazy_publisher");
-	pubConf.maxQSize = ph->getParam<int>("i_max_q_size");
-	pubConf.daiNodeName = getName();
+    sensor_helpers::ImgConverterConfig convConfig;
+    convConfig.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
+    convConfig.tfPrefix = tfPrefix;
+    convConfig.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
+    convConfig.lowBandwidth = ph->getParam<bool>("i_low_bandwidth");
+    convConfig.encoding = dai::RawImgFrame::Type::RAW8;
+    convConfig.addExposureOffset = ph->getParam<bool>("i_add_exposure_offset");
+    convConfig.expOffset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
+    convConfig.reverseSocketOrder = ph->getParam<bool>("i_reverse_stereo_socket_order");
+    convConfig.alphaScalingEnabled = ph->getParam<bool>("i_enable_alpha_scaling");
+    convConfig.alphaScaling = ph->getParam<double>("i_alpha_scaling");
+    convConfig.outputDisparity = ph->getParam<bool>("i_output_disparity");
 
+    sensor_helpers::ImgPublisherConfig pubConf;
+    pubConf.daiNodeName = getName();
+    pubConf.topicName = "~/" + getName();
+    pubConf.rectified = !convConfig.alphaScalingEnabled;
+    pubConf.width = ph->getParam<int>("i_width");
+    pubConf.height = ph->getParam<int>("i_height");
+    pubConf.socket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"));
+    pubConf.calibrationFile = ph->getParam<std::string>("i_calibration_file");
+    pubConf.leftSocket = leftSensInfo.socket;
+    pubConf.rightSocket = rightSensInfo.socket;
+    pubConf.lazyPub = ph->getParam<bool>("i_enable_lazy_publisher");
+    pubConf.maxQSize = ph->getParam<int>("i_max_q_size");
 
-	stereoPub->setup(device, convConfig, pubConf);
+    stereoPub->setup(device, convConfig, pubConf);
 }
 void Stereo::syncTimerCB() {
     auto left = leftRectQ->get<dai::ImgFrame>();
@@ -238,8 +225,8 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_publish_synced_rect_pair")) {
         int timerPeriod = 1000.0 / ph->getOtherNodeParam<double>(leftSensInfo.name, "i_fps");
         RCLCPP_INFO(getROSNode()->get_logger(), "Setting up stereo pair sync timer with period %d ms based on left sensor FPS.", timerPeriod);
-		leftRectQ = leftRectPub->getQueue();
-		rightRectQ = rightRectPub->getQueue();
+        leftRectQ = leftRectPub->getQueue();
+        rightRectQ = rightRectPub->getQueue();
         syncTimer = getROSNode()->create_wall_timer(std::chrono::milliseconds(timerPeriod), std::bind(&Stereo::syncTimerCB, this));
     }
     if(ph->getParam<bool>("i_left_rect_enable_feature_tracker")) {
@@ -266,7 +253,7 @@ void Stereo::closeQueues() {
     }
     if(ph->getParam<bool>("i_publish_synced_rect_pair")) {
         syncTimer->cancel();
-		leftRectPub->closeQueue();
+        leftRectPub->closeQueue();
         rightRectPub->closeQueue();
     }
     if(ph->getParam<bool>("i_left_rect_enable_feature_tracker")) {
@@ -303,6 +290,10 @@ std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> Stereo::getPublishe
     if(ph->getParam<bool>("i_right_rect_synced")) {
         pubs.push_back(rightRectPub);
     }
+    auto pubsLeft = left->getPublishers();
+    pubs.insert(pubs.end(), pubsLeft.begin(), pubsLeft.end());
+    auto pubsRight = right->getPublishers();
+    pubs.insert(pubs.end(), pubsRight.begin(), pubsRight.end());
     return pubs;
 }
 

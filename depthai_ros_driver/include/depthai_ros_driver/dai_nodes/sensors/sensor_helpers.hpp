@@ -9,6 +9,7 @@
 #include "depthai-shared/properties/MonoCameraProperties.hpp"
 #include "depthai-shared/properties/VideoEncoderProperties.hpp"
 #include "depthai/common/CameraExposureOffset.hpp"
+#include "depthai/pipeline/Node.hpp"
 #include "depthai/pipeline/datatype/ADatatype.hpp"
 #include "depthai/pipeline/datatype/CameraControl.hpp"
 #include "image_transport/camera_publisher.hpp"
@@ -21,7 +22,8 @@ class Pipeline;
 class DataOutputQueue;
 namespace node {
 class VideoEncoder;
-}
+class XLinkOut;
+}  // namespace node
 namespace ros {
 class ImageConverter;
 }
@@ -47,7 +49,7 @@ struct ImgConverterConfig {
     bool getBaseDeviceTimestamp = false;
     bool updateROSBaseTimeOnRosMsg = false;
     bool lowBandwidth = false;
-    dai::RawImgFrame::Type encoding = dai::RawImgFrame::Type::BGR888p;
+    dai::RawImgFrame::Type encoding = dai::RawImgFrame::Type::BGR888i;
     bool addExposureOffset = false;
     dai::CameraExposureOffset expOffset = dai::CameraExposureOffset::START;
     bool reverseSocketOrder = false;
@@ -61,30 +63,39 @@ struct ImgPublisherConfig {
     std::string topicName = "";
     bool lazyPub = false;
     dai::CameraBoardSocket socket = dai::CameraBoardSocket::AUTO;
-	dai::CameraBoardSocket leftSocket = dai::CameraBoardSocket::CAM_B;
-	dai::CameraBoardSocket rightSocket = dai::CameraBoardSocket::CAM_C;
+    dai::CameraBoardSocket leftSocket = dai::CameraBoardSocket::CAM_B;
+    dai::CameraBoardSocket rightSocket = dai::CameraBoardSocket::CAM_C;
     std::string calibrationFile = "";
     std::string topicSuffix = "/image_raw";
-	std::string infoMgrSuffix = "";
+    std::string infoMgrSuffix = "";
     bool rectified = false;
     int width = 0;
     int height = 0;
-	int maxQSize = 8;
-	bool qBlocking = false;
+    int maxQSize = 8;
+    bool qBlocking = false;
 };
 class ImagePublisher {
    public:
-    ImagePublisher(std::shared_ptr<rclcpp::Node> node, const std::string& qName, bool synced = false, bool ipcEnabled = false);
+    ImagePublisher(std::shared_ptr<rclcpp::Node> node,
+                   std::shared_ptr<dai::Pipeline> pipeline,
+                   const std::string& qName,
+                   std::function<void(dai::Node::Input in)> linkFunc,
+                   bool synced = false,
+                   bool ipcEnabled = false,
+                   bool lowBandwidth = false,
+                   int lowBandwidthQuality = 50);
+
     ~ImagePublisher();
     void setup(std::shared_ptr<dai::Device> device, const ImgConverterConfig& convConf, const ImgPublisherConfig& pubConf);
     void createImageConverter(std::shared_ptr<dai::Device> device);
     void createInfoManager(std::shared_ptr<dai::Device> device);
     void addQueueCB(const std::shared_ptr<dai::DataOutputQueue>& queue);
-	void closeQueue();
-	std::shared_ptr<dai::DataOutputQueue> getQueue();
+    void closeQueue();
+    std::shared_ptr<dai::DataOutputQueue> getQueue();
     void publish(const std::shared_ptr<dai::ADatatype>& data);
     void setQueueName(const std::string& name);
     void setSynced(bool sync);
+    void link(dai::Node::Input in);
     std::string getQueueName();
     void publish(std::pair<sensor_msgs::msg::Image::UniquePtr, sensor_msgs::msg::CameraInfo::UniquePtr> data);
     std::pair<sensor_msgs::msg::Image::UniquePtr, sensor_msgs::msg::CameraInfo::UniquePtr> convertData(const std::shared_ptr<dai::ADatatype> data);
@@ -95,6 +106,9 @@ class ImagePublisher {
     ImgConverterConfig convConfig;
     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
     std::shared_ptr<dai::ros::ImageConverter> converter;
+    std::shared_ptr<dai::node::XLinkOut> xout;
+    std::shared_ptr<dai::node::VideoEncoder> encoder;
+    std::function<void(dai::Node::Input in)> linkCB;
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr imgPub;
     rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr infoPub;
     image_transport::CameraPublisher imgPubIT;
@@ -129,27 +143,13 @@ void basicCameraPub(const std::string& /*name*/,
                     image_transport::CameraPublisher& pub,
                     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager);
 
-void cameraPub(const std::string& /*name*/,
-               const std::shared_ptr<dai::ADatatype>& data,
-               std::shared_ptr<dai::ros::ImageConverter> converter,
-               image_transport::CameraPublisher& pub,
-               std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
-               bool lazyPub = true);
-
-void splitPub(const std::string& /*name*/,
-              const std::shared_ptr<dai::ADatatype>& data,
-              dai::ros::ImageConverter& converter,
-              rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr imgPub,
-              rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr infoPub,
-              std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
-              bool lazyPub = true);
-
 sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
                                           std::shared_ptr<dai::ros::ImageConverter> converter,
                                           std::shared_ptr<dai::Device> device,
                                           dai::CameraBoardSocket socket,
                                           int width = 0,
                                           int height = 0);
+std::shared_ptr<dai::node::XLinkOut> setupXout(std::shared_ptr<dai::Pipeline> pipeline, const std::string& name);
 std::shared_ptr<dai::node::VideoEncoder> createEncoder(std::shared_ptr<dai::Pipeline> pipeline,
                                                        int quality,
                                                        dai::VideoEncoderProperties::Profile profile = dai::VideoEncoderProperties::Profile::MJPEG);

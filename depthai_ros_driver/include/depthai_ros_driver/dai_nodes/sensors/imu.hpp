@@ -33,7 +33,10 @@ namespace dai_nodes {
 
 class Imu : public BaseNode {
    public:
-    explicit Imu(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device);
+    explicit Imu(const std::string& daiNodeName,
+                 std::shared_ptr<rclcpp::Node> node,
+                 std::shared_ptr<dai::Pipeline> pipeline,
+                 std::shared_ptr<dai::Device> device);
     ~Imu();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;

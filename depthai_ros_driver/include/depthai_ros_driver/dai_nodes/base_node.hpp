@@ -53,15 +53,12 @@ class BaseNode {
      * @param      pipeline  The pipeline
      */
     virtual void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) = 0;
-    void setupOutput(std::shared_ptr<dai::Pipeline> pipeline,
-                     const std::string& qName,
-                     std::shared_ptr<dai::node::XLinkOut>& xout,
-                     std::shared_ptr<dai::node::VideoEncoder>& encoder,
-					 std::shared_ptr<sensor_helpers::ImagePublisher>& pub,
-                     std::function<void(dai::Node::Input& input)> nodeLink,
-                     bool isSynced,
-                     bool isLowBandwidth,
-                     int quality);
+    std::shared_ptr<sensor_helpers::ImagePublisher> setupOutput(std::shared_ptr<dai::Pipeline> pipeline,
+                                                                const std::string& qName,
+                                                                std::function<void(dai::Node::Input input)> nodeLink,
+                                                                bool isSynced = false,
+                                                                bool isLowBandwidth = false,
+                                                                int quality = 50);
     virtual void closeQueues() = 0;
     std::shared_ptr<dai::node::XLinkOut> setupXout(std::shared_ptr<dai::Pipeline> pipeline, const std::string& name);
 

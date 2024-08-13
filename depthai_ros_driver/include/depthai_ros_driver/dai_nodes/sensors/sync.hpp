@@ -39,18 +39,18 @@ class Sync : public BaseNode {
     void setNames() override;
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
-	void addPublisher(std::shared_ptr<sensor_helpers::ImagePublisher> publisher);
-	std::vector<std::string> getSyncNames();
+    void addPublisher(std::shared_ptr<sensor_helpers::ImagePublisher> publisher);
+    std::vector<std::string> getSyncNames();
 
    private:
-	std::unique_ptr<param_handlers::SyncParamHandler> paramHandler;
+    std::unique_ptr<param_handlers::SyncParamHandler> paramHandler;
     std::shared_ptr<dai::node::Sync> syncNode;
-	std::string syncOutputName;
+    std::string syncOutputName;
     std::shared_ptr<dai::node::XLinkOut> xoutFrame;
-	std::shared_ptr<dai::DataOutputQueue> outQueue;
+    std::shared_ptr<dai::DataOutputQueue> outQueue;
     void publishOutputs();
-	std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> publishers;
-	std::vector<std::string> syncNames;
+    std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> publishers;
+    std::vector<std::string> syncNames;
 };
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

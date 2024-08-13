@@ -13,22 +13,55 @@ namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace sensor_helpers {
 
-ImagePublisher::ImagePublisher(std::shared_ptr<rclcpp::Node> node, const std::string& qName, bool synced, bool ipcEnabled)
-    : node(node), qName(qName), ipcEnabled(ipcEnabled), synced(synced) {}
+ImagePublisher::ImagePublisher(std::shared_ptr<rclcpp::Node> node,
+                               std::shared_ptr<dai::Pipeline> pipeline,
+                               const std::string& qName,
+                               std::function<void(dai::Node::Input in)> linkFunc,
+                               bool synced,
+                               bool ipcEnabled,
+                               bool lowBandwidth,
+                               int lowBandwidthQuality)
+    : node(node), qName(qName), ipcEnabled(ipcEnabled), synced(synced) {
+    if(!synced) {
+        xout = setupXout(pipeline, qName);
+    }
+
+    linkCB = linkFunc;
+    if(lowBandwidth) {
+        encoder = sensor_helpers::createEncoder(pipeline, lowBandwidthQuality);
+        linkFunc(encoder->input);
+
+        if(!synced) {
+            encoder->bitstream.link(xout->input);
+        } else {
+            linkCB = [&](dai::Node::Input input) { encoder->bitstream.link(input); };
+        }
+    } else {
+        if(!synced) {
+            linkFunc(xout->input);
+        }
+    }
+}
 void ImagePublisher::setup(std::shared_ptr<dai::Device> device, const ImgConverterConfig& convConf, const ImgPublisherConfig& pubConf) {
     convConfig = convConf;
     pubConfig = pubConf;
     createImageConverter(device);
     createInfoManager(device);
+    if(pubConfig.topicName.empty()) {
+        throw std::runtime_error("Topic name cannot be empty!");
+    }
     if(ipcEnabled) {
-        auto qos = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable();
-        imgPub = node->create_publisher<sensor_msgs::msg::Image>(pubConfig.topicName + pubConfig.topicSuffix, qos);
-        infoPub = node->create_publisher<sensor_msgs::msg::CameraInfo>(pubConfig.topicName + "/camera_info", qos);
+        rclcpp::PublisherOptions pubOptions;
+        pubOptions.qos_overriding_options = rclcpp::QosOverridingOptions::with_default_policies();
+        imgPub = node->create_publisher<sensor_msgs::msg::Image>(pubConfig.topicName + pubConfig.topicSuffix, rclcpp::QoS(10), pubOptions);
+        infoPub = node->create_publisher<sensor_msgs::msg::CameraInfo>(pubConfig.topicName + "/camera_info", rclcpp::QoS(10), pubOptions);
     } else {
         imgPubIT = image_transport::create_camera_publisher(node.get(), pubConfig.topicName + pubConfig.topicSuffix);
     }
-    dataQ = device->getOutputQueue(getQueueName(), pubConf.maxQSize, pubConf.qBlocking);
-    addQueueCB(dataQ);
+    if(!synced) {
+        dataQ = device->getOutputQueue(getQueueName(), pubConf.maxQSize, pubConf.qBlocking);
+        addQueueCB(dataQ);
+    }
 }
 
 void ImagePublisher::createImageConverter(std::shared_ptr<dai::Device> device) {
@@ -78,13 +111,13 @@ ImagePublisher::~ImagePublisher() {
 void ImagePublisher::closeQueue() {
     if(dataQ) dataQ->close();
 }
+void ImagePublisher::link(dai::Node::Input in) {
+    linkCB(in);
+}
 std::shared_ptr<dai::DataOutputQueue> ImagePublisher::getQueue() {
-	return dataQ;
+    return dataQ;
 }
 void ImagePublisher::addQueueCB(const std::shared_ptr<dai::DataOutputQueue>& queue) {
-    if(synced) {
-        return;
-    }
     dataQ = queue;
     qName = queue->getName();
     cbID = dataQ->addCallback([this](const std::shared_ptr<dai::ADatatype>& data) { publish(data); });
@@ -247,40 +280,6 @@ void basicCameraPub(const std::string& /*name*/,
     }
 }
 
-void cameraPub(const std::string& /*name*/,
-               const std::shared_ptr<dai::ADatatype>& data,
-               dai::ros::ImageConverter& converter,
-               image_transport::CameraPublisher& pub,
-               std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
-               bool lazyPub) {
-    if(rclcpp::ok() && (!lazyPub || pub.getNumSubscribers() > 0)) {
-        auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
-        auto info = infoManager->getCameraInfo();
-        auto rawMsg = converter.toRosMsgRawPtr(img, info);
-        info.header = rawMsg.header;
-        pub.publish(rawMsg, info);
-    }
-}
-
-void splitPub(const std::string& /*name*/,
-              const std::shared_ptr<dai::ADatatype>& data,
-              dai::ros::ImageConverter& converter,
-              rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr imgPub,
-              rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr infoPub,
-              std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
-              bool lazyPub) {
-    if(rclcpp::ok() && (!lazyPub || detectSubscription(imgPub, infoPub))) {
-        auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
-        auto info = infoManager->getCameraInfo();
-        auto rawMsg = converter.toRosMsgRawPtr(img, info);
-        info.header = rawMsg.header;
-        sensor_msgs::msg::CameraInfo::UniquePtr infoMsg = std::make_unique<sensor_msgs::msg::CameraInfo>(info);
-        sensor_msgs::msg::Image::UniquePtr msg = std::make_unique<sensor_msgs::msg::Image>(rawMsg);
-        imgPub->publish(std::move(msg));
-        infoPub->publish(std::move(infoMsg));
-    }
-}
-
 sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
                                           std::shared_ptr<dai::ros::ImageConverter> converter,
                                           std::shared_ptr<dai::Device> device,
@@ -297,6 +296,14 @@ sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
     return info;
 }
 
+std::shared_ptr<dai::node::XLinkOut> setupXout(std::shared_ptr<dai::Pipeline> pipeline, const std::string& name) {
+    auto xout = pipeline->create<dai::node::XLinkOut>();
+    xout->setStreamName(name);
+    xout->input.setBlocking(false);
+    xout->input.setWaitForMessage(false);
+    xout->input.setQueueSize(0);
+    return xout;
+};
 std::shared_ptr<dai::node::VideoEncoder> createEncoder(std::shared_ptr<dai::Pipeline> pipeline, int quality, dai::VideoEncoderProperties::Profile profile) {
     auto enc = pipeline->create<dai::node::VideoEncoder>();
     enc->setQuality(quality);
