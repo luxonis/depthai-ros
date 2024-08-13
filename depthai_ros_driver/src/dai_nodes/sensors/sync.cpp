@@ -17,7 +17,6 @@ Sync::Sync(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, s
     syncNode = pipeline->create<dai::node::Sync>();
     paramHandler = std::make_unique<param_handlers::SyncParamHandler>(node, daiNodeName);
     paramHandler->declareParams(syncNode);
-    syncNames = {"rgb", "stereo"};
     setNames();
     setXinXout(pipeline);
 }
@@ -34,9 +33,6 @@ void Sync::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     syncNode->out.link(xoutFrame->input);
 }
 
-std::vector<std::string> Sync::getSyncNames() {
-    return syncNames;
-}
 
 void Sync::setupQueues(std::shared_ptr<dai::Device> device) {
     outQueue = device->getOutputQueue(syncOutputName, 8, false);

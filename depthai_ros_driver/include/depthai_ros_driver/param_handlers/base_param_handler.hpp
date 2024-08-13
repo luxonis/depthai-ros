@@ -25,7 +25,7 @@ class BaseParamHandler {
         return baseName;
     }
     template <typename T>
-    T getParam(const std::string paramName) {
+    T getParam(const std::string& paramName) {
         T value;
         baseNode->get_parameter<T>(getFullParamName(paramName), value);
         return value;

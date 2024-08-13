@@ -73,6 +73,7 @@ add_library(
   src/param_handlers/sensor_param_handler.cpp
   src/param_handlers/feature_tracker_param_handler.cpp
   src/param_handlers/stereo_param_handler.cpp
+  src/param_handlers/pipeline_gen_param_handler.cpp
   src/param_handlers/sync_param_handler.cpp
 )
 

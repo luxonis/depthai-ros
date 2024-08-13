@@ -39,13 +39,12 @@ void RGB::setNames() {
 void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     bool outputIsp = ph->getParam<bool>("i_output_isp");
     bool lowBandwidth = ph->getParam<bool>("i_low_bandwidth");
-    auto rgbLinkChoice = [&](auto input) {
-        if(outputIsp && !lowBandwidth) {
-            colorCamNode->isp.link(input);
-        } else {
-            colorCamNode->video.link(input);
-        }
-    };
+    std::function<void(dai::Node::Input)> rgbLinkChoice;
+    if(outputIsp && !lowBandwidth) {
+        rgbLinkChoice = [&](auto input) { colorCamNode->isp.link(input); };
+    } else {
+        rgbLinkChoice = [&](auto input) { colorCamNode->video.link(input); };
+    }
     if(ph->getParam<bool>("i_publish_topic")) {
         rgbPub = setupOutput(pipeline, ispQName, rgbLinkChoice, ph->getParam<bool>("i_synced"), lowBandwidth, ph->getParam<int>("i_low_bandwidth_quality"));
     }

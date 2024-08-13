@@ -1,13 +1,10 @@
 #include "depthai_ros_driver/dai_nodes/stereo.hpp"
 
-#include "camera_info_manager/camera_info_manager.hpp"
-#include "depthai/device/DataQueue.hpp"
 #include "depthai/device/DeviceBase.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/datatype/ADatatype.hpp"
+#include "depthai/pipeline/datatype/ImgFrame.hpp"
 #include "depthai/pipeline/node/StereoDepth.hpp"
-#include "depthai/pipeline/node/VideoEncoder.hpp"
-#include "depthai/pipeline/node/XLinkOut.hpp"
-#include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/nn_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/spatial_nn_wrapper.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/feature_tracker.hpp"
@@ -81,14 +78,12 @@ void Stereo::setNames() {
 
 void Stereo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     bool outputDisparity = ph->getParam<bool>("i_output_disparity");
-    auto stereoLinkChoice = [&](auto input) {
-        if(outputDisparity) {
-            stereoCamNode->disparity.link(input);
-        } else {
-            stereoCamNode->depth.link(input);
-        }
-    };
-
+    std::function<void(dai::Node::Input)> stereoLinkChoice;
+    if(outputDisparity) {
+        stereoLinkChoice = [&](auto input) { stereoCamNode->disparity.link(input); };
+    } else {
+        stereoLinkChoice = [&](auto input) { stereoCamNode->depth.link(input); };
+    }
     if(ph->getParam<bool>("i_publish_topic")) {
         stereoPub = setupOutput(
             pipeline, stereoQName, stereoLinkChoice, ph->getParam<bool>("i_synced"), ph->getParam<bool>("i_low_bandwidth"), ph->getParam<int>("i_quality"));
