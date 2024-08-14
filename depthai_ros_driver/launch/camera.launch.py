@@ -94,18 +94,9 @@ def launch_setup(context, *args, **kwargs):
                 "i_publish_topic": is_launch_config_true(context, "enable_depth"),
             },
         }
-        if is_launch_config_true(context, "enable_infra1") and is_launch_config_true(
-            context, "enable_infra2"
-        ):
-            parameter_overrides["depth"] = {
-                "i_publish_synced_rect_pair": True,
-            }
-        else:
-            parameter_overrides["infra1"] = {
-                "i_publish_topic": is_launch_config_true(context, "enable_infra1"),
-            }
-            parameter_overrides["infra2"] = {
-                "i_publish_topic": is_launch_config_true(context, "enable_infra2"),
+        parameter_overrides["depth"] = {
+                "i_publish_left_rect": True,
+                "i_publish_right_rect": True,
             }
 
     tf_params = {}
