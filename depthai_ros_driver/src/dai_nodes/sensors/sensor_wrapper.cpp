@@ -15,7 +15,7 @@
 namespace depthai_ros_driver {
 namespace dai_nodes {
 SensorWrapper::SensorWrapper(const std::string& daiNodeName,
-                             rclcpp::Node* node,
+                             std::shared_ptr<rclcpp::Node> node,
                              std::shared_ptr<dai::Pipeline> pipeline,
                              std::shared_ptr<dai::Device> device,
                              dai::CameraBoardSocket socket,
@@ -129,6 +129,13 @@ void SensorWrapper::link(dai::Node::Input in, int linkType) {
     } else {
         sensorNode->link(in, linkType);
     }
+}
+
+std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> SensorWrapper::getPublishers() {
+    if(ph->getParam<bool>("i_disable_node")) {
+        return std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>>();
+    }
+    return sensorNode->getPublishers();
 }
 
 void SensorWrapper::updateParams(const std::vector<rclcpp::Parameter>& params) {

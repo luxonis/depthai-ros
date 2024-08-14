@@ -8,7 +8,7 @@
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-ImuParamHandler::ImuParamHandler(rclcpp::Node* node, const std::string& name) : BaseParamHandler(node, name) {}
+ImuParamHandler::ImuParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name) : BaseParamHandler(node, name) {}
 ImuParamHandler::~ImuParamHandler() = default;
 void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const std::string& imuType) {
     imuSyncMethodMap = {
