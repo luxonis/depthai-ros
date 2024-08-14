@@ -205,7 +205,14 @@ void Camera::startDevice() {
             } else {
                 std::vector<dai::DeviceInfo> availableDevices = dai::Device::getAllAvailableDevices();
                 if(availableDevices.size() == 0) {
-                    throw std::runtime_error("No devices detected!");
+                    // autodiscovery might not work so try connecting via IP directly if set
+                    if(!ip.empty()) {
+                        dai::DeviceInfo info(ip);
+                        RCLCPP_INFO(this->get_logger(), "No devices detected by autodiscovery, trying to connect to camera via IP: %s", ip.c_str());
+                        availableDevices.push_back(info);
+                    } else {
+                        throw std::runtime_error("No devices detected!");
+                    }
                 }
                 dai::UsbSpeed speed = ph->getUSBSpeed();
                 for(const auto& info : availableDevices) {
@@ -223,7 +230,7 @@ void Camera::startDevice() {
                             device = std::make_shared<dai::Device>(info);
                             camRunning = true;
                         } else if(info.state == X_LINK_BOOTED) {
-                            throw std::runtime_error("Device is already booted in different process.");
+                            throw std::runtime_error("Device is already booted in different process...");
                         }
                     } else if(!usb_id.empty() && info.name == usb_id) {
                         RCLCPP_INFO(get_logger(), "Connecting to the camera using USB ID: %s", usb_id.c_str());
@@ -253,7 +260,7 @@ void Camera::startDevice() {
     } else {
         RCLCPP_INFO(get_logger(),
                     "PoE camera detected. Consider enabling low bandwidth for specific image topics (see "
-                    "readme).");
+                    "Readme->DepthAI ROS Driver->Specific camera configurations).");
     }
 }
 
