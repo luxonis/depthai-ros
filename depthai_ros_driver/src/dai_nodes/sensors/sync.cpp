@@ -33,7 +33,6 @@ void Sync::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     syncNode->out.link(xoutFrame->input);
 }
 
-
 void Sync::setupQueues(std::shared_ptr<dai::Device> device) {
     outQueue = device->getOutputQueue(syncOutputName, 8, false);
     outQueue->addCallback([this](const std::shared_ptr<dai::ADatatype>& in) {

@@ -14,18 +14,18 @@
 namespace depthai_ros_driver {
 namespace pipeline_gen {
 PipelineGenerator::PipelineGenerator() {
-	pluginTypeMap = {{"RGB", "depthai_ros_driver::pipeline_gen::RGB"},
-					 {"RGBD", "depthai_ros_driver::pipeline_gen::RGBD"},
-					 {"RGBSTEREO", "depthai_ros_driver::pipeline_gen::RGBStereo"},
-					 {"STEREO", "depthai_ros_driver::pipeline_gen::Stereo"},
-					 {"DEPTH", "depthai_ros_driver::pipeline_gen::Depth"},
-					 {"CAMARRAY", "depthai_ros_driver::pipeline_gen::CamArray"}};
-	pipelineTypeMap = {{"RGB", PipelineType::RGB},
-					   {"RGBD", PipelineType::RGBD},
-					   {"RGBSTEREO", PipelineType::RGBStereo},
-					   {"STEREO", PipelineType::Stereo},
-					   {"DEPTH", PipelineType::Depth},
-					   {"CAMARRAY", PipelineType::CamArray}};
+    pluginTypeMap = {{"RGB", "depthai_ros_driver::pipeline_gen::RGB"},
+                     {"RGBD", "depthai_ros_driver::pipeline_gen::RGBD"},
+                     {"RGBSTEREO", "depthai_ros_driver::pipeline_gen::RGBStereo"},
+                     {"STEREO", "depthai_ros_driver::pipeline_gen::Stereo"},
+                     {"DEPTH", "depthai_ros_driver::pipeline_gen::Depth"},
+                     {"CAMARRAY", "depthai_ros_driver::pipeline_gen::CamArray"}};
+    pipelineTypeMap = {{"RGB", PipelineType::RGB},
+                       {"RGBD", PipelineType::RGBD},
+                       {"RGBSTEREO", PipelineType::RGBStereo},
+                       {"STEREO", PipelineType::Stereo},
+                       {"DEPTH", PipelineType::Depth},
+                       {"CAMARRAY", PipelineType::CamArray}};
 }
 
 PipelineGenerator::~PipelineGenerator() = default;
@@ -35,7 +35,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
                                                                                     const std::string& pipelineType,
                                                                                     const std::string& nnType) {
     ph = std::make_unique<param_handlers::PipelineGenParamHandler>(node, "pipeline_gen");
-	ph->declareParams();
+    ph->declareParams();
     RCLCPP_INFO(node->get_logger(), "Pipeline type: %s", pipelineType.c_str());
     std::string pluginType = pipelineType;
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;

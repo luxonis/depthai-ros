@@ -25,7 +25,7 @@ enum class PipelineType { RGB, RGBD, RGBStereo, Stereo, Depth, CamArray };
 
 class PipelineGenerator {
    public:
-	PipelineGenerator();
+    PipelineGenerator();
     ~PipelineGenerator();
     /**
      * @brief      Validates the pipeline type. If the pipeline type is not valid for the number of sensors, it will be changed to the default type.
@@ -58,6 +58,7 @@ class PipelineGenerator {
    protected:
     std::unordered_map<std::string, std::string> pluginTypeMap;
     std::unordered_map<std::string, PipelineType> pipelineTypeMap;
+
    private:
     std::unique_ptr<param_handlers::PipelineGenParamHandler> ph;
 };
