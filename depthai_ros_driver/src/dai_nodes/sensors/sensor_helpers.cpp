@@ -126,12 +126,6 @@ void ImagePublisher::addQueueCB(const std::shared_ptr<dai::DataOutputQueue>& que
 std::string ImagePublisher::getQueueName() {
     return qName;
 }
-void ImagePublisher::setQueueName(const std::string& name) {
-    qName = name;
-}
-void ImagePublisher::setSynced(bool sync) {
-    synced = sync;
-}
 std::pair<sensor_msgs::msg::Image::UniquePtr, sensor_msgs::msg::CameraInfo::UniquePtr> ImagePublisher::convertData(const std::shared_ptr<dai::ADatatype> data) {
     auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
     auto info = infoManager->getCameraInfo();

@@ -76,6 +76,11 @@ struct ImgPublisherConfig {
 };
 class ImagePublisher {
    public:
+	/**
+	 * @brief Construct a new Image Publisher object
+	 *
+	 * Creates XLinkOut if synced and VideoEncoder if lowBandwidth is enabled. linkFunc is stored and returned when link is called.
+	 */
     ImagePublisher(std::shared_ptr<rclcpp::Node> node,
                    std::shared_ptr<dai::Pipeline> pipeline,
                    const std::string& qName,
@@ -86,17 +91,20 @@ class ImagePublisher {
                    int lowBandwidthQuality = 50);
 
     ~ImagePublisher();
+	/**
+	 * @brief Setup the image publisher
+	 *	
+	 * Creates Publishers, ImageConverter and CameraInfoManager. Creates a Queue and adds a callback if not synced.
+	 */
     void setup(std::shared_ptr<dai::Device> device, const ImgConverterConfig& convConf, const ImgPublisherConfig& pubConf);
     void createImageConverter(std::shared_ptr<dai::Device> device);
     void createInfoManager(std::shared_ptr<dai::Device> device);
     void addQueueCB(const std::shared_ptr<dai::DataOutputQueue>& queue);
     void closeQueue();
     std::shared_ptr<dai::DataOutputQueue> getQueue();
-    void publish(const std::shared_ptr<dai::ADatatype>& data);
-    void setQueueName(const std::string& name);
-    void setSynced(bool sync);
     void link(dai::Node::Input in);
     std::string getQueueName();
+    void publish(const std::shared_ptr<dai::ADatatype>& data);
     void publish(std::pair<sensor_msgs::msg::Image::UniquePtr, sensor_msgs::msg::CameraInfo::UniquePtr> data);
     std::pair<sensor_msgs::msg::Image::UniquePtr, sensor_msgs::msg::CameraInfo::UniquePtr> convertData(const std::shared_ptr<dai::ADatatype> data);
 
