@@ -12,6 +12,7 @@
 #include "depthai/pipeline/datatype/CameraControl.hpp"
 #include "image_transport/camera_publisher.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
+#include "ffmpeg_image_transport_msgs/msg/ffmpeg_packet.hpp"
 
 namespace dai {
 class Device;
@@ -61,6 +62,14 @@ void cameraPub(const std::string& /*name*/,
                dai::ros::ImageConverter& converter,
                image_transport::CameraPublisher& pub,
                std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
+               bool lazyPub = true);
+
+void videoPub(const std::string& /*name*/,
+               const std::shared_ptr<dai::ADatatype>& data,
+               dai::ros::ImageConverter& converter,
+               rclcpp::Publisher<ffmpeg_image_transport_msgs::msg::FFMPEGPacket>::SharedPtr pub,
+               int w,
+               int h,
                bool lazyPub = true);
 
 void splitPub(const std::string& /*name*/,

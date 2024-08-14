@@ -11,10 +11,12 @@
 #include "depthai-shared/common/Point2f.hpp"
 #include "depthai/device/CalibrationHandler.hpp"
 #include "depthai/pipeline/datatype/ImgFrame.hpp"
+#include "depthai/pipeline/datatype/EncodedFrame.hpp"
 #include "rclcpp/time.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "std_msgs/msg/header.hpp"
+#include "ffmpeg_image_transport_msgs/msg/ffmpeg_packet.hpp"
 
 namespace dai {
 
@@ -22,7 +24,9 @@ namespace ros {
 
 namespace StdMsgs = std_msgs::msg;
 namespace ImageMsgs = sensor_msgs::msg;
+namespace FFMPEGMsgs = ffmpeg_image_transport_msgs::msg;
 using ImagePtr = ImageMsgs::Image::SharedPtr;
+using FFMPEGPacketPtr = FFMPEGMsgs::FFMPEGPacket::SharedPtr;
 
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration>;
 
@@ -83,6 +87,9 @@ class ImageConverter {
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs);
     ImageMsgs::Image toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> inData, const sensor_msgs::msg::CameraInfo& info = sensor_msgs::msg::CameraInfo());
     ImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
+
+    FFMPEGMsgs::FFMPEGPacket toRosVideoMsgRawPtr(std::shared_ptr<dai::EncodedFrame> inData, int fw, int fh);
+    // FFMPEGPacketPtr toRosMsgH264Ptr(std::shared_ptr<dai::EncodedFrame> inData);
 
     void toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outData);
 

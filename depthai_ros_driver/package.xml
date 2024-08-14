@@ -18,6 +18,7 @@
   <depend>vision_msgs</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
+  <depend>ffmpeg_image_transport_msgs</depend>
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
   <depend>image_transport_plugins</depend>

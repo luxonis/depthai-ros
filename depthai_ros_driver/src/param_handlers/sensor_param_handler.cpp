@@ -33,6 +33,8 @@ void SensorParamHandler::declareCommonParams(dai::CameraBoardSocket socket) {
     declareAndLogParam<bool>("i_add_exposure_offset", false);
     declareAndLogParam<int>("i_exposure_offset", 0);
     declareAndLogParam<bool>("i_reverse_stereo_socket_order", false);
+    declareAndLogParam<bool>("i_enable_h264", false);
+    declareAndLogParam<int>("i_h264_quality", 80);   
 }
 
 void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> monoCam, dai_nodes::sensor_helpers::ImageSensor sensor, bool publish) {

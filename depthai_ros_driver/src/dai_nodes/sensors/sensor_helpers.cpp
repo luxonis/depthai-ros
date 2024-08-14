@@ -95,6 +95,21 @@ void cameraPub(const std::string& /*name*/,
     }
 }
 
+void videoPub(const std::string& /*name*/,
+               const std::shared_ptr<dai::ADatatype>& data,
+               dai::ros::ImageConverter& converter,
+               rclcpp::Publisher<ffmpeg_image_transport_msgs::msg::FFMPEGPacket>::SharedPtr pub,              
+               int w,
+               int h,
+               bool lazyPub) {
+    if(rclcpp::ok() && (!lazyPub || pub->get_subscription_count() > 0 || pub->get_intra_process_subscription_count() > 0)) {
+        auto f = std::dynamic_pointer_cast<dai::EncodedFrame>(data);
+        auto rawFrameMsg = converter.toRosVideoMsgRawPtr(f, w, h);
+        ffmpeg_image_transport_msgs::msg::FFMPEGPacket::UniquePtr msg = std::make_unique<ffmpeg_image_transport_msgs::msg::FFMPEGPacket>(rawFrameMsg);
+        pub->publish(std::move(msg));
+    }
+}
+
 void splitPub(const std::string& /*name*/,
               const std::shared_ptr<dai::ADatatype>& data,
               dai::ros::ImageConverter& converter,
@@ -129,6 +144,7 @@ sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
     }
     return info;
 }
+
 std::shared_ptr<dai::node::VideoEncoder> createEncoder(std::shared_ptr<dai::Pipeline> pipeline, int quality, dai::VideoEncoderProperties::Profile profile) {
     auto enc = pipeline->create<dai::node::VideoEncoder>();
     enc->setQuality(quality);

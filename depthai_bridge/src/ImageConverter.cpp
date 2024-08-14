@@ -218,10 +218,65 @@ void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<
 
 ImagePtr ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
     auto msg = toRosMsgRawPtr(inData);
-
     ImagePtr ptr = std::make_shared<ImageMsgs::Image>(msg);
     return ptr;
 }
+
+/**
+ * This should be implemented in dai::EncodedFrame but I'm not gonna
+ * edit another repo for it
+ */
+std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration> getOffsetTimestamp(std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration> ts, CameraExposureOffset offset, std::chrono::microseconds expTime) {
+    switch(offset) {
+        case CameraExposureOffset::START:
+            return ts - expTime;
+        case CameraExposureOffset::MIDDLE:
+            return ts - expTime / 2;
+        case CameraExposureOffset::END:
+        default:
+            return ts;
+    }
+}
+
+FFMPEGMsgs::FFMPEGPacket ImageConverter::toRosVideoMsgRawPtr(std::shared_ptr<dai::EncodedFrame> inData, int fw, int fh) {
+    if(_updateRosBaseTimeOnToRosMsg) {
+        updateRosBaseTime();
+    }
+    std::chrono::_V2::steady_clock::time_point tstamp;
+    if(_getBaseDeviceTimestamp)
+        if(_addExpOffset)
+            tstamp = getOffsetTimestamp(inData->getTimestampDevice(), _expOffset, inData->getExposureTime()); 
+        else
+            tstamp = inData->getTimestampDevice(); 
+    else if(_addExpOffset)
+        tstamp = getOffsetTimestamp(inData->getTimestamp(), _expOffset, inData->getExposureTime()); 
+    else
+        tstamp = tstamp = inData->getTimestamp();
+    
+    FFMPEGMsgs::FFMPEGPacket outFrameMsg;
+    StdMsgs::Header header;
+    header.frame_id = _frameName;
+    header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
+    outFrameMsg.header = header;
+    
+    auto ft = inData->getFrameType(); // I = keyframe
+
+    outFrameMsg.width = fw;
+    outFrameMsg.height = fh;
+    outFrameMsg.encoding = "h.264";
+    outFrameMsg.pts = header.stamp.sec * 1000000000 + header.stamp.nanosec;
+    outFrameMsg.flags = (int) (ft == RawEncodedFrame::FrameType::I);
+    outFrameMsg.is_bigendian = false;
+    outFrameMsg.data = inData->getData();
+ 
+    return outFrameMsg;
+}
+
+// FFMPEGPacketPtr ImageConverter::toRosMsgH264Ptr(std::shared_ptr<dai::EncodedFrame> inData) {
+//     auto msg = toRosVideoMsgRawPtr(inData);
+//     FFMPEGPacketPtr ptr = std::make_shared<FFMPEGMsgs::FFMPEGPacket>(msg);
+//     return ptr;
+// }
 
 void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outData) {
     std::unordered_map<dai::RawImgFrame::Type, std::string>::iterator revEncodingIter;

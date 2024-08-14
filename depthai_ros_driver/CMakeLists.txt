@@ -30,6 +30,7 @@ rclcpp
 sensor_msgs
 diagnostic_updater
 diagnostic_msgs
+ffmpeg_image_transport_msgs
 )
 
 set(SENSOR_DEPS

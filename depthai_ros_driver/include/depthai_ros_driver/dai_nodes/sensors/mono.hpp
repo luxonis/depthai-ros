@@ -6,6 +6,7 @@
 #include "image_transport/image_transport.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
 #include "sensor_msgs/msg/image.hpp"
+#include "ffmpeg_image_transport_msgs/msg/ffmpeg_packet.hpp"
 
 namespace dai {
 class Pipeline;
@@ -59,16 +60,17 @@ class Mono : public BaseNode {
     std::unique_ptr<dai::ros::ImageConverter> imageConverter;
     image_transport::CameraPublisher monoPubIT;
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr monoPub;
+    rclcpp::Publisher<ffmpeg_image_transport_msgs::msg::FFMPEGPacket>::SharedPtr h264Pub;
     rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr infoPub;
     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
     std::shared_ptr<dai::node::MonoCamera> monoCamNode;
-    std::shared_ptr<dai::node::VideoEncoder> videoEnc;
+    std::shared_ptr<dai::node::VideoEncoder> videoEnc, videoEncH264;
     std::unique_ptr<param_handlers::SensorParamHandler> ph;
-    std::shared_ptr<dai::DataOutputQueue> monoQ;
+    std::shared_ptr<dai::DataOutputQueue> monoQ, h264Q;
     std::shared_ptr<dai::DataInputQueue> controlQ;
-    std::shared_ptr<dai::node::XLinkOut> xoutMono;
+    std::shared_ptr<dai::node::XLinkOut> xoutMono, xoutH264;
     std::shared_ptr<dai::node::XLinkIn> xinControl;
-    std::string monoQName, controlQName;
+    std::string monoQName, controlQName, h264QName;
 };
 
 }  // namespace dai_nodes
