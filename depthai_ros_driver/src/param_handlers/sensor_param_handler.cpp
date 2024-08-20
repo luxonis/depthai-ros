@@ -20,7 +20,11 @@ SensorParamHandler::~SensorParamHandler() = default;
 void SensorParamHandler::declareCommonParams(dai::CameraBoardSocket socket) {
     declareAndLogParam<int>("i_max_q_size", 30);
     declareAndLogParam<bool>("i_low_bandwidth", false);
+    declareAndLogParam<int>("i_low_bandwidth_profile", 4);
+    declareAndLogParam<int>("i_low_bandiwdth_frame_freq", 30);
+    declareAndLogParam<int>("i_low_bandwidth_bitrate", 0);
     declareAndLogParam<int>("i_low_bandwidth_quality", 50);
+    declareAndLogParam<std::string>("i_low_bandwidth_ffmpeg_encoder", "libx264");
     declareAndLogParam<std::string>("i_calibration_file", "");
     declareAndLogParam<bool>("i_simulate_from_topic", false);
     declareAndLogParam<std::string>("i_simulated_topic_name", "");
@@ -35,6 +39,7 @@ void SensorParamHandler::declareCommonParams(dai::CameraBoardSocket socket) {
     declareAndLogParam<int>("i_exposure_offset", 0);
     declareAndLogParam<bool>("i_reverse_stereo_socket_order", false);
     declareAndLogParam<bool>("i_synced", true);
+    declareAndLogParam<bool>("i_publish_compressed", false);
 }
 
 void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> monoCam, dai_nodes::sensor_helpers::ImageSensor sensor, bool publish) {
