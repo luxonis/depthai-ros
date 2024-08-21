@@ -2,10 +2,6 @@
 
 #include <string>
 
-#include "depthai-shared/common/CameraBoardSocket.hpp"
-#include "depthai-shared/datatype/RawImgFrame.hpp"
-#include "depthai-shared/properties/VideoEncoderProperties.hpp"
-#include "depthai/common/CameraExposureOffset.hpp"
 #include "depthai/pipeline/Node.hpp"
 #include "depthai/pipeline/datatype/ADatatype.hpp"
 #include "depthai_ros_driver/utils.hpp"

@@ -28,7 +28,7 @@ namespace ImageMsgs = sensor_msgs::msg;
 namespace FFMPEGMsgs = ffmpeg_image_transport_msgs::msg;
 using ImagePtr = ImageMsgs::Image::SharedPtr;
 using FFMPEGImagePtr = FFMPEGMsgs::FFMPEGPacket::SharedPtr;
-using ImpImgPtr = ImageMsgs::CompressedImage::SharedPtr;
+using CompImagePtr = ImageMsgs::CompressedImage::SharedPtr;
 
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration>;
 

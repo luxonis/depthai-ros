@@ -75,6 +75,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
             auto pubs = daiNode->getPublishers();
             RCLCPP_DEBUG(node->get_logger(), "Number of synced publishers found for %s: %zu", daiNode->getName().c_str(), pubs.size());
             if(pubs.empty()) {
+				continue;
             } else {
                 std::for_each(pubs.begin(), pubs.end(), [&sync](auto& pub) {
                     sync->addPublisher(pub);
