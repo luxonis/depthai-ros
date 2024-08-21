@@ -21,7 +21,7 @@ void SensorParamHandler::declareCommonParams(dai::CameraBoardSocket socket) {
     declareAndLogParam<int>("i_max_q_size", 30);
     declareAndLogParam<bool>("i_low_bandwidth", false);
     declareAndLogParam<int>("i_low_bandwidth_profile", 4);
-    declareAndLogParam<int>("i_low_bandiwdth_frame_freq", 30);
+    declareAndLogParam<int>("i_low_bandwidth_frame_freq", 30);
     declareAndLogParam<int>("i_low_bandwidth_bitrate", 0);
     declareAndLogParam<int>("i_low_bandwidth_quality", 50);
     declareAndLogParam<std::string>("i_low_bandwidth_ffmpeg_encoder", "libx264");

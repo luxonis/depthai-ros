@@ -38,7 +38,7 @@ void Mono::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
         utils::VideoEncoderConfig encConfig;
         encConfig.profile = static_cast<dai::VideoEncoderProperties::Profile>(ph->getParam<int>("i_low_bandwidth_profile"));
         encConfig.bitrate = ph->getParam<int>("i_low_bandwidth_bitrate");
-        encConfig.frameFreq = ph->getParam<int>("i_low_bandwidth_keyframe_frequency");
+        encConfig.frameFreq = ph->getParam<int>("i_low_bandwidth_frame_freq");
         encConfig.quality = ph->getParam<int>("i_low_bandwidth_quality");
         encConfig.enabled = ph->getParam<bool>("i_low_bandwidth");
 
@@ -92,7 +92,7 @@ void Mono::link(dai::Node::Input in, int /*linkType*/) {
 
 std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> Mono::getPublishers() {
     std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> publishers;
-    if(ph->getParam<bool>("i_publish_topic")) {
+    if(ph->getParam<bool>("i_publish_topic") && ph->getParam<bool>("i_synced")) {
         publishers.push_back(imagePublisher);
     }
     return publishers;

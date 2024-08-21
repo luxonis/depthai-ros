@@ -57,7 +57,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<bool>("i_low_bandwidth", false);
     declareAndLogParam<int>("i_low_bandwidth_quality", 50);
     declareAndLogParam<int>("i_low_bandwidth_profile", 4);
-    declareAndLogParam<int>("i_low_bandiwdth_frame_freq", 30);
+    declareAndLogParam<int>("i_low_bandwidth_frame_freq", 30);
     declareAndLogParam<int>("i_low_bandwidth_bitrate", 0);
     declareAndLogParam<std::string>("i_low_bandwidth_ffmpeg_encoder", "libx264");
     declareAndLogParam<bool>("i_output_disparity", false);
@@ -69,9 +69,10 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<bool>("i_enable_lazy_publisher", true);
     declareAndLogParam<bool>("i_reverse_stereo_socket_order", false);
     declareAndLogParam<bool>("i_publish_compressed", false);
+    declareAndLogParam<std::string>("i_calibration_file", "");
 
     declareAndLogParam<bool>("i_publish_synced_rect_pair", false);
-    declareAndLogParam<bool>("i_publish_left_rect", false);
+    declareAndLogParam<bool>("i_left_rect_publish_topic", false);
     declareAndLogParam<bool>("i_left_rect_low_bandwidth", false);
     declareAndLogParam<int>("i_left_rect_low_bandwidth_profile", 4);
     declareAndLogParam<int>("i_left_rect_low_bandwidth_frame_freq", 30);
@@ -84,7 +85,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<bool>("i_left_rect_synced", true);
     declareAndLogParam<bool>("i_left_rect_publish_compressed", false);
 
-    declareAndLogParam<bool>("i_publish_right_rect", false);
+    declareAndLogParam<bool>("i_right_rect_publish_topic", false);
     declareAndLogParam<bool>("i_right_rect_low_bandwidth", false);
     declareAndLogParam<int>("i_right_rect_low_bandwidth_quality", 50);
     declareAndLogParam<int>("i_right_rect_low_bandwidth_profile", 4);

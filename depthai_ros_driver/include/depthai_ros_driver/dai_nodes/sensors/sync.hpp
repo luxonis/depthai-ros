@@ -39,7 +39,7 @@ class Sync : public BaseNode {
     void setNames() override;
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
-    void addPublisher(std::shared_ptr<sensor_helpers::ImagePublisher> publisher);
+    void addPublishers(const std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>>& pubs);
 
    private:
     std::unique_ptr<param_handlers::SyncParamHandler> paramHandler;

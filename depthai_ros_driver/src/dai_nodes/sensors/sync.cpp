@@ -71,8 +71,11 @@ void Sync::closeQueues() {
     outQueue->close();
 }
 
-void Sync::addPublisher(std::shared_ptr<sensor_helpers::ImagePublisher> publisher) {
-    publishers.push_back(publisher);
+void Sync::addPublishers(const std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>>& pubs) {
+    for(auto& pub : pubs) {
+        pub->link(getInputByName(pub->getQueueName()));
+    }
+    publishers.insert(publishers.end(), pubs.begin(), pubs.end());
 }
 
 }  // namespace dai_nodes
