@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 
-#include "camera_info_manager/camera_info_manager.hpp"
 #include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai/device/DataQueue.hpp"
 #include "depthai/device/Device.hpp"
@@ -15,6 +14,7 @@
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_bridge/ImgDetectionConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
 #include "rclcpp/node.hpp"
@@ -78,12 +78,12 @@ class Detection : public BaseNode {
         nnQ->addCallback(std::bind(&Detection::detectionCB, this, std::placeholders::_1, std::placeholders::_2));
 
         if(ph->getParam<bool>("i_enable_passthrough")) {
-            sensor_helpers::ImgConverterConfig convConf;
+            utils::ImgConverterConfig convConf;
             convConf.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
             convConf.tfPrefix = tfPrefix;
             convConf.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
 
-            sensor_helpers::ImgPublisherConfig pubConf;
+            utils::ImgPublisherConfig pubConf;
             pubConf.daiNodeName = getName();
             pubConf.topicName = "~/" + getName();
             pubConf.topicSuffix = "passthrough";
@@ -166,14 +166,12 @@ class Detection : public BaseNode {
     std::unique_ptr<dai::ros::ImgDetectionConverter> detConverter;
     std::vector<std::string> labelNames;
     rclcpp::Publisher<vision_msgs::msg::Detection2DArray>::SharedPtr detPub;
-    std::shared_ptr<dai::ros::ImageConverter> imageConverter;
     std::shared_ptr<sensor_helpers::ImagePublisher> ptPub;
-    std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
     std::shared_ptr<T> detectionNode;
     std::shared_ptr<dai::node::ImageManip> imageManip;
     std::unique_ptr<param_handlers::NNParamHandler> ph;
     std::shared_ptr<dai::DataOutputQueue> nnQ, ptQ;
-    std::shared_ptr<dai::node::XLinkOut> xoutNN, xoutPT;
+    std::shared_ptr<dai::node::XLinkOut> xoutNN;
     std::string nnQName, ptQName;
 };
 

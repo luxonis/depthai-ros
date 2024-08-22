@@ -1,10 +1,11 @@
 #pragma once
 
-#include <depthai-shared/common/CameraBoardSocket.hpp>
 #include <memory>
 #include <string>
 
+#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai/pipeline/Node.hpp"
+#include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/logger.hpp"
 
 namespace dai {
@@ -25,6 +26,7 @@ namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace sensor_helpers {
 class ImagePublisher;
+struct VideoEncoderConfig;
 }  // namespace sensor_helpers
 class BaseNode {
    public:
@@ -57,8 +59,7 @@ class BaseNode {
                                                                 const std::string& qName,
                                                                 std::function<void(dai::Node::Input input)> nodeLink,
                                                                 bool isSynced = false,
-                                                                bool isLowBandwidth = false,
-                                                                int quality = 50);
+                                                                const utils::VideoEncoderConfig& encoderConfig = {});
     virtual void closeQueues() = 0;
     std::shared_ptr<dai::node::XLinkOut> setupXout(std::shared_ptr<dai::Pipeline> pipeline, const std::string& name);
 

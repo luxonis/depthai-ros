@@ -2,6 +2,7 @@
 
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/imu.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sync.hpp"
 #include "depthai_ros_driver/dai_nodes/sys_logger.hpp"
@@ -68,17 +69,13 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
         auto sysLogger = std::make_unique<dai_nodes::SysLogger>("sys_logger", node, pipeline);
         daiNodes.push_back(std::move(sysLogger));
     }
-    auto sync = std::make_unique<dai_nodes::Sync>("sync", node, pipeline);
     if(ph->getParam<bool>("i_enable_sync")) {
+        auto sync = std::make_unique<dai_nodes::Sync>("sync", node, pipeline);
         for(auto& daiNode : daiNodes) {
             auto pubs = daiNode->getPublishers();
             RCLCPP_DEBUG(node->get_logger(), "Number of synced publishers found for %s: %zu", daiNode->getName().c_str(), pubs.size());
-            if(pubs.empty()) {
-            } else {
-                std::for_each(pubs.begin(), pubs.end(), [&sync](auto& pub) {
-                    sync->addPublisher(pub);
-                    pub->link(sync->getInputByName(pub->getQueueName()));
-                });
+            if(!pubs.empty()) {
+                sync->addPublishers(pubs);
             }
         }
         daiNodes.push_back(std::move(sync));

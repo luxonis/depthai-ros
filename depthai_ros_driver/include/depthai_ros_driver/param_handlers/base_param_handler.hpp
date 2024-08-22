@@ -27,12 +27,18 @@ class BaseParamHandler {
     template <typename T>
     T getParam(const std::string& paramName) {
         T value;
+        if(!baseNode->has_parameter(getFullParamName(paramName))) {
+            RCLCPP_WARN(baseNode->get_logger(), "Parameter %s not found", getFullParamName(paramName).c_str());
+        }
         baseNode->get_parameter<T>(getFullParamName(paramName), value);
         return value;
     }
     template <typename T>
     T getOtherNodeParam(const std::string& daiNodeName, const std::string& paramName) {
         T value;
+        if(!baseNode->has_parameter(getFullParamName(daiNodeName, paramName))) {
+            RCLCPP_WARN(baseNode->get_logger(), "Parameter %s not found", getFullParamName(daiNodeName, paramName).c_str());
+        }
         baseNode->get_parameter<T>(getFullParamName(daiNodeName, paramName), value);
         return value;
     }

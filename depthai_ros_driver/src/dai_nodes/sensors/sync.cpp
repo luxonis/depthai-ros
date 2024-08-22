@@ -6,6 +6,7 @@
 #include "depthai/pipeline/datatype/MessageGroup.hpp"
 #include "depthai/pipeline/node/Sync.hpp"
 #include "depthai/pipeline/node/XLinkOut.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/sync_param_handler.hpp"
 
@@ -46,12 +47,10 @@ void Sync::setupQueues(std::shared_ptr<dai::Device> device) {
                     if(pub->getQueueName() == msg.first) {
                         auto data = pub->convertData(msg.second);
                         if(firstMsg) {
-                            timestamp = data.first->header.stamp;
+                            timestamp = data->info->header.stamp;
                             firstMsg = false;
                         }
-                        data.first->header.stamp = timestamp;
-                        data.second->header.stamp = timestamp;
-                        pub->publish(std::move(data));
+                        pub->publish(std::move(data), timestamp);
                     }
                 }
             }
@@ -72,8 +71,11 @@ void Sync::closeQueues() {
     outQueue->close();
 }
 
-void Sync::addPublisher(std::shared_ptr<sensor_helpers::ImagePublisher> publisher) {
-    publishers.push_back(publisher);
+void Sync::addPublishers(const std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>>& pubs) {
+    for(auto& pub : pubs) {
+        pub->link(getInputByName(pub->getQueueName()));
+    }
+    publishers.insert(publishers.end(), pubs.begin(), pubs.end());
 }
 
 }  // namespace dai_nodes

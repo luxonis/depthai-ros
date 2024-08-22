@@ -16,6 +16,7 @@
 #include "depthai_bridge/SpatialDetectionConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/nn_helpers.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
 #include "rclcpp/node.hpp"
@@ -66,12 +67,12 @@ class SpatialDetection : public BaseNode {
         detPub = getROSNode()->template create_publisher<vision_msgs::msg::Detection3DArray>("~/" + getName() + "/spatial_detections", 10, options);
 
         if(ph->getParam<bool>("i_enable_passthrough")) {
-            sensor_helpers::ImgConverterConfig convConf;
+            utils::ImgConverterConfig convConf;
             convConf.tfPrefix = tfPrefix;
             convConf.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
             convConf.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
 
-            sensor_helpers::ImgPublisherConfig pubConf;
+            utils::ImgPublisherConfig pubConf;
             pubConf.width = width;
             pubConf.height = height;
             pubConf.daiNodeName = getName();
@@ -87,12 +88,12 @@ class SpatialDetection : public BaseNode {
             if(!ph->getOtherNodeParam<bool>("stereo", "i_align_depth")) {
                 tfPrefix = getTFPrefix("right");
             };
-            sensor_helpers::ImgConverterConfig convConf;
+            utils::ImgConverterConfig convConf;
             convConf.tfPrefix = tfPrefix;
             convConf.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
             convConf.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
 
-            sensor_helpers::ImgPublisherConfig pubConf;
+            utils::ImgPublisherConfig pubConf;
             pubConf.width = ph->getOtherNodeParam<int>(sensor_helpers::getNodeName(getROSNode(), sensor_helpers::NodeNameEnum::Stereo), "i_width");
             pubConf.height = ph->getOtherNodeParam<int>(sensor_helpers::getNodeName(getROSNode(), sensor_helpers::NodeNameEnum::Stereo), "i_height");
             pubConf.daiNodeName = getName();

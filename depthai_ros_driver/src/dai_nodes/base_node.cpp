@@ -5,6 +5,7 @@
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/VideoEncoder.hpp"
 #include "depthai/pipeline/node/XLinkOut.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/node.hpp"
@@ -68,16 +69,15 @@ void BaseNode::closeQueues() {
 };
 
 std::shared_ptr<dai::node::XLinkOut> BaseNode::setupXout(std::shared_ptr<dai::Pipeline> pipeline, const std::string& name) {
-    return sensor_helpers::setupXout(pipeline, name);
+    return utils::setupXout(pipeline, name);
 };
 
 std::shared_ptr<sensor_helpers::ImagePublisher> BaseNode::setupOutput(std::shared_ptr<dai::Pipeline> pipeline,
                                                                       const std::string& qName,
                                                                       std::function<void(dai::Node::Input input)> nodeLink,
                                                                       bool isSynced,
-                                                                      bool isLowBandwidth,
-                                                                      int quality) {
-    return std::make_shared<sensor_helpers::ImagePublisher>(getROSNode(), pipeline, qName, nodeLink, isSynced, ipcEnabled(), isLowBandwidth, quality);
+                                                                      const utils::VideoEncoderConfig& encoderConfig) {
+    return std::make_shared<sensor_helpers::ImagePublisher>(getROSNode(), pipeline, qName, nodeLink, isSynced, ipcEnabled(), encoderConfig);
 };
 
 void BaseNode::setNames() {

@@ -2,12 +2,11 @@
 
 #include <fstream>
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai_bridge/TFPublisher.hpp"
 #include "depthai_ros_driver/pipeline/pipeline_generator.hpp"
-#include "diagnostic_msgs/msg/diagnostic_status.hpp"
+#include "diagnostic_msgs/msg/diagnostic_array.hpp"
 
 namespace depthai_ros_driver {
 
