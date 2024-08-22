@@ -2,8 +2,11 @@
 
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/imu.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sync.hpp"
 #include "depthai_ros_driver/dai_nodes/sys_logger.hpp"
+#include "depthai_ros_driver/param_handlers/pipeline_gen_param_handler.hpp"
 #include "depthai_ros_driver/pipeline/base_pipeline.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "pluginlib/class_loader.hpp"
@@ -11,12 +14,29 @@
 
 namespace depthai_ros_driver {
 namespace pipeline_gen {
-std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipeline(rclcpp::Node* node,
+PipelineGenerator::PipelineGenerator() {
+    pluginTypeMap = {{"RGB", "depthai_ros_driver::pipeline_gen::RGB"},
+                     {"RGBD", "depthai_ros_driver::pipeline_gen::RGBD"},
+                     {"RGBSTEREO", "depthai_ros_driver::pipeline_gen::RGBStereo"},
+                     {"STEREO", "depthai_ros_driver::pipeline_gen::Stereo"},
+                     {"DEPTH", "depthai_ros_driver::pipeline_gen::Depth"},
+                     {"CAMARRAY", "depthai_ros_driver::pipeline_gen::CamArray"}};
+    pipelineTypeMap = {{"RGB", PipelineType::RGB},
+                       {"RGBD", PipelineType::RGBD},
+                       {"RGBSTEREO", PipelineType::RGBStereo},
+                       {"STEREO", PipelineType::Stereo},
+                       {"DEPTH", PipelineType::Depth},
+                       {"CAMARRAY", PipelineType::CamArray}};
+}
+
+PipelineGenerator::~PipelineGenerator() = default;
+std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                                     std::shared_ptr<dai::Device> device,
                                                                                     std::shared_ptr<dai::Pipeline> pipeline,
                                                                                     const std::string& pipelineType,
-                                                                                    const std::string& nnType,
-                                                                                    bool enableImu) {
+                                                                                    const std::string& nnType) {
+    ph = std::make_unique<param_handlers::PipelineGenParamHandler>(node, "pipeline_gen");
+    ph->declareParams();
     RCLCPP_INFO(node->get_logger(), "Pipeline type: %s", pipelineType.c_str());
     std::string pluginType = pipelineType;
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
@@ -38,7 +58,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
         throw std::runtime_error("Plugin loading failed.");
     }
 
-    if(enableImu) {
+    if(ph->getParam<bool>("i_enable_imu")) {
         if(device->getConnectedIMU() == "NONE" || device->getConnectedIMU().empty()) {
             RCLCPP_WARN(node->get_logger(), "IMU enabled but not available!");
         } else {
@@ -46,8 +66,21 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
             daiNodes.push_back(std::move(imu));
         }
     }
-    auto sysLogger = std::make_unique<dai_nodes::SysLogger>("sys_logger", node, pipeline);
-    daiNodes.push_back(std::move(sysLogger));
+    if(ph->getParam<bool>("i_enable_diagnostics")) {
+        auto sysLogger = std::make_unique<dai_nodes::SysLogger>("sys_logger", node, pipeline);
+        daiNodes.push_back(std::move(sysLogger));
+    }
+    if(ph->getParam<bool>("i_enable_sync")) {
+        auto sync = std::make_unique<dai_nodes::Sync>("sync", node, pipeline);
+        for(auto& daiNode : daiNodes) {
+            auto pubs = daiNode->getPublishers();
+            RCLCPP_DEBUG(node->get_logger(), "Number of synced publishers found for %s: %zu", daiNode->getName().c_str(), pubs.size());
+            if(!pubs.empty()) {
+                sync->addPublishers(pubs);
+            }
+        }
+        daiNodes.push_back(std::move(sync));
+    }
     RCLCPP_INFO(node->get_logger(), "Finished setting up pipeline.");
     return daiNodes;
 }

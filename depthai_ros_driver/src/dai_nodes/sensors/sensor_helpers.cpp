@@ -1,9 +1,12 @@
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 
+#include <depthai/pipeline/node/XLinkOut.hpp>
+
 #include "camera_info_manager/camera_info_manager.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/VideoEncoder.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
+#include "image_transport/image_transport.hpp"
 #include "rclcpp/logger.hpp"
 
 namespace depthai_ros_driver {
@@ -31,6 +34,48 @@ const std::unordered_map<dai::CameraBoardSocket, std::string> socketNameMap = {
     {dai::CameraBoardSocket::CAM_D, "left_back"},
     {dai::CameraBoardSocket::CAM_E, "right_back"},
 };
+const std::unordered_map<dai::CameraBoardSocket, std::string> rsSocketNameMap = {
+    {dai::CameraBoardSocket::AUTO, "color"},
+    {dai::CameraBoardSocket::CAM_A, "color"},
+    {dai::CameraBoardSocket::CAM_B, "infra2"},
+    {dai::CameraBoardSocket::CAM_C, "infra1"},
+    {dai::CameraBoardSocket::CAM_D, "infra4"},
+    {dai::CameraBoardSocket::CAM_E, "infra3"},
+};
+const std::unordered_map<NodeNameEnum, std::string> rsNodeNameMap = {
+    {NodeNameEnum::RGB, "color"},
+    {NodeNameEnum::Left, "infra2"},
+    {NodeNameEnum::Right, "infra1"},
+    {NodeNameEnum::Stereo, "depth"},
+    {NodeNameEnum::IMU, "imu"},
+    {NodeNameEnum::NN, "nn"},
+};
+
+const std::unordered_map<NodeNameEnum, std::string> NodeNameMap = {
+    {NodeNameEnum::RGB, "rgb"},
+    {NodeNameEnum::Left, "left"},
+    {NodeNameEnum::Right, "right"},
+    {NodeNameEnum::Stereo, "stereo"},
+    {NodeNameEnum::IMU, "imu"},
+    {NodeNameEnum::NN, "nn"},
+};
+
+bool rsCompabilityMode(std::shared_ptr<rclcpp::Node> node) {
+    return node->get_parameter("camera.i_rs_compat").as_bool();
+}
+std::string getNodeName(std::shared_ptr<rclcpp::Node> node, NodeNameEnum name) {
+    if(rsCompabilityMode(node)) {
+        return rsNodeNameMap.at(name);
+    }
+    return NodeNameMap.at(name);
+}
+
+std::string getSocketName(std::shared_ptr<rclcpp::Node> node, dai::CameraBoardSocket socket) {
+    if(rsCompabilityMode(node)) {
+        return rsSocketNameMap.at(socket);
+    }
+    return socketNameMap.at(socket);
+}
 const std::unordered_map<std::string, dai::MonoCameraProperties::SensorResolution> monoResolutionMap = {
     {"400P", dai::MonoCameraProperties::SensorResolution::THE_400_P},
     {"480P", dai::MonoCameraProperties::SensorResolution::THE_480_P},
@@ -80,42 +125,8 @@ void basicCameraPub(const std::string& /*name*/,
     }
 }
 
-void cameraPub(const std::string& /*name*/,
-               const std::shared_ptr<dai::ADatatype>& data,
-               dai::ros::ImageConverter& converter,
-               image_transport::CameraPublisher& pub,
-               std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
-               bool lazyPub) {
-    if(rclcpp::ok() && (!lazyPub || pub.getNumSubscribers() > 0)) {
-        auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
-        auto info = infoManager->getCameraInfo();
-        auto rawMsg = converter.toRosMsgRawPtr(img, info);
-        info.header = rawMsg.header;
-        pub.publish(rawMsg, info);
-    }
-}
-
-void splitPub(const std::string& /*name*/,
-              const std::shared_ptr<dai::ADatatype>& data,
-              dai::ros::ImageConverter& converter,
-              rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr imgPub,
-              rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr infoPub,
-              std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager,
-              bool lazyPub) {
-    if(rclcpp::ok() && (!lazyPub || detectSubscription(imgPub, infoPub))) {
-        auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
-        auto info = infoManager->getCameraInfo();
-        auto rawMsg = converter.toRosMsgRawPtr(img, info);
-        info.header = rawMsg.header;
-        sensor_msgs::msg::CameraInfo::UniquePtr infoMsg = std::make_unique<sensor_msgs::msg::CameraInfo>(info);
-        sensor_msgs::msg::Image::UniquePtr msg = std::make_unique<sensor_msgs::msg::Image>(rawMsg);
-        imgPub->publish(std::move(msg));
-        infoPub->publish(std::move(infoMsg));
-    }
-}
-
 sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
-                                          dai::ros::ImageConverter& converter,
+                                          std::shared_ptr<dai::ros::ImageConverter> converter,
                                           std::shared_ptr<dai::Device> device,
                                           dai::CameraBoardSocket socket,
                                           int width,
@@ -123,24 +134,13 @@ sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
     sensor_msgs::msg::CameraInfo info;
     auto calibHandler = device->readCalibration();
     try {
-        info = converter.calibrationToCameraInfo(calibHandler, socket, width, height);
+        info = converter->calibrationToCameraInfo(calibHandler, socket, width, height);
     } catch(std::runtime_error& e) {
         RCLCPP_ERROR(logger, "No calibration for socket %d! Publishing empty camera_info.", static_cast<int>(socket));
     }
     return info;
 }
-std::shared_ptr<dai::node::VideoEncoder> createEncoder(std::shared_ptr<dai::Pipeline> pipeline, int quality, dai::VideoEncoderProperties::Profile profile) {
-    auto enc = pipeline->create<dai::node::VideoEncoder>();
-    enc->setQuality(quality);
-    enc->setProfile(profile);
-    return enc;
-}
 
-bool detectSubscription(const rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr& pub,
-                        const rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr& infoPub) {
-    return (pub->get_subscription_count() > 0 || pub->get_intra_process_subscription_count() > 0 || infoPub->get_subscription_count() > 0
-            || infoPub->get_intra_process_subscription_count() > 0);
-}
 }  // namespace sensor_helpers
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

@@ -17,12 +17,16 @@ class Node;
 }
 
 namespace depthai_ros_driver {
+namespace param_handlers {
+class PipelineGenParamHandler;
+}  // namespace param_handlers
 namespace pipeline_gen {
 enum class PipelineType { RGB, RGBD, RGBStereo, Stereo, Depth, CamArray, DepthToF, StereoToF, ToF, RGBToF };
 
 class PipelineGenerator {
    public:
-    ~PipelineGenerator() = default;
+    PipelineGenerator();
+    ~PipelineGenerator();
     /**
      * @brief      Validates the pipeline type. If the pipeline type is not valid for the number of sensors, it will be changed to the default type.
      *
@@ -45,12 +49,11 @@ class PipelineGenerator {
      *
      * @return     Vector BaseNodes created.
      */
-    std::vector<std::unique_ptr<dai_nodes::BaseNode>> createPipeline(rclcpp::Node* node,
+    std::vector<std::unique_ptr<dai_nodes::BaseNode>> createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                      std::shared_ptr<dai::Device> device,
                                                                      std::shared_ptr<dai::Pipeline> pipeline,
                                                                      const std::string& pipelineType,
-                                                                     const std::string& nnType,
-                                                                     bool enableImu);
+                                                                     const std::string& nnType);
 
    protected:
     std::unordered_map<std::string, std::string> pluginTypeMap{{"RGB", "depthai_ros_driver::pipeline_gen::RGB"},

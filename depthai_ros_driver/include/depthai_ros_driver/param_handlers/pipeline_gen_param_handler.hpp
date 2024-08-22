@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <string>
@@ -17,16 +18,12 @@ class Parameter;
 namespace depthai_ros_driver {
 namespace param_handlers {
 
-class CameraParamHandler : public BaseParamHandler {
+class PipelineGenParamHandler : public BaseParamHandler {
    public:
-    explicit CameraParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name);
-    ~CameraParamHandler();
+    explicit PipelineGenParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name);
+    ~PipelineGenParamHandler();
     void declareParams();
     dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;
-    dai::UsbSpeed getUSBSpeed();
-
-   private:
-    std::unordered_map<std::string, dai::UsbSpeed> usbSpeedMap;
 };
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver

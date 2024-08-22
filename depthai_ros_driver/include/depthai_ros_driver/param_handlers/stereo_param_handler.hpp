@@ -22,7 +22,7 @@ namespace depthai_ros_driver {
 namespace param_handlers {
 class StereoParamHandler : public BaseParamHandler {
    public:
-    explicit StereoParamHandler(rclcpp::Node* node, const std::string& name);
+    explicit StereoParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name);
     ~StereoParamHandler();
     void declareParams(std::shared_ptr<dai::node::StereoDepth> stereo);
     dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;
