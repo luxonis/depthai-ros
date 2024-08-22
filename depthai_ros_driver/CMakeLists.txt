@@ -30,6 +30,7 @@ rclcpp
 sensor_msgs
 diagnostic_updater
 diagnostic_msgs
+ffmpeg_image_transport_msgs
 )
 
 set(SENSOR_DEPS
@@ -66,6 +67,7 @@ add_library(
   src/utils.cpp
   src/dai_nodes/base_node.cpp
   src/dai_nodes/sys_logger.cpp
+  src/dai_nodes/sensors/img_pub.cpp
   src/dai_nodes/sensors/sensor_helpers.cpp # TODO: Figure out different place for this 
   src/param_handlers/camera_param_handler.cpp
   src/param_handlers/imu_param_handler.cpp
@@ -74,6 +76,8 @@ add_library(
   src/param_handlers/feature_tracker_param_handler.cpp
   src/param_handlers/stereo_param_handler.cpp
   src/param_handlers/tof_param_handler.cpp
+  src/param_handlers/pipeline_gen_param_handler.cpp
+  src/param_handlers/sync_param_handler.cpp
 )
 
 ament_target_dependencies(${COMMON_LIB_NAME} ${COMMON_DEPS})
@@ -88,6 +92,7 @@ add_library(
   src/dai_nodes/sensors/sensor_wrapper.cpp
   src/dai_nodes/sensors/stereo.cpp
   src/dai_nodes/sensors/tof.cpp
+  src/dai_nodes/sensors/sync.cpp
 )
 
 ament_target_dependencies(${SENSOR_LIB_NAME} ${SENSOR_DEPS})
@@ -122,7 +127,11 @@ target_link_libraries(
   ${NN_LIB_NAME}
   ${COMMON_LIB_NAME}
 )
-
+add_executable(
+	camera_node
+	src/camera_node.cpp)
+ament_target_dependencies(camera_node ${CAM_DEPS} ${COMMON_DEPS} ${SENSOR_DEPS} ${NN_DEPS})
+target_link_libraries(camera_node ${PROJECT_NAME} ${SENSOR_LIB_NAME} ${NN_LIB_NAME} ${COMMON_LIB_NAME})
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::Camera")
 pluginlib_export_plugin_description_file(${PROJECT_NAME} plugins.xml)
 ament_export_include_directories(include)
@@ -145,7 +154,7 @@ EXPORT ${PROJECT_NAME}Targets
 
 install(EXPORT ${PROJECT_NAME}Targets
       DESTINATION share/${PROJECT_NAME}/cmake)
-
+install(TARGETS camera_node DESTINATION lib/${PROJECT_NAME})
 ament_python_install_package(${PROJECT_NAME})
 # Install Python executables
 install(

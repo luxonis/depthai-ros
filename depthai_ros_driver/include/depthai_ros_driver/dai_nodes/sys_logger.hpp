@@ -22,7 +22,7 @@ namespace depthai_ros_driver {
 namespace dai_nodes {
 class SysLogger : public BaseNode {
    public:
-    SysLogger(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline);
+    SysLogger(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline);
     ~SysLogger();
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void setNames() override;

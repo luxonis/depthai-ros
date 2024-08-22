@@ -7,7 +7,7 @@
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-CameraParamHandler::CameraParamHandler(rclcpp::Node* node, const std::string& name) : BaseParamHandler(node, name) {
+CameraParamHandler::CameraParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name) : BaseParamHandler(node, name) {
     usbSpeedMap = {
         {"LOW", dai::UsbSpeed::LOW},
         {"FULL", dai::UsbSpeed::FULL},
@@ -25,6 +25,8 @@ void CameraParamHandler::declareParams() {
     declareAndLogParam<std::string>("i_pipeline_type", "RGBD");
     declareAndLogParam<std::string>("i_nn_type", "spatial");
     declareAndLogParam<bool>("i_enable_imu", true);
+    declareAndLogParam<bool>("i_enable_diagnostics", true);
+    declareAndLogParam<bool>("i_enable_sync", true);
     declareAndLogParam<bool>("i_enable_ir", true);
     declareAndLogParam<std::string>("i_usb_speed", "SUPER_PLUS");
     declareAndLogParam<std::string>("i_mx_id", "");
@@ -36,6 +38,7 @@ void CameraParamHandler::declareParams() {
     declareAndLogParam<int>("i_laser_dot_brightness", 800, getRangedIntDescriptor(0, 1200));
     declareAndLogParam<int>("i_floodlight_brightness", 0, getRangedIntDescriptor(0, 1500));
     declareAndLogParam<bool>("i_restart_on_diagnostics_error", false);
+    declareAndLogParam<bool>("i_rs_compat", false);
 
     declareAndLogParam<bool>("i_publish_tf_from_calibration", false);
     declareAndLogParam<std::string>("i_tf_camera_name", getROSNode()->get_name());

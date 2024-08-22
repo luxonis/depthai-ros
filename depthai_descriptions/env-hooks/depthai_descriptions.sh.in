@@ -1,0 +1,5 @@
+
+ament_prepend_unique_value GAZEBO_MODEL_PATH "$AMENT_CURRENT_PREFIX"
+ament_prepend_unique_value GAZEBO_RESOURCE_PATH "$AMENT_CURRENT_PREFIX"
+ament_prepend_unique_value IGN_GAZEBO_MODEL_PATH "$AMENT_CURRENT_PREFIX"
+ament_prepend_unique_value IGN_GAZEBO_RESOURCE_PATH "$AMENT_CURRENT_PREFIX"
