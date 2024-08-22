@@ -25,7 +25,7 @@ namespace param_handlers {
 
 class ToFParamHandler : public BaseParamHandler {
    public:
-    explicit ToFParamHandler(rclcpp::Node* node, const std::string& name);
+    explicit ToFParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name);
     ~ToFParamHandler();
     void declareParams(std::shared_ptr<dai::node::Camera> cam, std::shared_ptr<dai::node::ToF> tof);
     dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;

@@ -29,7 +29,8 @@ def launch_setup(context, *args, **kwargs):
                                "cam_roll": LaunchConfiguration("cam_roll"),
                                "cam_pitch": LaunchConfiguration("cam_pitch"),
                                "cam_yaw": LaunchConfiguration("cam_yaw"),
-                               "use_rviz": LaunchConfiguration("use_rviz")
+                               "use_rviz": LaunchConfiguration("use_rviz"),
+                               "rectify_rgb": "false"
                                }.items()),
 
         LoadComposableNodes(
@@ -38,7 +39,7 @@ def launch_setup(context, *args, **kwargs):
                     ComposableNode(
                         package="image_proc",
                         plugin="image_proc::RectifyNode",
-                        name="rectify_color_node",
+                        name="rectify_color_node_right",
                         remappings=[('image', name+'/right/image_raw'),
                                     ('camera_info', name+'/right/camera_info'),
                                     ('image_rect', name+'/right/image_rect'),
@@ -68,7 +69,7 @@ def generate_launch_description():
     depthai_prefix = get_package_share_directory("depthai_ros_driver")
     declared_arguments = [
         DeclareLaunchArgument("name", default_value="oak"),
-        DeclareLaunchArgument("camera_model", default_value="OAK-D"),
+        DeclareLaunchArgument("camera_model", default_value="OAK-D-SR-POE"),
         DeclareLaunchArgument("parent_frame", default_value="oak-d-base-frame"),
         DeclareLaunchArgument("cam_pos_x", default_value="0.0"),
         DeclareLaunchArgument("cam_pos_y", default_value="0.0"),

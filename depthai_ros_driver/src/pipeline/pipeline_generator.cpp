@@ -20,13 +20,21 @@ PipelineGenerator::PipelineGenerator() {
                      {"RGBSTEREO", "depthai_ros_driver::pipeline_gen::RGBStereo"},
                      {"STEREO", "depthai_ros_driver::pipeline_gen::Stereo"},
                      {"DEPTH", "depthai_ros_driver::pipeline_gen::Depth"},
-                     {"CAMARRAY", "depthai_ros_driver::pipeline_gen::CamArray"}};
+                     {"CAMARRAY", "depthai_ros_driver::pipeline_gen::CamArray"},
+                     {"DEPTHTOF", "depthai_ros_driver::pipeline_gen::DepthToF"},
+                     {"STEREOTOF", "depthai_ros_driver::pipeline_gen::StereoToF"},
+                     {"TOF", "depthai_ros_driver::pipeline_gen::ToF"},
+                     {"RGBTOF", "depthai_ros_driver::pipeline_gen::RGBToF"}};
     pipelineTypeMap = {{"RGB", PipelineType::RGB},
                        {"RGBD", PipelineType::RGBD},
                        {"RGBSTEREO", PipelineType::RGBStereo},
                        {"STEREO", PipelineType::Stereo},
                        {"DEPTH", PipelineType::Depth},
-                       {"CAMARRAY", PipelineType::CamArray}};
+                       {"CAMARRAY", PipelineType::CamArray},
+                       {"DEPTHTOF", PipelineType::DepthToF},
+                       {"STEREOTOF", PipelineType::StereoToF},
+                       {"TOF", PipelineType::ToF},
+                       {"RGBTOF", PipelineType::RGBToF}};
 }
 
 PipelineGenerator::~PipelineGenerator() = default;
@@ -85,7 +93,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
     return daiNodes;
 }
 
-std::string PipelineGenerator::validatePipeline(rclcpp::Node* node, const std::string& typeStr, int sensorNum, const std::string& deviceName) {
+std::string PipelineGenerator::validatePipeline(std::shared_ptr<rclcpp::Node> node, const std::string& typeStr, int sensorNum, const std::string& deviceName) {
     auto pType = utils::getValFromMap(typeStr, pipelineTypeMap);
     if(deviceName == "OAK-D-SR-POE") {
         RCLCPP_WARN(node->get_logger(), "OAK-D-SR-POE device detected. Pipeline types other than StereoToF/ToF/RGBToF might not work without reconfiguration.");

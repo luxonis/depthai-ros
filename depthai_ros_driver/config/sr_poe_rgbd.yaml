@@ -4,9 +4,7 @@
     camera:
       i_enable_imu: true
       i_enable_ir: false
-      i_nn_type: spatial
+      i_nn_type: none
       i_pipeline_type: rgbtof
-    nn:
-      i_nn_config_path: depthai_ros_driver/mobilenet
     right:
       i_low_bandwidth: true

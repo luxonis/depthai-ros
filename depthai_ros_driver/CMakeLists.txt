@@ -93,7 +93,6 @@ add_library(
   src/dai_nodes/sensors/stereo.cpp
   src/dai_nodes/sensors/tof.cpp
   src/dai_nodes/sensors/sync.cpp
-  src/dai_nodes/stereo.cpp
 )
 
 ament_target_dependencies(${SENSOR_LIB_NAME} ${SENSOR_DEPS})
