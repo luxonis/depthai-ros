@@ -1,4 +1,4 @@
-#include "depthai_ros_driver/dai_nodes/stereo.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/stereo.hpp"
 
 #include "depthai/device/DeviceBase.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
@@ -28,7 +28,7 @@ Stereo::Stereo(const std::string& daiNodeName,
     setNames();
     ph = std::make_unique<param_handlers::StereoParamHandler>(node, daiNodeName);
     auto alignSocket = dai::CameraBoardSocket::CAM_A;
-    if(device->getDeviceName() == "OAK-D-SR") {
+    if(device->getDeviceName() == "OAK-D-SR" || device->getDeviceName() == "OAK-D-SR-POE") {
         alignSocket = dai::CameraBoardSocket::CAM_C;
     }
     ph->updateSocketsFromParams(leftSocket, rightSocket, alignSocket);

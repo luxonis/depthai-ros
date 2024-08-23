@@ -65,6 +65,7 @@ def launch_setup(context, *args, **kwargs):
     camera_model = LaunchConfiguration("camera_model", default="OAK-D")
     rs_compat = LaunchConfiguration("rs_compat", default="false")
     pointcloud_enable = LaunchConfiguration("pointcloud.enable", default="false")
+    rectify_rgb = LaunchConfiguration("rectify_rgb", default="true")
     namespace = LaunchConfiguration("namespace", default="").perform(context)
     name = LaunchConfiguration("name").perform(context)
 
@@ -176,6 +177,7 @@ def launch_setup(context, *args, **kwargs):
             output="both",
         ),
         LoadComposableNodes(
+            condition=IfCondition(rectify_rgb),
             target_container=f"{namespace}/{name}_container",
             composable_node_descriptions=[
                 ComposableNode(
@@ -237,7 +239,7 @@ def generate_launch_description():
         DeclareLaunchArgument("name", default_value="oak"),
         DeclareLaunchArgument("namespace", default_value=""),
         DeclareLaunchArgument("parent_frame", default_value="oak-d-base-frame"),
-        DeclareLaunchArgument("camera_model", default_value="OAK-D"),
+        DeclareLaunchArgument("camera_model", default_value="OAK-D-PRO"),
         DeclareLaunchArgument("cam_pos_x", default_value="0.0"),
         DeclareLaunchArgument("cam_pos_y", default_value="0.0"),
         DeclareLaunchArgument("cam_pos_z", default_value="0.0"),
@@ -277,6 +279,7 @@ def generate_launch_description():
             default_value="false",
             description="Enables compatibility with RealSense nodes.",
         ),
+        DeclareLaunchArgument("rectify_rgb", default_value="true"),
         DeclareLaunchArgument("pointcloud.enable", default_value="false"),
         DeclareLaunchArgument("enable_color", default_value="true"),
         DeclareLaunchArgument("enable_depth", default_value="true"),

@@ -21,7 +21,7 @@ namespace param_handlers {
 class PipelineGenParamHandler;
 }  // namespace param_handlers
 namespace pipeline_gen {
-enum class PipelineType { RGB, RGBD, RGBStereo, Stereo, Depth, CamArray };
+enum class PipelineType { RGB, RGBD, RGBStereo, Stereo, Depth, CamArray, DepthToF, StereoToF, ToF, RGBToF };
 
 class PipelineGenerator {
    public:
@@ -36,7 +36,7 @@ class PipelineGenerator {
      *
      * @return     The validated pipeline type.
      */
-    std::string validatePipeline(std::shared_ptr<rclcpp::Node> node, const std::string& typeStr, int sensorNum);
+    std::string validatePipeline(std::shared_ptr<rclcpp::Node> node, const std::string& typeStr, int sensorNum, const std::string& deviceName);
     /**
      * @brief      Creates the pipeline by using a plugin. Plugin types need to be of type depthai_ros_driver::pipeline_gen::BasePipeline.
      *
