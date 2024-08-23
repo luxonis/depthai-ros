@@ -49,6 +49,10 @@ void ImageConverter::convertDispToDepth(double baseline) {
     _baseline = baseline;
 }
 
+void ImageConverter::reverseStereoSocketOrder() {
+    _reverseStereoSocketOrder = true;
+}
+
 void ImageConverter::addExposureOffset(dai::CameraExposureOffset& offset) {
     _expOffset = offset;
     _addExpOffset = true;

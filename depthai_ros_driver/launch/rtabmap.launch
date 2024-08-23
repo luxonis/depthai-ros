@@ -9,7 +9,7 @@
         <arg name="name" value="$(arg name)"/>
         <arg name="params_file" value="$(arg params_file)"/>
     </include>
-    <node type="rgbd_odometry" name="rgbd_odometry" pkg="rtabmap_ros">
+    <node type="rgbd_odometry" name="rgbd_odometry" pkg="rtabmap_odom">
         <remap from="rgb/image" to="$(arg name)/rgb/image_raw"/>
         <remap from="rgb/camera_info" to="$(arg name)/rgb/camera_info"/>
         <remap from="depth/image" to="$(arg name)/stereo/image_raw"/>
@@ -20,7 +20,7 @@
         <rosparam param="approx_sync_max_interval">0.02</rosparam>
         
     </node>
-    <node type="rtabmap" name="rtabmap" pkg="rtabmap_ros">
+    <node type="rtabmap" name="rtabmap" pkg="rtabmap_slam">
         <remap from="rgb/image" to="$(arg name)/rgb/image_raw"/>
         <remap from="rgb/camera_info" to="$(arg name)/rgb/camera_info"/>
         <remap from="depth/image" to="$(arg name)/stereo/image_raw"/>
@@ -28,7 +28,7 @@
         <param name="frame_id" type="string" value="$(arg name)"/>
 
     </node>
-    <node type="rtabmapviz" name="rtabmap_viz" pkg="rtabmap_ros">
+    <node type="rtabmap_viz" name="rtabmap_viz" pkg="rtabmap_viz">
         <remap from="rgb/image" to="$(arg name)/rgb/image_raw"/>
         <remap from="rgb/camera_info" to="$(arg name)/rgb/camera_info"/>
         <remap from="depth/image" to="$(arg name)/stereo/image_raw"/>
