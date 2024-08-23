@@ -171,7 +171,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> StereoToF::createPipeline(std:
 }
 
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> ToF::createPipeline(std::shared_ptr<rclcpp::Node> node,
-                                                                      std::shared_ptr<dai::Device> device,
+                                                                      std::shared_ptr<dai::Device> /*device*/,
                                                                       std::shared_ptr<dai::Pipeline> pipeline,
                                                                       const std::string& /*nnType*/) {
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
