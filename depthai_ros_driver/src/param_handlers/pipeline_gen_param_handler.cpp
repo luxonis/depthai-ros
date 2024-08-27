@@ -11,7 +11,7 @@ PipelineGenParamHandler::~PipelineGenParamHandler() = default;
 void PipelineGenParamHandler::declareParams() {
     declareAndLogParam<bool>("i_enable_imu", true);
     declareAndLogParam<bool>("i_enable_diagnostics", true);
-    declareAndLogParam<bool>("i_enable_sync", true);
+    declareAndLogParam<bool>("i_enable_sync", false);
 }
 dai::CameraControl PipelineGenParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& /*params*/) {
     dai::CameraControl ctrl;

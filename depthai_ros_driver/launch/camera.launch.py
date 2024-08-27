@@ -74,13 +74,19 @@ def launch_setup(context, *args, **kwargs):
     color_sens_name = "rgb"
     stereo_sens_name = "stereo"
     points_topic_name = f"{name}/points"
+    if pointcloud_enable.perform(context) == "true":
+        parameter_overrides = {
+            "pipeline_gen": {"i_enable_sync": True},
+            "rgb": {"i_synced": True},
+            "stereo": {"i_synced": True},
+        }
     if rs_compat.perform(context) == "true":
         color_sens_name = "color"
         stereo_sens_name = "depth"
         if name == "oak":
             name = "camera"
         points_topic_name = f"{name}/depth/color/points"
-        if namespace== "":
+        if namespace == "":
             namespace = "camera"
         if parent_frame == "oak-d-base-frame":
             parent_frame = f"{name}_link"
@@ -88,17 +94,22 @@ def launch_setup(context, *args, **kwargs):
             "camera": {
                 "i_rs_compat": True,
             },
+            "pipeline_gen": {
+                "i_enable_sync": True,
+            },
             "color": {
                 "i_publish_topic": is_launch_config_true(context, "enable_color"),
+                "i_synced": True,
             },
             "depth": {
                 "i_publish_topic": is_launch_config_true(context, "enable_depth"),
+                "i_synced": True,
             },
         }
         parameter_overrides["depth"] = {
-                "i_publish_left_rect": True,
-                "i_publish_right_rect": True,
-            }
+            "i_publish_left_rect": True,
+            "i_publish_right_rect": True,
+        }
 
     tf_params = {}
     if publish_tf_from_calibration.perform(context) == "true":
