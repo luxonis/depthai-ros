@@ -1,6 +1,6 @@
 #include "depthai_filters/feature_tracker_overlay.hpp"
 
-#include "cv_bridge/cv_bridge.hpp"
+#include "cv_bridge/cv_bridge.h"
 #include "depthai_filters/utils.hpp"
 
 namespace depthai_filters {
@@ -73,4 +73,3 @@ void FeatureTrackerOverlay::drawFeatures(cv::Mat& img) {
 }
 }  // namespace depthai_filters
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(depthai_filters::FeatureTrackerOverlay);

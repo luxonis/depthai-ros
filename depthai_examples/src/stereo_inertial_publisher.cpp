@@ -295,7 +295,7 @@ int main(int argc, char** argv) {
     bool enableSpatialDetection, enableDotProjector, enableFloodLight;
     bool usb2Mode, poeMode, syncNN;
     double angularVelCovariance, linearAccelCovariance;
-    double dotProjectormA, floodLightmA;
+    double dotProjectorIntensity, floodLightIntensity;
     bool enableRosBaseTimeUpdate;
     std::string nnName(BLOB_NAME);  // Set your blob name for the model here
 
@@ -337,8 +337,8 @@ int main(int argc, char** argv) {
 
     node->declare_parameter("enableDotProjector", false);
     node->declare_parameter("enableFloodLight", false);
-    node->declare_parameter("dotProjectormA", 200.0);
-    node->declare_parameter("floodLightmA", 200.0);
+    node->declare_parameter("dotProjectorIntensity", 0.5);
+    node->declare_parameter("floodLightIntensity", 0.5);
     node->declare_parameter("enableRosBaseTimeUpdate", false);
 
     // updating parameters if defined in launch file.
@@ -380,8 +380,8 @@ int main(int argc, char** argv) {
 
     node->get_parameter("enableDotProjector", enableDotProjector);
     node->get_parameter("enableFloodLight", enableFloodLight);
-    node->get_parameter("dotProjectormA", dotProjectormA);
-    node->get_parameter("floodLightmA", floodLightmA);
+    node->get_parameter("dotProjectorIntensity", dotProjectorIntensity);
+    node->get_parameter("floodLightIntensity", floodLightIntensity);
     node->get_parameter("enableRosBaseTimeUpdate", enableRosBaseTimeUpdate);
 
     if(resourceBaseFolder.empty()) {
@@ -485,11 +485,11 @@ int main(int argc, char** argv) {
     std::vector<std::tuple<std::string, int, int>> irDrivers = device->getIrDrivers();
     if(!irDrivers.empty()) {
         if(enableDotProjector) {
-            device->setIrLaserDotProjectorBrightness(dotProjectormA);
+            device->setIrLaserDotProjectorIntensity(dotProjectorIntensity);
         }
 
         if(enableFloodLight) {
-            device->setIrFloodLightBrightness(floodLightmA);
+            device->setIrFloodLightIntensity(floodLightIntensity);
         }
     }
 

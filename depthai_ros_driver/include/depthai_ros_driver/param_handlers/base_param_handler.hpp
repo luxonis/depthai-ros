@@ -1,5 +1,8 @@
 #pragma once
+#include <depthai-shared/common/CameraBoardSocket.hpp>
+
 #include "depthai/pipeline/datatype/CameraControl.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "rcl_interfaces/msg/parameter_descriptor.hpp"
 #include "rclcpp/node.hpp"
 namespace depthai_ros_driver {
@@ -15,24 +18,27 @@ inline rcl_interfaces::msg::ParameterDescriptor getRangedIntDescriptor(uint16_t 
 }
 class BaseParamHandler {
    public:
-    BaseParamHandler(rclcpp::Node* node, const std::string& name) {
-        baseName = name;
-        baseNode = node;
-    };
+    BaseParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name) : baseName(name), baseNode(node){};
     virtual ~BaseParamHandler() = default;
     virtual dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) = 0;
     std::string getName() {
         return baseName;
     }
     template <typename T>
-    T getParam(const std::string paramName) {
+    T getParam(const std::string& paramName) {
         T value;
+        if(!baseNode->has_parameter(getFullParamName(paramName))) {
+            RCLCPP_WARN(baseNode->get_logger(), "Parameter %s not found", getFullParamName(paramName).c_str());
+        }
         baseNode->get_parameter<T>(getFullParamName(paramName), value);
         return value;
     }
     template <typename T>
     T getOtherNodeParam(const std::string& daiNodeName, const std::string& paramName) {
         T value;
+        if(!baseNode->has_parameter(getFullParamName(daiNodeName, paramName))) {
+            RCLCPP_WARN(baseNode->get_logger(), "Parameter %s not found", getFullParamName(daiNodeName, paramName).c_str());
+        }
         baseNode->get_parameter<T>(getFullParamName(daiNodeName, paramName), value);
         return value;
     }
@@ -45,8 +51,12 @@ class BaseParamHandler {
         return name;
     }
 
+    std::string getSocketName(dai::CameraBoardSocket socket) {
+        return dai_nodes::sensor_helpers::getSocketName(getROSNode(), socket);
+    }
+
    protected:
-    rclcpp::Node* getROSNode() {
+    std::shared_ptr<rclcpp::Node> getROSNode() {
         return baseNode;
     }
     template <typename T>
@@ -110,7 +120,7 @@ class BaseParamHandler {
         RCLCPP_DEBUG(baseNode->get_logger(), "Setting param %s with value %s", name.c_str(), ss.str().c_str());
     }
     std::string baseName;
-    rclcpp::Node* baseNode;
+    std::shared_ptr<rclcpp::Node> baseNode;
 };
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver

@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
     bool lrcheck, extended, subpixel;
     bool useVideo, usePreview, useDepth;
     int confidence, LRchecktresh, previewWidth, previewHeight;
-    float dotProjectormA, floodLightmA;
+    float dotProjectorIntensity, floodLightIntensity;
 
     node->declare_parameter("tf_prefix", "oak");
     node->declare_parameter("lrcheck", true);
@@ -150,8 +150,8 @@ int main(int argc, char** argv) {
     node->declare_parameter("useDepth", true);
     node->declare_parameter("previewWidth", 300);
     node->declare_parameter("previewHeight", 300);
-    node->declare_parameter("dotProjectormA", 0.0f);
-    node->declare_parameter("floodLightmA", 0.0f);
+    node->declare_parameter("dotProjectorIntensity", 0.0f);
+    node->declare_parameter("floodLightIntensity", 0.0f);
 
     node->get_parameter("tf_prefix", tfPrefix);
     node->get_parameter("lrcheck", lrcheck);
@@ -166,8 +166,8 @@ int main(int argc, char** argv) {
     node->get_parameter("useDepth", useDepth);
     node->get_parameter("previewWidth", previewWidth);
     node->get_parameter("previewHeight", previewHeight);
-    node->get_parameter("dotProjectormA", dotProjectormA);
-    node->get_parameter("floodLightmA", floodLightmA);
+    node->get_parameter("dotProjectorIntensity", dotProjectorIntensity);
+    node->get_parameter("floodLightIntensity", floodLightIntensity);
 
     int colorWidth, colorHeight;
     if(colorResolution == "1080p") {
@@ -204,10 +204,10 @@ int main(int argc, char** argv) {
     std::shared_ptr<rclcpp::ParameterEventHandler> param_subscriber;
     std::shared_ptr<rclcpp::ParameterCallbackHandle> dot_cb_handle, flood_cb_handle;
     auto cb = [node, &device](const rclcpp::Parameter& p) {
-        if(p.get_name() == std::string("dotProjectormA")) {
+        if(p.get_name() == std::string("dotProjectorIntensity")) {
             RCLCPP_INFO(node->get_logger(), "Updating Dot Projector current to %f", p.as_double());
             device.setIrLaserDotProjectorBrightness(static_cast<float>(p.as_double()));
-        } else if(p.get_name() == std::string("floodLightmA")) {
+        } else if(p.get_name() == std::string("floodLightIntensity")) {
             RCLCPP_INFO(node->get_logger(), "Updating Flood Light current to %f", p.as_double());
             device.setIrFloodLightBrightness(static_cast<float>(p.as_double()));
         }
@@ -216,27 +216,27 @@ int main(int argc, char** argv) {
     if(boardName.find("PRO") != std::string::npos) {
         param_subscriber = std::make_shared<rclcpp::ParameterEventHandler>(node);
 
-        dot_cb_handle = param_subscriber->add_parameter_callback("dotProjectormA", cb);
-        flood_cb_handle = param_subscriber->add_parameter_callback("floodLightmA", cb);
+        dot_cb_handle = param_subscriber->add_parameter_callback("dotProjectorIntensity", cb);
+        flood_cb_handle = param_subscriber->add_parameter_callback("floodLightIntensity", cb);
     }
 
 #else
     rclcpp::TimerBase::SharedPtr timer;
-    auto cb = [node, &device, &dotProjectormA, &floodLightmA]() {
+    auto cb = [node, &device, &dotProjectorIntensity, &floodLightIntensity]() {
         // rclcpp::Parameter p;
-        float dotProjectormATemp, floodLightmATemp;
-        node->get_parameter("dotProjectormA", dotProjectormATemp);
-        node->get_parameter("floodLightmA", floodLightmATemp);
-        if(dotProjectormATemp != dotProjectormA) {
-            dotProjectormA = dotProjectormATemp;
-            RCLCPP_INFO(node->get_logger(), "Updating Dot Projector current to %f", dotProjectormA);
-            device.setIrLaserDotProjectorBrightness(static_cast<float>(dotProjectormA));
+        float dotProjectorIntensityTemp, floodLightIntensityTemp;
+        node->get_parameter("dotProjectorIntensity", dotProjectorIntensityTemp);
+        node->get_parameter("floodLightIntensity", floodLightIntensityTemp);
+        if(dotProjectorIntensityTemp != dotProjectorIntensity) {
+            dotProjectorIntensity = dotProjectorIntensityTemp;
+            RCLCPP_INFO(node->get_logger(), "Updating Dot Projector current to %f", dotProjectorIntensity);
+            device.setIrLaserDotProjectorIntensity(static_cast<float>(dotProjectorIntensity));
         }
 
-        if(floodLightmATemp != floodLightmA) {
-            floodLightmA = floodLightmATemp;
-            RCLCPP_INFO(node->get_logger(), "Updating Flood Light current to %f", floodLightmA);
-            device.setIrFloodLightBrightness(static_cast<float>(floodLightmA));
+        if(floodLightIntensityTemp != floodLightIntensity) {
+            floodLightIntensity = floodLightIntensityTemp;
+            RCLCPP_INFO(node->get_logger(), "Updating Flood Light current to %f", floodLightIntensity);
+            device.setIrFloodLightIntensity(static_cast<float>(floodLightIntensity));
         }
     };
     if(boardName.find("PRO") != std::string::npos) {

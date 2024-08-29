@@ -9,7 +9,7 @@
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-StereoParamHandler::StereoParamHandler(rclcpp::Node* node, const std::string& name) : BaseParamHandler(node, name) {
+StereoParamHandler::StereoParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name) : BaseParamHandler(node, name) {
     depthPresetMap = {
         {"HIGH_ACCURACY", dai::node::StereoDepth::PresetMode::HIGH_ACCURACY},
         {"HIGH_DENSITY", dai::node::StereoDepth::PresetMode::HIGH_DENSITY},
@@ -56,6 +56,10 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<int>("i_max_q_size", 30);
     declareAndLogParam<bool>("i_low_bandwidth", false);
     declareAndLogParam<int>("i_low_bandwidth_quality", 50);
+    declareAndLogParam<int>("i_low_bandwidth_profile", 4);
+    declareAndLogParam<int>("i_low_bandwidth_frame_freq", 30);
+    declareAndLogParam<int>("i_low_bandwidth_bitrate", 0);
+    declareAndLogParam<std::string>("i_low_bandwidth_ffmpeg_encoder", "libx264");
     declareAndLogParam<bool>("i_output_disparity", false);
     declareAndLogParam<bool>("i_get_base_device_timestamp", false);
     declareAndLogParam<bool>("i_update_ros_base_time_on_ros_msg", false);
@@ -64,30 +68,46 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<int>("i_exposure_offset", 0);
     declareAndLogParam<bool>("i_enable_lazy_publisher", true);
     declareAndLogParam<bool>("i_reverse_stereo_socket_order", false);
+    declareAndLogParam<bool>("i_publish_compressed", false);
+    declareAndLogParam<std::string>("i_calibration_file", "");
 
     declareAndLogParam<bool>("i_publish_synced_rect_pair", false);
-    declareAndLogParam<bool>("i_publish_left_rect", false);
+    declareAndLogParam<bool>("i_left_rect_publish_topic", false);
     declareAndLogParam<bool>("i_left_rect_low_bandwidth", false);
+    declareAndLogParam<int>("i_left_rect_low_bandwidth_profile", 4);
+    declareAndLogParam<int>("i_left_rect_low_bandwidth_frame_freq", 30);
+    declareAndLogParam<int>("i_left_rect_low_bandwidth_bitrate", 0);
     declareAndLogParam<int>("i_left_rect_low_bandwidth_quality", 50);
+    declareAndLogParam<std::string>("i_left_rect_low_bandwidth_ffmpeg_encoder", "libx264");
     declareAndLogParam<bool>("i_left_rect_add_exposure_offset", false);
     declareAndLogParam<int>("i_left_rect_exposure_offset", 0);
     declareAndLogParam<bool>("i_left_rect_enable_feature_tracker", false);
+    declareAndLogParam<bool>("i_left_rect_synced", true);
+    declareAndLogParam<bool>("i_left_rect_publish_compressed", false);
 
-    declareAndLogParam<bool>("i_publish_right_rect", false);
+    declareAndLogParam<bool>("i_right_rect_publish_topic", false);
     declareAndLogParam<bool>("i_right_rect_low_bandwidth", false);
     declareAndLogParam<int>("i_right_rect_low_bandwidth_quality", 50);
+    declareAndLogParam<int>("i_right_rect_low_bandwidth_profile", 4);
+    declareAndLogParam<int>("i_right_rect_low_bandwidth_frame_freq", 30);
+    declareAndLogParam<int>("i_right_rect_low_bandwidth_bitrate", 0);
+    declareAndLogParam<std::string>("i_right_rect_low_bandwidth_ffmpeg_encoder", "libx264");
     declareAndLogParam<bool>("i_right_rect_enable_feature_tracker", false);
     declareAndLogParam<bool>("i_right_rect_add_exposure_offset", false);
     declareAndLogParam<int>("i_right_rect_exposure_offset", 0);
+    declareAndLogParam<bool>("i_right_rect_synced", true);
+    declareAndLogParam<bool>("i_right_rect_publish_compressed", false);
+
     declareAndLogParam<bool>("i_enable_spatial_nn", false);
     declareAndLogParam<std::string>("i_spatial_nn_source", "right");
+    declareAndLogParam<bool>("i_synced", false);
 
     stereo->setLeftRightCheck(declareAndLogParam<bool>("i_lr_check", true));
     int width = 1280;
     int height = 720;
     std::string socketName;
     if(declareAndLogParam<bool>("i_align_depth", true)) {
-        socketName = utils::getSocketName(alignSocket);
+        socketName = getSocketName(alignSocket);
         try {
             width = getROSNode()->get_parameter(socketName + ".i_width").as_int();
             height = getROSNode()->get_parameter(socketName + ".i_height").as_int();
@@ -116,7 +136,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     stereo->initialConfig.setLeftRightCheckThreshold(declareAndLogParam<int>("i_lrc_threshold", 10));
     stereo->initialConfig.setMedianFilter(static_cast<dai::MedianFilter>(declareAndLogParam<int>("i_depth_filter_size", 5)));
     stereo->initialConfig.setConfidenceThreshold(declareAndLogParam<int>("i_stereo_conf_threshold", 240));
-    if(declareAndLogParam<bool>("i_subpixel", false)) {
+    if(declareAndLogParam<bool>("i_subpixel", true)) {
         stereo->initialConfig.setSubpixel(true);
         stereo->initialConfig.setSubpixelFractionalBits(declareAndLogParam<int>("i_subpixel_fractional_bits", 3));
     }
