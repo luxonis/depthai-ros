@@ -74,13 +74,39 @@ def launch_setup(context, *args, **kwargs):
     color_sens_name = "rgb"
     stereo_sens_name = "stereo"
     points_topic_name = f"{name}/points"
+    if pointcloud_enable.perform(context) == "true":
+        parameter_overrides = {
+            "pipeline_gen": {"i_enable_sync": True},
+            "rgb": {"i_synced": True},
+            "stereo": {"i_synced": True},
+        }
+    depth_topic_suffix = "image_raw"
     if rs_compat.perform(context) == "true":
+        depth_topic_suffix = "image_rect_raw"
+        depth_profile = LaunchConfiguration("depth_module.depth_profile").perform(
+            context
+        )
+        color_profile = LaunchConfiguration("rgb_camera.color_profile").perform(context)
+        infra_profile = LaunchConfiguration("depth_module.infra_profile").perform(
+            context
+        )
+        # split profile string (0,0,0 or 0x0x0 or 0X0X0) into with (int) height(int) and fps(double)
+        # find delimiter
+        delimiter = ","
+        if "x" in depth_profile:
+            delimiter = "x"
+        elif "X" in depth_profile:
+            delimiter = "X"
+        depth_profile = depth_profile.split(delimiter)
+        color_profile = color_profile.split(delimiter)
+        infra_profile = infra_profile.split(delimiter)
+
         color_sens_name = "color"
         stereo_sens_name = "depth"
         if name == "oak":
             name = "camera"
         points_topic_name = f"{name}/depth/color/points"
-        if namespace== "":
+        if namespace == "":
             namespace = "camera"
         if parent_frame == "oak-d-base-frame":
             parent_frame = f"{name}_link"
@@ -88,17 +114,38 @@ def launch_setup(context, *args, **kwargs):
             "camera": {
                 "i_rs_compat": True,
             },
+            "pipeline_gen": {
+                "i_enable_sync": True,
+            },
             "color": {
                 "i_publish_topic": is_launch_config_true(context, "enable_color"),
+                "i_synced": True,
+                "i_width": int(color_profile[0]),
+                "i_height": int(color_profile[1]),
+                "i_fps": float(color_profile[2]),
             },
             "depth": {
                 "i_publish_topic": is_launch_config_true(context, "enable_depth"),
+                "i_synced": True,
+                "i_width": int(depth_profile[0]),
+                "i_height": int(depth_profile[1]),
+                "i_fps": float(depth_profile[2]),
+            },
+            "infra1": {
+                "i_width": int(infra_profile[0]),
+                "i_height": int(infra_profile[1]),
+                "i_fps": float(infra_profile[2]),
+            },
+            "infra2": {
+                "i_width": int(infra_profile[0]),
+                "i_height": int(infra_profile[1]),
+                "i_fps": float(infra_profile[2]),
             },
         }
         parameter_overrides["depth"] = {
-                "i_publish_left_rect": True,
-                "i_publish_right_rect": True,
-            }
+            "i_publish_left_rect": True,
+            "i_publish_right_rect": True,
+        }
 
     tf_params = {}
     if publish_tf_from_calibration.perform(context) == "true":
@@ -217,7 +264,7 @@ def launch_setup(context, *args, **kwargs):
                     remappings=[
                         (
                             "depth_registered/image_rect",
-                            f"{name}/{stereo_sens_name}/image_raw",
+                            f"{name}/{stereo_sens_name}/{depth_topic_suffix}",
                         ),
                         (
                             "rgb/image_rect_color",
@@ -285,6 +332,9 @@ def generate_launch_description():
         DeclareLaunchArgument("enable_depth", default_value="true"),
         DeclareLaunchArgument("enable_infra1", default_value="false"),
         DeclareLaunchArgument("enable_infra2", default_value="false"),
+        DeclareLaunchArgument("depth_module.depth_profile", default_value="1280,720,30"),
+        DeclareLaunchArgument("rgb_camera.color_profile", default_value="1280,720,30"),
+        DeclareLaunchArgument("depth_module.infra_profile", default_value="1280,720,30"),
     ]
 
     return LaunchDescription(

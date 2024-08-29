@@ -155,7 +155,7 @@ void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
     pubConfig.width = ph->getOtherNodeParam<int>(sensorName, "i_width");
     pubConfig.height = ph->getOtherNodeParam<int>(sensorName, "i_height");
     pubConfig.topicName = "~/" + sensorName;
-    pubConfig.topicSuffix = "/image_rect";
+    pubConfig.topicSuffix = rsCompabilityMode() ? "/image_rect_raw" : "/image_raw";
     pubConfig.maxQSize = ph->getOtherNodeParam<int>(sensorName, "i_max_q_size");
     pubConfig.socket = sensorInfo.socket;
     pubConfig.infoMgrSuffix = "rect";
@@ -197,6 +197,7 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     utils::ImgPublisherConfig pubConf;
     pubConf.daiNodeName = getName();
     pubConf.topicName = "~/" + getName();
+	pubConf.topicSuffix = rsCompabilityMode() ? "/image_rect_raw" : "/image_raw";
     pubConf.rectified = !convConfig.alphaScalingEnabled;
     pubConf.width = ph->getParam<int>("i_width");
     pubConf.height = ph->getParam<int>("i_height");

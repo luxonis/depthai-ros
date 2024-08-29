@@ -38,7 +38,7 @@ void SensorParamHandler::declareCommonParams(dai::CameraBoardSocket socket) {
     declareAndLogParam<bool>("i_add_exposure_offset", false);
     declareAndLogParam<int>("i_exposure_offset", 0);
     declareAndLogParam<bool>("i_reverse_stereo_socket_order", false);
-    declareAndLogParam<bool>("i_synced", true);
+    declareAndLogParam<bool>("i_synced", false);
     declareAndLogParam<bool>("i_publish_compressed", false);
 }
 
