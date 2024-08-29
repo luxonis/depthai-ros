@@ -197,7 +197,7 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     utils::ImgPublisherConfig pubConf;
     pubConf.daiNodeName = getName();
     pubConf.topicName = "~/" + getName();
-	pubConf.topicSuffix = rsCompabilityMode() ? "/image_rect_raw" : "/image_raw";
+    pubConf.topicSuffix = rsCompabilityMode() ? "/image_rect_raw" : "/image_raw";
     pubConf.rectified = !convConfig.alphaScalingEnabled;
     pubConf.width = ph->getParam<int>("i_width");
     pubConf.height = ph->getParam<int>("i_height");

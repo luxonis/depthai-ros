@@ -65,12 +65,12 @@ void ImageConverter::reverseStereoSocketOrder() {
 }
 
 void ImageConverter::setAlphaScaling(double alphaScalingFactor) {
-	alphaScalingEnabled = true;
+    alphaScalingEnabled = true;
     this->alphaScalingFactor = alphaScalingFactor;
 }
 
 void ImageConverter::setFFMPEGEncoding(const std::string& encoding) {
-	ffmpegEncoding = encoding;
+    ffmpegEncoding = encoding;
 }
 
 ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> inData, const sensor_msgs::msg::CameraInfo& info) {

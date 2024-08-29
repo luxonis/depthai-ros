@@ -6,7 +6,6 @@
 
 #include "depthai-shared/properties/IMUProperties.hpp"
 #include "depthai/pipeline/datatype/CameraControl.hpp"
-#include "depthai-shared/properties/IMUProperties.hpp"
 #include "depthai_bridge/ImuConverter.hpp"
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
 
