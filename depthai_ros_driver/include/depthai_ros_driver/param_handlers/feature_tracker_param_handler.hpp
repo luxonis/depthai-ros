@@ -24,7 +24,7 @@ namespace param_handlers {
 
 class FeatureTrackerParamHandler : public BaseParamHandler {
    public:
-    explicit FeatureTrackerParamHandler(rclcpp::Node* node, const std::string& name);
+    explicit FeatureTrackerParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name);
     ~FeatureTrackerParamHandler();
     void declareParams(std::shared_ptr<dai::node::FeatureTracker> featureTracker);
     dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;

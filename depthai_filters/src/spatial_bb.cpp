@@ -1,6 +1,6 @@
 #include "depthai_filters/spatial_bb.hpp"
 
-#include "cv_bridge/cv_bridge.hpp"
+#include "cv_bridge/cv_bridge.h"
 #include "depthai_filters/utils.hpp"
 #include "geometry_msgs/msg/point32.hpp"
 #include "opencv2/opencv.hpp"
@@ -145,4 +145,3 @@ void SpatialBB::overlayCB(const sensor_msgs::msg::Image::ConstSharedPtr& preview
 
 }  // namespace depthai_filters
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(depthai_filters::SpatialBB);

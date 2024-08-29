@@ -1,6 +1,10 @@
 
 #include "depthai_bridge/ImageConverter.hpp"
 
+#include <sensor_msgs/msg/detail/compressed_image__struct.hpp>
+
+#include "depthai-shared/datatype/RawEncodedFrame.hpp"
+#include "depthai/pipeline/datatype/EncodedFrame.hpp"
 #include "depthai_bridge/depthaiUtility.hpp"
 #include "opencv2/calib3d.hpp"
 #include "opencv2/imgcodecs.hpp"
@@ -26,64 +30,117 @@ std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::planarEn
     {dai::RawImgFrame::Type::YUV420p, "rgb8"}};
 
 ImageConverter::ImageConverter(bool interleaved, bool getBaseDeviceTimestamp)
-    : _daiInterleaved(interleaved), _steadyBaseTime(std::chrono::steady_clock::now()), _getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
-    _rosBaseTime = rclcpp::Clock().now();
+    : daiInterleaved(interleaved), steadyBaseTime(std::chrono::steady_clock::now()), getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
+    rosBaseTime = rclcpp::Clock().now();
 }
 
 ImageConverter::ImageConverter(const std::string frameName, bool interleaved, bool getBaseDeviceTimestamp)
-    : _frameName(frameName), _daiInterleaved(interleaved), _steadyBaseTime(std::chrono::steady_clock::now()), _getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
-    _rosBaseTime = rclcpp::Clock().now();
+    : frameName(frameName), daiInterleaved(interleaved), steadyBaseTime(std::chrono::steady_clock::now()), getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
+    rosBaseTime = rclcpp::Clock().now();
 }
 
 ImageConverter::~ImageConverter() = default;
 
 void ImageConverter::updateRosBaseTime() {
-    updateBaseTime(_steadyBaseTime, _rosBaseTime, _totalNsChange);
+    updateBaseTime(steadyBaseTime, rosBaseTime, totalNsChange);
 }
 
 void ImageConverter::convertFromBitstream(dai::RawImgFrame::Type srcType) {
-    _fromBitstream = true;
-    _srcType = srcType;
+    fromBitstream = true;
+    this->srcType = srcType;
 }
 
 void ImageConverter::convertDispToDepth(double baseline) {
-    _convertDispToDepth = true;
-    _baseline = baseline;
+    dispToDepth = true;
+    this->baseline = baseline;
 }
 
 void ImageConverter::addExposureOffset(dai::CameraExposureOffset& offset) {
-    _expOffset = offset;
-    _addExpOffset = true;
+    expOffset = offset;
+    addExpOffset = true;
 }
 
 void ImageConverter::reverseStereoSocketOrder() {
-    _reverseStereoSocketOrder = true;
+    reversedStereoSocketOrder = true;
 }
 
 void ImageConverter::setAlphaScaling(double alphaScalingFactor) {
-    _alphaScalingEnabled = true;
-    _alphaScalingFactor = alphaScalingFactor;
+    alphaScalingEnabled = true;
+    this->alphaScalingFactor = alphaScalingFactor;
+}
+
+void ImageConverter::setFFMPEGEncoding(const std::string& encoding) {
+    ffmpegEncoding = encoding;
 }
 
 ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> inData, const sensor_msgs::msg::CameraInfo& info) {
-    if(_updateRosBaseTimeOnToRosMsg) {
+    if(updateRosBaseTimeOnToRosMsg) {
         updateRosBaseTime();
     }
     std::chrono::_V2::steady_clock::time_point tstamp;
-    if(_getBaseDeviceTimestamp)
-        if(_addExpOffset)
-            tstamp = inData->getTimestampDevice(_expOffset);
+    if(getBaseDeviceTimestamp)
+        if(addExpOffset)
+            tstamp = inData->getTimestampDevice(expOffset);
         else
             tstamp = inData->getTimestampDevice();
-    else if(_addExpOffset)
-        tstamp = inData->getTimestamp(_expOffset);
+    else if(addExpOffset)
+        tstamp = inData->getTimestamp(expOffset);
     else
         tstamp = inData->getTimestamp();
     ImageMsgs::Image outImageMsg;
     StdMsgs::Header header;
-    header.frame_id = _frameName;
+    header.frame_id = frameName;
 
-    header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
+    header.stamp = getFrameTime(rosBaseTime, steadyBaseTime, tstamp);
+
+    if(fromBitstream) {
+        std::string encoding;
+        int decodeFlags;
+        int channels;
+        cv::Mat output;
+        switch(srcType) {
+            case dai::RawImgFrame::Type::BGR888i: {
+                encoding = sensor_msgs::image_encodings::BGR8;
+                decodeFlags = cv::IMREAD_COLOR;
+                channels = CV_8UC3;
+                break;
+            }
+            case dai::RawImgFrame::Type::GRAY8: {
+                encoding = sensor_msgs::image_encodings::MONO8;
+                decodeFlags = cv::IMREAD_GRAYSCALE;
+                channels = CV_8UC1;
+                break;
+            }
+            case dai::RawImgFrame::Type::RAW8: {
+                encoding = sensor_msgs::image_encodings::TYPE_16UC1;
+                decodeFlags = cv::IMREAD_ANYDEPTH;
+                channels = CV_16UC1;
+                break;
+            }
+            default: {
+                std::cout << frameName << static_cast<int>(srcType) << std::endl;
+                throw(std::runtime_error("Converted type not supported!"));
+            }
+        }
+
+        output = cv::imdecode(cv::Mat(inData->getData()), decodeFlags);
+
+        // converting disparity
+        if(dispToDepth) {
+            auto factor = std::abs(baseline * 10) * info.p[0];
+            cv::Mat depthOut = cv::Mat(cv::Size(output.cols, output.rows), CV_16UC1);
+            depthOut.forEach<uint16_t>([&output, &factor](uint16_t& pixel, const int* position) -> void {
+                auto disp = output.at<uint8_t>(position);
+                if(disp == 0)
+                    pixel = 0;
+                else
+                    pixel = factor / disp;
+            });
+            output = depthOut.clone();
+        }
+        cv_bridge::CvImage(header, encoding, output).toImageMsg(outImageMsg);
+        return outImageMsg;
+    }
 
     if(_fromBitstream) {
         std::string encoding;
@@ -209,7 +266,79 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
     }
     return outImageMsg;
 }
+std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration> getOffsetTimestamp(
+    std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration> ts,
+    CameraExposureOffset offset,
+    std::chrono::microseconds expTime) {
+    switch(offset) {
+        case CameraExposureOffset::START:
+            return ts - expTime;
+        case CameraExposureOffset::MIDDLE:
+            return ts - expTime / 2;
+        case CameraExposureOffset::END:
+        default:
+            return ts;
+    }
+}
 
+ImageMsgs::CompressedImage ImageConverter::toRosCompressedMsg(std::shared_ptr<dai::ImgFrame> inData) {
+    if(updateRosBaseTimeOnToRosMsg) {
+        updateRosBaseTime();
+    }
+    std::chrono::_V2::steady_clock::time_point tstamp;
+    if(getBaseDeviceTimestamp)
+        if(addExpOffset)
+            tstamp = getOffsetTimestamp(inData->getTimestampDevice(), expOffset, inData->getExposureTime());
+        else
+            tstamp = inData->getTimestampDevice();
+    else if(addExpOffset)
+        tstamp = getOffsetTimestamp(inData->getTimestamp(), expOffset, inData->getExposureTime());
+    else
+        tstamp = inData->getTimestamp();
+
+    ImageMsgs::CompressedImage outImageMsg;
+    StdMsgs::Header header;
+    header.frame_id = frameName;
+    header.stamp = getFrameTime(rosBaseTime, steadyBaseTime, tstamp);
+
+    outImageMsg.header = header;
+    outImageMsg.format = "jpeg";
+    outImageMsg.data = inData->getData();
+    return outImageMsg;
+}
+
+FFMPEGMsgs::FFMPEGPacket ImageConverter::toRosFFMPEGPacket(std::shared_ptr<dai::EncodedFrame> inData) {
+    if(updateRosBaseTimeOnToRosMsg) {
+        updateRosBaseTime();
+    }
+    std::chrono::_V2::steady_clock::time_point tstamp;
+    if(getBaseDeviceTimestamp)
+        if(addExpOffset)
+            tstamp = getOffsetTimestamp(inData->getTimestampDevice(), expOffset, inData->getExposureTime());
+        else
+            tstamp = inData->getTimestampDevice();
+    else if(addExpOffset)
+        tstamp = getOffsetTimestamp(inData->getTimestamp(), expOffset, inData->getExposureTime());
+    else
+        tstamp = inData->getTimestamp();
+
+    FFMPEGMsgs::FFMPEGPacket outFrameMsg;
+    StdMsgs::Header header;
+    header.frame_id = frameName;
+    header.stamp = getFrameTime(rosBaseTime, steadyBaseTime, tstamp);
+    outFrameMsg.header = header;
+    auto ft = inData->getFrameType();
+
+    outFrameMsg.width = camWidth;
+    outFrameMsg.height = camHeight;
+    outFrameMsg.encoding = ffmpegEncoding;
+    outFrameMsg.pts = header.stamp.sec * 1000000000 + header.stamp.nanosec;  // in nanoseconds
+    outFrameMsg.flags = (int)(ft == RawEncodedFrame::FrameType::I);
+    outFrameMsg.is_bigendian = false;
+    outFrameMsg.data = inData->getData();
+
+    return outFrameMsg;
+}
 void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs) {
     auto outImageMsg = toRosMsgRawPtr(inData);
     outImageMsgs.push_back(outImageMsg);
@@ -225,7 +354,7 @@ ImagePtr ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
 
 void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outData) {
     std::unordered_map<dai::RawImgFrame::Type, std::string>::iterator revEncodingIter;
-    if(_daiInterleaved) {
+    if(daiInterleaved) {
         revEncodingIter = std::find_if(encodingEnumMap.begin(), encodingEnumMap.end(), [&](const std::pair<dai::RawImgFrame::Type, std::string>& pair) {
             return pair.second == inMsg.encoding;
         });
@@ -352,6 +481,8 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
         cameraData.height = static_cast<uint32_t>(height);
     }
 
+    camWidth = cameraData.width;
+    camHeight = cameraData.height;
     camIntrinsics = calibHandler.getCameraIntrinsics(cameraId, cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);
 
     flatIntrinsics.resize(9);
@@ -382,7 +513,7 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
             std::vector<std::vector<float>> stereoIntrinsics = calibHandler.getCameraIntrinsics(
                 calibHandler.getStereoRightCameraId(), cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);
 
-            if(_alphaScalingEnabled) {
+            if(alphaScalingEnabled) {
                 cv::Mat cameraMatrix = cv::Mat(3, 3, CV_64F);
                 for(int i = 0; i < 3; i++) {
                     for(int j = 0; j < 3; j++) {
@@ -391,7 +522,7 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
                 }
                 cv::Mat distCoefficients(distCoeffs);
 
-                cv::Mat newCameraMatrix = cv::getOptimalNewCameraMatrix(cameraMatrix, distCoefficients, cv::Size(width, height), _alphaScalingFactor);
+                cv::Mat newCameraMatrix = cv::getOptimalNewCameraMatrix(cameraMatrix, distCoefficients, cv::Size(width, height), alphaScalingFactor);
                 // Copying the contents of newCameraMatrix to stereoIntrinsics
                 for(int i = 0; i < 3; i++) {
                     for(int j = 0; j < 3; j++) {
@@ -411,6 +542,16 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
             dai::CameraBoardSocket stereoSocketSecond = calibHandler.getStereoRightCameraId();
             double factor = 1.0;
             if(_reverseStereoSocketOrder) {
+                stereoSocketFirst = calibHandler.getStereoRightCameraId();
+                stereoSocketSecond = calibHandler.getStereoLeftCameraId();
+                factor = -1.0;
+            }
+
+            // Check stereo socket order
+            dai::CameraBoardSocket stereoSocketFirst = calibHandler.getStereoLeftCameraId();
+            dai::CameraBoardSocket stereoSocketSecond = calibHandler.getStereoRightCameraId();
+            double factor = 1.0;
+            if(reversedStereoSocketOrder) {
                 stereoSocketFirst = calibHandler.getStereoRightCameraId();
                 stereoSocketSecond = calibHandler.getStereoLeftCameraId();
                 factor = -1.0;

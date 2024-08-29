@@ -1,0 +1,4 @@
+prepend-non-duplicate;GAZEBO_MODEL_PATH;share
+prepend-non-duplicate;GAZEBO_RESOURCE_PATH;share
+prepend-non-duplicate;IGN_GAZEBO_MODEL_PATH;share
+prepend-non-duplicate;IGN_GAZEBO_RESOURCE_PATH;share

@@ -1,6 +1,6 @@
 #include "depthai_filters/features_3d.hpp"
 
-#include "cv_bridge/cv_bridge.hpp"
+#include "cv_bridge/cv_bridge.h"
 #include "depthai_filters/utils.hpp"
 #include "geometry_msgs/msg/point32.hpp"
 #include "opencv2/opencv.hpp"
@@ -66,4 +66,3 @@ void Features3D::overlayCB(const sensor_msgs::msg::Image::ConstSharedPtr& depth,
 
 }  // namespace depthai_filters
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(depthai_filters::Features3D);
