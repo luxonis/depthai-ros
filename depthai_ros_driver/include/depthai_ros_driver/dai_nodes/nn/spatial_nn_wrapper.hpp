@@ -28,7 +28,7 @@ namespace dai_nodes {
 class SpatialNNWrapper : public BaseNode {
    public:
     explicit SpatialNNWrapper(const std::string& daiNodeName,
-                              rclcpp::Node* node,
+                              std::shared_ptr<rclcpp::Node> node,
                               std::shared_ptr<dai::Pipeline> pipeline,
                               const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A);
     ~SpatialNNWrapper();

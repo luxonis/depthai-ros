@@ -73,8 +73,8 @@ def generate_launch_description():
 
     enableDotProjector = LaunchConfiguration('enableDotProjector', default = False)
     enableFloodLight   = LaunchConfiguration('enableFloodLight', default = False)
-    dotProjectormA     = LaunchConfiguration('dotProjectormA', default = 200.0)
-    floodLightmA       = LaunchConfiguration('floodLightmA', default = 200.0)
+    dotProjectorIntensity     = LaunchConfiguration('dotProjectorIntensity', default = 0.5)
+    floodLightIntensity       = LaunchConfiguration('floodLightIntensity', default = 0.5)
     enableRosBaseTimeUpdate       = LaunchConfiguration('enableRosBaseTimeUpdate', default = False)
     enableRviz         = LaunchConfiguration('enableRviz', default = True)
 
@@ -286,15 +286,15 @@ def generate_launch_description():
         default_value=enableFloodLight,
         description='Set this to true to enable the flood light for night vision (Available only on Pro models).')
    
-    declare_dotProjectormA_cmd = DeclareLaunchArgument(
-        'dotProjectormA',
-        default_value=dotProjectormA,
-        description='Set the mA at which you intend to drive the dotProjector. Default is set to 200mA.')
+    declare_dotProjectorIntensity_cmd = DeclareLaunchArgument(
+        'dotProjectorIntensity',
+        default_value=dotProjectorIntensity,
+        description='Set the mA at which you intend to drive the dotProjector. Default is set to 0.5.')
 
-    declare_floodLightmA_cmd = DeclareLaunchArgument(
-        'floodLightmA',
-        default_value=floodLightmA,
-        description='Set the mA at which you intend to drive the FloodLight. Default is set to 200mA.')
+    declare_floodLightIntensity_cmd = DeclareLaunchArgument(
+        'floodLightIntensity',
+        default_value=floodLightIntensity,
+        description='Set the mA at which you intend to drive the FloodLight. Default is set to 0.5.')
     declare_enableRosBaseTimeUpdate_cmd = DeclareLaunchArgument(
         'enableRosBaseTimeUpdate',
         default_value=enableRosBaseTimeUpdate,
@@ -364,8 +364,8 @@ def generate_launch_description():
                         
                         {'enableDotProjector':      enableDotProjector},
                         {'enableFloodLight':        enableFloodLight},
-                        {'dotProjectormA':          dotProjectormA},
-                        {'floodLightmA':            floodLightmA},
+                        {'dotProjectorIntensity':          dotProjectorIntensity},
+                        {'floodLightIntensity':            floodLightIntensity},
                         {'enableRosBaseTimeUpdate': enableRosBaseTimeUpdate}
                         ])
     
@@ -484,8 +484,8 @@ def generate_launch_description():
 
     ld.add_action(declare_enableDotProjector_cmd)
     ld.add_action(declare_enableFloodLight_cmd)
-    ld.add_action(declare_dotProjectormA_cmd)
-    ld.add_action(declare_floodLightmA_cmd)
+    ld.add_action(declare_dotProjectorIntensity_cmd)
+    ld.add_action(declare_floodLightIntensity_cmd)
 
     ld.add_action(declare_enableRviz_cmd)
 

@@ -1,37 +1,23 @@
 #pragma once
 
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
-#include "image_transport/camera_publisher.hpp"
-#include "image_transport/image_transport.hpp"
-#include "sensor_msgs/msg/camera_info.hpp"
-#include "sensor_msgs/msg/image.hpp"
 
 namespace dai {
 class Pipeline;
 class Device;
-class DataOutputQueue;
 class DataInputQueue;
 enum class CameraBoardSocket;
 class ADatatype;
 namespace node {
 class ColorCamera;
 class XLinkIn;
-class XLinkOut;
-class VideoEncoder;
 }  // namespace node
-namespace ros {
-class ImageConverter;
-}
 }  // namespace dai
 
 namespace rclcpp {
 class Node;
 class Parameter;
 }  // namespace rclcpp
-
-namespace camera_info_manager {
-class CameraInfoManager;
-}
 
 namespace depthai_ros_driver {
 namespace param_handlers {
@@ -41,12 +27,13 @@ namespace dai_nodes {
 
 namespace sensor_helpers {
 struct ImageSensor;
-}
+class ImagePublisher;
+}  // namespace sensor_helpers
 
 class RGB : public BaseNode {
    public:
     explicit RGB(const std::string& daiNodeName,
-                 rclcpp::Node* node,
+                 std::shared_ptr<rclcpp::Node> node,
                  std::shared_ptr<dai::Pipeline> pipeline,
                  dai::CameraBoardSocket socket,
                  sensor_helpers::ImageSensor sensor,
@@ -58,19 +45,13 @@ class RGB : public BaseNode {
     void setNames() override;
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
+    std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
 
    private:
-    std::unique_ptr<dai::ros::ImageConverter> imageConverter;
-    image_transport::CameraPublisher rgbPubIT, previewPubIT;
-    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr rgbPub, previewPub;
-    rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr rgbInfoPub, previewInfoPub;
-    std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager, previewInfoManager;
+    std::shared_ptr<sensor_helpers::ImagePublisher> rgbPub, previewPub;
     std::shared_ptr<dai::node::ColorCamera> colorCamNode;
-    std::shared_ptr<dai::node::VideoEncoder> videoEnc;
     std::unique_ptr<param_handlers::SensorParamHandler> ph;
-    std::shared_ptr<dai::DataOutputQueue> colorQ, previewQ;
     std::shared_ptr<dai::DataInputQueue> controlQ;
-    std::shared_ptr<dai::node::XLinkOut> xoutColor, xoutPreview;
     std::shared_ptr<dai::node::XLinkIn> xinControl;
     std::string ispQName, previewQName, controlQName;
 };

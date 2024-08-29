@@ -99,6 +99,7 @@ void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<Imu
         for(int i = 0; i < inData->packets.size(); ++i) {
             auto accel = inData->packets[i].acceleroMeter;
             auto gyro = inData->packets[i].gyroscope;
+
             ImuMsgs::Imu msg;
             std::chrono::_V2::steady_clock::time_point tstamp;
             if(_getBaseDeviceTimestamp)
@@ -142,4 +143,3 @@ void ImuConverter::toRosDaiMsg(std::shared_ptr<dai::IMUData> inData, std::deque<
 }
 
 }  // namespace ros
-}  // namespace dai

@@ -10,7 +10,7 @@
 namespace depthai_ros_driver {
 namespace dai_nodes {
 SpatialNNWrapper::SpatialNNWrapper(const std::string& daiNodeName,
-                                   rclcpp::Node* node,
+                                   std::shared_ptr<rclcpp::Node> node,
                                    std::shared_ptr<dai::Pipeline> pipeline,
                                    const dai::CameraBoardSocket& socket)
     : BaseNode(daiNodeName, node, pipeline) {
