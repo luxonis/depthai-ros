@@ -7,3 +7,4 @@
     stereo:
       i_output_disparity: true
       i_subpixel: true
+      i_board_socket_id: 1

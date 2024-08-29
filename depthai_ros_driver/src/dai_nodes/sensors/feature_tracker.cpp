@@ -13,16 +13,16 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-FeatureTracker::FeatureTracker(const std::string& daiNodeName, rclcpp::Node* node, std::shared_ptr<dai::Pipeline> pipeline)
+FeatureTracker::FeatureTracker(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline)
     : BaseNode(daiNodeName, node, pipeline) {
-    RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
+    RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
     getParentName(daiNodeName);
     setNames();
     featureNode = pipeline->create<dai::node::FeatureTracker>();
     ph = std::make_unique<param_handlers::FeatureTrackerParamHandler>(node, daiNodeName);
     ph->declareParams(featureNode);
     setXinXout(pipeline);
-    RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
+    RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
 }
 FeatureTracker::~FeatureTracker() = default;
 

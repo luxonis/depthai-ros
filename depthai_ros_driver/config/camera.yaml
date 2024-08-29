@@ -1,4 +1,4 @@
-/oak:
+/**:
   ros__parameters:
     camera:
       i_enable_imu: true

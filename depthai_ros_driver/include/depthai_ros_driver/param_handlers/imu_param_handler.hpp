@@ -28,7 +28,7 @@ enum class ImuMsgType { IMU, IMU_WITH_MAG, IMU_WITH_MAG_SPLIT };
 }
 class ImuParamHandler : public BaseParamHandler {
    public:
-    explicit ImuParamHandler(rclcpp::Node* node, const std::string& name);
+    explicit ImuParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name);
     ~ImuParamHandler();
     void declareParams(std::shared_ptr<dai::node::IMU> imu, const std::string& imuType);
     dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;

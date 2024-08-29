@@ -8,9 +8,7 @@
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-ImuParamHandler::ImuParamHandler(rclcpp::Node* node, const std::string& name) : BaseParamHandler(node, name) {}
-ImuParamHandler::~ImuParamHandler() = default;
-void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const std::string& imuType) {
+ImuParamHandler::ImuParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name) : BaseParamHandler(node, name) {
     imuSyncMethodMap = {
         {"COPY", dai::ros::ImuSyncMethod::COPY},
         {"LINEAR_INTERPOLATE_GYRO", dai::ros::ImuSyncMethod::LINEAR_INTERPOLATE_GYRO},
@@ -23,7 +21,11 @@ void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const s
                              {"GEOMAGNETIC_ROTATION_VECTOR", dai::IMUSensor::GEOMAGNETIC_ROTATION_VECTOR},
                              {"ARVR_STABILIZED_ROTATION_VECTOR", dai::IMUSensor::ARVR_STABILIZED_ROTATION_VECTOR},
                              {"ARVR_STABILIZED_GAME_ROTATION_VECTOR", dai::IMUSensor::ARVR_STABILIZED_GAME_ROTATION_VECTOR}};
+}
+ImuParamHandler::~ImuParamHandler() = default;
+void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const std::string& imuType) {
     declareAndLogParam<bool>("i_get_base_device_timestamp", false);
+    declareAndLogParam<int>("i_max_q_size", 8);
     auto messageType = declareAndLogParam<std::string>("i_message_type", "IMU");
     declareAndLogParam<std::string>("i_sync_method", "LINEAR_INTERPOLATE_ACCEL");
     declareAndLogParam<float>("i_acc_cov", 0.0);

@@ -31,7 +31,7 @@ void TrackedFeaturesConverter::toRosMsg(std::shared_ptr<dai::TrackedFeatures> in
 
     msg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
     msg.header.frame_id = _frameName;
-    msg.features.resize(inFeatures->trackedFeatures.size());
+    msg.features.reserve(inFeatures->trackedFeatures.size());
 
     for(const auto& feature : inFeatures->trackedFeatures) {
         depthai_ros_msgs::msg::TrackedFeature ft;
