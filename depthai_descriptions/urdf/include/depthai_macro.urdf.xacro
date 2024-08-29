@@ -174,13 +174,4 @@
 		</xacro:if>
 	</xacro:macro>
 
-            <link name="${camera_name}_right_camera_optical_frame"/>
-
-            <joint name="${camera_name}_right_camera_optical_joint" type="fixed">
-                <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
-                <parent link="${camera_name}_right_camera_frame"/>
-                <child link="${camera_name}_right_camera_optical_frame"/>
-            </joint>
-        </xacro:if>
-    </xacro:macro>
-
+</robot>

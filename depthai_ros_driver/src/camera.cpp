@@ -20,9 +20,6 @@ Camera::Camera(const rclcpp::NodeOptions& options) : rclcpp::Node("camera", opti
     });
     rclcpp::on_shutdown([this]() { stop(); });
 }
-Camera::~Camera() {
-    stop();
-}
 Camera::~Camera() = default;
 void Camera::onConfigure() {
     getDeviceType();
@@ -110,54 +107,6 @@ void Camera::restart() {
         return;
     } else {
         RCLCPP_ERROR(get_logger(), "Restarting camera failed.");
-    }
-}
-
-void Camera::diagCB(const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg) {
-    for(const auto& status : msg->status) {
-        if(status.name == get_name() + std::string(": sys_logger")) {
-            if(status.level == diagnostic_msgs::msg::DiagnosticStatus::ERROR) {
-                RCLCPP_ERROR(this->get_logger(), "Camera diagnostics error: %s", status.message.c_str());
-                if(ph->getParam<bool>("i_restart_on_diagnostics_error")) {
-                    restart();
-                };
-            }
-        }
-    }
-}
-
-void Camera::start() {
-    RCLCPP_INFO(this->get_logger(), "Starting camera.");
-    if(!camRunning) {
-        onConfigure();
-    } else {
-        RCLCPP_INFO(this->get_logger(), "Camera already running!.");
-    }
-}
-
-void Camera::stop() {
-    RCLCPP_INFO(this->get_logger(), "Stopping camera.");
-    if(camRunning) {
-        for(const auto& node : daiNodes) {
-            node->closeQueues();
-        }
-        daiNodes.clear();
-        device.reset();
-        pipeline.reset();
-        camRunning = false;
-    } else {
-        RCLCPP_INFO(this->get_logger(), "Camera already stopped!");
-    }
-}
-
-void Camera::restart() {
-    RCLCPP_ERROR(this->get_logger(), "Restarting camera");
-    stop();
-    start();
-    if(camRunning) {
-        return;
-    } else {
-        RCLCPP_ERROR(this->get_logger(), "Restarting camera failed.");
     }
 }
 

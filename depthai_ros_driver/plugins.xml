@@ -29,3 +29,4 @@
     <class type="depthai_ros_driver::pipeline_gen::RGBToF" base_class_type="depthai_ros_driver::pipeline_gen::BasePipeline">
         <description>RGB + ToF Pipeline.</description>
     </class>
+</library>

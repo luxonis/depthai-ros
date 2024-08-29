@@ -143,3 +143,4 @@ void ImuConverter::toRosDaiMsg(std::shared_ptr<dai::IMUData> inData, std::deque<
 }
 
 }  // namespace ros
+}  // namespace dai

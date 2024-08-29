@@ -142,12 +142,12 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
         return outImageMsg;
     }
 
-    if(_fromBitstream) {
+    if(fromBitstream) {
         std::string encoding;
         int decodeFlags;
         int channels;
         cv::Mat output;
-        switch(_srcType) {
+        switch(srcType) {
             case dai::RawImgFrame::Type::BGR888i: {
                 encoding = sensor_msgs::image_encodings::BGR8;
                 decodeFlags = cv::IMREAD_COLOR;
@@ -167,7 +167,7 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
                 break;
             }
             default: {
-                std::cout << _frameName << static_cast<int>(_srcType) << std::endl;
+                std::cout << frameName << static_cast<int>(srcType) << std::endl;
                 throw(std::runtime_error("Converted type not supported!"));
             }
         }
@@ -175,8 +175,8 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
         output = cv::imdecode(cv::Mat(inData->getData()), decodeFlags);
 
         // converting disparity
-        if(_convertDispToDepth) {
-            auto factor = std::abs(_baseline * 10) * info.p[0];
+        if(dispToDepth) {
+            auto factor = std::abs(baseline * 10) * info.p[0];
             cv::Mat depthOut = cv::Mat(cv::Size(output.cols, output.rows), CV_16UC1);
             depthOut.forEach<uint16_t>([&output, &factor](uint16_t& pixel, const int* position) -> void {
                 auto disp = output.at<uint8_t>(position);
@@ -537,16 +537,6 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
                 std::copy(stereoIntrinsics[i].begin(), stereoIntrinsics[i].end(), stereoFlatIntrinsics.begin() + 4 * i);
                 stereoFlatIntrinsics[(4 * i) + 3] = 0;
             }
-            // Check stereo socket order
-            dai::CameraBoardSocket stereoSocketFirst = calibHandler.getStereoLeftCameraId();
-            dai::CameraBoardSocket stereoSocketSecond = calibHandler.getStereoRightCameraId();
-            double factor = 1.0;
-            if(_reverseStereoSocketOrder) {
-                stereoSocketFirst = calibHandler.getStereoRightCameraId();
-                stereoSocketSecond = calibHandler.getStereoLeftCameraId();
-                factor = -1.0;
-            }
-
             // Check stereo socket order
             dai::CameraBoardSocket stereoSocketFirst = calibHandler.getStereoLeftCameraId();
             dai::CameraBoardSocket stereoSocketSecond = calibHandler.getStereoRightCameraId();
