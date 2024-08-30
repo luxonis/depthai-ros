@@ -15,6 +15,7 @@
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_bridge/ImgDetectionConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
 #include "depthai_ros_driver/parametersConfig.h"
@@ -42,7 +43,7 @@ class Detection : public BaseNode {
               ros::NodeHandle node,
               std::shared_ptr<dai::Pipeline> pipeline,
               const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A)
-        : BaseNode(daiNodeName, node, pipeline), it(node) {
+        : BaseNode(daiNodeName, node, pipeline) {
         ROS_DEBUG("Creating node %s", daiNodeName.c_str());
         setNames();
         detectionNode = pipeline->create<T>();
@@ -62,8 +63,8 @@ class Detection : public BaseNode {
      */
     void setupQueues(std::shared_ptr<dai::Device> device) override {
         nnQ = device->getOutputQueue(nnQName, ph->getParam<int>("i_max_q_size"), false);
-        std::string socketName = utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")));
-        auto tfPrefix = getTFPrefix(socketName);
+        std::string socketName = getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")));
+        auto tfPrefix = getOpticalTFPrefix(socketName);
         int width;
         int height;
         if(ph->getParam<bool>("i_disable_resize")) {
@@ -73,21 +74,24 @@ class Detection : public BaseNode {
             width = imageManip->initialConfig.getResizeConfig().width;
             height = imageManip->initialConfig.getResizeConfig().height;
         }
-        detConverter = std::make_unique<dai::ros::ImgDetectionConverter>(
-            tfPrefix + "_camera_optical_frame", width, height, false, ph->getParam<bool>("i_get_base_device_timestamp"));
+        detConverter = std::make_unique<dai::ros::ImgDetectionConverter>(tfPrefix, width, height, false, ph->getParam<bool>("i_get_base_device_timestamp"));
         detConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
         detPub = getROSNode().template advertise<vision_msgs::Detection2DArray>(getName() + "/detections", 10);
         nnQ->addCallback(std::bind(&Detection::detectionCB, this, std::placeholders::_1, std::placeholders::_2));
 
         if(ph->getParam<bool>("i_enable_passthrough")) {
-            ptQ = device->getOutputQueue(ptQName, ph->getParam<int>("i_max_q_size"), false);
-            imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
-            imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
-            infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), getName()), "/" + getName());
-            infoManager->setCameraInfo(sensor_helpers::getCalibInfo(*imageConverter, device, dai::CameraBoardSocket::CAM_A, width, height));
+            utils::ImgConverterConfig convConf;
+            convConf.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
+            convConf.tfPrefix = tfPrefix;
+            convConf.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
 
-            ptPub = it.advertiseCamera(getName() + "/passthrough/image_raw", 1);
-            ptQ->addCallback(std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager));
+            utils::ImgPublisherConfig pubConf;
+            pubConf.daiNodeName = getName();
+            pubConf.topicName = "~/" + getName();
+            pubConf.topicSuffix = "passthrough";
+            pubConf.socket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"));
+
+            ptPub->setup(device, convConf, pubConf);
         }
     };
     /**
@@ -126,9 +130,7 @@ class Detection : public BaseNode {
         xoutNN->setStreamName(nnQName);
         detectionNode->out.link(xoutNN->input);
         if(ph->getParam<bool>("i_enable_passthrough")) {
-            xoutPT = pipeline->create<dai::node::XLinkOut>();
-            xoutPT->setStreamName(ptQName);
-            detectionNode->passthrough.link(xoutPT->input);
+            ptPub = setupOutput(pipeline, ptQName, [&](dai::Node::Input input) { detectionNode->passthrough.link(input); });
         }
     };
     /**
@@ -137,7 +139,7 @@ class Detection : public BaseNode {
     void closeQueues() override {
         nnQ->close();
         if(ph->getParam<bool>("i_enable_passthrough")) {
-            ptQ->close();
+            ptPub->closeQueue();
         }
     };
 
@@ -163,12 +165,9 @@ class Detection : public BaseNode {
         }
     };
     std::unique_ptr<dai::ros::ImgDetectionConverter> detConverter;
-    image_transport::ImageTransport it;
     std::vector<std::string> labelNames;
     ros::Publisher detPub;
-    std::unique_ptr<dai::ros::ImageConverter> imageConverter;
-    image_transport::CameraPublisher ptPub;
-    std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
+    std::shared_ptr<sensor_helpers::ImagePublisher> ptPub;
     std::shared_ptr<T> detectionNode;
     std::shared_ptr<dai::node::ImageManip> imageManip;
     std::unique_ptr<param_handlers::NNParamHandler> ph;

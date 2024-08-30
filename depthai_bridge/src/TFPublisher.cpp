@@ -39,27 +39,27 @@ TFPublisher::TFPublisher(::ros::NodeHandle node,
                          const std::string& imuFromDescr,
                          const std::string& customURDFLocation,
                          const std::string& customXacroArgs)
-    : _camName(camName),
-      _camModel(camModel),
-      _baseFrame(baseFrame),
-      _parentFrame(parentFrame),
-      _camPosX(camPosX),
-      _camPosY(camPosY),
-      _camPosZ(camPosZ),
-      _camRoll(camRoll),
-      _camPitch(camPitch),
-      _camYaw(camYaw),
-      _camFeatures(camFeatures),
-      _imuFromDescr(imuFromDescr),
-      _customURDFLocation(customURDFLocation),
-      _customXacroArgs(customXacroArgs) {
-    _tfPub = std::make_shared<tf2_ros::StaticTransformBroadcaster>();
+    : camName(camName),
+      camModel(camModel),
+      baseFrame(baseFrame),
+      parentFrame(parentFrame),
+      camPosX(camPosX),
+      camPosY(camPosY),
+      camPosZ(camPosZ),
+      camRoll(camRoll),
+      camPitch(camPitch),
+      camYaw(camYaw),
+      camFeatures(camFeatures),
+      imuFromDescr(imuFromDescr),
+      customURDFLocation(customURDFLocation),
+      customXacroArgs(customXacroArgs) {
+    tfPub = std::make_shared<tf2_ros::StaticTransformBroadcaster>();
 
     auto json = calHandler.eepromToJson();
     auto camData = json["cameraData"];
     publishDescription(node);
     publishCamTransforms(camData, node);
-    if(_imuFromDescr != "true") {
+    if(imuFromDescr != "true") {
         publishImuTransform(json, node);
     }
 }
@@ -73,8 +73,8 @@ void TFPublisher::publishDescription(::ros::NodeHandle node) {
         ROS_ERROR("Failed to extract kdl tree from xml robot description");
         throw std::runtime_error("Failed to extract kdl tree from xml robot description");
     }
-    _rsp = std::make_shared<robot_state_publisher::RobotStatePublisher>(tree, model);
-    _rsp->publishFixedTransforms(true);
+    rsp = std::make_shared<robot_state_publisher::RobotStatePublisher>(tree, model);
+    rsp->publishFixedTransforms(true);
     node.setParam("robot_description", urdf);
     ROS_INFO("Published URDF");
 }
@@ -91,26 +91,26 @@ void TFPublisher::publishCamTransforms(nlohmann::json camData, ::ros::NodeHandle
         ts.transform.translation = transFromExtr(extrinsics["translation"]);
 
         std::string name = getCamSocketName(cam[0]);
-        ts.child_frame_id = _baseFrame + std::string("_") + name + std::string("_camera_frame");
+        ts.child_frame_id = baseFrame + std::string("_") + name + std::string("_camera_frame");
         // check if the camera is at the end of the chain
         if(extrinsics["toCameraSocket"] != -1) {
-            ts.header.frame_id = _baseFrame + std::string("_") + getCamSocketName(extrinsics["toCameraSocket"].get<int>()) + std::string("_camera_frame");
+            ts.header.frame_id = baseFrame + std::string("_") + getCamSocketName(extrinsics["toCameraSocket"].get<int>()) + std::string("_camera_frame");
         } else {
-            ts.header.frame_id = _baseFrame;
+            ts.header.frame_id = baseFrame;
             ts.transform.rotation.w = 1.0;
             ts.transform.rotation.x = 0.0;
             ts.transform.rotation.y = 0.0;
             ts.transform.rotation.z = 0.0;
         }
         // rotate optical fransform
-        opticalTS.child_frame_id = _baseFrame + std::string("_") + name + std::string("_camera_optical_frame");
+        opticalTS.child_frame_id = baseFrame + std::string("_") + name + std::string("_camera_optical_frame");
         opticalTS.header.frame_id = ts.child_frame_id;
         opticalTS.transform.rotation.w = 0.5;
         opticalTS.transform.rotation.x = -0.5;
         opticalTS.transform.rotation.y = 0.5;
         opticalTS.transform.rotation.z = -0.5;
-        _tfPub->sendTransform(ts);
-        _tfPub->sendTransform(opticalTS);
+        tfPub->sendTransform(ts);
+        tfPub->sendTransform(opticalTS);
     }
 }
 void TFPublisher::publishImuTransform(nlohmann::json json, ::ros::NodeHandle node) {
@@ -118,11 +118,11 @@ void TFPublisher::publishImuTransform(nlohmann::json json, ::ros::NodeHandle nod
     ts.header.stamp = ::ros::Time::now();
     auto imuExtr = json["imuExtrinsics"];
     if(imuExtr["toCameraSocket"] != -1) {
-        ts.header.frame_id = _baseFrame + std::string("_") + getCamSocketName(imuExtr["toCameraSocket"].get<int>()) + std::string("_camera_frame");
+        ts.header.frame_id = baseFrame + std::string("_") + getCamSocketName(imuExtr["toCameraSocket"].get<int>()) + std::string("_camera_frame");
     } else {
-        ts.header.frame_id = _baseFrame;
+        ts.header.frame_id = baseFrame;
     }
-    ts.child_frame_id = _baseFrame + std::string("_imu_frame");
+    ts.child_frame_id = baseFrame + std::string("_imu_frame");
 
     ts.transform.rotation = quatFromRotM(imuExtr["rotationMatrix"]);
     ts.transform.translation = transFromExtr(imuExtr["translation"]);
@@ -133,11 +133,11 @@ void TFPublisher::publishImuTransform(nlohmann::json json, ::ros::NodeHandle nod
         ts.transform.rotation.w = 1.0;
         ts.transform.rotation.x = 0.0;
     }
-    _tfPub->sendTransform(ts);
+    tfPub->sendTransform(ts);
 }
 
 std::string TFPublisher::getCamSocketName(int socketNum) {
-    return _socketNameMap.at(static_cast<dai::CameraBoardSocket>(socketNum));
+    return socketNameMap.at(static_cast<dai::CameraBoardSocket>(socketNum));
 }
 
 geometry_msgs::Vector3 TFPublisher::transFromExtr(nlohmann::json translation) {
@@ -176,7 +176,7 @@ bool TFPublisher::modelNameAvailable() {
         while((ent = readdir(dir)) != NULL) {
             auto name = std::string(ent->d_name);
             ROS_DEBUG("Found model: %s", name.c_str());
-            if(name == _camModel + ".stl") {
+            if(name == camModel + ".stl") {
                 return true;
             }
         }
@@ -188,59 +188,59 @@ bool TFPublisher::modelNameAvailable() {
 }
 
 std::string TFPublisher::prepareXacroArgs() {
-    if(!_customURDFLocation.empty() || !modelNameAvailable()) {
+    if(!customURDFLocation.empty() || !modelNameAvailable()) {
         ROS_ERROR(
             "Model name %s not found in depthai_descriptions package. If camera model is autodetected, please notify developers. Using default model: OAK-D",
-            _camModel.c_str());
-        _camModel = "OAK-D";
+            camModel.c_str());
+        camModel = "OAK-D";
     }
 
-    std::string xacroArgs = "camera_name:=" + _camName;
-    xacroArgs += " camera_model:=" + _camModel;
-    xacroArgs += " base_frame:=" + _baseFrame;
-    xacroArgs += " parent_frame:=" + _parentFrame;
-    xacroArgs += " cam_pos_x:=" + _camPosX;
-    xacroArgs += " cam_pos_y:=" + _camPosY;
-    xacroArgs += " cam_pos_z:=" + _camPosZ;
-    xacroArgs += " cam_roll:=" + _camRoll;
-    xacroArgs += " cam_pitch:=" + _camPitch;
-    xacroArgs += " cam_yaw:=" + _camYaw;
-    xacroArgs += " has_imu:=" + _imuFromDescr;
+    std::string xacroArgs = "camera_name:=" + camName;
+    xacroArgs += " camera_model:=" + camModel;
+    xacroArgs += " base_frame:=" + baseFrame;
+    xacroArgs += " parent_frame:=" + parentFrame;
+    xacroArgs += " cam_pos_x:=" + camPosX;
+    xacroArgs += " cam_pos_y:=" + camPosY;
+    xacroArgs += " cam_pos_z:=" + camPosZ;
+    xacroArgs += " cam_roll:=" + camRoll;
+    xacroArgs += " cam_pitch:=" + camPitch;
+    xacroArgs += " cam_yaw:=" + camYaw;
+    xacroArgs += " has_imu:=" + imuFromDescr;
     return xacroArgs;
 }
 
 void TFPublisher::convertModelName() {
-    if(_camModel.find("OAK-D-PRO-POE") != std::string::npos || _camModel.find("OAK-D-PRO-W-POE") != std::string::npos
-       || _camModel.find("OAK-D-S2-POE") != std::string::npos) {
-        _camModel = "OAK-D-POE";
-    } else if(_camModel.find("OAK-D-LITE") != std::string::npos) {
-        _camModel = "OAK-D-PRO";
-    } else if(_camModel.find("OAK-D-S2") != std::string::npos) {
-        _camModel = "OAK-D-PRO";
-    } else if(_camModel.find("OAK-D-PRO-W") != std::string::npos) {
-        _camModel = "OAK-D-PRO";
-    } else if(_camModel.find("OAK-D-PRO") != std::string::npos) {
-        _camModel = "OAK-D-PRO";
-    } else if(_camModel.find("OAK-D-POE")) {
-        _camModel = "OAK-D-POE";
-    } else if(_camModel.find("OAK-D") != std::string::npos) {
-        _camModel = "OAK-D";
+    if(camModel.find("OAK-D-PRO-POE") != std::string::npos || camModel.find("OAK-D-PRO-W-POE") != std::string::npos
+       || camModel.find("OAK-D-S2-POE") != std::string::npos) {
+        camModel = "OAK-D-POE";
+    } else if(camModel.find("OAK-D-LITE") != std::string::npos) {
+        camModel = "OAK-D-PRO";
+    } else if(camModel.find("OAK-D-S2") != std::string::npos) {
+        camModel = "OAK-D-PRO";
+    } else if(camModel.find("OAK-D-PRO-W") != std::string::npos) {
+        camModel = "OAK-D-PRO";
+    } else if(camModel.find("OAK-D-PRO") != std::string::npos) {
+        camModel = "OAK-D-PRO";
+    } else if(camModel.find("OAK-D-POE")) {
+        camModel = "OAK-D-POE";
+    } else if(camModel.find("OAK-D") != std::string::npos) {
+        camModel = "OAK-D";
     } else {
-        ROS_WARN("Unable to match model name: %s to available model family.", _camModel.c_str());
+        ROS_WARN("Unable to match model name: %s to available model family.", camModel.c_str());
     }
 }
 
 std::string TFPublisher::getURDF() {
     std::string args, path;
-    if(_customXacroArgs.empty()) {
+    if(customXacroArgs.empty()) {
         args = prepareXacroArgs();
     } else {
-        args = _customXacroArgs;
+        args = customXacroArgs;
     }
-    if(_customURDFLocation.empty()) {
+    if(customURDFLocation.empty()) {
         path = ::ros::package::getPath("depthai_descriptions") + "/urdf/base_descr.urdf.xacro ";
     } else {
-        path = _customURDFLocation + " ";
+        path = customURDFLocation + " ";
     }
     std::string cmd = "xacro " + path + args;
     ROS_DEBUG("Xacro command: %s", cmd.c_str());

@@ -1,5 +1,7 @@
 #pragma once
+#include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai/pipeline/datatype/CameraControl.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/parametersConfig.h"
 #include "ros/node_handle.h"
 
@@ -11,10 +13,7 @@ inline std::pair<int, int> getRangedIntDescriptor(uint16_t min, uint16_t max) {
 
 class BaseParamHandler {
    public:
-    BaseParamHandler(ros::NodeHandle node, const std::string& name) {
-        baseName = name;
-        baseNode = node;
-    };
+    BaseParamHandler(ros::NodeHandle node, const std::string& name) : baseName(name), baseNode(node){};
     virtual ~BaseParamHandler(){};
     virtual dai::CameraControl setRuntimeParams(parametersConfig& config) = 0;
     std::string getName() {
@@ -23,6 +22,9 @@ class BaseParamHandler {
     template <typename T>
     T getParam(const std::string& paramName) {
         T value;
+        if(!baseNode.hasParam(getFullParamName(paramName))) {
+            ROS_ERROR("Param %s not found", getFullParamName(paramName).c_str());
+        }
         baseNode.getParam(getFullParamName(paramName), value);
         logParam(getFullParamName(paramName), value);
         return value;
@@ -30,6 +32,9 @@ class BaseParamHandler {
     template <typename T>
     T getParam(const std::string& paramName, T defaultVal) {
         T value;
+        if(!baseNode.hasParam(getFullParamName(paramName))) {
+            ROS_ERROR("Param %s not found", getFullParamName(paramName).c_str());
+        }
         if(!baseNode.param<T>(getFullParamName(paramName), value, defaultVal)) {
             baseNode.setParam(getFullParamName(paramName), defaultVal);
             value = defaultVal;
@@ -65,6 +70,9 @@ class BaseParamHandler {
     std::string getFullParamName(const std::string& daiNodeName, const std::string& paramName) {
         std::string name = daiNodeName + "_" + paramName;
         return name;
+    }
+    std::string getSocketName(dai::CameraBoardSocket socket) {
+        return dai_nodes::sensor_helpers::getSocketName(getROSNode(), socket);
     }
 
    protected:

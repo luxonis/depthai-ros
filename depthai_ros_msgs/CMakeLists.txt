@@ -24,6 +24,7 @@ find_package (catkin REQUIRED COMPONENTS
 add_message_files (
   FILES
   AutoFocusCtrl.msg
+  FFMPEGPacket.msg
   HandLandmark.msg
   HandLandmarkArray.msg
   # ImageMarker.msg
@@ -31,6 +32,8 @@ add_message_files (
   SpatialDetection.msg
   SpatialDetectionArray.msg
   ImuWithMagneticField.msg
+  TrackDetection2D.msg
+  TrackDetection2DArray.msg
   TrackedFeature.msg
   TrackedFeatures.msg
 )

@@ -60,7 +60,7 @@ class Segmentation : public BaseNode {
     std::vector<std::string> labelNames;
     image_transport::CameraPublisher nnPub, ptPub;
     sensor_msgs::CameraInfo nnInfo;
-    std::unique_ptr<dai::ros::ImageConverter> imageConverter;
+    std::shared_ptr<dai::ros::ImageConverter> imageConverter;
     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
     std::shared_ptr<dai::node::NeuralNetwork> segNode;
     std::shared_ptr<dai::node::ImageManip> imageManip;

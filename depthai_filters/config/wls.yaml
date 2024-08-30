@@ -3,3 +3,4 @@
   left_i_publish_topic: true
   stereo_i_output_disparity: true
   stereo_i_subpixel: true
+  stereo_i_board_socket_id: 1

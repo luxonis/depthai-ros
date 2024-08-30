@@ -24,7 +24,6 @@ dai::UsbSpeed CameraParamHandler::getUSBSpeed() {
 void CameraParamHandler::declareParams() {
     declareAndLogParam<std::string>("i_pipeline_type", "RGBD");
     declareAndLogParam<std::string>("i_nn_type", "spatial");
-    declareAndLogParam<bool>("i_enable_imu", true);
     declareAndLogParam<bool>("i_enable_ir", true);
     declareAndLogParam<std::string>("i_usb_speed", "SUPER_PLUS");
     declareAndLogParam<std::string>("i_mx_id", "");

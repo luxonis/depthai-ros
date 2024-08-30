@@ -58,13 +58,13 @@ void Segmentation::setupQueues(std::shared_ptr<dai::Device> device) {
     nnPub = it.advertiseCamera(getName() + "/image_raw", 1);
     nnQ->addCallback(std::bind(&Segmentation::segmentationCB, this, std::placeholders::_1, std::placeholders::_2));
     if(ph->getParam<bool>("i_enable_passthrough")) {
-        auto tfPrefix = getTFPrefix(utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
+        auto tfPrefix = getOpticalTFPrefix(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
 
         ptQ = device->getOutputQueue(ptQName, ph->getParam<int>("i_max_q_size"), false);
         imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), getName()), "/" + getName());
         infoManager->setCameraInfo(sensor_helpers::getCalibInfo(
-            *imageConverter, device, dai::CameraBoardSocket::CAM_A, imageManip->initialConfig.getResizeWidth(), imageManip->initialConfig.getResizeWidth()));
+            imageConverter, device, dai::CameraBoardSocket::CAM_A, imageManip->initialConfig.getResizeWidth(), imageManip->initialConfig.getResizeWidth()));
 
         ptPub = it.advertiseCamera(getName() + "/passthrough/image_raw", 1);
         ptQ->addCallback(std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager));

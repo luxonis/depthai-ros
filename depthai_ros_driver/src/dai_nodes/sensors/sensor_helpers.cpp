@@ -21,14 +21,6 @@ std::vector<ImageSensor> availableSensors = {{"IMX378", "1080P", {"12MP", "4K", 
                                              {"AR0234", "1200P", {"1200P"}, true},
                                              {"IMX582", "4K", {"48MP", "12MP", "4K"}, true},
                                              {"LCM48", "4K", {"48MP", "12MP", "4K"}, true}};
-const std::unordered_map<dai::CameraBoardSocket, std::string> socketNameMap = {
-    {dai::CameraBoardSocket::AUTO, "rgb"},
-    {dai::CameraBoardSocket::CAM_A, "rgb"},
-    {dai::CameraBoardSocket::CAM_B, "left"},
-    {dai::CameraBoardSocket::CAM_C, "right"},
-    {dai::CameraBoardSocket::CAM_D, "left_back"},
-    {dai::CameraBoardSocket::CAM_E, "right_back"},
-};
 const std::unordered_map<std::string, dai::MonoCameraProperties::SensorResolution> monoResolutionMap = {
     {"400P", dai::MonoCameraProperties::SensorResolution::THE_400_P},
     {"480P", dai::MonoCameraProperties::SensorResolution::THE_480_P},
@@ -64,6 +56,59 @@ const std::unordered_map<std::string, dai::CameraImageOrientation> cameraImageOr
     {"VERTICAL_FLIP", dai::CameraImageOrientation::VERTICAL_FLIP},
 };
 
+const std::unordered_map<dai::CameraBoardSocket, std::string> socketNameMap = {
+    {dai::CameraBoardSocket::AUTO, "rgb"},
+    {dai::CameraBoardSocket::CAM_A, "rgb"},
+    {dai::CameraBoardSocket::CAM_B, "left"},
+    {dai::CameraBoardSocket::CAM_C, "right"},
+    {dai::CameraBoardSocket::CAM_D, "left_back"},
+    {dai::CameraBoardSocket::CAM_E, "right_back"},
+};
+const std::unordered_map<dai::CameraBoardSocket, std::string> rsSocketNameMap = {
+    {dai::CameraBoardSocket::AUTO, "color"},
+    {dai::CameraBoardSocket::CAM_A, "color"},
+    {dai::CameraBoardSocket::CAM_B, "infra2"},
+    {dai::CameraBoardSocket::CAM_C, "infra1"},
+    {dai::CameraBoardSocket::CAM_D, "infra4"},
+    {dai::CameraBoardSocket::CAM_E, "infra3"},
+};
+const std::unordered_map<NodeNameEnum, std::string> rsNodeNameMap = {
+    {NodeNameEnum::RGB, "color"},
+    {NodeNameEnum::Left, "infra2"},
+    {NodeNameEnum::Right, "infra1"},
+    {NodeNameEnum::Stereo, "depth"},
+    {NodeNameEnum::IMU, "imu"},
+    {NodeNameEnum::NN, "nn"},
+};
+
+const std::unordered_map<NodeNameEnum, std::string> NodeNameMap = {
+    {NodeNameEnum::RGB, "rgb"},
+    {NodeNameEnum::Left, "left"},
+    {NodeNameEnum::Right, "right"},
+    {NodeNameEnum::Stereo, "stereo"},
+    {NodeNameEnum::IMU, "imu"},
+    {NodeNameEnum::NN, "nn"},
+};
+
+bool rsCompabilityMode(ros::NodeHandle node) {
+    bool compat = false;
+    node.getParam("camera.i_rs_compat", compat);
+    return compat;
+}
+std::string getNodeName(ros::NodeHandle node, NodeNameEnum name) {
+    if(rsCompabilityMode(node)) {
+        return rsNodeNameMap.at(name);
+    }
+    return NodeNameMap.at(name);
+}
+
+std::string getSocketName(ros::NodeHandle node, dai::CameraBoardSocket socket) {
+    if(rsCompabilityMode(node)) {
+        return rsSocketNameMap.at(socket);
+    }
+    return socketNameMap.at(socket);
+}
+
 void basicCameraPub(const std::string& /*name*/,
                     const std::shared_ptr<dai::ADatatype>& data,
                     dai::ros::ImageConverter& converter,
@@ -93,22 +138,16 @@ void cameraPub(const std::string& /*name*/,
     }
 }
 sensor_msgs::CameraInfo getCalibInfo(
-    dai::ros::ImageConverter& converter, std::shared_ptr<dai::Device> device, dai::CameraBoardSocket socket, int width, int height) {
+    std::shared_ptr<dai::ros::ImageConverter> converter, std::shared_ptr<dai::Device> device, dai::CameraBoardSocket socket, int width, int height) {
     sensor_msgs::CameraInfo info;
     auto calibHandler = device->readCalibration();
 
     try {
-        info = converter.calibrationToCameraInfo(calibHandler, socket, width, height);
+        info = converter->calibrationToCameraInfo(calibHandler, socket, width, height);
     } catch(std::runtime_error& e) {
         ROS_ERROR("No calibration for socket %d! Publishing empty camera_info.", static_cast<int>(socket));
     }
     return info;
-}
-std::shared_ptr<dai::node::VideoEncoder> createEncoder(std::shared_ptr<dai::Pipeline> pipeline, int quality, dai::VideoEncoderProperties::Profile profile) {
-    auto enc = pipeline->create<dai::node::VideoEncoder>();
-    enc->setQuality(quality);
-    enc->setProfile(profile);
-    return enc;
 }
 
 }  // namespace sensor_helpers
