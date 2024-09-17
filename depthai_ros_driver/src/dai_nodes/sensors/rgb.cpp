@@ -78,7 +78,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
 
         utils::ImgPublisherConfig pubConfig;
         pubConfig.daiNodeName = getName();
-        pubConfig.topicName = "~/" + getName();
+        pubConfig.topicName =  getName();
         pubConfig.lazyPub = ph->getParam<bool>("i_enable_lazy_publisher");
         pubConfig.socket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"));
         pubConfig.calibrationFile = ph->getParam<std::string>("i_calibration_file");

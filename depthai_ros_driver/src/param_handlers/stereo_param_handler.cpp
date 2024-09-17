@@ -35,8 +35,8 @@ StereoParamHandler::StereoParamHandler(ros::NodeHandle node, const std::string& 
 }
 
 void StereoParamHandler::updateSocketsFromParams(dai::CameraBoardSocket& left, dai::CameraBoardSocket& right, dai::CameraBoardSocket& align) {
-    int newLeftS = getParam<int>("i_left_socket_id", static_cast<int>(left));
-    int newRightS = getParam<int>("i_right_socket_id", static_cast<int>(right));
+    int newLeftS = declareAndLogParam<int>("i_left_socket_id", static_cast<int>(left));
+    int newRightS = declareAndLogParam<int>("i_right_socket_id", static_cast<int>(right));
     alignSocket = static_cast<dai::CameraBoardSocket>(declareAndLogParam<int>("i_board_socket_id", static_cast<int>(align)));
     if(newLeftS != static_cast<int>(left) || newRightS != static_cast<int>(right)) {
         ROS_WARN("Left or right socket changed, updating stereo node");
@@ -117,7 +117,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     height = declareAndLogParam<int>("i_height", height);
     stereo->setOutputSize(width, height);
     stereo->setDefaultProfilePreset(depthPresetMap.at(declareAndLogParam<std::string>("i_depth_preset", "HIGH_ACCURACY")));
-    if(declareAndLogParam<bool>("i_enable_distortion_correction", false)) {
+    if(declareAndLogParam<bool>("i_enable_distortion_correction", true)) {
         stereo->enableDistortionCorrection(true);
     }
     if(declareAndLogParam<bool>("i_set_disparity_to_depth_use_spec_translation", false)) {

@@ -149,7 +149,7 @@ void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
     pubConfig.rectified = true;
     pubConfig.width = ph->getOtherNodeParam<int>(sensorName, "i_width");
     pubConfig.height = ph->getOtherNodeParam<int>(sensorName, "i_height");
-    pubConfig.topicName = "~/" + sensorName;
+    pubConfig.topicName = sensorName;
     pubConfig.topicSuffix = rsCompabilityMode() ? "/image_rect_raw" : "/image_raw";
     pubConfig.maxQSize = ph->getOtherNodeParam<int>(sensorName, "i_max_q_size");
     pubConfig.socket = sensorInfo.socket;
@@ -191,7 +191,7 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
 
     utils::ImgPublisherConfig pubConf;
     pubConf.daiNodeName = getName();
-    pubConf.topicName = "~/" + getName();
+    pubConf.topicName = getName();
     pubConf.topicSuffix = rsCompabilityMode() ? "/image_rect_raw" : "/image_raw";
     pubConf.rectified = !convConfig.alphaScalingEnabled;
     pubConf.width = ph->getParam<int>("i_width");
@@ -224,10 +224,10 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_publish_topic")) {
         setupStereoQueue(device);
     }
-    if(ph->getParam<bool>("i_publish_left_rect") || ph->getParam<bool>("i_publish_synced_rect_pair")) {
+    if(ph->getParam<bool>("i_left_rect_publish_topic") || ph->getParam<bool>("i_publish_synced_rect_pair")) {
         setupLeftRectQueue(device);
     }
-    if(ph->getParam<bool>("i_publish_right_rect") || ph->getParam<bool>("i_publish_synced_rect_pair")) {
+    if(ph->getParam<bool>("i_right_rect_publish_topic") || ph->getParam<bool>("i_publish_synced_rect_pair")) {
         setupRightRectQueue(device);
     }
     if(ph->getParam<bool>("i_publish_synced_rect_pair")) {

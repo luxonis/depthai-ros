@@ -92,7 +92,7 @@ const std::unordered_map<NodeNameEnum, std::string> NodeNameMap = {
 
 bool rsCompabilityMode(ros::NodeHandle node) {
     bool compat = false;
-    node.getParam("camera.i_rs_compat", compat);
+    node.getParam("camera_i_rs_compat", compat);
     return compat;
 }
 std::string getNodeName(ros::NodeHandle node, NodeNameEnum name) {
