@@ -2,9 +2,14 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.10.1 (2024-09-18)
+-------------------
+* Fix ToF synced publishing
+* Add camera_info publishing when publishing compressed images
+* Catch errors when starting the device
+
 2.10.0 (2024-08-29)
 -------------------
-## What's Changed
 * Adding stl files for SR and LR models by @danilo-pejovic in https://github.com/luxonis/depthai-ros/pull/491
 * No imu fix Humble by @Serafadam in https://github.com/luxonis/depthai-ros/pull/500
 * Tracking converter for ROS2 Humble by @daniqsilva25 in https://github.com/luxonis/depthai-ros/pull/505
@@ -19,13 +24,6 @@ Changelog for package depthai-ros
 * ToF Support Humble by @Serafadam in https://github.com/luxonis/depthai-ros/pull/581
 * WLS fix humble by @Serafadam in https://github.com/luxonis/depthai-ros/pull/582
 * Syncing & RS updates Humble by @Serafadam in https://github.com/luxonis/depthai-ros/pull/586
-
-## New Contributors
-* @r4hul77 made their first contribution in https://github.com/luxonis/depthai-ros/pull/507
-* @Nibanovic made their first contribution in https://github.com/luxonis/depthai-ros/pull/511
-* @destogl made their first contribution in https://github.com/luxonis/depthai-ros/pull/524
-
-**Full Changelog**: https://github.com/luxonis/depthai-ros/compare/v2.9.0-humble...v2.10.0-humble
 
 2.9.0 (2024-01-24)
 -------------------
