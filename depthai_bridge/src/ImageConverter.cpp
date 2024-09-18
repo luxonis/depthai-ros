@@ -41,12 +41,12 @@ void ImageConverter::updateRosBaseTime() {
 
 void ImageConverter::convertFromBitstream(dai::RawImgFrame::Type srcType) {
     fromBitstream = true;
-    srcType = srcType;
+    this->srcType = srcType;
 }
 
 void ImageConverter::convertDispToDepth(double baseline) {
     dispToDepth = true;
-    baseline = baseline;
+    this->baseline = baseline;
 }
 
 void ImageConverter::reverseStereoSocketOrder() {
@@ -406,7 +406,7 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
         cameraData.height = static_cast<uint32_t>(height);
     }
 
-	camWidth = cameraData.width;
+    camWidth = cameraData.width;
     camHeight = cameraData.height;
 
     camIntrinsics = calibHandler.getCameraIntrinsics(cameraId, cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);

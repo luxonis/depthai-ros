@@ -97,7 +97,6 @@ class ImagePublisher {
     std::shared_ptr<dai::node::XLinkOut> xout;
     std::shared_ptr<dai::node::VideoEncoder> encoder;
     std::function<void(dai::Node::Input in)> linkCB;
-    ros::Publisher imgPub;
     ros::Publisher infoPub;
     ros::Publisher ffmpegPub;
     ros::Publisher compressedImgPub;
