@@ -15,7 +15,7 @@ Camera::Camera(const rclcpp::NodeOptions& options) : rclcpp::Node("camera", opti
     startTimer = this->create_wall_timer(std::chrono::seconds(1), [this]() {
         ph = std::make_unique<param_handlers::CameraParamHandler>(shared_from_this(), "camera");
         ph->declareParams();
-        onConfigure();
+        start();
         startTimer->cancel();
     });
     rclcpp::on_shutdown([this]() { stop(); });
@@ -78,11 +78,20 @@ void Camera::diagCB(const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg) 
 }
 
 void Camera::start() {
-    RCLCPP_INFO(get_logger(), "Starting camera.");
-    if(!camRunning) {
-        onConfigure();
-    } else {
-        RCLCPP_INFO(get_logger(), "Camera already running!.");
+    bool success = false;
+    while(!success) {
+        try {
+            RCLCPP_INFO(this->get_logger(), "Starting camera.");
+            if(!camRunning) {
+                onConfigure();
+            } else {
+                RCLCPP_INFO(this->get_logger(), "Camera already running!.");
+            }
+            success = true;
+        } catch(const std::exception& e) {
+            RCLCPP_ERROR(this->get_logger(), "Exception occurred: %s. Retry", e.what());
+            camRunning = false;
+        }
     }
 }
 
