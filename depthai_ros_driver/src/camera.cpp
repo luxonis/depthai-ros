@@ -288,15 +288,13 @@ void Camera::setIR() {
     if(camRunning && enableIR && !device->getIrDrivers().empty()) {
         float laserdotIntensity = float(laserDotBrightness);
         if(laserdotIntensity > 1.0) {
-            laserdotIntensity =  laserdotIntensity / 1200.0;
+            laserdotIntensity = laserdotIntensity / 1200.0;
         }
-		ROS_INFO("Setting IR laser dot intensity to: %f", laserdotIntensity);
         device->setIrLaserDotProjectorIntensity(laserdotIntensity);
         float floodlightIntensity = float(floodlightBrighness);
         if(floodlightIntensity > 1.0) {
-            floodlightIntensity =  floodlightIntensity / 1500.0;
+            floodlightIntensity = floodlightIntensity / 1500.0;
         }
-		ROS_INFO("Setting IR floodlight intensity to: %f", floodlightIntensity);
         device->setIrFloodLightIntensity(floodlightIntensity);
     }
 }
