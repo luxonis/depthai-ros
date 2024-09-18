@@ -1,9 +1,8 @@
 #include "depthai_ros_driver/utils.hpp"
 
-#include "depthai_ros_driver/utils.hpp"
-
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/XLinkOut.hpp"
+#include "depthai_ros_driver/utils.hpp"
 namespace depthai_ros_driver {
 namespace utils {
 std::string getUpperCaseStr(const std::string& string) {

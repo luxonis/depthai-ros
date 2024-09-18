@@ -49,7 +49,7 @@ void StereoParamHandler::updateSocketsFromParams(dai::CameraBoardSocket& left, d
 
 StereoParamHandler::~StereoParamHandler() = default;
 void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> stereo) {
-	    declareAndLogParam<int>("i_max_q_size", 30);
+    declareAndLogParam<int>("i_max_q_size", 30);
     declareAndLogParam<bool>("i_low_bandwidth", false);
     declareAndLogParam<int>("i_low_bandwidth_quality", 50);
     declareAndLogParam<int>("i_low_bandwidth_profile", 4);
@@ -117,7 +117,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     height = declareAndLogParam<int>("i_height", height);
     stereo->setOutputSize(width, height);
     stereo->setDefaultProfilePreset(depthPresetMap.at(declareAndLogParam<std::string>("i_depth_preset", "HIGH_ACCURACY")));
-    if(declareAndLogParam<bool>("i_enable_distortion_correction", true)) {
+    if(declareAndLogParam<bool>("i_enable_distortion_correction", false)) {
         stereo->enableDistortionCorrection(true);
     }
     if(declareAndLogParam<bool>("i_set_disparity_to_depth_use_spec_translation", false)) {

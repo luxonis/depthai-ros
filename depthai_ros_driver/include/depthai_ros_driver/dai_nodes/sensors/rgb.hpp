@@ -19,7 +19,6 @@ namespace ros {
 class NodeHandle;
 }  // namespace ros
 
-
 namespace depthai_ros_driver {
 namespace param_handlers {
 class SensorParamHandler;
@@ -46,10 +45,10 @@ class RGB : public BaseNode {
     void setNames() override;
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
-	std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
+    std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
 
    private:
-	std::shared_ptr<sensor_helpers::ImagePublisher> rgbPub, previewPub;
+    std::shared_ptr<sensor_helpers::ImagePublisher> rgbPub, previewPub;
     std::shared_ptr<dai::node::ColorCamera> colorCamNode;
     std::unique_ptr<param_handlers::SensorParamHandler> ph;
     std::shared_ptr<dai::DataInputQueue> controlQ;

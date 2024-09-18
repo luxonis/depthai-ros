@@ -13,8 +13,7 @@
 namespace depthai_ros_driver {
 namespace dai_nodes {
 
-Sync::Sync(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline)
-    : BaseNode(daiNodeName, node, pipeline) {
+Sync::Sync(const std::string& daiNodeName, ros::NodeHandle node, std::shared_ptr<dai::Pipeline> pipeline) : BaseNode(daiNodeName, node, pipeline) {
     syncNode = pipeline->create<dai::node::Sync>();
     paramHandler = std::make_unique<param_handlers::SyncParamHandler>(node, daiNodeName);
     paramHandler->declareParams(syncNode);

@@ -70,7 +70,7 @@ class SpatialDetection : public BaseNode {
         detPub = getROSNode().template advertise<vision_msgs::Detection3DArray>(getName() + "/spatial_detections", 10);
 
         if(ph->getParam<bool>("i_enable_passthrough")) {
-			            utils::ImgConverterConfig convConf;
+            utils::ImgConverterConfig convConf;
             convConf.tfPrefix = tfPrefix;
             convConf.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
             convConf.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
@@ -87,7 +87,7 @@ class SpatialDetection : public BaseNode {
         }
 
         if(ph->getParam<bool>("i_enable_passthrough_depth")) {
-			            dai::CameraBoardSocket socket = static_cast<dai::CameraBoardSocket>(ph->getOtherNodeParam<int>("stereo", "i_board_socket_id"));
+            dai::CameraBoardSocket socket = static_cast<dai::CameraBoardSocket>(ph->getOtherNodeParam<int>("stereo", "i_board_socket_id"));
             if(!ph->getOtherNodeParam<bool>("stereo", "i_align_depth")) {
                 tfPrefix = getTFPrefix("right");
             };
@@ -129,7 +129,7 @@ class SpatialDetection : public BaseNode {
         xoutNN = pipeline->create<dai::node::XLinkOut>();
         xoutNN->setStreamName(nnQName);
         spatialNode->out.link(xoutNN->input);
-		        if(ph->getParam<bool>("i_enable_passthrough")) {
+        if(ph->getParam<bool>("i_enable_passthrough")) {
             ptPub = setupOutput(pipeline, ptQName, [&](dai::Node::Input input) { spatialNode->passthrough.link(input); });
         }
         if(ph->getParam<bool>("i_enable_passthrough_depth")) {
@@ -160,7 +160,7 @@ class SpatialDetection : public BaseNode {
     std::unique_ptr<dai::ros::SpatialDetectionConverter> detConverter;
     std::vector<std::string> labelNames;
     ros::Publisher detPub;
-	std::shared_ptr<sensor_helpers::ImagePublisher> ptPub, ptDepthPub;
+    std::shared_ptr<sensor_helpers::ImagePublisher> ptPub, ptDepthPub;
     std::shared_ptr<T> spatialNode;
     std::shared_ptr<dai::node::ImageManip> imageManip;
     std::unique_ptr<param_handlers::NNParamHandler> ph;

@@ -13,7 +13,7 @@ enum class UsbSpeed;
 namespace ros {
 class NodeHandle;
 class Parameter;
-}  // namespace rclcpp
+}  // namespace ros
 
 namespace depthai_ros_driver {
 namespace param_handlers {

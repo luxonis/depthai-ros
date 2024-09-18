@@ -19,7 +19,7 @@ void Camera::onInit() {
     ph->declareParams();
     paramServer = std::make_shared<dynamic_reconfigure::Server<parametersConfig>>(pNH);
     paramServer->setCallback(std::bind(&Camera::parameterCB, this, std::placeholders::_1, std::placeholders::_2));
-    onConfigure();
+    start();
     startSrv = pNH.advertiseService("start_camera", &Camera::startCB, this);
     stopSrv = pNH.advertiseService("stop_camera", &Camera::stopCB, this);
     savePipelineSrv = pNH.advertiseService("save_pipeline", &Camera::startCB, this);
@@ -68,14 +68,22 @@ void Camera::diagCB(const diagnostic_msgs::DiagnosticArray::ConstPtr& msg) {
 }
 
 void Camera::start() {
-    ROS_INFO("Starting camera.");
-    if(!camRunning) {
-        onConfigure();
-    } else {
-        ROS_INFO("Camera already running!.");
+    bool success = false;
+    while(!success) {
+        try {
+            ROS_INFO("Starting camera.");
+            if(!camRunning) {
+                onConfigure();
+            } else {
+                ROS_INFO("Camera already running!.");
+            }
+            success = true;
+        } catch(const std::exception& e) {
+            ROS_ERROR("Exception occurred: %s. Retry", e.what());
+            camRunning = false;
+        }
     }
 }
-
 void Camera::stop() {
     ROS_INFO("Stopping camera.");
     if(camRunning) {
@@ -152,10 +160,7 @@ void Camera::parameterCB(parametersConfig& config, uint32_t /*level*/) {
     enableIR = config.camera_i_enable_ir;
     floodlightBrighness = config.camera_i_floodlight_brightness;
     laserDotBrightness = config.camera_i_laser_dot_brightness;
-    if(camRunning && enableIR && !device->getIrDrivers().empty()) {
-        device->setIrFloodLightBrightness(floodlightBrighness);
-        device->setIrLaserDotProjectorBrightness(laserDotBrightness);
-    }
+    setIR();
     if(!daiNodes.empty()) {
         for(const auto& node : daiNodes) {
             try {
@@ -175,7 +180,7 @@ void Camera::onConfigure() {
         setupQueues();
         setIR();
     } catch(const std::runtime_error& e) {
-        ROS_ERROR(e.what());
+        ROS_ERROR("%s", e.what());
         throw std::runtime_error("Failed to start up the camera.");
     }
     ROS_INFO("Camera ready!");
@@ -199,8 +204,7 @@ void Camera::getDeviceType() {
 
 void Camera::createPipeline() {
     auto generator = std::make_unique<pipeline_gen::PipelineGenerator>();
-    daiNodes = generator->createPipeline(
-        pNH, device, pipeline, ph->getParam<std::string>("i_pipeline_type"), ph->getParam<std::string>("i_nn_type"));
+    daiNodes = generator->createPipeline(pNH, device, pipeline, ph->getParam<std::string>("i_pipeline_type"), ph->getParam<std::string>("i_nn_type"));
     if(ph->getParam<bool>("i_pipeline_dump")) {
         savePipeline();
     }
@@ -282,8 +286,18 @@ void Camera::startDevice() {
 
 void Camera::setIR() {
     if(camRunning && enableIR && !device->getIrDrivers().empty()) {
-        device->setIrFloodLightBrightness(floodlightBrighness);
-        device->setIrLaserDotProjectorBrightness(laserDotBrightness);
+        float laserdotIntensity = float(laserDotBrightness);
+        if(laserdotIntensity > 1.0) {
+            laserdotIntensity =  laserdotIntensity / 1200.0;
+        }
+		ROS_INFO("Setting IR laser dot intensity to: %f", laserdotIntensity);
+        device->setIrLaserDotProjectorIntensity(laserdotIntensity);
+        float floodlightIntensity = float(floodlightBrighness);
+        if(floodlightIntensity > 1.0) {
+            floodlightIntensity =  floodlightIntensity / 1500.0;
+        }
+		ROS_INFO("Setting IR floodlight intensity to: %f", floodlightIntensity);
+        device->setIrFloodLightIntensity(floodlightIntensity);
     }
 }
 

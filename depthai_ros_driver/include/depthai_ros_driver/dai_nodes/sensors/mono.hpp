@@ -16,7 +16,6 @@ namespace ros {
 class NodeHandle;
 }  // namespace ros
 
-
 namespace depthai_ros_driver {
 namespace param_handlers {
 class SensorParamHandler;
@@ -25,7 +24,7 @@ namespace dai_nodes {
 namespace sensor_helpers {
 struct ImageSensor;
 class ImagePublisher;
-} // namespace sensor_helpers
+}  // namespace sensor_helpers
 
 class Mono : public BaseNode {
    public:
@@ -42,10 +41,10 @@ class Mono : public BaseNode {
     void setNames() override;
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
-	std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
+    std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
 
    private:
-	std::shared_ptr<sensor_helpers::ImagePublisher> imagePublisher;
+    std::shared_ptr<sensor_helpers::ImagePublisher> imagePublisher;
     std::shared_ptr<dai::node::MonoCamera> monoCamNode;
     std::unique_ptr<param_handlers::SensorParamHandler> ph;
     std::shared_ptr<dai::DataInputQueue> controlQ;

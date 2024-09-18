@@ -28,7 +28,7 @@ void WLSFilter::onInit() {
 void WLSFilter::parameterCB(wlsConfig& config, uint32_t level) {
     filter->setLambda(config.lambda);
     filter->setSigmaColor(config.sigma);
-	maxDisparity = config.max_disparity;
+    maxDisparity = config.max_disparity;
 }
 
 void WLSFilter::wlsCB(const sensor_msgs::ImageConstPtr& disp, const sensor_msgs::CameraInfoConstPtr& disp_info, const sensor_msgs::ImageConstPtr& leftImg) {

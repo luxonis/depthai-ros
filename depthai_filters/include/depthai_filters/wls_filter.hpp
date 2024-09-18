@@ -31,6 +31,6 @@ class WLSFilter : public nodelet::Nodelet {
     cv::Ptr<cv::ximgproc::DisparityWLSFilter> filter;
     image_transport::CameraPublisher depthPub;
     std::shared_ptr<image_transport::ImageTransport> it;
-	double maxDisparity;
+    double maxDisparity;
 };
 }  // namespace depthai_filters

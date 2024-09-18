@@ -7,10 +7,10 @@
 #include "depthai_ros_driver/utils.hpp"
 #include "depthai_ros_msgs/FFMPEGPacket.h"
 #include "image_transport/camera_publisher.h"
+#include "image_transport/image_transport.h"
 #include "sensor_msgs/CameraInfo.h"
 #include "sensor_msgs/CompressedImage.h"
 #include "sensor_msgs/Image.h"
-#include "image_transport/image_transport.h"
 
 namespace dai {
 class Device;
@@ -24,7 +24,6 @@ namespace ros {
 class ImageConverter;
 }
 }  // namespace dai
-
 
 namespace camera_info_manager {
 class CameraInfoManager;
@@ -85,9 +84,8 @@ class ImagePublisher {
     std::shared_ptr<dai::node::VideoEncoder> createEncoder(std::shared_ptr<dai::Pipeline> pipeline, const utils::VideoEncoderConfig& encoderConfig);
 
    private:
-    bool detectSubscription(const ros::Publisher pub,
-                            const ros::Publisher infoPub);
-	ros::NodeHandle node;
+    bool detectSubscription(const ros::Publisher pub, const ros::Publisher infoPub);
+    ros::NodeHandle node;
     image_transport::ImageTransport it;
     utils::VideoEncoderConfig encConfig;
     utils::ImgPublisherConfig pubConfig;

@@ -9,14 +9,14 @@
 #include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai-shared/common/Point2f.hpp"
 #include "depthai/device/CalibrationHandler.hpp"
-#include "depthai/pipeline/datatype/ImgFrame.hpp"
 #include "depthai/pipeline/datatype/EncodedFrame.hpp"
+#include "depthai/pipeline/datatype/ImgFrame.hpp"
+#include "depthai_ros_msgs/FFMPEGPacket.h"
 #include "ros/time.h"
 #include "sensor_msgs/CameraInfo.h"
-#include "sensor_msgs/Image.h"
 #include "sensor_msgs/CompressedImage.h"
+#include "sensor_msgs/Image.h"
 #include "std_msgs/Header.h"
-#include "depthai_ros_msgs/FFMPEGPacket.h"
 
 namespace dai {
 
@@ -29,7 +29,6 @@ using ImagePtr = ImageMsgs::ImagePtr;
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration>;
 using FFMPegImagePtr = DepthAiRosMsgs::FFMPEGPacketPtr;
 using CompImagePtr = ImageMsgs::CompressedImagePtr;
-
 
 class ImageConverter {
    public:
@@ -84,7 +83,7 @@ class ImageConverter {
      */
     void setAlphaScaling(double alphaScalingFactor = 0.0);
 
-	/**
+    /**
      * @brief Sets the encoding of the image when converting to FFMPEG message. Default is libx264.
      * @param encoding: The encoding to be used.
      */
@@ -94,10 +93,9 @@ class ImageConverter {
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs);
     ImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
 
-	DepthAiRosMsgs::FFMPEGPacket toRosFFMPEGPacket(std::shared_ptr<dai::EncodedFrame> inData);
+    DepthAiRosMsgs::FFMPEGPacket toRosFFMPEGPacket(std::shared_ptr<dai::EncodedFrame> inData);
 
     ImageMsgs::CompressedImage toRosCompressedMsg(std::shared_ptr<dai::ImgFrame> inData);
-
 
     void toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outData);
 
@@ -139,7 +137,7 @@ class ImageConverter {
     double baseline;
     bool alphaScalingEnabled = false;
     double alphaScalingFactor = 0.0;
-	int camHeight = -1;
+    int camHeight = -1;
     int camWidth = -1;
     std::string ffmpegEncoding = "libx264";
 };

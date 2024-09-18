@@ -2,8 +2,8 @@
 
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "ros/node_handle.h"
 
 namespace depthai_ros_driver {

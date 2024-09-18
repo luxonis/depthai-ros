@@ -66,7 +66,7 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
 
         utils::ImgPublisherConfig pubConf;
         pubConf.daiNodeName = getName();
-        pubConf.topicName =  getName();
+        pubConf.topicName = getName();
         pubConf.lazyPub = ph->getParam<bool>("i_enable_lazy_publisher");
         pubConf.socket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"));
         pubConf.calibrationFile = ph->getParam<std::string>("i_calibration_file");
