@@ -10,6 +10,7 @@ on:
       - galactic
       - foxy
       - iron
+      - jazzy
     tags:
       - 'v*'
   pull_request:
@@ -19,13 +20,14 @@ on:
       - galactic
       - foxy
       - iron
+      - jazzy
 env:
-  ROS_DISTRO: iron
+  ROS_DISTRO: jazzy
 
 jobs:
   clang-format-lint:
     name: ament_clang_format
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
     steps:
@@ -45,7 +47,7 @@ jobs:
           depthai_ros
   linting:
     name: ament_${{ matrix.linter }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false 
       matrix:
@@ -67,7 +69,7 @@ jobs:
 
   docker-build:
     name: Build and Upload to Docker Hub
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
     env: 
