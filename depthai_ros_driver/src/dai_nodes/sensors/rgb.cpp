@@ -1,19 +1,14 @@
 #include "depthai_ros_driver/dai_nodes/sensors/rgb.hpp"
 
-#include "camera_info_manager/camera_info_manager.h"
 #include "depthai/device/DataQueue.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/ColorCamera.hpp"
-#include "depthai/pipeline/node/VideoEncoder.hpp"
 #include "depthai/pipeline/node/XLinkIn.hpp"
-#include "depthai/pipeline/node/XLinkOut.hpp"
-#include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
 #include "depthai_ros_driver/utils.hpp"
-#include "image_transport/camera_publisher.h"
-#include "image_transport/image_transport.h"
 #include "ros/node_handle.h"
 
 namespace depthai_ros_driver {
@@ -24,7 +19,7 @@ RGB::RGB(const std::string& daiNodeName,
          dai::CameraBoardSocket socket = dai::CameraBoardSocket::CAM_A,
          sensor_helpers::ImageSensor sensor = {"IMX378", "4k", {"12mp", "4k"}, true},
          bool publish = true)
-    : BaseNode(daiNodeName, node, pipeline), it(node) {
+    : BaseNode(daiNodeName, node, pipeline) {
     ROS_DEBUG("Creating node %s", daiNodeName.c_str());
     setNames();
     colorCamNode = pipeline->create<dai::node::ColorCamera>();
@@ -42,26 +37,26 @@ void RGB::setNames() {
 }
 
 void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
+    bool outputIsp = ph->getParam<bool>("i_output_isp");
+    bool lowBandwidth = ph->getParam<bool>("i_low_bandwidth");
+    std::function<void(dai::Node::Input)> rgbLinkChoice;
+    if(outputIsp && !lowBandwidth) {
+        rgbLinkChoice = [&](auto input) { colorCamNode->isp.link(input); };
+    } else {
+        rgbLinkChoice = [&](auto input) { colorCamNode->video.link(input); };
+    }
     if(ph->getParam<bool>("i_publish_topic")) {
-        xoutColor = pipeline->create<dai::node::XLinkOut>();
-        xoutColor->setStreamName(ispQName);
-        if(ph->getParam<bool>("i_low_bandwidth")) {
-            videoEnc = sensor_helpers::createEncoder(pipeline, ph->getParam<int>("i_low_bandwidth_quality"));
-            colorCamNode->video.link(videoEnc->input);
-            videoEnc->bitstream.link(xoutColor->input);
-        } else {
-            if(ph->getParam<bool>("i_output_isp"))
-                colorCamNode->isp.link(xoutColor->input);
-            else
-                colorCamNode->video.link(xoutColor->input);
-        }
+        utils::VideoEncoderConfig encConfig;
+        encConfig.profile = static_cast<dai::VideoEncoderProperties::Profile>(ph->getParam<int>("i_low_bandwidth_profile"));
+        encConfig.bitrate = ph->getParam<int>("i_low_bandwidth_bitrate");
+        encConfig.frameFreq = ph->getParam<int>("i_low_bandwidth_frame_freq");
+        encConfig.quality = ph->getParam<int>("i_low_bandwidth_quality");
+        encConfig.enabled = lowBandwidth;
+
+        rgbPub = setupOutput(pipeline, ispQName, rgbLinkChoice, ph->getParam<bool>("i_synced"), encConfig);
     }
     if(ph->getParam<bool>("i_enable_preview")) {
-        xoutPreview = pipeline->create<dai::node::XLinkOut>();
-        xoutPreview->setStreamName(previewQName);
-        xoutPreview->input.setQueueSize(2);
-        xoutPreview->input.setBlocking(false);
-        colorCamNode->preview.link(xoutPreview->input);
+        previewPub = setupOutput(pipeline, previewQName, [&](auto input) { colorCamNode->preview.link(input); });
     }
     xinControl = pipeline->create<dai::node::XLinkIn>();
     xinControl->setStreamName(controlQName);
@@ -70,68 +65,70 @@ void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 
 void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_publish_topic")) {
-        auto tfPrefix = getTFPrefix(utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
-        infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), getName()), "/" + getName());
-        imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
-        imageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
-        if(ph->getParam<bool>("i_low_bandwidth")) {
-            imageConverter->convertFromBitstream(dai::RawImgFrame::Type::BGR888i);
-        }
-        if(ph->getParam<bool>("i_add_exposure_offset")) {
-            auto offset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
-            imageConverter->addExposureOffset(offset);
-        }
-        if(ph->getParam<bool>("i_reverse_stereo_socket_order")) {
-            imageConverter->reverseStereoSocketOrder();
-        }
-        if(ph->getParam<std::string>("i_calibration_file").empty()) {
-            infoManager->setCameraInfo(sensor_helpers::getCalibInfo(*imageConverter,
-                                                                    device,
-                                                                    static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")),
-                                                                    ph->getParam<int>("i_width"),
-                                                                    ph->getParam<int>("i_height")));
-        } else {
-            infoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
-        }
-        rgbPubIT = it.advertiseCamera(getName() + "/image_raw", 1);
-        colorQ = device->getOutputQueue(ispQName, ph->getParam<int>("i_max_q_size"), false);
-        colorQ->addCallback(std::bind(sensor_helpers::cameraPub,
-                                      std::placeholders::_1,
-                                      std::placeholders::_2,
-                                      *imageConverter,
-                                      rgbPubIT,
-                                      infoManager,
-                                      ph->getParam<bool>("i_enable_lazy_publisher")));
+        auto tfPrefix = getOpticalTFPrefix(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
+        utils::ImgConverterConfig convConfig;
+        convConfig.tfPrefix = tfPrefix;
+        convConfig.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
+        convConfig.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
+        convConfig.lowBandwidth = ph->getParam<bool>("i_low_bandwidth");
+        convConfig.encoding = dai::RawImgFrame::Type::BGR888i;
+        convConfig.addExposureOffset = ph->getParam<bool>("i_add_exposure_offset");
+        convConfig.expOffset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
+        convConfig.reverseSocketOrder = ph->getParam<bool>("i_reverse_stereo_socket_order");
+
+        utils::ImgPublisherConfig pubConfig;
+        pubConfig.daiNodeName = getName();
+        pubConfig.topicName = getName();
+        pubConfig.lazyPub = ph->getParam<bool>("i_enable_lazy_publisher");
+        pubConfig.socket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"));
+        pubConfig.calibrationFile = ph->getParam<std::string>("i_calibration_file");
+        pubConfig.rectified = false;
+        pubConfig.width = ph->getParam<int>("i_width");
+        pubConfig.height = ph->getParam<int>("i_height");
+        pubConfig.maxQSize = ph->getParam<int>("i_max_q_size");
+        pubConfig.publishCompressed = ph->getParam<bool>("i_publish_compressed");
+
+        rgbPub->setup(device, convConfig, pubConfig);
     }
     if(ph->getParam<bool>("i_enable_preview")) {
-        previewQ = device->getOutputQueue(previewQName, ph->getParam<int>("i_max_q_size"), false);
-        previewPubIT = it.advertiseCamera(getName() + "/preview/image_raw", 1);
-        previewInfoManager = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), "/" + previewQName), previewQName);
-        auto tfPrefix = getTFPrefix(utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
-        imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
-        if(ph->getParam<std::string>("i_calibration_file").empty()) {
-            previewInfoManager->setCameraInfo(sensor_helpers::getCalibInfo(*imageConverter,
-                                                                           device,
-                                                                           static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")),
-                                                                           ph->getParam<int>("i_preview_size"),
-                                                                           ph->getParam<int>("i_preview_size")));
-        } else {
-            infoManager->loadCameraInfo(ph->getParam<std::string>("i_calibration_file"));
-        }
-        previewQ->addCallback(
-            std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *imageConverter, previewPubIT, previewInfoManager));
+        auto tfPrefix = getOpticalTFPrefix(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
+        utils::ImgConverterConfig convConfig;
+        convConfig.tfPrefix = tfPrefix;
+        convConfig.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
+        convConfig.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
+
+        utils::ImgPublisherConfig pubConfig;
+        pubConfig.daiNodeName = getName();
+        pubConfig.topicName = "~/" + getName();
+        pubConfig.lazyPub = ph->getParam<bool>("i_enable_lazy_publisher");
+        pubConfig.socket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"));
+        pubConfig.calibrationFile = ph->getParam<std::string>("i_calibration_file");
+        pubConfig.rectified = false;
+        pubConfig.width = ph->getParam<int>("i_preview_width");
+        pubConfig.height = ph->getParam<int>("i_preview_height");
+        pubConfig.maxQSize = ph->getParam<int>("i_max_q_size");
+        pubConfig.topicSuffix = "/preview/image_raw";
+
+        previewPub->setup(device, convConfig, pubConfig);
     };
     controlQ = device->getInputQueue(controlQName);
 }
 
 void RGB::closeQueues() {
     if(ph->getParam<bool>("i_publish_topic")) {
-        colorQ->close();
+        rgbPub->closeQueue();
         if(ph->getParam<bool>("i_enable_preview")) {
-            previewQ->close();
+            previewPub->closeQueue();
         }
     }
     controlQ->close();
+}
+std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> RGB::getPublishers() {
+    std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> publishers;
+    if(ph->getParam<bool>("i_synced")) {
+        publishers.push_back(rgbPub);
+    }
+    return publishers;
 }
 
 void RGB::link(dai::Node::Input in, int linkType) {

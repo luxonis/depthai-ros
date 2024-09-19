@@ -2,6 +2,29 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.10.1 (2024-09-18)
+-------------------
+* Fix ToF synced publishing
+* Add camera_info publishing when publishing compressed images
+* Catch errors when starting the device
+
+2.10.0 (2024-08-29)
+-------------------
+* Adding stl files for SR and LR models by @danilo-pejovic in https://github.com/luxonis/depthai-ros/pull/491
+* No imu fix Humble by @Serafadam in https://github.com/luxonis/depthai-ros/pull/500
+* Tracking converter for ROS2 Humble by @daniqsilva25 in https://github.com/luxonis/depthai-ros/pull/505
+* Added Env Hooks so that depthai xacro can be used with gazebo sim by @r4hul77 in https://github.com/luxonis/depthai-ros/pull/507
+* Fix resource paths for Ignition Gazebo by @Nibanovic in https://github.com/luxonis/depthai-ros/pull/511
+* Use simulation flag to decide how to load meshes. by @destogl in https://github.com/luxonis/depthai-ros/pull/524
+* Add new launch file for starting multiple rgbd cameras on robots. by @destogl in https://github.com/luxonis/depthai-ros/pull/532
+* Missing fields in detection messages Humble by @Serafadam in https://github.com/luxonis/depthai-ros/pull/574
+* Ip autodiscovery fix Humble by @Serafadam in https://github.com/luxonis/depthai-ros/pull/561
+* RS Mode & Sync - Humble by @Serafadam in https://github.com/luxonis/depthai-ros/pull/578
+* Compressed image publishers by @Serafadam in https://github.com/luxonis/depthai-ros/pull/580
+* ToF Support Humble by @Serafadam in https://github.com/luxonis/depthai-ros/pull/581
+* WLS fix humble by @Serafadam in https://github.com/luxonis/depthai-ros/pull/582
+* Syncing & RS updates Humble by @Serafadam in https://github.com/luxonis/depthai-ros/pull/586
+
 2.9.0 (2024-01-24)
 -------------------
 

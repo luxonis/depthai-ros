@@ -35,26 +35,12 @@
         <arg name="cam_roll" value="$(arg  cam_roll)" />
         <arg name="cam_pitch" value="$(arg  cam_pitch)" />
         <arg name="cam_yaw" value="$(arg  cam_yaw)" />
+		<arg name="rectify_rgb" value="$(arg rectify_rgb)" />
+		<arg name="pointcloud_enable" value="true" />
     </include>
 
 
 
-    <node pkg="nodelet" type="nodelet" name="rectify_color"
-            args="load image_proc/rectify $(arg  name)_nodelet_manager" if="$(arg rectify_rgb)">
-            <remap from="image_mono" to="$(arg name)/rgb/image_raw"/>
-        <remap from="image_rect" to="$(arg name)/rgb/image_rect"/>
-    </node>  
-
-    <node pkg="nodelet" type="nodelet" name="depth_image_to_rgb_pointcloud"
-        args="load depth_image_proc/point_cloud_xyzrgb $(arg  name)_nodelet_manager">
-        <param name="queue_size"          value="10"/>
-
-        <remap from="rgb/camera_info" to="$(arg name)/rgb/camera_info"/>
-        <remap from="rgb/image_rect_color" to="$(arg name)/rgb/image_rect" if="$(arg rectify_rgb)"/>
-        <remap from="rgb/image_rect_color" to="$(arg name)/rgb/image_raw" unless="$(arg rectify_rgb)"/>
-        <remap from="depth_registered/image_rect" to="$(arg name)/stereo/image_raw"/>    
-        <remap from="depth_registered/points" to="$(arg name)/points"/>
-    </node>
 
 
 </launch>

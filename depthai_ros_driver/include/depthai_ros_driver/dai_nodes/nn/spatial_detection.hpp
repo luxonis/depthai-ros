@@ -16,6 +16,7 @@
 #include "depthai_bridge/SpatialDetectionConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/nn_helpers.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
 #include "depthai_ros_driver/parametersConfig.h"
@@ -34,7 +35,7 @@ class SpatialDetection : public BaseNode {
                      ros::NodeHandle node,
                      std::shared_ptr<dai::Pipeline> pipeline,
                      const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A)
-        : BaseNode(daiNodeName, node, pipeline), it(node) {
+        : BaseNode(daiNodeName, node, pipeline) {
         ROS_DEBUG("Creating node %s", daiNodeName.c_str());
         setNames();
         spatialNode = pipeline->create<T>();
@@ -51,9 +52,9 @@ class SpatialDetection : public BaseNode {
     };
     void setupQueues(std::shared_ptr<dai::Device> device) override {
         nnQ = device->getOutputQueue(nnQName, ph->getParam<int>("i_max_q_size"), false);
-        std::string socketName = utils::getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")));
+        std::string socketName = getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")));
 
-        auto tfPrefix = getTFPrefix(socketName);
+        auto tfPrefix = getOpticalTFPrefix(socketName);
         int width;
         int height;
         if(ph->getParam<bool>("i_disable_resize")) {
@@ -63,40 +64,47 @@ class SpatialDetection : public BaseNode {
             width = imageManip->initialConfig.getResizeConfig().width;
             height = imageManip->initialConfig.getResizeConfig().height;
         }
-        detConverter = std::make_unique<dai::ros::SpatialDetectionConverter>(
-            tfPrefix + "_camera_optical_frame", width, height, false, ph->getParam<bool>("i_get_base_device_timestamp"));
+        detConverter = std::make_unique<dai::ros::SpatialDetectionConverter>(tfPrefix, width, height, false, ph->getParam<bool>("i_get_base_device_timestamp"));
         detConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
         nnQ->addCallback(std::bind(&SpatialDetection::spatialCB, this, std::placeholders::_1, std::placeholders::_2));
         detPub = getROSNode().template advertise<vision_msgs::Detection3DArray>(getName() + "/spatial_detections", 10);
 
         if(ph->getParam<bool>("i_enable_passthrough")) {
-            ptQ = device->getOutputQueue(ptQName, ph->getParam<int>("i_max_q_size"), false);
-            ptImageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
-            ptImageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
-            ptInfoMan = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), getName()), "/" + getName());
-            ptInfoMan->setCameraInfo(sensor_helpers::getCalibInfo(*ptImageConverter, device, dai::CameraBoardSocket::CAM_A, width, height));
+            utils::ImgConverterConfig convConf;
+            convConf.tfPrefix = tfPrefix;
+            convConf.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
+            convConf.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
 
-            ptPub = it.advertiseCamera(getName() + "/passthrough/image_raw", 1);
-            ptQ->addCallback(std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *ptImageConverter, ptPub, ptInfoMan));
+            utils::ImgPublisherConfig pubConf;
+            pubConf.width = width;
+            pubConf.height = height;
+            pubConf.daiNodeName = getName();
+            pubConf.topicName = "~/" + getName();
+            pubConf.topicSuffix = "passthrough";
+            pubConf.socket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"));
+
+            ptPub->setup(device, convConf, pubConf);
         }
 
         if(ph->getParam<bool>("i_enable_passthrough_depth")) {
             dai::CameraBoardSocket socket = static_cast<dai::CameraBoardSocket>(ph->getOtherNodeParam<int>("stereo", "i_board_socket_id"));
             if(!ph->getOtherNodeParam<bool>("stereo", "i_align_depth")) {
                 tfPrefix = getTFPrefix("right");
-                socket = dai::CameraBoardSocket::CAM_C;
             };
-            ptDepthQ = device->getOutputQueue(ptDepthQName, ph->getParam<int>("i_max_q_size"), false);
-            ptDepthImageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix + "_camera_optical_frame", false);
-            ptDepthImageConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
-            ptDepthInfoMan = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(getROSNode(), getName()), "/" + getName());
-            int width = ph->getOtherNodeParam<int>("stereo", "i_width");
-            int height = ph->getOtherNodeParam<int>("stereo", "i_height");
-            ptDepthInfoMan->setCameraInfo(sensor_helpers::getCalibInfo(*ptDepthImageConverter, device, socket, width, height));
+            utils::ImgConverterConfig convConf;
+            convConf.tfPrefix = tfPrefix;
+            convConf.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
+            convConf.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
 
-            ptDepthPub = it.advertiseCamera(getName() + "/passthrough_depth/image_raw", 1);
-            ptDepthQ->addCallback(
-                std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *ptDepthImageConverter, ptDepthPub, ptDepthInfoMan));
+            utils::ImgPublisherConfig pubConf;
+            pubConf.width = ph->getOtherNodeParam<int>(sensor_helpers::getNodeName(getROSNode(), sensor_helpers::NodeNameEnum::Stereo), "i_width");
+            pubConf.height = ph->getOtherNodeParam<int>(sensor_helpers::getNodeName(getROSNode(), sensor_helpers::NodeNameEnum::Stereo), "i_height");
+            pubConf.daiNodeName = getName();
+            pubConf.topicName = "~/" + getName();
+            pubConf.topicSuffix = "/passthrough_depth";
+            pubConf.socket = socket;
+
+            ptDepthPub->setup(device, convConf, pubConf);
         }
     };
     void link(dai::Node::Input in, int /*linkType = 0*/) override {
@@ -122,23 +130,19 @@ class SpatialDetection : public BaseNode {
         xoutNN->setStreamName(nnQName);
         spatialNode->out.link(xoutNN->input);
         if(ph->getParam<bool>("i_enable_passthrough")) {
-            xoutPT = pipeline->create<dai::node::XLinkOut>();
-            xoutPT->setStreamName(ptQName);
-            spatialNode->passthrough.link(xoutPT->input);
+            ptPub = setupOutput(pipeline, ptQName, [&](dai::Node::Input input) { spatialNode->passthrough.link(input); });
         }
         if(ph->getParam<bool>("i_enable_passthrough_depth")) {
-            xoutPTDepth = pipeline->create<dai::node::XLinkOut>();
-            xoutPTDepth->setStreamName(ptDepthQName);
-            spatialNode->passthroughDepth.link(xoutPTDepth->input);
+            ptDepthPub = setupOutput(pipeline, ptDepthQName, [&](dai::Node::Input input) { spatialNode->passthroughDepth.link(input); });
         }
     };
     void closeQueues() override {
         nnQ->close();
         if(ph->getParam<bool>("i_enable_passthrough")) {
-            ptQ->close();
+            ptPub->closeQueue();
         }
         if(ph->getParam<bool>("i_enable_passthrough_depth")) {
-            ptDepthQ->close();
+            ptDepthPub->closeQueue();
         }
     };
 
@@ -154,13 +158,9 @@ class SpatialDetection : public BaseNode {
         }
     };
     std::unique_ptr<dai::ros::SpatialDetectionConverter> detConverter;
-    image_transport::ImageTransport it;
     std::vector<std::string> labelNames;
     ros::Publisher detPub;
-    std::unique_ptr<dai::ros::ImageConverter> ptImageConverter, ptDepthImageConverter;
-    image_transport::CameraPublisher ptPub, ptDepthPub;
-    sensor_msgs::CameraInfo ptInfo, ptDepthInfo;
-    std::shared_ptr<camera_info_manager::CameraInfoManager> ptInfoMan, ptDepthInfoMan;
+    std::shared_ptr<sensor_helpers::ImagePublisher> ptPub, ptDepthPub;
     std::shared_ptr<T> spatialNode;
     std::shared_ptr<dai::node::ImageManip> imageManip;
     std::unique_ptr<param_handlers::NNParamHandler> ph;

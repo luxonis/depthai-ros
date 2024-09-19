@@ -49,6 +49,7 @@ class SensorWrapper : public BaseNode {
     void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
     sensor_helpers::ImageSensor getSensorData();
+    std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
 
    private:
     void subCB(const sensor_msgs::Image::ConstPtr& img);

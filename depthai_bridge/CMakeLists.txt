@@ -1,10 +1,11 @@
 cmake_minimum_required (VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-project(depthai_bridge VERSION 2.9.0 LANGUAGES CXX C)
+project(depthai_bridge VERSION 2.10.1 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Update the policy setting to avoid an error when loading the ament_cmake package
 # at the current cmake version level
@@ -55,6 +56,8 @@ FILE(GLOB LIB_SRC
 "src/ImuConverter.cpp"
 "src/TFPublisher.cpp"
 "src/TrackedFeaturesConverter.cpp"
+"src/TrackedDetectionConverter.cpp"
+"src/TrackedSpatialDetectionConverter.cpp"
 )
 
 catkin_package(

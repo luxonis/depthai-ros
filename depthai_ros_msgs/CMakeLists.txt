@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
 
-project (depthai_ros_msgs VERSION 2.9.0)
+project (depthai_ros_msgs VERSION 2.10.1)
 
 if(POLICY CMP0057)
     cmake_policy(SET CMP0057 NEW)
@@ -24,6 +24,7 @@ find_package (catkin REQUIRED COMPONENTS
 add_message_files (
   FILES
   AutoFocusCtrl.msg
+  FFMPEGPacket.msg
   HandLandmark.msg
   HandLandmarkArray.msg
   # ImageMarker.msg
@@ -31,6 +32,8 @@ add_message_files (
   SpatialDetection.msg
   SpatialDetectionArray.msg
   ImuWithMagneticField.msg
+  TrackDetection2D.msg
+  TrackDetection2DArray.msg
   TrackedFeature.msg
   TrackedFeatures.msg
 )

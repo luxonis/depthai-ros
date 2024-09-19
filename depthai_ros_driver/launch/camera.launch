@@ -1,70 +1,172 @@
 <?xml version="1.0"?>
 <launch>
 
-    <arg name="publish_tf_from_calibration" default="false" />
-    <arg name="imu_from_descr" default="false" />
-    <arg name="override_cam_model" default="false" />
+	<arg name="publish_tf_from_calibration" default="false" />
+	<arg name="imu_from_descr" default="false" />
+	<arg name="override_cam_model" default="false" />
+	<arg name="rectify_rgb" default="true" />
+	<arg name="enable_pointcloud" default="false" />
+	<arg name="enable_color" default="true" />
+	<arg name="enable_depth" default="true" />
+	<arg name="enable_infra1" default="false" />
+	<arg name="enable_infra2" default="false" />
+	<arg name="depth_module_depth_profile" default="1280,720,30" />
+	<arg name="rgb_camera_color_profile" default="1280,720,30" />
+	<arg name="depth_module_infra_profile" default="1280,720,30" />
+	<arg name="rs_compat" default="false" />
 
-    <arg name="name" default="oak" />
-    <arg name="params_file" default="$(find depthai_ros_driver)/config/camera.yaml"/>
-    <arg name="camera_model" default="OAK-D" />
+	<arg name="name" default="camera" if="$(arg rs_compat)" />
+	<arg name="name" default="oak" unless="$(arg rs_compat)" />
 
-    <arg name="base_frame" default="oak-d_frame" />
-    <arg name="parent_frame" default="oak-d-base-frame" />
+	<arg name="namespace" default="camera" if="$(arg rs_compat)" />
+	<arg name="namespace" default="" unless="$(arg rs_compat)" />
+	
+	
+	<arg name="parent_frame" value="$(arg name)_link" if="$(arg rs_compat)" />
+	<arg name="parent_frame" default="oak-d-base-frame" unless="$(arg rs_compat)" />
 
-    <arg name="cam_pos_x" default="0.0" />
-    <!-- Position respect to base frame (i.e. "base_link) -->
-    <arg name="cam_pos_y" default="0.0" />
-    <!-- Position respect to base frame (i.e. "base_link) -->
-    <arg name="cam_pos_z" default="0.0" />
-    <!-- Position respect to base frame (i.e. "base_link) -->
-    <arg name="cam_roll" default="0.0" />
-    <!-- Orientation respect to base frame (i.e. "base_link) -->
-    <arg name="cam_pitch" default="0.0" />
-    <!-- Orientation respect to base frame (i.e. "base_link) -->
-    <arg name="cam_yaw" default="0.0" />
-    <!-- Orientation respect to base frame (i.e. "base_link) -->
+	<arg name="points_topic_name" value="$(arg name)/depth/color/points" if="$(arg rs_compat)"/>
+	<arg name="points_topic_name" value="$(arg name)/points" unless="$(arg rs_compat)"/>
 
-    <param name="$(arg name)/camera_i_camera_model" value="$(arg camera_model)" if="$(arg override_cam_model)"/> 
-    <param name="$(arg name)/camera_i_base_frame" value="$(arg base_frame)"/>
-    <param name="$(arg name)/camera_i_parent_frame" value="$(arg parent_frame)"/>
-    <param name="$(arg name)/camera_i_cam_pos_x" value="$(arg cam_pos_x)"/>
-    <param name="$(arg name)/camera_i_cam_pos_y" value="$(arg cam_pos_y)"/>
-    <param name="$(arg name)/camera_i_cam_pos_z" value="$(arg cam_pos_z)"/>
-    <param name="$(arg name)/camera_i_cam_roll" value="$(arg cam_roll)"/>
-    <param name="$(arg name)/camera_i_cam_pitch" value="$(arg cam_pitch)"/>
-    <param name="$(arg name)/camera_i_cam_yaw" value="$(arg cam_yaw)"/>
-    <param name="$(arg name)/camera_i_imu_from_descr" value="$(arg imu_from_descr)"/>
-    <param name="$(arg name)/camera_i_publish_tf_from_calibration" value="$(arg publish_tf_from_calibration)"/>
+	<arg name="color_sens_name" value="color" if="$(arg rs_compat)"/>
+	<arg name="color_sens_name" value="rgb" unless="$(arg rs_compat)"/>
 
-    <arg name="launch_prefix" default=""/>
+	<arg name="stereo_sens_name" value="depth" if="$(arg rs_compat)" />
+	<arg name="stereo_sens_name" value="stereo" unless="$(arg rs_compat)" />
+
+	<arg name="depth_topic_suffix" value="image_rect_raw" if="$(arg rs_compat)"/>
+	<arg name="depth_topic_suffix" value="image_raw" unless="$(arg rs_compat)"/>
+	<group if="$(arg rs_compat)">
+
+		<param name="$(arg name)/camera_i_rs_compat" value="true" />
+		<param name="$(arg name)/pipeline_gen_i_enable_sync" value="true" />
+		<param name="$(arg name)/color_i_synced" value="true" />
+		<param name="$(arg name)/color_i_publish_topic" value="$(arg enable_color)" />
+		<param name="$(arg name)/color_i_width"
+			value="$(eval rgb_camera_color_profile.split(',')[0])" />
+		<param name="$(arg name)/color_i_height"
+			value="$(eval rgb_camera_color_profile.split(',')[1])" />
+		<param name="$(arg name)/color_i_fps" value="$(eval rgb_camera_color_profile.split(',')[2])" />
+
+		<param name="$(arg name)/depth_i_synced" value="true" />
+		<param name="$(arg name)/depth_i_publish_topic" value="$(arg enable_depth)" />
+		<param name="$(arg name)/depth_i_width"
+			value="$(eval depth_module_depth_profile.split(',')[0])" />
+		<param name="$(arg name)/depth_i_height"
+			value="$(eval depth_module_depth_profile.split(',')[1])" />
+		<param name="$(arg name)/depth_i_fps"
+			value="$(eval depth_module_depth_profile.split(',')[2])" />
+
+		<param name="$(arg name)/infra1_i_publish_topic" value="$(arg enable_infra1)" />
+		<param name="$(arg name)/infra1_i_width"
+			value="$(eval depth_module_infra_profile.split(',')[0])" />
+		<param name="$(arg name)/infra1_i_height"
+			value="$(eval depth_module_infra_profile.split(',')[1])" />
+		<param name="$(arg name)/infra1_i_fps"
+			value="$(eval depth_module_infra_profile.split(',')[2])" />
+
+		<param name="$(arg name)/infra2_i_publish_topic" value="$(arg enable_infra2)" />
+		<param name="$(arg name)/infra2_i_width"
+			value="$(eval depth_module_infra_profile.split(',')[0])" />
+		<param name="$(arg name)/infra2_i_height"
+			value="$(eval depth_module_infra_profile.split(',')[1])" />
+		<param name="$(arg name)/infra2_i_fps"
+			value="$(eval depth_module_infra_profile.split(',')[2])" />
+
+		<param name="$(arg name)/depth_i_publish_left_rect" value="true" />
+		<param name="$(arg name)/depth_i_publish_right_rect" value="true" />
+	</group>
+
+	<arg name="params_file" default="$(find depthai_ros_driver)/config/camera.yaml" />
+	<arg name="camera_model" default="OAK-D" />
+
+	<arg name="base_frame" default="oak-d_frame" />
+
+	<arg name="cam_pos_x" default="0.0" />
+	<!-- Position respect to base frame (i.e. "base_link) -->
+	<arg name="cam_pos_y" default="0.0" />
+	<!-- Position respect to base frame (i.e. "base_link) -->
+	<arg name="cam_pos_z" default="0.0" />
+	<!-- Position respect to base frame (i.e. "base_link) -->
+	<arg name="cam_roll" default="0.0" />
+	<!-- Orientation respect to base frame (i.e. "base_link) -->
+	<arg name="cam_pitch" default="0.0" />
+	<!-- Orientation respect to base frame (i.e. "base_link) -->
+	<arg name="cam_yaw" default="0.0" />
+	<!-- Orientation respect to base frame (i.e. "base_link) -->
+
+	<param name="$(arg name)/camera_i_camera_model" value="$(arg camera_model)"
+		if="$(arg override_cam_model)" />
+	<param name="$(arg name)/camera_i_base_frame" value="$(arg base_frame)" />
+	<param name="$(arg name)/camera_i_parent_frame" value="$(arg parent_frame)" />
+	<param name="$(arg name)/camera_i_cam_pos_x" value="$(arg cam_pos_x)" />
+	<param name="$(arg name)/camera_i_cam_pos_y" value="$(arg cam_pos_y)" />
+	<param name="$(arg name)/camera_i_cam_pos_z" value="$(arg cam_pos_z)" />
+	<param name="$(arg name)/camera_i_cam_roll" value="$(arg cam_roll)" />
+	<param name="$(arg name)/camera_i_cam_pitch" value="$(arg cam_pitch)" />
+	<param name="$(arg name)/camera_i_cam_yaw" value="$(arg cam_yaw)" />
+	<param name="$(arg name)/camera_i_imu_from_descr" value="$(arg imu_from_descr)" />
+	<param name="$(arg name)/camera_i_publish_tf_from_calibration"
+		value="$(arg publish_tf_from_calibration)" />
+
+	<group if="$(arg enable_pointcloud)">
+		<param name="$(arg name)/pipeline_gen_i_enable_sync" value="true" />
+		<param name="$(arg name)/rgb_i_synced" value="true" />
+		<param name="$(arg name)/stereo_i_synced" value="true" />
+	</group>
+
+	<arg name="launch_prefix" default="" />
 
 
-    <rosparam file="$(arg params_file)" />
-    <node pkg="rosservice" if="$(optenv DEPTHAI_DEBUG 0)" type="rosservice" name="set_log_level" args="call --wait /oak_nodelet_manager/set_logger_level 'ros.depthai_ros_driver' 'debug'" />
-    
-    <include unless="$(arg publish_tf_from_calibration)" file="$(find depthai_descriptions)/launch/urdf.launch">
-        <arg name="base_frame" value="$(arg  name)" />
-        <arg name="parent_frame" value="$(arg  parent_frame)"/>
-        <arg name="camera_model" value="$(arg  camera_model)"/>
-        <arg name="tf_prefix" value="$(arg  name)" />
-        <arg name="cam_pos_x" value="$(arg  cam_pos_x)" />
-        <arg name="cam_pos_y" value="$(arg  cam_pos_y)" />
-        <arg name="cam_pos_z" value="$(arg  cam_pos_z)" />
-        <arg name="cam_roll" value="$(arg  cam_roll)" />
-        <arg name="cam_pitch" value="$(arg  cam_pitch)" />
-        <arg name="cam_yaw" value="$(arg  cam_yaw)" />
-    </include>
+	<rosparam file="$(arg params_file)" />
+	<node pkg="rosservice" if="$(optenv DEPTHAI_DEBUG 0)" type="rosservice" name="set_log_level"
+		args="call --wait /oak_nodelet_manager/set_logger_level 'ros.depthai_ros_driver' 'debug'" />
+
+	<include unless="$(arg publish_tf_from_calibration)"
+		file="$(find depthai_descriptions)/launch/urdf.launch">
+		<arg name="base_frame" value="$(arg  name)" />
+		<arg name="parent_frame" value="$(arg  parent_frame)" />
+		<arg name="camera_model" value="$(arg  camera_model)" />
+		<arg name="tf_prefix" value="$(arg  name)" />
+		<arg name="cam_pos_x" value="$(arg  cam_pos_x)" />
+		<arg name="cam_pos_y" value="$(arg  cam_pos_y)" />
+		<arg name="cam_pos_z" value="$(arg  cam_pos_z)" />
+		<arg name="cam_roll" value="$(arg  cam_roll)" />
+		<arg name="cam_pitch" value="$(arg  cam_pitch)" />
+		<arg name="cam_yaw" value="$(arg  cam_yaw)" />
+		<arg name="rs_compat" value="$(arg  rs_compat)" />
+	</include>
 
 
-    <node pkg="nodelet" type="nodelet" name="$(arg  name)_nodelet_manager"  launch-prefix="$(arg launch_prefix)" args="manager" output="screen">
-        <remap from="/nodelet_manager/load_nodelet" to="$(arg name)/nodelet_manager/load_nodelet"/>
-        <remap from="/nodelet_manager/unload_nodelet" to="$(arg name)/nodelet_manager/unload_nodelet"/>
-        <remap from="/nodelet_manager/list" to="$(arg name)/nodelet_manager/list"/>
-    </node>
+	<node pkg="nodelet" type="nodelet" name="$(arg  name)_nodelet_manager"
+		launch-prefix="$(arg launch_prefix)" args="manager" output="screen">
+		<remap from="/nodelet_manager/load_nodelet" to="$(arg name)/nodelet_manager/load_nodelet" />
+		<remap from="/nodelet_manager/unload_nodelet"
+			to="$(arg name)/nodelet_manager/unload_nodelet" />
+		<remap from="/nodelet_manager/list" to="$(arg name)/nodelet_manager/list" />
+	</node>
 
-    <node name="$(arg  name)" pkg="nodelet" type="nodelet" output="screen" required="true" args="load depthai_ros_driver/Camera $(arg  name)_nodelet_manager">
-    </node>
+	<node name="$(arg  name)" pkg="nodelet" type="nodelet" output="screen" required="true"
+		args="load depthai_ros_driver/Camera $(arg  name)_nodelet_manager">
+	</node>
 
+	<node pkg="nodelet" type="nodelet" name="rectify_color"
+		args="load image_proc/rectify $(arg  name)_nodelet_manager" if="$(arg rectify_rgb)">
+		<remap from="image_mono" to="$(arg name)/$(arg color_sens_name)/image_raw" />
+		<remap from="image_rect" to="$(arg name)/$(arg color_sens_name)/image_rect" />
+	</node>
+
+	<node pkg="nodelet" type="nodelet" name="depth_image_to_rgb_pointcloud"
+		args="load depth_image_proc/point_cloud_xyzrgb $(arg  name)_nodelet_manager"
+		if="$(arg enable_pointcloud)">
+		<param name="queue_size" value="10" />
+
+		<remap from="rgb/camera_info" to="$(arg name)/$(arg color_sens_name)/camera_info" />
+		<remap from="rgb/image_rect_color" to="$(arg name)/$(arg color_sens_name)/image_rect" if="$(arg rectify_rgb)" />
+		<remap from="rgb/image_rect_color" to="$(arg name)/$(arg color_sens_name)/image_raw"
+			unless="$(arg rectify_rgb)" />
+		<remap from="depth_registered/image_rect" to="$(arg name)/$(arg stereo_sens_name)/$(arg depth_topic_suffix)" />
+		<remap from="depth_registered/points" to="$(arg points_topic_name)" />
+	</node>
 
 </launch>

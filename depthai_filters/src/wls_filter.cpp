@@ -28,41 +28,48 @@ void WLSFilter::onInit() {
 void WLSFilter::parameterCB(wlsConfig& config, uint32_t level) {
     filter->setLambda(config.lambda);
     filter->setSigmaColor(config.sigma);
+    maxDisparity = config.max_disparity;
 }
 
 void WLSFilter::wlsCB(const sensor_msgs::ImageConstPtr& disp, const sensor_msgs::CameraInfoConstPtr& disp_info, const sensor_msgs::ImageConstPtr& leftImg) {
     cv::Mat leftFrame = utils::msgToMat(leftImg, sensor_msgs::image_encodings::MONO8);
     cv::Mat dispFrame;
-    if(disp->encoding == sensor_msgs::image_encodings::TYPE_16UC1) {
-        dispFrame = utils::msgToMat(disp, sensor_msgs::image_encodings::TYPE_16UC1);
-    } else {
-        dispFrame = utils::msgToMat(disp, sensor_msgs::image_encodings::MONO8);
-    }
 
+    dispFrame = utils::msgToMat(disp, disp->encoding);
     cv::Mat dispFiltered;
     sensor_msgs::CameraInfo depthInfo = *disp_info;
     filter->filter(dispFrame, leftFrame, dispFiltered);
     sensor_msgs::Image depth;
-    auto factor = (disp_info->K[0] * disp_info->P[3]);
-    cv::Mat depthOut = cv::Mat(cv::Size(dispFiltered.cols, dispFiltered.rows), CV_16UC1);
-    depthOut.forEach<short>([&dispFiltered, &factor, &disp](short& pixel, const int* position) -> void {
-        if(disp->encoding == sensor_msgs::image_encodings::TYPE_16UC1) {
-            auto dispPoint = dispFiltered.at<short>(position);
-            if(dispPoint == 0)
+    auto factor = abs(depthInfo.P[3]) * 100.0;
+    // set distortion to 0
+    if(disp->encoding == sensor_msgs::image_encodings::MONO8) {
+        auto dispMultiplier = 255.0 / maxDisparity;
+        cv::Mat depthOut = cv::Mat(dispFiltered.size(), CV_8UC1);
+        depthOut.forEach<uint8_t>([&dispFiltered, &factor, &dispMultiplier](uint8_t& pixel, const int* position) -> void {
+            auto disp = dispFiltered.at<uint8_t>(position);
+            if(disp == 0) {
                 pixel = 0;
-            else
-                pixel = factor / dispPoint;
-        } else {
-            auto dispPoint = dispFiltered.at<uint8_t>(position);
-            if(dispPoint == 0)
+            } else {
+                pixel = factor / disp * dispMultiplier;
+            }
+        });
+        cv_bridge::CvImage(disp->header, sensor_msgs::image_encodings::MONO8, depthOut).toImageMsg(depth);
+        depthPub.publish(depth, depthInfo);
+        return;
+    } else {
+        cv::Mat depthOut = cv::Mat(dispFiltered.size(), CV_16UC1);
+        auto dispMultiplier = 255.0 * 255.0 / maxDisparity;
+        depthOut.forEach<uint16_t>([&dispFiltered, &factor, &dispMultiplier](uint16_t& pixel, const int* position) -> void {
+            auto disp = dispFiltered.at<uint16_t>(position);
+            if(disp == 0) {
                 pixel = 0;
-            else
-                pixel = factor / dispPoint;
-        }
-    });
-
-    cv_bridge::CvImage(disp->header, sensor_msgs::image_encodings::TYPE_16UC1, depthOut).toImageMsg(depth);
-    depthPub.publish(depth, depthInfo);
+            } else {
+                pixel = factor / disp * dispMultiplier;
+            }
+        });
+        cv_bridge::CvImage(disp->header, sensor_msgs::image_encodings::TYPE_16UC1, depthOut).toImageMsg(depth);
+        depthPub.publish(depth, depthInfo);
+    }
 }
 }  // namespace depthai_filters
 

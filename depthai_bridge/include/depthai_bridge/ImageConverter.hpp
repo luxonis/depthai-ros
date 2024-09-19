@@ -9,9 +9,12 @@
 #include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai-shared/common/Point2f.hpp"
 #include "depthai/device/CalibrationHandler.hpp"
+#include "depthai/pipeline/datatype/EncodedFrame.hpp"
 #include "depthai/pipeline/datatype/ImgFrame.hpp"
+#include "depthai_ros_msgs/FFMPEGPacket.h"
 #include "ros/time.h"
 #include "sensor_msgs/CameraInfo.h"
+#include "sensor_msgs/CompressedImage.h"
 #include "sensor_msgs/Image.h"
 #include "std_msgs/Header.h"
 
@@ -21,8 +24,11 @@ namespace ros {
 
 namespace StdMsgs = std_msgs;
 namespace ImageMsgs = sensor_msgs;
+namespace DepthAiRosMsgs = depthai_ros_msgs;
 using ImagePtr = ImageMsgs::ImagePtr;
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration>;
+using FFMPegImagePtr = DepthAiRosMsgs::FFMPEGPacketPtr;
+using CompImagePtr = ImageMsgs::CompressedImagePtr;
 
 class ImageConverter {
    public:
@@ -44,7 +50,7 @@ class ImageConverter {
      * @param update: bool whether to automatically update the ROS base time on message conversion
      */
     void setUpdateRosBaseTimeOnToRosMsg(bool update = true) {
-        _updateRosBaseTimeOnToRosMsg = update;
+        updateRosBaseTimeOnToRosMsg = update;
     }
 
     /**
@@ -77,9 +83,19 @@ class ImageConverter {
      */
     void setAlphaScaling(double alphaScalingFactor = 0.0);
 
+    /**
+     * @brief Sets the encoding of the image when converting to FFMPEG message. Default is libx264.
+     * @param encoding: The encoding to be used.
+     */
+    void setFFMPEGEncoding(const std::string& encoding);
+
     ImageMsgs::Image toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> inData, const sensor_msgs::CameraInfo& info = sensor_msgs::CameraInfo());
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs);
     ImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
+
+    DepthAiRosMsgs::FFMPEGPacket toRosFFMPEGPacket(std::shared_ptr<dai::EncodedFrame> inData);
+
+    ImageMsgs::CompressedImage toRosCompressedMsg(std::shared_ptr<dai::ImgFrame> inData);
 
     void toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outData);
 
@@ -99,29 +115,31 @@ class ImageConverter {
     static std::unordered_map<dai::RawImgFrame::Type, std::string> encodingEnumMap;
     static std::unordered_map<dai::RawImgFrame::Type, std::string> planarEncodingEnumMap;
 
-    // dai::RawImgFrame::Type _srcType;
-    bool _daiInterleaved;
+    bool daiInterleaved;
     // bool c
-    const std::string _frameName = "";
+    const std::string frameName = "";
     void planarToInterleaved(const std::vector<uint8_t>& srcData, std::vector<uint8_t>& destData, int w, int h, int numPlanes, int bpp);
     void interleavedToPlanar(const std::vector<uint8_t>& srcData, std::vector<uint8_t>& destData, int w, int h, int numPlanes, int bpp);
-    std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
+    std::chrono::time_point<std::chrono::steady_clock> steadyBaseTime;
 
-    ::ros::Time _rosBaseTime;
-    bool _getBaseDeviceTimestamp;
+    ::ros::Time rosBaseTime;
+    bool getBaseDeviceTimestamp;
     // For handling ROS time shifts and debugging
-    int64_t _totalNsChange{0};
+    int64_t totalNsChange{0};
     // Whether to update the ROS base time on each message conversion
-    bool _updateRosBaseTimeOnToRosMsg{false};
-    dai::RawImgFrame::Type _srcType;
-    bool _fromBitstream = false;
-    bool _convertDispToDepth = false;
-    bool _addExpOffset = false;
-    dai::CameraExposureOffset _expOffset;
-    bool _reverseStereoSocketOrder = false;
-    double _baseline;
-    bool _alphaScalingEnabled = false;
-    double _alphaScalingFactor = 0.0;
+    bool updateRosBaseTimeOnToRosMsg{false};
+    dai::RawImgFrame::Type srcType;
+    bool fromBitstream = false;
+    bool dispToDepth = false;
+    bool addExpOffset = false;
+    dai::CameraExposureOffset expOffset;
+    bool reversedStereoSocketOrder = false;
+    double baseline;
+    bool alphaScalingEnabled = false;
+    double alphaScalingFactor = 0.0;
+    int camHeight = -1;
+    int camWidth = -1;
+    std::string ffmpegEncoding = "libx264";
 };
 
 }  // namespace ros
