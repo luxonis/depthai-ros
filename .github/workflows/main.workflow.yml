@@ -9,6 +9,8 @@ on:
       - humble
       - galactic
       - foxy
+      - iron
+      - jazzy
     tags:
       - 'v*'
   pull_request:
@@ -17,6 +19,8 @@ on:
       - humble
       - galactic
       - foxy
+      - iron
+      - jazzy
 env:
   ROS_DISTRO: humble
 
