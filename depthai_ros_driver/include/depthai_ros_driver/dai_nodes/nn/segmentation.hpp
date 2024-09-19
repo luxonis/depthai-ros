@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "cv_bridge/cv_bridge.h"
+#include "cv_bridge/cv_bridge.hpp"
 #include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "image_transport/camera_publisher.hpp"
