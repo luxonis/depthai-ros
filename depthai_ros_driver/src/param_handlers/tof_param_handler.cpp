@@ -18,7 +18,7 @@ ToFParamHandler::ToFParamHandler(ros::NodeHandle node, const std::string& name) 
 ToFParamHandler::~ToFParamHandler() = default;
 void ToFParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, std::shared_ptr<dai::node::ToF> tof) {
     declareAndLogParam<bool>("i_publish_topic", true);
-    declareAndLogParam<bool>("i_synced", true);
+    declareAndLogParam<bool>("i_synced", false);
     declareAndLogParam<bool>("i_low_bandwidth", false);
     declareAndLogParam<int>("i_low_bandwidth_profile", 4);
     declareAndLogParam<int>("i_low_bandwidth_bitrate", 0);
@@ -64,7 +64,7 @@ void ToFParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, std:
     tof->initialConfig.set(tofConf);
 }
 
-dai::CameraControl ToFParamHandler::setRuntimeParams(parametersConfig& config) {
+dai::CameraControl ToFParamHandler::setRuntimeParams(parametersConfig& /*config*/) {
     dai::CameraControl ctrl;
     return ctrl;
 }

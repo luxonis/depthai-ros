@@ -7,3 +7,4 @@
     pipeline_gen_i_enable_sync: true
     right_i_low_bandwidth: true
     right_i_synced: true
+    tof_i_synced: true
