@@ -75,7 +75,7 @@ add_library(
   src/param_handlers/sensor_param_handler.cpp
   src/param_handlers/feature_tracker_param_handler.cpp
   src/param_handlers/stereo_param_handler.cpp
-  src/param_handlers/tof_param_handler.cpp
+  # src/param_handlers/tof_param_handler.cpp
   src/param_handlers/pipeline_gen_param_handler.cpp
   src/param_handlers/sync_param_handler.cpp
 )
@@ -91,7 +91,7 @@ add_library(
   src/dai_nodes/sensors/feature_tracker.cpp
   src/dai_nodes/sensors/sensor_wrapper.cpp
   src/dai_nodes/sensors/stereo.cpp
-  src/dai_nodes/sensors/tof.cpp
+  # src/dai_nodes/sensors/tof.cpp
   src/dai_nodes/sensors/sync.cpp
 )
 
@@ -127,12 +127,7 @@ target_link_libraries(
   ${NN_LIB_NAME}
   ${COMMON_LIB_NAME}
 )
-add_executable(
-	camera_node
-	src/camera_node.cpp)
-ament_target_dependencies(camera_node ${CAM_DEPS} ${COMMON_DEPS} ${SENSOR_DEPS} ${NN_DEPS})
-target_link_libraries(camera_node ${PROJECT_NAME} ${SENSOR_LIB_NAME} ${NN_LIB_NAME} ${COMMON_LIB_NAME})
-rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::Camera")
+rclcpp_components_register_node(${PROJECT_NAME} PLUGIN "${PROJECT_NAME}::Camera" EXECUTABLE camera_node)
 pluginlib_export_plugin_description_file(${PROJECT_NAME} plugins.xml)
 ament_export_include_directories(include)
 

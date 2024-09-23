@@ -3,7 +3,7 @@
 #include <fstream>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
-#include "depthai-shared/common/CameraBoardSocket.hpp"
+#include "depthai/common/CameraBoardSocket.hpp"
 #include "depthai/pipeline/node/DetectionNetwork.hpp"
 #include "depthai/pipeline/node/ImageManip.hpp"
 #include "depthai/pipeline/node/NeuralNetwork.hpp"
@@ -126,7 +126,7 @@ void NNParamHandler::setImageManip(const std::string& model_path, std::shared_pt
     }
     imageManip->initialConfig.setFrameType(dai::ImgFrame::Type::BGR888p);
     imageManip->inputImage.setBlocking(false);
-    imageManip->inputImage.setQueueSize(8);
+    imageManip->inputImage.setMaxSize(8);
     imageManip->setKeepAspectRatio(false);
     RCLCPP_INFO(getROSNode()->get_logger(), "NN input size: %d x %d. Resizing input image in case of different dimensions.", inputWidth, inputHeight);
     imageManip->initialConfig.setResize(inputWidth, inputHeight);

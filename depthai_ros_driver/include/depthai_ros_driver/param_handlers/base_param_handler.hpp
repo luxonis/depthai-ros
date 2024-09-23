@@ -1,5 +1,5 @@
 #pragma once
-#include <depthai-shared/common/CameraBoardSocket.hpp>
+#include <depthai/common/CameraBoardSocket.hpp>
 
 #include "depthai/pipeline/datatype/CameraControl.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"

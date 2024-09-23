@@ -1,6 +1,6 @@
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 
-#include "depthai-shared/common/CameraBoardSocket.hpp"
+#include "depthai/common/CameraBoardSocket.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/VideoEncoder.hpp"
@@ -56,7 +56,7 @@ std::string BaseNode::getOpticalTFPrefix(const std::string& frameName) {
     }
     return getTFPrefix(frameName) + suffix;
 }
-dai::Node::Input BaseNode::getInput(int /*linkType = 0*/) {
+dai::Node::Input& BaseNode::getInput(int /*linkType = 0*/) {
     throw(std::runtime_error("getInput() not implemented"));
 };
 
@@ -64,28 +64,22 @@ dai::Node::Input BaseNode::getInputByName(const std::string& /*name*/) {
     throw(std::runtime_error("getInputByName() not implemented"));
 };
 
-void BaseNode::closeQueues() {
-    throw(std::runtime_error("closeQueues() not implemented"));
-};
 
-std::shared_ptr<dai::node::XLinkOut> BaseNode::setupXout(std::shared_ptr<dai::Pipeline> pipeline, const std::string& name) {
-    return utils::setupXout(pipeline, name);
-};
 
-std::shared_ptr<sensor_helpers::ImagePublisher> BaseNode::setupOutput(std::shared_ptr<dai::Pipeline> pipeline,
+std::shared_ptr<sensor_helpers::ImagePublisher> BaseNode::createPublisher(std::shared_ptr<dai::Pipeline> pipeline,
                                                                       const std::string& qName,
-                                                                      std::function<void(dai::Node::Input input)> nodeLink,
-                                                                      bool isSynced,
+                                                                      dai::Node::Output& out,
+																	  bool isSynced,
                                                                       const utils::VideoEncoderConfig& encoderConfig) {
-    return std::make_shared<sensor_helpers::ImagePublisher>(getROSNode(), pipeline, qName, nodeLink, isSynced, ipcEnabled(), encoderConfig);
+    return std::make_shared<sensor_helpers::ImagePublisher>(getROSNode(), pipeline, qName, out, isSynced, ipcEnabled(), encoderConfig);
 };
 
 void BaseNode::setNames() {
     throw(std::runtime_error("setNames() not implemented"));
 };
 
-void BaseNode::setXinXout(std::shared_ptr<dai::Pipeline> /*pipeline*/) {
-    throw(std::runtime_error("setXinXout() not implemented"));
+void BaseNode::setOutputs(std::shared_ptr<dai::Pipeline> /*pipeline*/) {
+    RCLCPP_DEBUG(getLogger(), "SetOuputs not implemented for %s", getName().c_str());
 };
 
 void BaseNode::setupQueues(std::shared_ptr<dai::Device> /*device*/) {

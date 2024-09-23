@@ -1,6 +1,6 @@
 #include "depthai_ros_driver/param_handlers/tof_param_handler.hpp"
 
-#include "depthai-shared/common/CameraBoardSocket.hpp"
+#include "depthai/common/CameraBoardSocket.hpp"
 #include "depthai/pipeline/datatype/ToFConfig.hpp"
 #include "depthai/pipeline/node/Camera.hpp"
 #include "depthai/pipeline/node/ToF.hpp"
@@ -35,10 +35,11 @@ void ToFParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, std:
     declareAndLogParam<int>("i_max_q_size", 8);
 
     int socket = declareAndLogParam<int>("i_board_socket_id", static_cast<int>(dai::CameraBoardSocket::CAM_A));
+	// TODO: Revisit CameraNode
     cam->setBoardSocket(static_cast<dai::CameraBoardSocket>(socket));
     cam->setSize(declareAndLogParam<int>("i_width", 640), declareAndLogParam<int>("i_height", 480));
     cam->setFps(declareAndLogParam<int>("i_fps", 30));
-    auto tofConf = tof->initialConfig.get();
+    auto tofConf = tof->initialConfig;
     if(declareAndLogParam<bool>("i_enable_optical_correction", false)) {
         tofConf.enableOpticalCorrection = true;
     }
@@ -62,7 +63,7 @@ void ToFParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, std:
         dai::MedianFilter::MEDIAN_OFF, dai::MedianFilter::KERNEL_3x3, dai::MedianFilter::KERNEL_5x5, dai::MedianFilter::KERNEL_7x7};
     tofConf.median = utils::getValFromMap(declareAndLogParam<std::string>("i_median_filter", "MEDIAN_OFF"), medianFilterMap);
 
-    tof->initialConfig.set(tofConf);
+    tof->initialConfig = tofConf;
 }
 
 dai::CameraControl ToFParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& /*params*/) {

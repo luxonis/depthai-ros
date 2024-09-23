@@ -10,7 +10,7 @@
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/stereo.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/tof.hpp"
+// #include "depthai_ros_driver/dai_nodes/sensors/tof.hpp"
 #include "depthai_ros_driver/pipeline/base_pipeline.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/node.hpp"
@@ -149,9 +149,9 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> DepthToF::createPipeline(std::
                                                                            std::shared_ptr<dai::Pipeline> pipeline,
                                                                            const std::string& /*nnType*/) {
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
-    auto tof = std::make_unique<dai_nodes::ToF>("tof", node, pipeline);
+    // auto tof = std::make_unique<dai_nodes::ToF>("tof", node, pipeline);
     auto stereo = std::make_unique<dai_nodes::Stereo>("stereo", node, pipeline, device);
-    daiNodes.push_back(std::move(tof));
+    // daiNodes.push_back(std::move(tof));
     daiNodes.push_back(std::move(stereo));
     return daiNodes;
 }
@@ -160,13 +160,13 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> StereoToF::createPipeline(std:
                                                                             std::shared_ptr<dai::Pipeline> pipeline,
                                                                             const std::string& /*nnType*/) {
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
-    auto tof = std::make_unique<dai_nodes::ToF>("tof", node, pipeline, dai::CameraBoardSocket::CAM_C);
+    // auto tof = std::make_unique<dai_nodes::ToF>("tof", node, pipeline, dai::CameraBoardSocket::CAM_C);
     auto left = std::make_unique<dai_nodes::SensorWrapper>("left", node, pipeline, device, dai::CameraBoardSocket::CAM_B);
     auto right = std::make_unique<dai_nodes::SensorWrapper>("right", node, pipeline, device, dai::CameraBoardSocket::CAM_C);
-    right->link(tof->getInput());
+    // right->link(tof->getInput());
     daiNodes.push_back(std::move(left));
     daiNodes.push_back(std::move(right));
-    daiNodes.push_back(std::move(tof));
+    // daiNodes.push_back(std::move(tof));
     return daiNodes;
 }
 
@@ -175,8 +175,8 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> ToF::createPipeline(std::share
                                                                       std::shared_ptr<dai::Pipeline> pipeline,
                                                                       const std::string& /*nnType*/) {
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
-    auto tof = std::make_unique<dai_nodes::ToF>("tof", node, pipeline);
-    daiNodes.push_back(std::move(tof));
+    // auto tof = std::make_unique<dai_nodes::ToF>("tof", node, pipeline);
+    // daiNodes.push_back(std::move(tof));
     return daiNodes;
 }
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBToF::createPipeline(std::shared_ptr<rclcpp::Node> node,
@@ -188,8 +188,8 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBToF::createPipeline(std::sh
 
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
     auto rgb = std::make_unique<dai_nodes::SensorWrapper>("right", node, pipeline, device, dai::CameraBoardSocket::CAM_C);
-    auto tof = std::make_unique<dai_nodes::ToF>("tof", node, pipeline, dai::CameraBoardSocket::CAM_C);
-    rgb->link(tof->getInput());
+    // auto tof = std::make_unique<dai_nodes::ToF>("tof", node, pipeline, dai::CameraBoardSocket::CAM_C);
+    // rgb->link(tof->getInput());
     switch(nType) {
         case NNType::None:
             break;
@@ -205,7 +205,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBToF::createPipeline(std::sh
             break;
     }
     daiNodes.push_back(std::move(rgb));
-    daiNodes.push_back(std::move(tof));
+    // daiNodes.push_back(std::move(tof));
     return daiNodes;
 }
 }  // namespace pipeline_gen

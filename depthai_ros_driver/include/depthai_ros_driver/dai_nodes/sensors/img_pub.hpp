@@ -14,10 +14,9 @@
 namespace dai {
 class Device;
 class Pipeline;
-class DataOutputQueue;
+class MessageQueue;
 namespace node {
 class VideoEncoder;
-class XLinkOut;
 }  // namespace node
 namespace ros {
 class ImageConverter;
@@ -58,12 +57,12 @@ class ImagePublisher {
     /**
      * @brief Construct a new Image Publisher object
      *
-     * Creates XLinkOut if synced and VideoEncoder if lowBandwidth is enabled. linkFunc is stored and returned when link is called.
+     * Creates VideoEncoder if lowBandwidth is enabled. linkFunc is stored and returned when link is called.
      */
     ImagePublisher(std::shared_ptr<rclcpp::Node> node,
                    std::shared_ptr<dai::Pipeline> pipeline,
                    const std::string& qName,
-                   std::function<void(dai::Node::Input in)> linkFunc,
+                   dai::Node::Output& out,
                    bool synced = false,
                    bool ipcEnabled = false,
                    const utils::VideoEncoderConfig& encoderConfig = {});
@@ -77,9 +76,9 @@ class ImagePublisher {
     void setup(std::shared_ptr<dai::Device> device, const utils::ImgConverterConfig& convConf, const utils::ImgPublisherConfig& pubConf);
     void createImageConverter(std::shared_ptr<dai::Device> device);
     void createInfoManager(std::shared_ptr<dai::Device> device);
-    void addQueueCB(const std::shared_ptr<dai::DataOutputQueue>& queue);
+    void addQueueCB(const std::shared_ptr<dai::MessageQueue>& queue);
     void closeQueue();
-    std::shared_ptr<dai::DataOutputQueue> getQueue();
+    std::shared_ptr<dai::MessageQueue> getQueue();
     void link(dai::Node::Input in);
     std::string getQueueName();
     void publish(const std::shared_ptr<dai::ADatatype>& data);
@@ -97,7 +96,6 @@ class ImagePublisher {
     utils::ImgConverterConfig convConfig;
     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
     std::shared_ptr<dai::ros::ImageConverter> converter;
-    std::shared_ptr<dai::node::XLinkOut> xout;
     std::shared_ptr<dai::node::VideoEncoder> encoder;
     std::function<void(dai::Node::Input in)> linkCB;
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr imgPub;
@@ -105,7 +103,8 @@ class ImagePublisher {
     rclcpp::Publisher<ffmpeg_image_transport_msgs::msg::FFMPEGPacket>::SharedPtr ffmpegPub;
     rclcpp::Publisher<sensor_msgs::msg::CompressedImage>::SharedPtr compressedImgPub;
     image_transport::CameraPublisher imgPubIT;
-    std::shared_ptr<dai::DataOutputQueue> dataQ;
+	dai::Node::Output& nodeOut;
+    std::shared_ptr<dai::MessageQueue> dataQ;
     int cbID;
     std::string qName;
     bool ipcEnabled;

@@ -11,7 +11,7 @@
 #include "stereo_msgs/msg/disparity_image.hpp"
 
 // Inludes common necessary includes for development using depthai library
-#include "depthai/device/DataQueue.hpp"
+#include "depthai/pipeline/MessageQueue.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/ColorCamera.hpp"
@@ -30,7 +30,8 @@
 
 std::vector<std::string> usbStrings = {"UNKNOWN", "LOW", "FULL", "HIGH", "SUPER", "SUPER_PLUS"};
 
-std::tuple<dai::Pipeline, int, int> createPipeline(bool enableDepth,
+
+std::tuple<dai::Pipeline, int, int, std::shared_ptr<dai::node::IMU>, std::shared_ptr<dai::node::StereoDepth>, std::shared_ptr<dai::node::MonoCamera>> createPipeline(bool enableDepth,
                                                    bool enableSpatialDetection,
                                                    bool lrcheck,
                                                    bool extended,
@@ -51,7 +52,7 @@ std::tuple<dai::Pipeline, int, int> createPipeline(bool enableDepth,
                                                    std::string nnPath) {
     dai::Pipeline pipeline;
 
-    auto controlIn = pipeline.create<dai::node::XLinkIn>();
+j    auto controlIn = pipeline.create<dai::node::XLinkIn>();
     auto monoLeft = pipeline.create<dai::node::MonoCamera>();
     auto monoRight = pipeline.create<dai::node::MonoCamera>();
     auto stereo = pipeline.create<dai::node::StereoDepth>();
@@ -120,8 +121,6 @@ std::tuple<dai::Pipeline, int, int> createPipeline(bool enableDepth,
     if(depth_aligned) {
         // RGB image
         auto camRgb = pipeline.create<dai::node::ColorCamera>();
-        auto xoutRgb = pipeline.create<dai::node::XLinkOut>();
-        xoutRgb->setStreamName("rgb");
         camRgb->setBoardSocket(dai::CameraBoardSocket::CAM_A);
         dai::node::ColorCamera::Properties::SensorResolution rgbResolution;
 
@@ -278,7 +277,6 @@ std::tuple<dai::Pipeline, int, int> createPipeline(bool enableDepth,
         stereo->disparity.link(xoutDepth->input);
     }
 
-    imu->out.link(xoutImu->input);
     std::cout << stereoWidth << " " << stereoHeight << " " << rgbWidth << " " << rgbHeight << std::endl;
     return std::make_tuple(pipeline, stereoWidth, stereoHeight);
 }
@@ -467,7 +465,7 @@ int main(int argc, char** argv) {
         controlQueue->send(ctrl);
     }
 
-    std::shared_ptr<dai::DataOutputQueue> stereoQueue;
+    std::shared_ptr<dai::MessageQueue> stereoQueue;
     if(enableDepth) {
         stereoQueue = device->getOutputQueue("depth", 30, false);
     } else {

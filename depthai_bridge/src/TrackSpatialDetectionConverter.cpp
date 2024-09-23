@@ -1,6 +1,5 @@
 #include "depthai_bridge/TrackSpatialDetectionConverter.hpp"
 
-#include "depthai/depthai.hpp"
 #include "depthai_bridge/depthaiUtility.hpp"
 
 namespace dai {

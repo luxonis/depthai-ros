@@ -1,6 +1,5 @@
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 
-#include <depthai/pipeline/node/XLinkOut.hpp>
 
 #include "camera_info_manager/camera_info_manager.hpp"
 #include "depthai/pipeline/Pipeline.hpp"

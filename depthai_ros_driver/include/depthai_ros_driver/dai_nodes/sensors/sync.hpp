@@ -10,12 +10,10 @@
 namespace dai {
 class Pipeline;
 class Device;
-class DataOutputQueue;
 class ADatatype;
 class ImgFrame;
 namespace node {
 class Sync;
-class XLinkOut;
 }  // namespace node
 }  // namespace dai
 
@@ -37,16 +35,14 @@ class Sync : public BaseNode {
     void link(dai::Node::Input in, int linkType = 0) override;
     dai::Node::Input getInputByName(const std::string& name = "") override;
     void setNames() override;
-    void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
-    void closeQueues() override;
+    void setOutputs(std::shared_ptr<dai::Pipeline> pipeline) override;
     void addPublishers(const std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>>& pubs);
 
    private:
     std::unique_ptr<param_handlers::SyncParamHandler> paramHandler;
     std::shared_ptr<dai::node::Sync> syncNode;
     std::string syncOutputName;
-    std::shared_ptr<dai::node::XLinkOut> xoutFrame;
-    std::shared_ptr<dai::DataOutputQueue> outQueue;
+    std::shared_ptr<dai::MessageQueue> outQueue;
     void publishOutputs();
     std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> publishers;
     std::vector<std::string> syncNames;

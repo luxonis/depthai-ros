@@ -1,10 +1,9 @@
 #include "depthai_ros_driver/dai_nodes/sensors/feature_tracker.hpp"
 
-#include "depthai/device/DataQueue.hpp"
+#include "depthai/pipeline/MessageQueue.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/FeatureTracker.hpp"
-#include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_bridge/TrackedFeaturesConverter.hpp"
 #include "depthai_ros_driver/param_handlers/feature_tracker_param_handler.hpp"
 #include "depthai_ros_driver/utils.hpp"
@@ -21,7 +20,7 @@ FeatureTracker::FeatureTracker(const std::string& daiNodeName, std::shared_ptr<r
     featureNode = pipeline->create<dai::node::FeatureTracker>();
     ph = std::make_unique<param_handlers::FeatureTrackerParamHandler>(node, daiNodeName);
     ph->declareParams(featureNode);
-    setXinXout(pipeline);
+    setOutputs(pipeline);
     RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
 }
 FeatureTracker::~FeatureTracker() = default;
@@ -35,14 +34,11 @@ void FeatureTracker::setNames() {
     featureQName = parentName + getName() + "_queue";
 }
 
-void FeatureTracker::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
-    xoutFeature = pipeline->create<dai::node::XLinkOut>();
-    xoutFeature->setStreamName(featureQName);
-    featureNode->outputFeatures.link(xoutFeature->input);
+void FeatureTracker::setOutputs(std::shared_ptr<dai::Pipeline> pipeline) {
 }
 
 void FeatureTracker::setupQueues(std::shared_ptr<dai::Device> device) {
-    featureQ = device->getOutputQueue(featureQName, ph->getParam<int>("i_max_q_size"), false);
+    featureQ = featureNode->outputFeatures.createOutputQueue( ph->getParam<int>("i_max_q_size"), false);
     auto tfPrefix = getTFPrefix(parentName);
     rclcpp::PublisherOptions options;
     options.qos_overriding_options = rclcpp::QosOverridingOptions();
@@ -51,10 +47,6 @@ void FeatureTracker::setupQueues(std::shared_ptr<dai::Device> device) {
 
     featurePub = getROSNode()->create_publisher<depthai_ros_msgs::msg::TrackedFeatures>("~/" + getName() + "/tracked_features", 10, options);
     featureQ->addCallback(std::bind(&FeatureTracker::featureQCB, this, std::placeholders::_1, std::placeholders::_2));
-}
-
-void FeatureTracker::closeQueues() {
-    featureQ->close();
 }
 
 void FeatureTracker::featureQCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
@@ -72,7 +64,7 @@ void FeatureTracker::link(dai::Node::Input in, int /*linkType*/) {
     featureNode->outputFeatures.link(in);
 }
 
-dai::Node::Input FeatureTracker::getInput(int /*linkType*/) {
+dai::Node::Input& FeatureTracker::getInput(int /*linkType*/) {
     return featureNode->inputImage;
 }
 

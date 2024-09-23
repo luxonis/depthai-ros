@@ -5,13 +5,12 @@
 #include <vector>
 
 #include "camera_info_manager/camera_info_manager.hpp"
-#include "depthai-shared/common/CameraBoardSocket.hpp"
-#include "depthai/device/DataQueue.hpp"
+#include "depthai/common/CameraBoardSocket.hpp"
+#include "depthai/pipeline/MessageQueue.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/ImageManip.hpp"
 #include "depthai/pipeline/node/SpatialDetectionNetwork.hpp"
-#include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_bridge/SpatialDetectionConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
@@ -40,14 +39,14 @@ class SpatialDetection : public BaseNode {
         ph->declareParams(spatialNode, imageManip);
         RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
         imageManip->out.link(spatialNode->input);
-        setXinXout(pipeline);
+        setOutputs(pipeline);
     }
     ~SpatialDetection() = default;
     void updateParams(const std::vector<rclcpp::Parameter>& params) override {
         ph->setRuntimeParams(params);
     };
     void setupQueues(std::shared_ptr<dai::Device> device) override {
-        nnQ = device->getOutputQueue(nnQName, ph->getParam<int>("i_max_q_size"), false);
+        nnQ = spatialNode->out.createOutputQueue(ph->getParam<int>("i_max_q_size"), false);
         std::string socketName = getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")));
         auto tfPrefix = getOpticalTFPrefix(socketName);
         int width;
@@ -107,7 +106,7 @@ class SpatialDetection : public BaseNode {
     void link(dai::Node::Input in, int /*linkType = 0*/) override {
         spatialNode->out.link(in);
     };
-    dai::Node::Input getInput(int linkType = 0) override {
+    dai::Node::Input& getInput(int linkType = 0) override {
         if(linkType == static_cast<int>(nn_helpers::link_types::SpatialNNLinkType::input)) {
             if(ph->getParam<bool>("i_disable_resize")) {
                 return spatialNode->input;
@@ -122,24 +121,12 @@ class SpatialDetection : public BaseNode {
         ptQName = getName() + "_pt";
         ptDepthQName = getName() + "_pt_depth";
     };
-    void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override {
-        xoutNN = pipeline->create<dai::node::XLinkOut>();
-        xoutNN->setStreamName(nnQName);
-        spatialNode->out.link(xoutNN->input);
+    void setOutputs(std::shared_ptr<dai::Pipeline> pipeline) override {
         if(ph->getParam<bool>("i_enable_passthrough")) {
-            ptPub = setupOutput(pipeline, ptQName, [&](dai::Node::Input input) { spatialNode->passthrough.link(input); });
+            ptPub = createPublisher(pipeline, ptQName, spatialNode->passthrough);
         }
         if(ph->getParam<bool>("i_enable_passthrough_depth")) {
-            ptDepthPub = setupOutput(pipeline, ptDepthQName, [&](dai::Node::Input input) { spatialNode->passthroughDepth.link(input); });
-        }
-    };
-    void closeQueues() override {
-        nnQ->close();
-        if(ph->getParam<bool>("i_enable_passthrough")) {
-            ptQ->close();
-        }
-        if(ph->getParam<bool>("i_enable_passthrough_depth")) {
-            ptDepthQ->close();
+            ptDepthPub = createPublisher(pipeline, ptDepthQName, spatialNode->passthroughDepth);
         }
     };
 
@@ -163,8 +150,7 @@ class SpatialDetection : public BaseNode {
     std::shared_ptr<T> spatialNode;
     std::shared_ptr<dai::node::ImageManip> imageManip;
     std::unique_ptr<param_handlers::NNParamHandler> ph;
-    std::shared_ptr<dai::DataOutputQueue> nnQ, ptQ, ptDepthQ;
-    std::shared_ptr<dai::node::XLinkOut> xoutNN, xoutPT, xoutPTDepth;
+    std::shared_ptr<dai::MessageQueue> nnQ;
     std::string nnQName, ptQName, ptDepthQName;
 };
 

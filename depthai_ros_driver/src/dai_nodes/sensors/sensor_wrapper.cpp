@@ -3,6 +3,7 @@
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/XLinkIn.hpp"
+#include "depthai/pipeline/MessageQueue.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/nn_wrapper.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/feature_tracker.hpp"
@@ -32,7 +33,7 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
         sub = node->create_subscription<sensor_msgs::msg::Image>(topicName, 10, std::bind(&SensorWrapper::subCB, this, std::placeholders::_1));
         converter = std::make_unique<dai::ros::ImageConverter>(true);
         setNames();
-        setXinXout(pipeline);
+        setOutputs(pipeline);
         socketID = ph->getParam<int>("i_board_socket_id");
     }
 
@@ -83,20 +84,20 @@ void SensorWrapper::subCB(const sensor_msgs::msg::Image& img) {
     dai::ImgFrame data;
     converter->toDaiMsg(img, data);
     data.setInstanceNum(socketID);
-    inQ->send(data);
+    // inQ->send(data);
 }
 void SensorWrapper::setNames() {
     inQName = getName() + "_topic_in";
 }
 
-void SensorWrapper::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
+void SensorWrapper::setOutputs(std::shared_ptr<dai::Pipeline> pipeline) {
     xIn = pipeline->create<dai::node::XLinkIn>();
     xIn->setStreamName(inQName);
 }
 
 void SensorWrapper::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_simulate_from_topic")) {
-        inQ = device->getInputQueue(inQName, ph->getParam<int>("i_max_q_size"), false);
+        inQ = xIn->getInputs()[0].createInputQueue( ph->getParam<int>("i_max_q_size"), false);
     }
     if(!ph->getParam<bool>("i_disable_node")) {
         sensorNode->setupQueues(device);
@@ -106,20 +107,6 @@ void SensorWrapper::setupQueues(std::shared_ptr<dai::Device> device) {
     }
     if(ph->getParam<bool>("i_enable_nn")) {
         nnNode->setupQueues(device);
-    }
-}
-void SensorWrapper::closeQueues() {
-    if(ph->getParam<bool>("i_simulate_from_topic")) {
-        inQ->close();
-    }
-    if(!ph->getParam<bool>("i_disable_node")) {
-        sensorNode->closeQueues();
-    }
-    if(ph->getParam<bool>("i_enable_feature_tracker")) {
-        featureTrackerNode->closeQueues();
-    }
-    if(ph->getParam<bool>("i_enable_nn")) {
-        nnNode->closeQueues();
     }
 }
 

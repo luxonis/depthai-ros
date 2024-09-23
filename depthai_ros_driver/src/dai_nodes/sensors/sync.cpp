@@ -19,7 +19,7 @@ Sync::Sync(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, s
     paramHandler = std::make_unique<param_handlers::SyncParamHandler>(node, daiNodeName);
     paramHandler->declareParams(syncNode);
     setNames();
-    setXinXout(pipeline);
+    setOutputs(pipeline);
 }
 
 Sync::~Sync() = default;
@@ -27,15 +27,11 @@ Sync::~Sync() = default;
 void Sync::setNames() {
     syncOutputName = getName() + "_out";
 }
-void Sync::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
-    xoutFrame = pipeline->create<dai::node::XLinkOut>();
-    xoutFrame->setStreamName(syncOutputName);
-    xoutFrame->input.setBlocking(false);
-    syncNode->out.link(xoutFrame->input);
+void Sync::setOutputs(std::shared_ptr<dai::Pipeline> pipeline) {
 }
 
 void Sync::setupQueues(std::shared_ptr<dai::Device> device) {
-    outQueue = device->getOutputQueue(syncOutputName, 8, false);
+    outQueue = syncNode->out.createOutputQueue( 8, false);
     outQueue->addCallback([this](const std::shared_ptr<dai::ADatatype>& in) {
         auto group = std::dynamic_pointer_cast<dai::MessageGroup>(in);
         if(group) {
@@ -67,9 +63,6 @@ dai::Node::Input Sync::getInputByName(const std::string& name) {
     return syncNode->inputs[name];
 }
 
-void Sync::closeQueues() {
-    outQueue->close();
-}
 
 void Sync::addPublishers(const std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>>& pubs) {
     for(auto& pub : pubs) {

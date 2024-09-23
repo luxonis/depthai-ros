@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 
-#include "depthai-shared/common/CameraBoardSocket.hpp"
+#include "depthai/common/CameraBoardSocket.hpp"
 #include "depthai/pipeline/Node.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/logger.hpp"
@@ -12,7 +12,6 @@ namespace dai {
 class Pipeline;
 class Device;
 namespace node {
-class XLinkOut;
 class VideoEncoder;
 }  // namespace node
 }  // namespace dai
@@ -41,7 +40,7 @@ class BaseNode {
     virtual ~BaseNode();
     virtual void updateParams(const std::vector<rclcpp::Parameter>& params);
     virtual void link(dai::Node::Input in, int linkType = 0);
-    virtual dai::Node::Input getInput(int linkType = 0);
+    virtual dai::Node::Input& getInput(int linkType = 0);
     virtual dai::Node::Input getInputByName(const std::string& name = "");
     virtual std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers();
     virtual void setupQueues(std::shared_ptr<dai::Device> device) = 0;
@@ -50,19 +49,16 @@ class BaseNode {
      */
     virtual void setNames() = 0;
     /**
-     * @brief      Link inputs and outputs.
+     * @brief      Link inputs and outputs. Creates Publishers.
      *
      * @param      pipeline  The pipeline
      */
-    virtual void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) = 0;
-    std::shared_ptr<sensor_helpers::ImagePublisher> setupOutput(std::shared_ptr<dai::Pipeline> pipeline,
+    virtual void setOutputs(std::shared_ptr<dai::Pipeline> pipeline);
+    std::shared_ptr<sensor_helpers::ImagePublisher> createPublisher(std::shared_ptr<dai::Pipeline> pipeline,
                                                                 const std::string& qName,
-                                                                std::function<void(dai::Node::Input input)> nodeLink,
+                                                                dai::Node::Output& out,
                                                                 bool isSynced = false,
                                                                 const utils::VideoEncoderConfig& encoderConfig = {});
-    virtual void closeQueues() = 0;
-    std::shared_ptr<dai::node::XLinkOut> setupXout(std::shared_ptr<dai::Pipeline> pipeline, const std::string& name);
-
     void setNodeName(const std::string& daiNodeName);
     void setROSNodePointer(std::shared_ptr<rclcpp::Node> node);
     /**

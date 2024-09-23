@@ -25,10 +25,11 @@ Camera::~Camera() {
 }
 void Camera::onConfigure() {
     getDeviceType();
+    pipeline = std::make_shared<dai::Pipeline>(device);
     createPipeline();
-    device->startPipeline(*pipeline);
     setupQueues();
     setIR();
+	pipeline->start();
     paramCBHandle = this->add_on_set_parameters_callback(std::bind(&Camera::parameterCB, this, std::placeholders::_1));
     startSrv = this->create_service<Trigger>("~/start_camera", std::bind(&Camera::startCB, this, std::placeholders::_1, std::placeholders::_2));
     stopSrv = this->create_service<Trigger>("~/stop_camera", std::bind(&Camera::stopCB, this, std::placeholders::_1, std::placeholders::_2));
@@ -98,9 +99,6 @@ void Camera::start() {
 void Camera::stop() {
     RCLCPP_INFO(get_logger(), "Stopping camera.");
     if(camRunning) {
-        for(const auto& node : daiNodes) {
-            node->closeQueues();
-        }
         daiNodes.clear();
         device.reset();
         pipeline.reset();
@@ -163,7 +161,6 @@ void Camera::stopCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response
     res->success = true;
 }
 void Camera::getDeviceType() {
-    pipeline = std::make_shared<dai::Pipeline>();
     startDevice();
     auto name = device->getDeviceName();
     RCLCPP_INFO(get_logger(), "Device type: %s", name.c_str());

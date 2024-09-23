@@ -22,7 +22,7 @@ ToF::ToF(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std
     boardSocket = socket;
     ph = std::make_unique<param_handlers::ToFParamHandler>(node, daiNodeName);
     ph->declareParams(camNode, tofNode);
-    setXinXout(pipeline);
+    setOutputs(pipeline);
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
 }
 ToF::~ToF() = default;
@@ -30,7 +30,7 @@ void ToF::setNames() {
     tofQName = getName() + "_tof";
 }
 
-void ToF::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
+void ToF::setOutputs(std::shared_ptr<dai::Pipeline> pipeline) {
     if(ph->getParam<bool>("i_publish_topic")) {
         camNode->raw.link(tofNode->input);
         bool align = boardSocket == dai::CameraBoardSocket::CAM_A;
@@ -62,7 +62,7 @@ void ToF::setupQueues(std::shared_ptr<dai::Device> device) {
         convConfig.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
         convConfig.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
         convConfig.lowBandwidth = ph->getParam<bool>("i_low_bandwidth");
-        convConfig.encoding = dai::RawImgFrame::Type::RAW8;
+        convConfig.encoding = dai::ImgFrame::Type::RAW8;
         convConfig.addExposureOffset = ph->getParam<bool>("i_add_exposure_offset");
         convConfig.expOffset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
         convConfig.reverseSocketOrder = ph->getParam<bool>("i_reverse_stereo_socket_order");
@@ -87,7 +87,7 @@ void ToF::closeQueues() {
     }
 }
 
-dai::Node::Input ToF::getInput(int /*linkType*/) {
+dai::Node::Input& ToF::getInput(int /*linkType*/) {
     return alignNode->inputAlignTo;
 }
 

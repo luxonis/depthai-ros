@@ -1,6 +1,6 @@
 #include "depthai_ros_driver/param_handlers/camera_param_handler.hpp"
 
-#include "depthai-shared/common/UsbSpeed.hpp"
+#include "depthai/common/UsbSpeed.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/logger.hpp"
 #include "rclcpp/node.hpp"

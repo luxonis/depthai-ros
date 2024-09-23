@@ -17,9 +17,9 @@ void FeatureTrackerParamHandler::declareParams(std::shared_ptr<dai::node::Featur
                     {"HW_MOTION_ESTIMATION", dai::FeatureTrackerConfig::MotionEstimator::Type::HW_MOTION_ESTIMATION}
 
     };
-    auto config = featureTracker->initialConfig.get();
+    auto config = featureTracker->initialConfig;
     config.motionEstimator.type = (motionEstMap.at(declareAndLogParam<std::string>("i_motion_estimator", "LUCAS_KANADE_OPTICAL_FLOW")));
-    featureTracker->initialConfig.set(config);
+    featureTracker->initialConfig = config;
 }
 
 dai::CameraControl FeatureTrackerParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& /*params*/) {

@@ -3,8 +3,8 @@
 #include <string>
 #include <vector>
 
-#include "depthai-shared/properties/ColorCameraProperties.hpp"
-#include "depthai-shared/properties/MonoCameraProperties.hpp"
+#include "depthai/properties/ColorCameraProperties.hpp"
+#include "depthai/properties/MonoCameraProperties.hpp"
 #include "depthai/pipeline/Node.hpp"
 #include "depthai/pipeline/datatype/ADatatype.hpp"
 #include "depthai/pipeline/datatype/CameraControl.hpp"
@@ -15,10 +15,9 @@
 namespace dai {
 class Device;
 class Pipeline;
-class DataOutputQueue;
+class MessageQueue;
 namespace node {
 class VideoEncoder;
-class XLinkOut;
 }  // namespace node
 namespace ros {
 class ImageConverter;

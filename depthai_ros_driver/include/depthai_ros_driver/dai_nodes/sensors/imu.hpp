@@ -9,11 +9,10 @@
 namespace dai {
 class Pipeline;
 class Device;
-class DataOutputQueue;
+class MessageQueue;
 class ADatatype;
 namespace node {
 class IMU;
-class XLinkOut;
 }  // namespace node
 namespace ros {
 class ImuConverter;
@@ -42,8 +41,7 @@ class Imu : public BaseNode {
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(dai::Node::Input in, int linkType = 0) override;
     void setNames() override;
-    void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
-    void closeQueues() override;
+    void setOutputs(std::shared_ptr<dai::Pipeline> pipeline) override;
 
    private:
     std::unique_ptr<dai::ros::ImuConverter> imuConverter;
@@ -55,8 +53,7 @@ class Imu : public BaseNode {
     rclcpp::Publisher<depthai_ros_msgs::msg::ImuWithMagneticField>::SharedPtr daiImuPub;
     std::shared_ptr<dai::node::IMU> imuNode;
     std::unique_ptr<param_handlers::ImuParamHandler> ph;
-    std::shared_ptr<dai::DataOutputQueue> imuQ;
-    std::shared_ptr<dai::node::XLinkOut> xoutImu;
+    std::shared_ptr<dai::MessageQueue> imuQ;
     std::string imuQName;
 };
 

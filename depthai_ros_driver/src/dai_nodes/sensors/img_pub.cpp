@@ -1,12 +1,11 @@
 #include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 
-#include <depthai-shared/properties/VideoEncoderProperties.hpp>
+#include <depthai/properties/VideoEncoderProperties.hpp>
 
 #include "camera_info_manager/camera_info_manager.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/VideoEncoder.hpp"
-#include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/utils.hpp"
@@ -18,36 +17,19 @@ namespace sensor_helpers {
 ImagePublisher::ImagePublisher(std::shared_ptr<rclcpp::Node> node,
                                std::shared_ptr<dai::Pipeline> pipeline,
                                const std::string& qName,
-                               std::function<void(dai::Node::Input in)> linkFunc,
+                               dai::Node::Output& out,
                                bool synced,
                                bool ipcEnabled,
                                const utils::VideoEncoderConfig& encoderConfig)
-    : node(node), encConfig(encoderConfig), qName(qName), ipcEnabled(ipcEnabled), synced(synced) {
-    if(!synced) {
-        xout = utils::setupXout(pipeline, qName);
-    }
-
-    linkCB = linkFunc;
+    : node(node), encConfig(encoderConfig), nodeOut(out), qName(qName), ipcEnabled(ipcEnabled), synced(synced) {
+    linkCB = [&](dai::Node::Input input) { nodeOut.link(input); };
     if(encoderConfig.enabled) {
         encoder = createEncoder(pipeline, encoderConfig);
-        linkFunc(encoder->input);
-
-        if(!synced) {
-            if(encoderConfig.profile == dai::VideoEncoderProperties::Profile::MJPEG) {
-                encoder->bitstream.link(xout->input);
-            } else {
-                encoder->out.link(xout->input);
-            }
+        nodeOut.link(encoder->input);
+        if(encoderConfig.profile == dai::VideoEncoderProperties::Profile::MJPEG) {
+            linkCB = [&](dai::Node::Input input) { encoder->bitstream.link(input); };
         } else {
-            if(encoderConfig.profile == dai::VideoEncoderProperties::Profile::MJPEG) {
-                linkCB = [&](dai::Node::Input input) { encoder->bitstream.link(input); };
-            } else {
-                linkCB = [&](dai::Node::Input input) { encoder->out.link(input); };
-            }
-        }
-    } else {
-        if(!synced) {
-            linkFunc(xout->input);
+            linkCB = [&](dai::Node::Input input) { encoder->out.link(input); };
         }
     }
 }
@@ -77,7 +59,8 @@ void ImagePublisher::setup(std::shared_ptr<dai::Device> device, const utils::Img
         imgPubIT = image_transport::create_camera_publisher(node.get(), pubConfig.topicName + pubConfig.topicSuffix);
     }
     if(!synced) {
-        dataQ = device->getOutputQueue(getQueueName(), pubConf.maxQSize, pubConf.qBlocking);
+        RCLCPP_INFO(node->get_logger(), "Creating output queue for %s", qName.c_str());
+        dataQ = nodeOut.createOutputQueue(pubConf.maxQSize, false);
         addQueueCB(dataQ);
     }
 }
@@ -142,12 +125,11 @@ void ImagePublisher::closeQueue() {
 void ImagePublisher::link(dai::Node::Input in) {
     linkCB(in);
 }
-std::shared_ptr<dai::DataOutputQueue> ImagePublisher::getQueue() {
+std::shared_ptr<dai::MessageQueue> ImagePublisher::getQueue() {
     return dataQ;
 }
-void ImagePublisher::addQueueCB(const std::shared_ptr<dai::DataOutputQueue>& queue) {
+void ImagePublisher::addQueueCB(const std::shared_ptr<dai::MessageQueue>& queue) {
     dataQ = queue;
-    qName = queue->getName();
     cbID = dataQ->addCallback([this](const std::shared_ptr<dai::ADatatype>& data) { publish(data); });
 }
 
@@ -179,19 +161,21 @@ std::shared_ptr<Image> ImagePublisher::convertData(const std::shared_ptr<dai::AD
     return img;
 }
 void ImagePublisher::publish(std::shared_ptr<Image> img) {
-    if(pubConfig.publishCompressed) {
-        if(encConfig.profile == dai::VideoEncoderProperties::Profile::MJPEG) {
-            compressedImgPub->publish(std::move(img->compressedImg));
-        } else {
-            ffmpegPub->publish(std::move(img->ffmpegPacket));
-        }
-        infoPub->publish(std::move(img->info));
-    } else {
-        if(ipcEnabled && (!pubConfig.lazyPub || detectSubscription(imgPub, infoPub))) {
-            imgPub->publish(std::move(img->image));
+    if(rclcpp::ok()) {
+        if(pubConfig.publishCompressed) {
+            if(encConfig.profile == dai::VideoEncoderProperties::Profile::MJPEG) {
+                compressedImgPub->publish(std::move(img->compressedImg));
+            } else {
+                ffmpegPub->publish(std::move(img->ffmpegPacket));
+            }
             infoPub->publish(std::move(img->info));
         } else {
-            if(!pubConfig.lazyPub || imgPubIT.getNumSubscribers() > 0) imgPubIT.publish(*img->image, *img->info);
+            if(ipcEnabled && (!pubConfig.lazyPub || detectSubscription(imgPub, infoPub))) {
+                imgPub->publish(std::move(img->image));
+                infoPub->publish(std::move(img->info));
+            } else {
+                if(!pubConfig.lazyPub || imgPubIT.getNumSubscribers() > 0) imgPubIT.publish(*img->image, *img->info);
+            }
         }
     }
 }

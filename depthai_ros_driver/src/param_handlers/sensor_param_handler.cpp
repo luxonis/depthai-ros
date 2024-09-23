@@ -1,7 +1,7 @@
 #include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
 
-#include "depthai-shared/common/CameraBoardSocket.hpp"
-#include "depthai-shared/properties/ColorCameraProperties.hpp"
+#include "depthai/common/CameraBoardSocket.hpp"
+#include "depthai/properties/ColorCameraProperties.hpp"
 #include "depthai/pipeline/node/ColorCamera.hpp"
 #include "depthai/pipeline/node/MonoCamera.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"

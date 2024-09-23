@@ -51,7 +51,7 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::de
 
     outImageMsg.encoding = sensor_msgs::image_encodings::TYPE_32FC1;
     outImageMsg.header = outDispImageMsg.header;
-    if(inData->getType() == dai::RawImgFrame::Type::RAW8) {
+    if(inData->getType() == dai::ImgFrame::Type::RAW8) {
         outDispImageMsg.delta_d = 1.0;
         size_t size = inData->getData().size() * sizeof(float);
         outImageMsg.data.resize(size);

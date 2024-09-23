@@ -1,6 +1,6 @@
 #include "depthai_ros_driver/param_handlers/stereo_param_handler.hpp"
 
-#include "depthai-shared/common/CameraFeatures.hpp"
+#include "depthai/common/CameraFeatures.hpp"
 #include "depthai/pipeline/datatype/StereoDepthConfig.hpp"
 #include "depthai/pipeline/node/StereoDepth.hpp"
 #include "depthai_ros_driver/utils.hpp"
@@ -134,8 +134,9 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
 
     stereo->initialConfig.setBilateralFilterSigma(declareAndLogParam<int>("i_bilateral_sigma", 0));
     stereo->initialConfig.setLeftRightCheckThreshold(declareAndLogParam<int>("i_lrc_threshold", 10));
-    stereo->initialConfig.setMedianFilter(static_cast<dai::MedianFilter>(declareAndLogParam<int>("i_depth_filter_size", 5)));
-    stereo->initialConfig.setConfidenceThreshold(declareAndLogParam<int>("i_stereo_conf_threshold", 240));
+    stereo->initialConfig.setMedianFilter(static_cast<dai::StereoDepthConfig::MedianFilter>(declareAndLogParam<int>("i_depth_filter_size", 5)));
+	// TODO: investigate why this is not working 
+    // stereo->initialConfig.setConfidenceThreshold(declareAndLogParam<int>("i_stereo_conf_threshold", 240));
     if(declareAndLogParam<bool>("i_subpixel", true)) {
         stereo->initialConfig.setSubpixel(true);
         stereo->initialConfig.setSubpixelFractionalBits(declareAndLogParam<int>("i_subpixel_fractional_bits", 3));
@@ -144,7 +145,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     if(declareAndLogParam<bool>("i_enable_alpha_scaling", false)) {
         stereo->setAlphaScaling(declareAndLogParam<float>("i_alpha_scaling", 0.0));
     }
-    auto config = stereo->initialConfig.get();
+    auto config = stereo->initialConfig;
     config.costMatching.disparityWidth = utils::getValFromMap(declareAndLogParam<std::string>("i_disparity_width", "DISPARITY_96"), disparityWidthMap);
     stereo->setExtendedDisparity(declareAndLogParam<bool>("i_extended_disp", false));
     config.costMatching.enableCompanding = declareAndLogParam<bool>("i_enable_companding", false);
@@ -194,7 +195,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
         declareAndLogParam("i_width", decimatedWidth, true);
         declareAndLogParam("i_height", decimatedHeight, true);
     }
-    stereo->initialConfig.set(config);
+    stereo->initialConfig = config;
 }
 dai::CameraControl StereoParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& /*params*/) {
     dai::CameraControl ctrl;

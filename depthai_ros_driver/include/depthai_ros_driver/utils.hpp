@@ -5,16 +5,13 @@
 #include <string>
 #include <unordered_map>
 
-#include "depthai-shared/common/CameraBoardSocket.hpp"
-#include "depthai-shared/datatype/RawImgFrame.hpp"
-#include "depthai-shared/properties/VideoEncoderProperties.hpp"
+#include "depthai/common/CameraBoardSocket.hpp"
+#include "depthai/pipeline/datatype/ImgFrame.hpp"
+#include "depthai/properties/VideoEncoderProperties.hpp"
 #include "depthai/common/CameraExposureOffset.hpp"
 
 namespace dai {
 class Pipeline;
-namespace node {
-class XLinkOut;
-}  // namespace node
 }  // namespace dai
 
 namespace depthai_ros_driver {
@@ -47,7 +44,7 @@ struct ImgConverterConfig {
     bool getBaseDeviceTimestamp = false;
     bool updateROSBaseTimeOnRosMsg = false;
     bool lowBandwidth = false;
-    dai::RawImgFrame::Type encoding = dai::RawImgFrame::Type::BGR888i;
+    dai::ImgFrame::Type encoding = dai::ImgFrame::Type::BGR888i;
     bool addExposureOffset = false;
     dai::CameraExposureOffset expOffset = dai::CameraExposureOffset::START;
     bool reverseSocketOrder = false;
@@ -75,6 +72,5 @@ struct ImgPublisherConfig {
     bool qBlocking = false;
     bool publishCompressed = false;
 };
-std::shared_ptr<dai::node::XLinkOut> setupXout(std::shared_ptr<dai::Pipeline> pipeline, const std::string& name);
 }  // namespace utils
 }  // namespace depthai_ros_driver
