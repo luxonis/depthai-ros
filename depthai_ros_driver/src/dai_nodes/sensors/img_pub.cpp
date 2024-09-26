@@ -124,7 +124,6 @@ void ImagePublisher::createInfoManager(std::shared_ptr<dai::Device> device) {
         auto info = sensor_helpers::getCalibInfo(node->get_logger(), converter, device, pubConfig.socket, pubConfig.width, pubConfig.height);
         if(pubConfig.rectified) {
             std::fill(info.d.begin(), info.d.end(), 0.0);
-            std::fill(info.k.begin(), info.k.end(), 0.0);
             info.r[0] = info.r[4] = info.r[8] = 1.0;
         }
         infoManager->setCameraInfo(info);
