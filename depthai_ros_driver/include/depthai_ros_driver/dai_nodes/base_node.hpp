@@ -39,9 +39,9 @@ class BaseNode {
     BaseNode(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline);
     virtual ~BaseNode();
     virtual void updateParams(const std::vector<rclcpp::Parameter>& params);
-    virtual void link(dai::Node::Input in, int linkType = 0);
+    virtual void link(dai::Node::Input& in, int linkType = 0);
     virtual dai::Node::Input& getInput(int linkType = 0);
-    virtual dai::Node::Input getInputByName(const std::string& name = "");
+    virtual dai::Node::Input& getInputByName(const std::string& name = "");
     virtual std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers();
     virtual void setupQueues(std::shared_ptr<dai::Device> device) = 0;
     /**

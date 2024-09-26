@@ -107,7 +107,7 @@ cv::Mat Segmentation::decodeDeeplab(cv::Mat mat) {
     }
     return colors;
 }
-void Segmentation::link(dai::Node::Input in, int /*linkType*/) {
+void Segmentation::link(dai::Node::Input& in, int /*linkType*/) {
     segNode->out.link(in);
 }
 

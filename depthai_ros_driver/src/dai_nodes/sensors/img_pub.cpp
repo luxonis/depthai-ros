@@ -59,7 +59,6 @@ void ImagePublisher::setup(std::shared_ptr<dai::Device> device, const utils::Img
         imgPubIT = image_transport::create_camera_publisher(node.get(), pubConfig.topicName + pubConfig.topicSuffix);
     }
     if(!synced) {
-        RCLCPP_INFO(node->get_logger(), "Creating output queue for %s", qName.c_str());
         dataQ = nodeOut.createOutputQueue(pubConf.maxQSize, false);
         addQueueCB(dataQ);
     }
@@ -122,7 +121,7 @@ ImagePublisher::~ImagePublisher() {
 void ImagePublisher::closeQueue() {
     if(dataQ) dataQ->close();
 }
-void ImagePublisher::link(dai::Node::Input in) {
+void ImagePublisher::link(dai::Node::Input& in) {
     linkCB(in);
 }
 std::shared_ptr<dai::MessageQueue> ImagePublisher::getQueue() {

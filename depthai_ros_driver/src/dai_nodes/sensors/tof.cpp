@@ -91,7 +91,7 @@ dai::Node::Input& ToF::getInput(int /*linkType*/) {
     return alignNode->inputAlignTo;
 }
 
-void ToF::link(dai::Node::Input in, int /*linkType*/) {
+void ToF::link(dai::Node::Input& in, int /*linkType*/) {
     tofNode->depth.link(in);
 }
 

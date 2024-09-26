@@ -24,7 +24,9 @@ PipelineGenerator::PipelineGenerator() {
                      {"DEPTHTOF", "depthai_ros_driver::pipeline_gen::DepthToF"},
                      {"STEREOTOF", "depthai_ros_driver::pipeline_gen::StereoToF"},
                      {"TOF", "depthai_ros_driver::pipeline_gen::ToF"},
-                     {"RGBTOF", "depthai_ros_driver::pipeline_gen::RGBToF"}};
+                     {"RGBTOF", "depthai_ros_driver::pipeline_gen::RGBToF"},
+					 {"VIO", "depthai_ros_driver::pipeline_gen::Vio"}
+		};
     pipelineTypeMap = {{"RGB", PipelineType::RGB},
                        {"RGBD", PipelineType::RGBD},
                        {"RGBSTEREO", PipelineType::RGBStereo},
@@ -34,7 +36,9 @@ PipelineGenerator::PipelineGenerator() {
                        {"DEPTHTOF", PipelineType::DepthToF},
                        {"STEREOTOF", PipelineType::StereoToF},
                        {"TOF", PipelineType::ToF},
-                       {"RGBTOF", PipelineType::RGBToF}};
+                       {"RGBTOF", PipelineType::RGBToF},
+					   {"VIO", PipelineType::Vio}
+		};
 }
 
 PipelineGenerator::~PipelineGenerator() = default;
@@ -74,10 +78,10 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
             daiNodes.push_back(std::move(imu));
         }
     }
-    if(ph->getParam<bool>("i_enable_diagnostics")) {
-        auto sysLogger = std::make_unique<dai_nodes::SysLogger>("sys_logger", node, pipeline);
-        daiNodes.push_back(std::move(sysLogger));
-    }
+    // if(ph->getParam<bool>("i_enable_diagnostics")) {
+    //     auto sysLogger = std::make_unique<dai_nodes::SysLogger>("sys_logger", node, pipeline);
+    //     daiNodes.push_back(std::move(sysLogger));
+    // }
     if(ph->getParam<bool>("i_enable_sync")) {
         auto sync = std::make_unique<dai_nodes::Sync>("sync", node, pipeline);
         for(auto& daiNode : daiNodes) {

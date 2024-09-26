@@ -42,7 +42,7 @@ void SpatialNNWrapper::setupQueues(std::shared_ptr<dai::Device> device) {
     nnNode->setupQueues(device);
 }
 
-void SpatialNNWrapper::link(dai::Node::Input in, int linkType) {
+void SpatialNNWrapper::link(dai::Node::Input& in, int linkType) {
     nnNode->link(in, linkType);
 }
 

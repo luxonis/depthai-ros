@@ -14,7 +14,7 @@ class XLinkOut;
 }  // namespace node
 namespace ros {
 class TrackedFeaturesConverter;
-}
+}  // namespace ros
 }  // namespace dai
 
 namespace rclcpp {
@@ -34,7 +34,7 @@ class FeatureTracker : public BaseNode {
     ~FeatureTracker();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
-    void link(dai::Node::Input in, int linkType = 0) override;
+    void link(dai::Node::Input& in, int linkType = 0) override;
     dai::Node::Input& getInput(int linkType = 0) override;
     void setNames() override;
     void setOutputs(std::shared_ptr<dai::Pipeline> pipeline) override;

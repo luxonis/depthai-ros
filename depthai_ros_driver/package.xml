@@ -30,6 +30,11 @@
   <depend>diagnostic_updater</depend>
   <depend>diagnostic_msgs</depend>
   <depend>ffmpeg_image_transport_msgs</depend>
+  <depend>nav_msgs</depend>
+	<depend>tf2</depend>
+	<depend>tf2_ros</depend>
+	<depend>tf2_geometry_msgs</depend>
+	<depend>backward_ros</depend>
   <export>
     <build_type>ament_cmake</build_type>
   </export>

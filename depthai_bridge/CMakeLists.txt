@@ -76,6 +76,7 @@ file(GLOB LIB_SRC
 "src/TrackedFeaturesConverter.cpp"
 "src/TrackDetectionConverter.cpp"
 "src/TrackSpatialDetectionConverter.cpp"
+"src/TransformDataConverter.cpp"
 )
 
 add_library(${PROJECT_NAME} SHARED ${LIB_SRC})

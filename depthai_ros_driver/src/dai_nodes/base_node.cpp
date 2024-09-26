@@ -60,7 +60,7 @@ dai::Node::Input& BaseNode::getInput(int /*linkType = 0*/) {
     throw(std::runtime_error("getInput() not implemented"));
 };
 
-dai::Node::Input BaseNode::getInputByName(const std::string& /*name*/) {
+dai::Node::Input& BaseNode::getInputByName(const std::string& /*name*/) {
     throw(std::runtime_error("getInputByName() not implemented"));
 };
 
@@ -86,7 +86,7 @@ void BaseNode::setupQueues(std::shared_ptr<dai::Device> /*device*/) {
     throw(std::runtime_error("setupQueues() not implemented"));
 };
 
-void BaseNode::link(dai::Node::Input /*in*/, int /*linkType = 0*/) {
+void BaseNode::link(dai::Node::Input& /*in*/, int /*linkType = 0*/) {
     throw(std::runtime_error("link() not implemented"));
 };
 

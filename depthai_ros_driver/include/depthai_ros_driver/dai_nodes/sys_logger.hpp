@@ -1,3 +1,4 @@
+#pragma once
 #include "depthai/pipeline/datatype/SystemInformation.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "diagnostic_updater/diagnostic_updater.hpp"
@@ -8,7 +9,6 @@ class MessageQueue;
 class ADatatype;
 namespace node {
 class SystemLogger;
-class VideoEncoder;
 }  // namespace node
 }  // namespace dai
 namespace rclcpp {

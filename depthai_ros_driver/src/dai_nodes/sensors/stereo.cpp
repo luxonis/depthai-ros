@@ -248,7 +248,7 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
     }
 }
 
-void Stereo::link(dai::Node::Input in, int linkType) {
+void Stereo::link(dai::Node::Input& in, int linkType) {
     if(linkType == static_cast<int>(link_types::StereoLinkType::stereo)) {
         stereoCamNode->depth.link(in);
     } else if(linkType == static_cast<int>(link_types::StereoLinkType::left)) {

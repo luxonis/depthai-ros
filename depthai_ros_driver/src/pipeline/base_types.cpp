@@ -11,6 +11,7 @@
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/stereo.hpp"
 // #include "depthai_ros_driver/dai_nodes/sensors/tof.hpp"
+#include "depthai_ros_driver/dai_nodes/vio/vio.hpp"
 #include "depthai_ros_driver/pipeline/base_pipeline.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/node.hpp"
@@ -208,6 +209,24 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBToF::createPipeline(std::sh
     // daiNodes.push_back(std::move(tof));
     return daiNodes;
 }
+std::vector<std::unique_ptr<dai_nodes::BaseNode>> Vio::createPipeline(std::shared_ptr<rclcpp::Node> node,
+																	  std::shared_ptr<dai::Device> device,
+																	  std::shared_ptr<dai::Pipeline> pipeline,
+																	  const std::string& /*nnType*/) {
+	std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
+	auto left = std::make_unique<dai_nodes::SensorWrapper>("left", node, pipeline, device, dai::CameraBoardSocket::CAM_B);
+	auto right = std::make_unique<dai_nodes::SensorWrapper>("right", node, pipeline, device, dai::CameraBoardSocket::CAM_C);
+	auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device);
+	auto vio = std::make_unique<dai_nodes::Vio>("vio", node, pipeline);
+	left->link(vio->getInput(static_cast<int>(dai_nodes::link_types::VioInputType::LEFT)));
+	right->link(vio->getInput(static_cast<int>(dai_nodes::link_types::VioInputType::RIGHT)));
+	imu->link(vio->getInput(static_cast<int>(dai_nodes::link_types::VioInputType::IMU)));
+	daiNodes.push_back(std::move(imu));
+	daiNodes.push_back(std::move(left));
+	daiNodes.push_back(std::move(right));
+	daiNodes.push_back(std::move(vio));
+	return daiNodes;
+}
 }  // namespace pipeline_gen
 }  // namespace depthai_ros_driver
 
@@ -223,3 +242,4 @@ PLUGINLIB_EXPORT_CLASS(depthai_ros_driver::pipeline_gen::StereoToF, depthai_ros_
 PLUGINLIB_EXPORT_CLASS(depthai_ros_driver::pipeline_gen::DepthToF, depthai_ros_driver::pipeline_gen::BasePipeline)
 PLUGINLIB_EXPORT_CLASS(depthai_ros_driver::pipeline_gen::ToF, depthai_ros_driver::pipeline_gen::BasePipeline)
 PLUGINLIB_EXPORT_CLASS(depthai_ros_driver::pipeline_gen::RGBToF, depthai_ros_driver::pipeline_gen::BasePipeline)
+PLUGINLIB_EXPORT_CLASS(depthai_ros_driver::pipeline_gen::Vio, depthai_ros_driver::pipeline_gen::BasePipeline)

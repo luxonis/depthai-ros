@@ -18,6 +18,7 @@ endif()
 
 # find dependencies
 find_package(ament_cmake_auto REQUIRED)
+find_package(backward_ros REQUIRED)
 ament_auto_find_build_dependencies()
 
 set(COMMON_DEPS
@@ -41,7 +42,11 @@ depthai_bridge
 rclcpp  
 std_msgs 
 sensor_msgs 
-image_transport)
+image_transport
+nav_msgs
+tf2_ros
+tf2_geometry_msgs
+)
 
 set(NN_DEPS
 depthai 
@@ -93,12 +98,14 @@ add_library(
   src/dai_nodes/sensors/stereo.cpp
   # src/dai_nodes/sensors/tof.cpp
   src/dai_nodes/sensors/sync.cpp
+  src/dai_nodes/vio/vio.cpp
 )
 
 ament_target_dependencies(${SENSOR_LIB_NAME} ${SENSOR_DEPS})
 target_link_libraries(
   ${SENSOR_LIB_NAME}
   ${COMMON_LIB_NAME}
+  depthai::basalt
 )
 set(NN_LIB_NAME ${PROJECT_NAME}_nn_nodes)
 add_library(

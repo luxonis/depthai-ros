@@ -45,7 +45,7 @@ void NNWrapper::setupQueues(std::shared_ptr<dai::Device> device) {
     nnNode->setupQueues(device);
 }
 
-void NNWrapper::link(dai::Node::Input in, int linkType) {
+void NNWrapper::link(dai::Node::Input& in, int linkType) {
     nnNode->link(in, linkType);
 }
 

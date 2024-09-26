@@ -97,7 +97,7 @@ class Detection : public BaseNode {
      * @param[in]  in        The input of the DetectionNetwork node
      * @param[in]  linkType  The link type (not used)
      */
-    void link(dai::Node::Input in, int /*linkType*/) override {
+    void link(dai::Node::Input& in, int /*linkType*/) override {
         detectionNode->out.link(in);
     };
     /**

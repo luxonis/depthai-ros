@@ -103,7 +103,7 @@ class SpatialDetection : public BaseNode {
             ptDepthPub->setup(device, convConf, pubConf);
         }
     };
-    void link(dai::Node::Input in, int /*linkType = 0*/) override {
+    void link(dai::Node::Input& in, int /*linkType = 0*/) override {
         spatialNode->out.link(in);
     };
     dai::Node::Input& getInput(int linkType = 0) override {

@@ -1,22 +1,23 @@
+
 #pragma once
 
-#include "depthai_ros_msgs/msg/tracked_features.hpp"
 #include <deque>
 #include <memory>
 #include <string>
 
-#include "depthai/pipeline/datatype/TrackedFeatures.hpp"
+#include "depthai/pipeline/datatype/TransformData.hpp"
+#include "geometry_msgs/msg/transform_stamped.hpp"
 #include "rclcpp/time.hpp"
 
 namespace dai {
 
 namespace ros {
 
-class TrackedFeaturesConverter {
+class TransformDataConverter {
    public:
     // DetectionConverter() = default;
-    explicit TrackedFeaturesConverter(std::string frameName, bool getBaseDeviceTimestamp = false);
-    ~TrackedFeaturesConverter();
+    explicit TransformDataConverter(std::string frameName, bool getBaseDeviceTimestamp = false);
+    ~TransformDataConverter();
 
     /**
      * @brief Handles cases in which the ROS time shifts forward or backward
@@ -35,7 +36,7 @@ class TrackedFeaturesConverter {
         _updateRosBaseTimeOnToRosMsg = update;
     }
 
-    void toRosMsg(std::shared_ptr<dai::TrackedFeatures> inFeatures, std::deque<depthai_ros_msgs::msg::TrackedFeatures>& featureMsgs);
+    void toRosMsg(std::shared_ptr<dai::TransformData> inFeatures, std::deque<geometry_msgs::msg::TransformStamped>& transformMsgs);
 
    private:
     const std::string _frameName;

@@ -32,8 +32,8 @@ class Sync : public BaseNode {
     explicit Sync(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline);
     ~Sync();
     void setupQueues(std::shared_ptr<dai::Device> device) override;
-    void link(dai::Node::Input in, int linkType = 0) override;
-    dai::Node::Input getInputByName(const std::string& name = "") override;
+    void link(dai::Node::Input& in, int linkType = 0) override;
+    dai::Node::Input& getInputByName(const std::string& name = "") override;
     void setNames() override;
     void setOutputs(std::shared_ptr<dai::Pipeline> pipeline) override;
     void addPublishers(const std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>>& pubs);

@@ -39,7 +39,7 @@ class Mono : public BaseNode {
     ~Mono();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
-    void link(dai::Node::Input in, int linkType = 0) override;
+    void link(dai::Node::Input& in, int linkType = 0) override;
     void setNames() override;
     void setOutputs(std::shared_ptr<dai::Pipeline> pipeline) override;
     std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;

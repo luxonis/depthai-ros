@@ -1,9 +1,17 @@
 /**:
   ros__parameters:
     camera:
-      i_enable_imu: true
-      i_enable_ir: true
+      i_enable_imu: false
+      i_enable_ir: false
       i_nn_type: spatial
-      i_pipeline_type: RGBD
+      i_pipeline_type: vio
+    pipeline_gen:
+      i_enable_imu: false
     nn:
       i_nn_config_path: depthai_ros_driver/mobilenet
+    left:
+      i_resolution: 400P
+      i_fps: 60.0
+    right:
+      i_resolution: 400P
+      i_fps: 60.0

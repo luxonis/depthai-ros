@@ -79,7 +79,7 @@ void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
     }
     controlQ = monoCamNode->inputControl.createInputQueue();
 }
-void Mono::link(dai::Node::Input in, int /*linkType*/) {
+void Mono::link(dai::Node::Input& in, int /*linkType*/) {
     monoCamNode->out.link(in);
 }
 

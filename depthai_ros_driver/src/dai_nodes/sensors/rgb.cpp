@@ -111,7 +111,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
 }
 
 
-void RGB::link(dai::Node::Input in, int linkType) {
+void RGB::link(dai::Node::Input& in, int linkType) {
     if(linkType == static_cast<int>(link_types::RGBLinkType::video)) {
         colorCamNode->video.link(in);
     } else if(linkType == static_cast<int>(link_types::RGBLinkType::isp)) {
