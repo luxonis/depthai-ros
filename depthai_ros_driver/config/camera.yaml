@@ -3,7 +3,9 @@
     camera:
       i_enable_imu: true
       i_enable_ir: true
-      i_nn_type: spatial
-      i_pipeline_type: RGBD
-    nn:
+      i_nn_type: none
+      i_pipeline_type: Stereo
+    left:
+      i_enable_nn: true
+    left_i_nn:
       i_nn_config_path: depthai_ros_driver/mobilenet
