@@ -47,7 +47,7 @@ Stereo::Stereo(const std::string& daiNodeName,
             continue;
         }
     }
-    RCLCPP_INFO(node->get_logger(),
+    RCLCPP_DEBUG(node->get_logger(),
                  "Creating stereo node with left sensor %s and right sensor %s",
                  utils::getSocketName(leftSensInfo.socket).c_str(),
                  utils::getSocketName(rightSensInfo.socket).c_str());
