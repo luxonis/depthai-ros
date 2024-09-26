@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16.3)
-project(depthai_ros_driver VERSION 2.10.1)
+project(depthai_ros_driver VERSION 2.10.2)
 if(NOT CMAKE_C_STANDARD)
   set(CMAKE_C_STANDARD 99)
 endif()

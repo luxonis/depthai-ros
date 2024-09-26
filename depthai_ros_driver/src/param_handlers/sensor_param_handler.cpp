@@ -28,7 +28,7 @@ void SensorParamHandler::declareCommonParams(dai::CameraBoardSocket socket) {
     declareAndLogParam<std::string>("i_simulated_topic_name", "");
     declareAndLogParam<bool>("i_disable_node", false);
     declareAndLogParam<bool>("i_get_base_device_timestamp", false);
-    socketID = static_cast<dai::CameraBoardSocket>(declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket), 0));
+    socketID = static_cast<dai::CameraBoardSocket>(declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket), false));
     declareAndLogParam<bool>("i_update_ros_base_time_on_ros_msg", false);
     declareAndLogParam<bool>("i_enable_feature_tracker", false);
     declareAndLogParam<bool>("i_enable_nn", false);
