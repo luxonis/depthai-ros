@@ -69,6 +69,12 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
     }
     if(ph->getParam<bool>("i_enable_nn")) {
         nnNode = std::make_unique<NNWrapper>(daiNodeName + std::string("_nn"), node, pipeline, static_cast<dai::CameraBoardSocket>(socketID));
+        auto sensorWidth = ph->getParam<int>("i_width");
+        auto sensorHeight = ph->getParam<int>("i_height");
+        auto nn_wrapper = dynamic_cast<NNWrapper*>(nnNode.get());
+        if(nn_wrapper) {
+            nn_wrapper->setInputDimensions(sensorWidth, sensorHeight);
+        } 
         sensorNode->link(nnNode->getInput(), static_cast<int>(link_types::RGBLinkType::preview));
     }
     RCLCPP_DEBUG(node->get_logger(), "Base node %s created", daiNodeName.c_str());

@@ -48,6 +48,22 @@ void NNWrapper::closeQueues() {
     nnNode->closeQueues();
 }
 
+void NNWrapper::setInputDimensions(int width, int height)
+{
+    auto family = ph->getNNFamily();
+    if (family == param_handlers::nn::NNFamily::Yolo) {
+        auto detectionNode = dynamic_cast<dai_nodes::nn::Detection<dai::node::YoloDetectionNetwork>*>(nnNode.get());
+        if(detectionNode) {
+            detectionNode->setInputDimensions(width, height);
+        }
+    } else if (family == param_handlers::nn::NNFamily::Mobilenet) {
+        auto detectionNode = dynamic_cast<dai_nodes::nn::Detection<dai::node::MobileNetDetectionNetwork>*>(nnNode.get());
+        if(detectionNode) {
+            detectionNode->setInputDimensions(width, height);
+        }
+    }
+}
+
 void NNWrapper::link(dai::Node::Input in, int linkType) {
     nnNode->link(in, linkType);
 }
