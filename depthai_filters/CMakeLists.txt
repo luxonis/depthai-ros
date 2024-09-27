@@ -4,6 +4,7 @@ project(depthai_filters VERSION 2.10.2 LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_compile_options(-g)
 add_definitions(-std=c++14)
 
