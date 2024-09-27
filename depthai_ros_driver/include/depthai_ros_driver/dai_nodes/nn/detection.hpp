@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <optional>
 
 #include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai/device/DataQueue.hpp"
@@ -65,6 +66,9 @@ class Detection : public BaseNode {
         if(ph->getParam<bool>("i_disable_resize")) {
             width = ph->getOtherNodeParam<int>(socketName, "i_preview_width");
             height = ph->getOtherNodeParam<int>(socketName, "i_preview_height");
+        } else if(inputWidth.has_value() && inputHeight.has_value()) {
+            width = inputWidth.value();
+            height = inputHeight.value();
         } else {
             width = imageManip->initialConfig.getResizeConfig().width;
             height = imageManip->initialConfig.getResizeConfig().height;
@@ -132,6 +136,12 @@ class Detection : public BaseNode {
             ptPub = setupOutput(pipeline, ptQName, [&](dai::Node::Input input) { detectionNode->passthrough.link(input); });
         }
     };
+
+    void setInputDimensions(int width, int height)
+    {
+        inputWidth = width;
+        inputHeight = height;
+    }
     /**
      * @brief      Closes the queues for the DetectionNetwork node and the passthrough.
      */
@@ -173,6 +183,7 @@ class Detection : public BaseNode {
     std::shared_ptr<dai::DataOutputQueue> nnQ, ptQ;
     std::shared_ptr<dai::node::XLinkOut> xoutNN;
     std::string nnQName, ptQName;
+    std::optional<int> inputWidth, inputHeight;
 };
 
 }  // namespace nn
