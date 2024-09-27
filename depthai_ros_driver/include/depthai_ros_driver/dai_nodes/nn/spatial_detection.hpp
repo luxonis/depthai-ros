@@ -77,7 +77,7 @@ class SpatialDetection : public BaseNode {
             pubConf.height = height;
             pubConf.daiNodeName = getName();
             pubConf.topicName = "~/" + getName();
-            pubConf.topicSuffix = "passthrough";
+            pubConf.topicSuffix = "/passthrough";
             pubConf.socket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"));
 
             ptPub->setup(device, convConf, pubConf);
