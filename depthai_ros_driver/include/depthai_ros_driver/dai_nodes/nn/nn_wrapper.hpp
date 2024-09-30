@@ -3,7 +3,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <optional>
 
 #include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"

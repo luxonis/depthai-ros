@@ -3,7 +3,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <optional>
 
 #include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai/device/DataQueue.hpp"
