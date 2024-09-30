@@ -66,11 +66,12 @@ class Detection : public BaseNode {
         if(ph->getParam<bool>("i_disable_resize")) {
             width = ph->getOtherNodeParam<int>(socketName, "i_preview_width");
             height = ph->getOtherNodeParam<int>(socketName, "i_preview_height");
-        } else {
+        } else if(ph->getParam<bool>("i_desqueeze_output")) {
             width = ph->getOtherNodeParam<int>(socketName, "i_width");
             height = ph->getOtherNodeParam<int>(socketName, "i_height");
-            // width = imageManip->initialConfig.getResizeConfig().width;
-            // height = imageManip->initialConfig.getResizeConfig().height;
+        } else {
+            width = imageManip->initialConfig.getResizeConfig().width;
+            height = imageManip->initialConfig.getResizeConfig().height;
         }
 
         detConverter = std::make_unique<dai::ros::ImgDetectionConverter>(tfPrefix, width, height, false, ph->getParam<bool>("i_get_base_device_timestamp"));
