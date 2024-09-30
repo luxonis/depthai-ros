@@ -105,7 +105,7 @@ class NNParamHandler : public BaseParamHandler {
         json data = json::parse(f);
         if(data.contains("model") && data.contains("nn_config")) {
             auto modelPath = getModelPath(data);
-            declareAndLogParam("i_model_path", modelPath);
+            modelPath = declareAndLogParam("i_model_path", modelPath);
             if(!getParam<bool>("i_disable_resize")) {
                 setImageManip(modelPath, imageManip);
             }
