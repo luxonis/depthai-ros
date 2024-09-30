@@ -20,15 +20,15 @@ NNWrapper::NNWrapper(const std::string& daiNodeName,
     auto family = ph->getNNFamily();
     switch(family) {
         case param_handlers::nn::NNFamily::Yolo: {
-            nnNode = std::make_unique<dai_nodes::nn::Detection<dai::node::YoloDetectionNetwork>>(getName(), getROSNode(), pipeline);
+            nnNode = std::make_unique<dai_nodes::nn::Detection<dai::node::YoloDetectionNetwork>>(getName(), getROSNode(), pipeline, socket);
             break;
         }
         case param_handlers::nn::NNFamily::Mobilenet: {
-            nnNode = std::make_unique<dai_nodes::nn::Detection<dai::node::MobileNetDetectionNetwork>>(getName(), getROSNode(), pipeline);
+            nnNode = std::make_unique<dai_nodes::nn::Detection<dai::node::MobileNetDetectionNetwork>>(getName(), getROSNode(), pipeline, socket);
             break;
         }
         case param_handlers::nn::NNFamily::Segmentation: {
-            nnNode = std::make_unique<dai_nodes::nn::Segmentation>(getName(), getROSNode(), pipeline);
+            nnNode = std::make_unique<dai_nodes::nn::Segmentation>(getName(), getROSNode(), pipeline, socket);
             break;
         }
     }
@@ -46,22 +46,6 @@ void NNWrapper::setupQueues(std::shared_ptr<dai::Device> device) {
 }
 void NNWrapper::closeQueues() {
     nnNode->closeQueues();
-}
-
-void NNWrapper::setInputDimensions(int width, int height)
-{
-    auto family = ph->getNNFamily();
-    if (family == param_handlers::nn::NNFamily::Yolo) {
-        auto detectionNode = dynamic_cast<dai_nodes::nn::Detection<dai::node::YoloDetectionNetwork>*>(nnNode.get());
-        if(detectionNode) {
-            detectionNode->setInputDimensions(width, height);
-        }
-    } else if (family == param_handlers::nn::NNFamily::Mobilenet) {
-        auto detectionNode = dynamic_cast<dai_nodes::nn::Detection<dai::node::MobileNetDetectionNetwork>*>(nnNode.get());
-        if(detectionNode) {
-            detectionNode->setInputDimensions(width, height);
-        }
-    }
 }
 
 void NNWrapper::link(dai::Node::Input in, int linkType) {
