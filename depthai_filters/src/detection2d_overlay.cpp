@@ -10,7 +10,7 @@ Detection2DOverlay::Detection2DOverlay(const rclcpp::NodeOptions& options) : rcl
 }
 void Detection2DOverlay::onInit() {
     previewSub.subscribe(this, "rgb/preview/image_raw");
-	infoSub.subscribe(this, "stereo/camera_info");
+	infoSub.subscribe(this, "rgb/preview/camera_info");
     detSub.subscribe(this, "nn/detections");
     sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), previewSub, infoSub, detSub);
     sync->registerCallback(std::bind(&Detection2DOverlay::overlayCB, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));

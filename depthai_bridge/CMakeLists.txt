@@ -5,6 +5,7 @@ project(depthai_bridge VERSION 2.10.2 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Update the policy setting to avoid an error when loading the ament_cmake package
 # at the current cmake version level
