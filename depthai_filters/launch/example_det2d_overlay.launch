@@ -11,6 +11,7 @@
 
     <node name="overlay" pkg="nodelet" type="nodelet" output="screen" required="true" args="load depthai_filters/Detection2DOverlay $(arg  name)_nodelet_manager">
         <remap from="/rgb/preview/image_raw" to="$(arg name)/nn/passthrough/image_raw"/>
+		<remap from="/rgb/preview/camera_info" to="$(arg name)/nn/passthrough/camera_info"/>
         <remap from="/nn/detections" to="$(arg name)/nn/detections"/>
 
     </node>

@@ -14,7 +14,7 @@ void Detection2DOverlay::onInit() {
     auto pNH = getPrivateNodeHandle();
     previewSub.subscribe(pNH, "/rgb/preview/image_raw", 1);
     detSub.subscribe(pNH, "/nn/detections", 1);
-    infoSub.subscribe(pNH, "rgb/preview/camera_info", 1);
+    infoSub.subscribe(pNH, "/rgb/preview/camera_info", 1);
     sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), previewSub, infoSub, detSub);
     pNH.getParam("label_map", labelMap);
     pNH.getParam("desqueeze", desqueeze);
