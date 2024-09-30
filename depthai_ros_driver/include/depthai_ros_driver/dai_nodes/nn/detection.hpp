@@ -39,7 +39,7 @@ class Detection : public BaseNode {
               std::shared_ptr<rclcpp::Node> node,
               std::shared_ptr<dai::Pipeline> pipeline,
               const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A)
-        : BaseNode(daiNodeName, node, pipeline) {
+        : BaseNode(daiNodeName, node, pipeline){
         RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
         setNames();
         detectionNode = pipeline->create<T>();
@@ -66,12 +66,11 @@ class Detection : public BaseNode {
         if(ph->getParam<bool>("i_disable_resize")) {
             width = ph->getOtherNodeParam<int>(socketName, "i_preview_width");
             height = ph->getOtherNodeParam<int>(socketName, "i_preview_height");
-        } else if(inputWidth.has_value() && inputHeight.has_value()) {
-            width = inputWidth.value();
-            height = inputHeight.value();
         } else {
-            width = imageManip->initialConfig.getResizeConfig().width;
-            height = imageManip->initialConfig.getResizeConfig().height;
+            width = ph->getOtherNodeParam<int>(socketName, "i_width");
+            height = ph->getOtherNodeParam<int>(socketName, "i_height");
+            // width = imageManip->initialConfig.getResizeConfig().width;
+            // height = imageManip->initialConfig.getResizeConfig().height;
         }
 
         detConverter = std::make_unique<dai::ros::ImgDetectionConverter>(tfPrefix, width, height, false, ph->getParam<bool>("i_get_base_device_timestamp"));
@@ -137,11 +136,6 @@ class Detection : public BaseNode {
         }
     };
 
-    void setInputDimensions(int width, int height)
-    {
-        inputWidth = width;
-        inputHeight = height;
-    }
     /**
      * @brief      Closes the queues for the DetectionNetwork node and the passthrough.
      */
@@ -183,7 +177,6 @@ class Detection : public BaseNode {
     std::shared_ptr<dai::DataOutputQueue> nnQ, ptQ;
     std::shared_ptr<dai::node::XLinkOut> xoutNN;
     std::string nnQName, ptQName;
-    std::optional<int> inputWidth, inputHeight;
 };
 
 }  // namespace nn
