@@ -76,8 +76,8 @@ class SpatialDetection : public BaseNode {
             pubConf.width = width;
             pubConf.height = height;
             pubConf.daiNodeName = getName();
-            pubConf.topicName = "~/" + getName();
-            pubConf.topicSuffix = "/passthrough";
+            pubConf.topicName = "~/" + getName() + "/passthrough";
+            pubConf.infoSuffix = "/passthrough";
             pubConf.socket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"));
 
             ptPub->setup(device, convConf, pubConf);
@@ -97,8 +97,8 @@ class SpatialDetection : public BaseNode {
             pubConf.width = ph->getOtherNodeParam<int>(sensor_helpers::getNodeName(getROSNode(), sensor_helpers::NodeNameEnum::Stereo), "i_width");
             pubConf.height = ph->getOtherNodeParam<int>(sensor_helpers::getNodeName(getROSNode(), sensor_helpers::NodeNameEnum::Stereo), "i_height");
             pubConf.daiNodeName = getName();
-            pubConf.topicName = "~/" + getName();
-            pubConf.topicSuffix = "/passthrough_depth";
+            pubConf.topicName = "~/" + getName() + "/passthrough_depth";
+            pubConf.infoSuffix = "/passthrough_depth";
             pubConf.socket = socket;
 
             ptDepthPub->setup(device, convConf, pubConf);
