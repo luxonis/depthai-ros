@@ -10,6 +10,7 @@ on:
       - galactic
       - foxy
       - iron
+      - jazzy
     tags:
       - 'v*'
   pull_request:
@@ -19,6 +20,7 @@ on:
       - galactic
       - foxy
       - iron
+      - jazzy
 env:
   ROS_DISTRO: iron
 

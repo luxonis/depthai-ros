@@ -185,6 +185,7 @@ void ImagePublisher::publish(std::shared_ptr<Image> img) {
         } else {
             ffmpegPub->publish(std::move(img->ffmpegPacket));
         }
+        infoPub->publish(std::move(img->info));
     } else {
         if(ipcEnabled && (!pubConfig.lazyPub || detectSubscription(imgPub, infoPub))) {
             imgPub->publish(std::move(img->image));

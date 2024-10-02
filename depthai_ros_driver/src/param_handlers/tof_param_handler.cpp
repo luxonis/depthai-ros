@@ -19,7 +19,7 @@ ToFParamHandler::ToFParamHandler(std::shared_ptr<rclcpp::Node> node, const std::
 ToFParamHandler::~ToFParamHandler() = default;
 void ToFParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, std::shared_ptr<dai::node::ToF> tof) {
     declareAndLogParam<bool>("i_publish_topic", true);
-    declareAndLogParam<bool>("i_synced", true);
+    declareAndLogParam<bool>("i_synced", false);
     declareAndLogParam<bool>("i_low_bandwidth", false);
     declareAndLogParam<int>("i_low_bandwidth_profile", 4);
     declareAndLogParam<int>("i_low_bandwidth_bitrate", 0);
