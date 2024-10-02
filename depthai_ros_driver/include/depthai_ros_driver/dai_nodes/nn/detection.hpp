@@ -65,6 +65,9 @@ class Detection : public BaseNode {
         if(ph->getParam<bool>("i_disable_resize")) {
             width = ph->getOtherNodeParam<int>(socketName, "i_preview_width");
             height = ph->getOtherNodeParam<int>(socketName, "i_preview_height");
+        } else if(ph->getParam<bool>("i_desqueeze_output")) {
+            width = ph->getOtherNodeParam<int>(socketName, "i_width");
+            height = ph->getOtherNodeParam<int>(socketName, "i_height");
         } else {
             width = imageManip->initialConfig.getResizeConfig().width;
             height = imageManip->initialConfig.getResizeConfig().height;
@@ -134,6 +137,7 @@ class Detection : public BaseNode {
             ptPub = setupOutput(pipeline, ptQName, [&](dai::Node::Input input) { detectionNode->passthrough.link(input); });
         }
     };
+
     /**
      * @brief      Closes the queues for the DetectionNetwork node and the passthrough.
      */
