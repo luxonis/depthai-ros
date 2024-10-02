@@ -55,6 +55,9 @@ class SpatialDetection : public BaseNode {
         if(ph->getParam<bool>("i_disable_resize")) {
             width = ph->getOtherNodeParam<int>(socketName, "i_preview_width");
             height = ph->getOtherNodeParam<int>(socketName, "i_preview_height");
+        } else if(ph->getParam<bool>("i_desqueeze_output")) {
+            width = ph->getOtherNodeParam<int>(socketName, "i_width");
+            height = ph->getOtherNodeParam<int>(socketName, "i_height");
         } else {
             width = imageManip->initialConfig.getResizeConfig().width;
             height = imageManip->initialConfig.getResizeConfig().height;
