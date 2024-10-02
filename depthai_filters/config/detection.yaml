@@ -2,5 +2,3 @@
   camera_i_nn_type: rgb
   rgb_i_enable_preview: true
   nn_i_enable_passthrough: true
-/detection_overlay:
-  desqueeze: true

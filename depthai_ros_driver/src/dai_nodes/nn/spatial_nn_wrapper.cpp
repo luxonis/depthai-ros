@@ -19,11 +19,11 @@ SpatialNNWrapper::SpatialNNWrapper(const std::string& daiNodeName,
     auto family = ph->getNNFamily();
     switch(family) {
         case param_handlers::nn::NNFamily::Yolo: {
-            nnNode = std::make_unique<dai_nodes::nn::SpatialDetection<dai::node::YoloSpatialDetectionNetwork>>(getName(), getROSNode(), pipeline);
+            nnNode = std::make_unique<dai_nodes::nn::SpatialDetection<dai::node::YoloSpatialDetectionNetwork>>(getName(), getROSNode(), pipeline, socket);
             break;
         }
         case param_handlers::nn::NNFamily::Mobilenet: {
-            nnNode = std::make_unique<dai_nodes::nn::SpatialDetection<dai::node::MobileNetSpatialDetectionNetwork>>(getName(), getROSNode(), pipeline);
+            nnNode = std::make_unique<dai_nodes::nn::SpatialDetection<dai::node::MobileNetSpatialDetectionNetwork>>(getName(), getROSNode(), pipeline, socket);
             break;
         }
         case param_handlers::nn::NNFamily::Segmentation: {
