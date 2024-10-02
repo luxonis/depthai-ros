@@ -10,6 +10,3 @@
       i_low_bandwidth: true
     nn:
       i_enable_passthrough: true
-/detection_overlay:
-  ros__parameters:
-    desqueeze: true
