@@ -29,7 +29,6 @@ def launch_setup(context, *args, **kwargs):
                         name="detection_overlay",
                         plugin="depthai_filters::Detection2DOverlay",
                         remappings=[('rgb/preview/image_raw', name+'/nn/passthrough/image_raw'),
-                                    ('rgb/preview/camera_info', name+'/nn/passthrough/camera_info'),
                                     ('nn/detections', name+'/nn/detections')],
                         parameters=[params_file],
                     ),
