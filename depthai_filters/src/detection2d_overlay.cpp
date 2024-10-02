@@ -14,14 +14,13 @@ void Detection2DOverlay::onInit() {
     auto pNH = getPrivateNodeHandle();
     previewSub.subscribe(pNH, "/rgb/preview/image_raw", 1);
     detSub.subscribe(pNH, "/nn/detections", 1);
-    sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), previewSub,  detSub);
+    sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), previewSub, detSub);
     pNH.getParam("label_map", labelMap);
     sync->registerCallback(std::bind(&Detection2DOverlay::overlayCB, this, std::placeholders::_1, std::placeholders::_2));
     overlayPub = pNH.advertise<sensor_msgs::Image>("overlay", 10);
 }
 
-void Detection2DOverlay::overlayCB(const sensor_msgs::ImageConstPtr& preview,
-                                   const vision_msgs::Detection2DArrayConstPtr& detections) {
+void Detection2DOverlay::overlayCB(const sensor_msgs::ImageConstPtr& preview, const vision_msgs::Detection2DArrayConstPtr& detections) {
     cv::Mat previewMat = utils::msgToMat(preview, sensor_msgs::image_encodings::BGR8);
     auto white = cv::Scalar(255, 255, 255);
     auto black = cv::Scalar(0, 0, 0);

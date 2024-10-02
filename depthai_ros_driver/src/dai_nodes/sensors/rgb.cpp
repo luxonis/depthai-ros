@@ -108,7 +108,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         pubConfig.height = ph->getParam<int>("i_preview_height");
         pubConfig.maxQSize = ph->getParam<int>("i_max_q_size");
         pubConfig.topicSuffix = "/preview/image_raw";
-		pubConfig.infoMgrSuffix = "/preview";
+        pubConfig.infoMgrSuffix = "/preview";
 
         previewPub->setup(device, convConfig, pubConfig);
     };
