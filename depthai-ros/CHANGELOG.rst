@@ -7,6 +7,7 @@ Changelog for package depthai-ros
 * Fix Stereo K matrix publishing
 * Fix socket ID for NN detections
 * Remove catching errors when starting the device since it introduced unexcpected behavior
+* Add desqueeze to NN node
 
 2.10.1 (2024-09-18)
 -------------------
