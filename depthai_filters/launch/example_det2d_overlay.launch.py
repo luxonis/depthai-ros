@@ -26,9 +26,11 @@ def launch_setup(context, *args, **kwargs):
             composable_node_descriptions=[
                     ComposableNode(
                         package="depthai_filters",
+                        name="detection_overlay",
                         plugin="depthai_filters::Detection2DOverlay",
                         remappings=[('rgb/preview/image_raw', name+'/nn/passthrough/image_raw'),
-                                    ('nn/detections', name+'/nn/detections')]
+                                    ('nn/detections', name+'/nn/detections')],
+                        parameters=[params_file],
                     ),
             ],
         ),
