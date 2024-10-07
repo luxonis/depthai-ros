@@ -7,6 +7,7 @@
 #include "depthai_filters/utils.hpp"
 #include "nodelet/nodelet.h"
 #include "pluginlib/class_list_macros.h"
+#include "sensor_msgs/CameraInfo.h"
 
 namespace depthai_filters {
 void Detection2DOverlay::onInit() {

@@ -17,15 +17,15 @@ NNWrapper::NNWrapper(const std::string& daiNodeName, ros::NodeHandle node, std::
     auto family = ph->getNNFamily();
     switch(family) {
         case param_handlers::nn::NNFamily::Yolo: {
-            nnNode = std::make_unique<dai_nodes::nn::Detection<dai::node::YoloDetectionNetwork>>(getName(), getROSNode(), pipeline);
+            nnNode = std::make_unique<dai_nodes::nn::Detection<dai::node::YoloDetectionNetwork>>(getName(), getROSNode(), pipeline, socket);
             break;
         }
         case param_handlers::nn::NNFamily::Mobilenet: {
-            nnNode = std::make_unique<dai_nodes::nn::Detection<dai::node::MobileNetDetectionNetwork>>(getName(), getROSNode(), pipeline);
+            nnNode = std::make_unique<dai_nodes::nn::Detection<dai::node::MobileNetDetectionNetwork>>(getName(), getROSNode(), pipeline, socket);
             break;
         }
         case param_handlers::nn::NNFamily::Segmentation: {
-            nnNode = std::make_unique<dai_nodes::nn::Segmentation>(getName(), getROSNode(), pipeline);
+            nnNode = std::make_unique<dai_nodes::nn::Segmentation>(getName(), getROSNode(), pipeline, socket);
             break;
         }
     }

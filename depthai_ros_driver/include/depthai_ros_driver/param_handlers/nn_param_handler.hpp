@@ -40,6 +40,7 @@ class NNParamHandler : public BaseParamHandler {
     template <typename T>
     void declareParams(std::shared_ptr<T> nn, std::shared_ptr<dai::node::ImageManip> imageManip) {
         declareAndLogParam<bool>("i_disable_resize", false);
+        declareAndLogParam<bool>("i_desqueeze_output", false);
         declareAndLogParam<bool>("i_enable_passthrough", false);
         declareAndLogParam<bool>("i_enable_passthrough_depth", false);
         declareAndLogParam<bool>("i_get_base_device_timestamp", false);
@@ -106,11 +107,15 @@ class NNParamHandler : public BaseParamHandler {
         json data = json::parse(f);
         if(data.contains("model") && data.contains("nn_config")) {
             auto modelPath = getModelPath(data);
-            setImageManip(modelPath, imageManip);
+            modelPath = declareAndLogParam<std::string>("i_model_path", modelPath);
+            if(!getParam<bool>("i_disable_resize")) {
+                setImageManip(modelPath, imageManip);
+            }
             nn->setBlobPath(modelPath);
-            nn->setNumPoolFrames(4);
-            nn->setNumInferenceThreads(2);
+            nn->setNumPoolFrames(declareAndLogParam<int>("i_num_pool_frames", 4));
+            nn->setNumInferenceThreads(declareAndLogParam<int>("i_num_inference_threads", 2));
             nn->input.setBlocking(false);
+            declareAndLogParam<int>("i_max_q_size", 30);
             setNNParams(data, nn);
         }
     }

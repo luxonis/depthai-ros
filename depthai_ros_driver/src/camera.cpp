@@ -68,20 +68,11 @@ void Camera::diagCB(const diagnostic_msgs::DiagnosticArray::ConstPtr& msg) {
 }
 
 void Camera::start() {
-    bool success = false;
-    while(!success) {
-        try {
-            ROS_INFO("Starting camera.");
-            if(!camRunning) {
-                onConfigure();
-            } else {
-                ROS_INFO("Camera already running!.");
-            }
-            success = true;
-        } catch(const std::exception& e) {
-            ROS_ERROR("Exception occurred: %s. Retry", e.what());
-            camRunning = false;
-        }
+    ROS_INFO("Starting camera.");
+    if(!camRunning) {
+        onConfigure();
+    } else {
+        ROS_INFO("Camera already running!.");
     }
 }
 void Camera::stop() {

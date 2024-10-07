@@ -70,6 +70,9 @@ class Detection : public BaseNode {
         if(ph->getParam<bool>("i_disable_resize")) {
             width = ph->getOtherNodeParam<int>(socketName, "i_preview_width");
             height = ph->getOtherNodeParam<int>(socketName, "i_preview_height");
+        } else if(ph->getParam<bool>("i_desqueeze_output")) {
+            width = ph->getOtherNodeParam<int>(socketName, "i_width");
+            height = ph->getOtherNodeParam<int>(socketName, "i_height");
         } else {
             width = imageManip->initialConfig.getResizeConfig().width;
             height = imageManip->initialConfig.getResizeConfig().height;
@@ -86,9 +89,12 @@ class Detection : public BaseNode {
             convConf.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
 
             utils::ImgPublisherConfig pubConf;
+            pubConf.width = width;
+            pubConf.height = height;
             pubConf.daiNodeName = getName();
-            pubConf.topicName = "~/" + getName();
-            pubConf.topicSuffix = "passthrough";
+            pubConf.topicName = getName() + "/passthrough";
+            pubConf.infoSuffix = "/passthrough";
+            pubConf.infoMgrSuffix = "/passthrough";
             pubConf.socket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"));
 
             ptPub->setup(device, convConf, pubConf);

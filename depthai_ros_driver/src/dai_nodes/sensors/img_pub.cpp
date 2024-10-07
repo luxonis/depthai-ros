@@ -64,7 +64,7 @@ void ImagePublisher::setup(std::shared_ptr<dai::Device> device, const utils::Img
         } else {
             ffmpegPub = node.advertise<depthai_ros_msgs::FFMPEGPacket>(pubConfig.topicName + pubConfig.compressedTopicSuffix, 10);
         }
-        infoPub = node.advertise<sensor_msgs::CameraInfo>(pubConfig.topicName + "/camera_info", 10);
+        infoPub = node.advertise<sensor_msgs::CameraInfo>(pubConfig.topicName + pubConfig.infoSuffix + "/camera_info", 10);
     } else {
         imgPubIT = it.advertiseCamera(pubConfig.topicName + pubConfig.topicSuffix, 10);
     }
@@ -110,13 +110,12 @@ std::shared_ptr<dai::node::VideoEncoder> ImagePublisher::createEncoder(std::shar
     return enc;
 }
 void ImagePublisher::createInfoManager(std::shared_ptr<dai::Device> device) {
-    infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(node, pubConfig.daiNodeName),
+    infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(ros::NodeHandle(node, pubConfig.daiNodeName + pubConfig.infoMgrSuffix),
                                                                            "/" + pubConfig.daiNodeName + pubConfig.infoMgrSuffix);
     if(pubConfig.calibrationFile.empty()) {
         auto info = sensor_helpers::getCalibInfo(converter, device, pubConfig.socket, pubConfig.width, pubConfig.height);
         if(pubConfig.rectified) {
             std::fill(info.D.begin(), info.D.end(), 0.0);
-            std::fill(info.K.begin(), info.K.end(), 0.0);
             info.R[0] = info.R[4] = info.R[8] = 1.0;
         }
         infoManager->setCameraInfo(info);

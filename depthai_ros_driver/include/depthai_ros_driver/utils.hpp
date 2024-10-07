@@ -66,6 +66,7 @@ struct ImgPublisherConfig {
     dai::CameraBoardSocket rightSocket = dai::CameraBoardSocket::CAM_C;
     std::string calibrationFile = "";
     std::string topicSuffix = "/image_raw";
+    std::string infoSuffix = "";
     std::string compressedTopicSuffix = "/image_raw/compressed";
     std::string infoMgrSuffix = "";
     bool rectified = false;
