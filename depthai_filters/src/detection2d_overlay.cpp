@@ -11,7 +11,7 @@ Detection2DOverlay::Detection2DOverlay(const rclcpp::NodeOptions& options) : rcl
 void Detection2DOverlay::onInit() {
     previewSub.subscribe(this, "rgb/preview/image_raw");
     detSub.subscribe(this, "nn/detections");
-    sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), previewSub, detSub);
+    sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), previewSub,  detSub);
     sync->registerCallback(std::bind(&Detection2DOverlay::overlayCB, this, std::placeholders::_1, std::placeholders::_2));
     overlayPub = this->create_publisher<sensor_msgs::msg::Image>("overlay", 10);
     labelMap = this->declare_parameter<std::vector<std::string>>("label_map", labelMap);
@@ -19,7 +19,7 @@ void Detection2DOverlay::onInit() {
 
 void Detection2DOverlay::overlayCB(const sensor_msgs::msg::Image::ConstSharedPtr& preview,
                                    const vision_msgs::msg::Detection2DArray::ConstSharedPtr& detections) {
-    cv::Mat previewMat = utils::msgToMat(this->get_logger(), preview, sensor_msgs::image_encodings::BGR8);
+	    cv::Mat previewMat = utils::msgToMat(this->get_logger(), preview, sensor_msgs::image_encodings::BGR8);
 
     auto blue = cv::Scalar(255, 0, 0);
 

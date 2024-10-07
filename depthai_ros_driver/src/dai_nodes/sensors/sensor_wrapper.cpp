@@ -33,9 +33,9 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
         converter = std::make_unique<dai::ros::ImageConverter>(true);
         setNames();
         setXinXout(pipeline);
-        socketID = ph->getParam<int>("i_board_socket_id");
     }
 
+    socketID = ph->getParam<int>("i_board_socket_id");
     if(ph->getParam<bool>("i_disable_node") && ph->getParam<bool>("i_simulate_from_topic")) {
         RCLCPP_INFO(getROSNode()->get_logger(), "Disabling node %s, pipeline data taken from topic.", getName().c_str());
     } else {
