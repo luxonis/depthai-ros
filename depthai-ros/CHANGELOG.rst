@@ -1,6 +1,7 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 2.10.3 (2024-10-14)
 -------------------
 * Allow setting USB speed without specifying device information
