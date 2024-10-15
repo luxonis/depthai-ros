@@ -28,7 +28,7 @@ void CameraParamHandler::declareParams() {
     declareAndLogParam<bool>("i_enable_diagnostics", true);
     declareAndLogParam<bool>("i_enable_sync", true);
     declareAndLogParam<bool>("i_enable_ir", true);
-    declareAndLogParam<std::string>("i_usb_speed", "SUPER_PLUS");
+    declareAndLogParam<std::string>("i_usb_speed", "SUPER");
     declareAndLogParam<std::string>("i_mx_id", "");
     declareAndLogParam<std::string>("i_ip", "");
     declareAndLogParam<std::string>("i_usb_port_id", "");
