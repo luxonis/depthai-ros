@@ -219,7 +219,9 @@ void Camera::startDevice() {
             auto usb_id = ph->getParam<std::string>("i_usb_port_id");
             if(mxid.empty() && ip.empty() && usb_id.empty()) {
                 ROS_INFO("No ip/mxid/usb_id specified, connecting to the next available device.");
-                device = std::make_shared<dai::Device>();
+                auto info = dai::Device::getAnyAvailableDevice();
+                auto speed = ph->getUSBSpeed();
+                device = std::make_shared<dai::Device>(std::get<1>(info), speed);
                 camRunning = true;
             } else {
                 std::vector<dai::DeviceInfo> availableDevices = dai::Device::getAllAvailableDevices();

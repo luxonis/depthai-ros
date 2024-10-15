@@ -25,7 +25,7 @@ void CameraParamHandler::declareParams() {
     declareAndLogParam<std::string>("i_pipeline_type", "RGBD");
     declareAndLogParam<std::string>("i_nn_type", "spatial");
     declareAndLogParam<bool>("i_enable_ir", true);
-    declareAndLogParam<std::string>("i_usb_speed", "SUPER_PLUS");
+    declareAndLogParam<std::string>("i_usb_speed", "SUPER");
     declareAndLogParam<std::string>("i_mx_id", "");
     declareAndLogParam<std::string>("i_ip", "");
     declareAndLogParam<std::string>("i_usb_port_id", "");

@@ -1,6 +1,11 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+2.10.3 (2024-10-14)
+-------------------
+* Allow setting USB speed without specifying device information
+
 2.10.2 (2024-09-26)
 -------------------
 * Fix Stereo K matrix publishing
