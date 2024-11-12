@@ -2,6 +2,16 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.10.5 (2024-11-12)
+-------------------
+* Fix low bandwidth stereo publishing
+
+2.10.4 (2024-11-07)
+-------------------
+* Fix rectified topic names
+* Fix pointcloud launch
+* Add sensor parameters for max autoexposure, sharpness, luma and chroma denoise
+
 2.10.3 (2024-10-14)
 -------------------
 * Allow setting USB speed without specifying device information
