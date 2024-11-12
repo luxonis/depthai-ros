@@ -82,7 +82,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<bool>("i_left_rect_add_exposure_offset", false);
     declareAndLogParam<int>("i_left_rect_exposure_offset", 0);
     declareAndLogParam<bool>("i_left_rect_enable_feature_tracker", false);
-    declareAndLogParam<bool>("i_left_rect_synced", true);
+    declareAndLogParam<bool>("i_left_rect_synced", false);
     declareAndLogParam<bool>("i_left_rect_publish_compressed", false);
 
     declareAndLogParam<bool>("i_right_rect_publish_topic", false);
@@ -95,7 +95,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<bool>("i_right_rect_enable_feature_tracker", false);
     declareAndLogParam<bool>("i_right_rect_add_exposure_offset", false);
     declareAndLogParam<int>("i_right_rect_exposure_offset", 0);
-    declareAndLogParam<bool>("i_right_rect_synced", true);
+    declareAndLogParam<bool>("i_right_rect_synced", false);
     declareAndLogParam<bool>("i_right_rect_publish_compressed", false);
 
     declareAndLogParam<bool>("i_enable_spatial_nn", false);

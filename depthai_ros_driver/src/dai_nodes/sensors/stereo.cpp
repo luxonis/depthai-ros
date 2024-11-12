@@ -80,8 +80,9 @@ void Stereo::setNames() {
 
 void Stereo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     bool outputDisparity = ph->getParam<bool>("i_output_disparity");
+    bool lowBandwidth = ph->getParam<bool>("i_low_bandwidth");
     std::function<void(dai::Node::Input)> stereoLinkChoice;
-    if(outputDisparity) {
+    if(outputDisparity || lowBandwidth) {
         stereoLinkChoice = [&](auto input) { stereoCamNode->disparity.link(input); };
     } else {
         stereoLinkChoice = [&](auto input) { stereoCamNode->depth.link(input); };
@@ -92,7 +93,7 @@ void Stereo::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
         encConf.bitrate = ph->getParam<int>("i_low_bandwidth_bitrate");
         encConf.frameFreq = ph->getParam<int>("i_low_bandwidth_frame_freq");
         encConf.quality = ph->getParam<int>("i_low_bandwidth_quality");
-        encConf.enabled = ph->getParam<bool>("i_low_bandwidth");
+        encConf.enabled = lowBandwidth;
 
         stereoPub = setupOutput(pipeline, stereoQName, stereoLinkChoice, ph->getParam<bool>("i_synced"), encConf);
     }
@@ -155,7 +156,7 @@ void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
     pubConfig.width = ph->getOtherNodeParam<int>(sensorName, "i_width");
     pubConfig.height = ph->getOtherNodeParam<int>(sensorName, "i_height");
     pubConfig.topicName = "~/" + sensorName;
-    pubConfig.topicSuffix = rsCompabilityMode() ? "/image_rect_raw" : "/image_raw";
+    pubConfig.topicSuffix = rsCompabilityMode() ? "/image_rect_raw" : "/image_rect";
     pubConfig.maxQSize = ph->getOtherNodeParam<int>(sensorName, "i_max_q_size");
     pubConfig.socket = sensorInfo.socket;
     pubConfig.infoMgrSuffix = "rect";

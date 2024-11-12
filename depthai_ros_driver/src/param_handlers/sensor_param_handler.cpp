@@ -79,6 +79,22 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> mo
     }
     monoCam->setImageOrientation(
         utils::getValFromMap(declareAndLogParam<std::string>("i_sensor_img_orientation", "AUTO"), dai_nodes::sensor_helpers::cameraImageOrientationMap));
+    int expLimit = declareAndLogParam<int>("r_auto_exposure_limit", 1000);
+    if(declareAndLogParam<bool>("r_set_auto_exposure_limit", false)) {
+        monoCam->initialControl.setAutoExposureLimit(expLimit);
+    }
+	int sharpness = declareAndLogParam<int>("r_sharpness", 1);
+    if(declareAndLogParam("r_set_sharpness", false)) {
+        monoCam->initialControl.setSharpness(sharpness);
+    }
+	int chromaDenoise = declareAndLogParam<int>("r_chroma_denoise", 1);
+    if(declareAndLogParam("r_set_chroma_denoise", false)) {
+        monoCam->initialControl.setChromaDenoise(chromaDenoise);
+    }
+	int lumaDenoise = declareAndLogParam<int>("r_luma_denoise", 1);
+    if(declareAndLogParam("r_set_luma_denoise", false)) {
+        monoCam->initialControl.setLumaDenoise(lumaDenoise);
+    }
 }
 void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> colorCam, dai_nodes::sensor_helpers::ImageSensor sensor, bool publish) {
     declareAndLogParam<bool>("i_publish_topic", publish);
@@ -178,6 +194,22 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     }
     colorCam->setImageOrientation(
         utils::getValFromMap(declareAndLogParam<std::string>("i_sensor_img_orientation", "AUTO"), dai_nodes::sensor_helpers::cameraImageOrientationMap));
+    int expLimit = declareAndLogParam<int>("r_auto_exposure_limit", 1000);
+    if(declareAndLogParam<bool>("r_set_auto_exposure_limit", false)) {
+        colorCam->initialControl.setAutoExposureLimit(expLimit);
+    }
+	int sharpness = declareAndLogParam<int>("r_sharpness", 1);
+    if(declareAndLogParam("r_set_sharpness", false)) {
+        colorCam->initialControl.setSharpness(sharpness);
+    }
+	int chromaDenoise = declareAndLogParam<int>("r_chroma_denoise", 1);
+    if(declareAndLogParam("r_set_chroma_denoise", false)) {
+        colorCam->initialControl.setChromaDenoise(chromaDenoise);
+    }
+	int lumaDenoise = declareAndLogParam<int>("r_luma_denoise", 1);
+    if(declareAndLogParam("r_set_luma_denoise", false)) {
+        colorCam->initialControl.setLumaDenoise(lumaDenoise);
+    }
 }
 dai::CameraControl SensorParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& params) {
     dai::CameraControl ctrl;
@@ -215,6 +247,38 @@ dai::CameraControl SensorParamHandler::setRuntimeParams(const std::vector<rclcpp
         } else if(p.get_name() == getFullParamName("r_whitebalance")) {
             if(getParam<bool>("r_set_man_whitebalance")) {
                 ctrl.setManualWhiteBalance(p.get_value<int>());
+            }
+        } else if(p.get_name() == getFullParamName("r_set_auto_exposure_limit")) {
+            if(p.get_value<bool>()) {
+                ctrl.setAutoExposureLimit(getParam<int>("r_auto_exposure_limit"));
+            }
+        } else if(p.get_name() == getFullParamName("r_auto_exposure_limit")) {
+            if(getParam<bool>("r_set_auto_exposure_limit")) {
+                ctrl.setAutoExposureLimit(p.get_value<int>());
+            }
+        } else if(p.get_name() == getFullParamName("r_set_sharpness")) {
+            if(p.get_value<bool>()) {
+                ctrl.setSharpness(getParam<int>("r_sharpness"));
+            }
+        } else if(p.get_name() == getFullParamName("r_sharpness")) {
+            if(getParam<bool>("r_set_sharpness")) {
+                ctrl.setSharpness(p.get_value<int>());
+            }
+        } else if(p.get_name() == getFullParamName("r_set_chroma_denoise")) {
+            if(p.get_value<bool>()) {
+                ctrl.setChromaDenoise(getParam<int>("r_chroma_denoise"));
+            }
+        } else if(p.get_name() == getFullParamName("r_chroma_denoise")) {
+            if(getParam<bool>("r_set_chroma_denoise")) {
+                ctrl.setChromaDenoise(p.get_value<int>());
+            }
+        } else if(p.get_name() == getFullParamName("r_set_luma_denoise")) {
+            if(p.get_value<bool>()) {
+                ctrl.setLumaDenoise(getParam<int>("r_luma_denoise"));
+            }
+        } else if(p.get_name() == getFullParamName("r_luma_denoise")) {
+            if(getParam<bool>("r_set_luma_denoise")) {
+                ctrl.setLumaDenoise(p.get_value<int>());
             }
         }
     }

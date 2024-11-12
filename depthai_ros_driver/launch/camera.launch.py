@@ -143,8 +143,8 @@ def launch_setup(context, *args, **kwargs):
             },
         }
         parameter_overrides["depth"] = {
-            "i_publish_left_rect": True,
-            "i_publish_right_rect": True,
+            "i_left_rect_publish_topic": True,
+            "i_right_rect_publish_topic": True,
         }
 
     tf_params = {}
