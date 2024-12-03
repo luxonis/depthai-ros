@@ -54,7 +54,7 @@ void StereoParamHandler::updateSocketsFromParams(dai::CameraBoardSocket& left, d
 
 void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> stereo) {
     declareAndLogParam<int>("i_max_q_size", 30);
-    declareAndLogParam<bool>("i_low_bandwidth", false);
+    bool lowBandwidth = declareAndLogParam<bool>("i_low_bandwidth", false);
     declareAndLogParam<int>("i_low_bandwidth_quality", 50);
     declareAndLogParam<int>("i_low_bandwidth_profile", 4);
     declareAndLogParam<int>("i_low_bandwidth_frame_freq", 30);
@@ -136,9 +136,12 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     stereo->initialConfig.setLeftRightCheckThreshold(declareAndLogParam<int>("i_lrc_threshold", 10));
     stereo->initialConfig.setMedianFilter(static_cast<dai::MedianFilter>(declareAndLogParam<int>("i_depth_filter_size", 5)));
     stereo->initialConfig.setConfidenceThreshold(declareAndLogParam<int>("i_stereo_conf_threshold", 240));
-    if(declareAndLogParam<bool>("i_subpixel", true)) {
+    if(declareAndLogParam<bool>("i_subpixel", true) && !lowBandwidth) {
         stereo->initialConfig.setSubpixel(true);
         stereo->initialConfig.setSubpixelFractionalBits(declareAndLogParam<int>("i_subpixel_fractional_bits", 3));
+    }
+    else if(lowBandwidth) {
+        RCLCPP_INFO(getROSNode()->get_logger(), "Subpixel disabled due to low bandwidth mode");
     }
     stereo->setRectifyEdgeFillColor(declareAndLogParam<int>("i_rectify_edge_fill_color", 0));
     if(declareAndLogParam<bool>("i_enable_alpha_scaling", false)) {
