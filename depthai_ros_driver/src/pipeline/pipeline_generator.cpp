@@ -104,7 +104,7 @@ std::string PipelineGenerator::validatePipeline(std::shared_ptr<rclcpp::Node> no
             return "RGB";
         }
     } else if(sensorNum == 2) {
-        if(pType != PipelineType::Stereo && pType != PipelineType::Depth) {
+        if(pType != PipelineType::Stereo && pType != PipelineType::Depth &&  pType != PipelineType::CamArray)  {
             RCLCPP_ERROR(node->get_logger(), "Invalid pipeline chosen for camera as it has only stereo pair. Switching to Depth.");
             return "DEPTH";
         }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <depthai-shared/common/CameraSensorType.hpp>
 #include <string>
 #include <vector>
 
@@ -44,7 +45,7 @@ struct ImageSensor {
     std::string name;
     std::string defaultResolution;
     std::vector<std::string> allowedResolutions;
-    bool color;
+    dai::CameraSensorType sensorType;
 };
 extern std::vector<ImageSensor> availableSensors;
 extern const std::unordered_map<dai::CameraBoardSocket, std::string> socketNameMap;

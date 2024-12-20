@@ -91,6 +91,7 @@ add_library(
   src/dai_nodes/sensors/feature_tracker.cpp
   src/dai_nodes/sensors/sensor_wrapper.cpp
   src/dai_nodes/sensors/stereo.cpp
+  src/dai_nodes/sensors/thermal.cpp
   src/dai_nodes/sensors/tof.cpp
   src/dai_nodes/sensors/sync.cpp
 )
