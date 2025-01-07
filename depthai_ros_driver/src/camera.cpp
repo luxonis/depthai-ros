@@ -1,4 +1,5 @@
 #include "depthai_ros_driver/camera.hpp"
+#include <XLink/XLinkPublicDefines.h>
 
 #include <fstream>
 
@@ -226,7 +227,7 @@ void Camera::startDevice() {
                         }
                     } else if(!ip.empty() && info.name == ip) {
                         RCLCPP_INFO(get_logger(), "Connecting to the camera using ip: %s", ip.c_str());
-                        if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
+                        if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER || info.state == X_LINK_ANY_STATE) {
                             device = std::make_shared<dai::Device>(info);
                             camRunning = true;
                         } else if(info.state == X_LINK_BOOTED) {
@@ -287,13 +288,13 @@ rcl_interfaces::msg::SetParametersResult Camera::parameterCB(const std::vector<r
             if(p.get_name() == ph->getFullParamName("i_laser_dot_brightness")) {
                 float laserdotBrightness = float(p.get_value<int>());
                 if(laserdotBrightness > 1.0) {
-                    laserdotBrightness = 1200.0 / laserdotBrightness;
+                    laserdotBrightness = laserdotBrightness / 1200.0;
                 }
                 device->setIrLaserDotProjectorIntensity(laserdotBrightness);
             } else if(p.get_name() == ph->getFullParamName("i_floodlight_brightness")) {
                 float floodlightBrightness = float(p.get_value<int>());
                 if(floodlightBrightness > 1.0) {
-                    floodlightBrightness = 1500.0 / floodlightBrightness;
+                    floodlightBrightness = floodlightBrightness / 1500.0;
                 }
                 device->setIrFloodLightIntensity(floodlightBrightness);
             }

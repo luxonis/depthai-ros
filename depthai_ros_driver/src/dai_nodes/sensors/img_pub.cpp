@@ -99,7 +99,7 @@ void ImagePublisher::createImageConverter(std::shared_ptr<dai::Device> device) {
     if(convConfig.alphaScalingEnabled) {
         converter->setAlphaScaling(convConfig.alphaScaling);
     }
-    if(convConfig.outputDisparity) {
+    if(!convConfig.outputDisparity) {
         auto calHandler = device->readCalibration();
         double baseline = calHandler.getBaselineDistance(pubConfig.leftSocket, pubConfig.rightSocket, false);
         if(convConfig.reverseSocketOrder) {
