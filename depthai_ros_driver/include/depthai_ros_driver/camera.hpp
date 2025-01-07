@@ -19,6 +19,10 @@ namespace depthai_ros_driver {
 using Trigger = std_srvs::Trigger;
 class Camera : public nodelet::Nodelet {
    public:
+    /**
+     * @brief      Destructor of the class Camera. Stops the device and destroys the pipeline.
+     */
+    ~Camera();
     void onInit() override;
     /**
      * @brief Creates the pipeline and starts the device. Also sets up parameter callback and services.

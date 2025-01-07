@@ -1,4 +1,5 @@
 #include "depthai_ros_driver/camera.hpp"
+#include <XLink/XLinkPublicDefines.h>
 
 #include <fstream>
 #include <memory>
@@ -50,6 +51,10 @@ void Camera::onInit() {
                                                         ph->getParam<std::string>("i_tf_custom_xacro_args"));
     }
     diagSub = pNH.subscribe("/diagnostics", 1, &Camera::diagCB, this);
+}
+
+Camera::~Camera() {
+    stop();
 }
 
 void Camera::diagCB(const diagnostic_msgs::DiagnosticArray::ConstPtr& msg) {
@@ -241,7 +246,7 @@ void Camera::startDevice() {
                         }
                     } else if(!ip.empty() && info.name == ip) {
                         ROS_INFO("Connecting to the camera using ip: %s", ip.c_str());
-                        if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
+                        if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER || info.state == X_LINK_ANY_STATE) {
                             device = std::make_shared<dai::Device>(info);
                             camRunning = true;
                         } else if(info.state == X_LINK_BOOTED) {
