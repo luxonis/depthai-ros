@@ -288,13 +288,13 @@ rcl_interfaces::msg::SetParametersResult Camera::parameterCB(const std::vector<r
             if(p.get_name() == ph->getFullParamName("i_laser_dot_brightness")) {
                 float laserdotBrightness = float(p.get_value<int>());
                 if(laserdotBrightness > 1.0) {
-                    laserdotBrightness = 1200.0 / laserdotBrightness;
+                    laserdotBrightness = laserdotBrightness / 1200.0;
                 }
                 device->setIrLaserDotProjectorIntensity(laserdotBrightness);
             } else if(p.get_name() == ph->getFullParamName("i_floodlight_brightness")) {
                 float floodlightBrightness = float(p.get_value<int>());
                 if(floodlightBrightness > 1.0) {
-                    floodlightBrightness = 1500.0 / floodlightBrightness;
+                    floodlightBrightness = floodlightBrightness / 1500.0;
                 }
                 device->setIrFloodLightIntensity(floodlightBrightness);
             }
