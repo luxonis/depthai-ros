@@ -47,6 +47,7 @@ struct ImgConverterConfig {
     bool getBaseDeviceTimestamp = false;
     bool updateROSBaseTimeOnRosMsg = false;
     bool lowBandwidth = false;
+    bool isStereo = false;
     dai::RawImgFrame::Type encoding = dai::RawImgFrame::Type::BGR888i;
     bool addExposureOffset = false;
     dai::CameraExposureOffset expOffset = dai::CameraExposureOffset::START;

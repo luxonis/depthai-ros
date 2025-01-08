@@ -194,6 +194,7 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
         convConfig.alphaScaling = ph->getParam<double>("i_alpha_scaling");
     }
     convConfig.outputDisparity = ph->getParam<bool>("i_output_disparity");
+    convConfig.isStereo = true;
 
     utils::ImgPublisherConfig pubConf;
     pubConf.daiNodeName = getName();
