@@ -6,4 +6,5 @@
       i_align_depth: true
       i_board_socket_id: 2
       i_subpixel: true
-      i_publish_right_rect: true
+      i_right_rect_publish_topic: true
+      i_right_rect_synced: false

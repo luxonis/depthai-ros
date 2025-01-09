@@ -66,3 +66,4 @@ void Features3D::overlayCB(const sensor_msgs::msg::Image::ConstSharedPtr& depth,
 
 }  // namespace depthai_filters
 #include "rclcpp_components/register_node_macro.hpp"
+RCLCPP_COMPONENTS_REGISTER_NODE(depthai_filters::Features3D);

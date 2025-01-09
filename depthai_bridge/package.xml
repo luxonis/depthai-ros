@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>depthai_bridge</name>
-  <version>2.10.3</version>
+  <version>2.10.5</version>
   <description>The depthai_bridge package</description>
 
   <maintainer email="adam.serafin@luxonis.com">Adam Serafin</maintainer>
@@ -14,7 +14,6 @@
   <depend>libboost-dev</depend>
   <depend>rclcpp</depend>
 
-  <depend>ament_index_cpp</depend>
   <depend>cv_bridge</depend>
   <depend>camera_info_manager</depend>
   <depend>depthai</depend>

@@ -73,3 +73,4 @@ void FeatureTrackerOverlay::drawFeatures(cv::Mat& img) {
 }
 }  // namespace depthai_filters
 #include "rclcpp_components/register_node_macro.hpp"
+RCLCPP_COMPONENTS_REGISTER_NODE(depthai_filters::FeatureTrackerOverlay);

@@ -1,5 +1,4 @@
 #include "depthai_ros_driver/camera.hpp"
-#include <XLink/XLinkPublicDefines.h>
 
 #include <fstream>
 
@@ -21,7 +20,9 @@ Camera::Camera(const rclcpp::NodeOptions& options) : rclcpp::Node("camera", opti
     });
     rclcpp::on_shutdown([this]() { stop(); });
 }
-Camera::~Camera() = default;
+Camera::~Camera() {
+    stop();
+}
 void Camera::onConfigure() {
     getDeviceType();
     createPipeline();
@@ -117,7 +118,6 @@ void Camera::saveCalib() {
     savePath << "/tmp/" << device->getMxId().c_str() << "_calibration.json";
     RCLCPP_INFO(get_logger(), "Saving calibration to: %s", savePath.str().c_str());
     calibHandler.eepromToJsonFile(savePath.str());
-    auto json = calibHandler.eepromToJson();
 }
 
 void Camera::loadCalib(const std::string& path) {
@@ -227,7 +227,7 @@ void Camera::startDevice() {
                         }
                     } else if(!ip.empty() && info.name == ip) {
                         RCLCPP_INFO(get_logger(), "Connecting to the camera using ip: %s", ip.c_str());
-                        if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER || info.state == X_LINK_ANY_STATE) {
+                        if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
                             device = std::make_shared<dai::Device>(info);
                             camRunning = true;
                         } else if(info.state == X_LINK_BOOTED) {

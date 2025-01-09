@@ -145,3 +145,4 @@ void SpatialBB::overlayCB(const sensor_msgs::msg::Image::ConstSharedPtr& preview
 
 }  // namespace depthai_filters
 #include "rclcpp_components/register_node_macro.hpp"
+RCLCPP_COMPONENTS_REGISTER_NODE(depthai_filters::SpatialBB);

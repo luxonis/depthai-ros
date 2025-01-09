@@ -42,4 +42,5 @@ class FeatureTrackerOverlay : public rclcpp::Node {
     std::unordered_set<featureIdType> trackedIDs;
     std::unordered_map<featureIdType, std::deque<geometry_msgs::msg::Point>> trackedFeaturesPath;
 };
+
 }  // namespace depthai_filters

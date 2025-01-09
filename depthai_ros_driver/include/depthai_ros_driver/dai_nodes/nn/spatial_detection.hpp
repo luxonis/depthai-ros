@@ -55,9 +55,6 @@ class SpatialDetection : public BaseNode {
         if(ph->getParam<bool>("i_disable_resize")) {
             width = ph->getOtherNodeParam<int>(socketName, "i_preview_width");
             height = ph->getOtherNodeParam<int>(socketName, "i_preview_height");
-        } else if(ph->getParam<bool>("i_desqueeze_output")) {
-            width = ph->getOtherNodeParam<int>(socketName, "i_width");
-            height = ph->getOtherNodeParam<int>(socketName, "i_height");
         } else {
             width = imageManip->initialConfig.getResizeConfig().width;
             height = imageManip->initialConfig.getResizeConfig().height;
@@ -80,7 +77,7 @@ class SpatialDetection : public BaseNode {
             pubConf.height = height;
             pubConf.daiNodeName = getName();
             pubConf.topicName = "~/" + getName() + "/passthrough";
-            pubConf.infoSuffix = "/passthrough";
+			pubConf.infoSuffix = "/passthrough";
             pubConf.socket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"));
 
             ptPub->setup(device, convConf, pubConf);
@@ -101,7 +98,7 @@ class SpatialDetection : public BaseNode {
             pubConf.height = ph->getOtherNodeParam<int>(sensor_helpers::getNodeName(getROSNode(), sensor_helpers::NodeNameEnum::Stereo), "i_height");
             pubConf.daiNodeName = getName();
             pubConf.topicName = "~/" + getName() + "/passthrough_depth";
-            pubConf.infoSuffix = "/passthrough_depth";
+			pubConf.infoSuffix = "/passthrough_depth";
             pubConf.socket = socket;
 
             ptDepthPub->setup(device, convConf, pubConf);

@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.22)
-project(depthai_ros_driver VERSION 2.10.3)
+project(depthai_ros_driver VERSION 2.10.5)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_BUILD_SHARED_LIBS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+    add_compile_options(-Wall -Wextra -Wpedantic -Wno-deprecated-declarations -Wno-maybe-uninitialized)
 endif()
 # Default to C99
 if(NOT CMAKE_C_STANDARD)

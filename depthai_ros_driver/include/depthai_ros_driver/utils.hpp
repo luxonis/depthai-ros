@@ -4,11 +4,6 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
-#include <vector>
-
-namespace dai {
-enum class CameraBoardSocket;
-}  // namespace dai
 
 #include "depthai-shared/common/CameraBoardSocket.hpp"
 #include "depthai-shared/datatype/RawImgFrame.hpp"
@@ -52,6 +47,7 @@ struct ImgConverterConfig {
     bool getBaseDeviceTimestamp = false;
     bool updateROSBaseTimeOnRosMsg = false;
     bool lowBandwidth = false;
+    bool isStereo = false;
     dai::RawImgFrame::Type encoding = dai::RawImgFrame::Type::BGR888i;
     bool addExposureOffset = false;
     dai::CameraExposureOffset expOffset = dai::CameraExposureOffset::START;
