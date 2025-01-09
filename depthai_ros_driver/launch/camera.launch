@@ -73,8 +73,8 @@
 		<param name="$(arg name)/infra2_i_fps"
 			value="$(eval depth_module_infra_profile.split(',')[2])" />
 
-		<param name="$(arg name)/depth_i_publish_left_rect" value="true" />
-		<param name="$(arg name)/depth_i_publish_right_rect" value="true" />
+		<param name="$(arg name)/depth_i_left_rect_publish_topic" value="true" />
+		<param name="$(arg name)/depth_i_right_rect_publish_topic" value="true" />
 	</group>
 
 	<arg name="params_file" default="$(find depthai_ros_driver)/config/camera.yaml" />
