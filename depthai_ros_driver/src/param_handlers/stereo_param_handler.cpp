@@ -181,7 +181,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
         config.postProcessing.decimationFilter.decimationFactor = declareAndLogParam<int>("i_decimation_filter_decimation_factor", 1);
         int decimatedWidth = width / config.postProcessing.decimationFilter.decimationFactor;
         int decimatedHeight = height / config.postProcessing.decimationFilter.decimationFactor;
-        RCLCPP_INFO(getROSNode()->get_logger(),
+        ROS_INFO(
                     "Decimation filter enabled with decimation factor %d. Previous width and height: %d x %d, after decimation: %d x %d",
                     config.postProcessing.decimationFilter.decimationFactor,
                     width,
