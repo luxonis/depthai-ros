@@ -246,7 +246,7 @@ std::string TFPublisher::getURDF() {
     ROS_DEBUG("Xacro command: %s", cmd.c_str());
     std::array<char, 128> buffer;
     std::string result;
-    std::unique_ptr<FILE, int(*)(FILE*)> pipe(popen(cmd.c_str(), "r"), pclose);
+    std::unique_ptr<FILE, int (*)(FILE*)> pipe(popen(cmd.c_str(), "r"), pclose);
     if(!pipe) {
         throw std::runtime_error("popen() failed!");
     }
