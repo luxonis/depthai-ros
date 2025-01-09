@@ -1,4 +1,5 @@
 #include "depthai_ros_driver/camera.hpp"
+
 #include <XLink/XLinkPublicDefines.h>
 
 #include <fstream>

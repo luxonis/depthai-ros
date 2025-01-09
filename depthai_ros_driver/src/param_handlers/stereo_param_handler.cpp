@@ -133,7 +133,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     if(declareAndLogParam<bool>("i_subpixel", true) && !lowBandwidth) {
         stereo->initialConfig.setSubpixel(true);
         stereo->initialConfig.setSubpixelFractionalBits(declareAndLogParam<int>("i_subpixel_fractional_bits", 3));
-    } else  {
+    } else {
         stereo->initialConfig.setSubpixel(false);
         ROS_INFO("Subpixel disabled due to low bandwidth mode");
     }
@@ -141,7 +141,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     if(declareAndLogParam<bool>("i_enable_alpha_scaling", false)) {
         stereo->setAlphaScaling(declareAndLogParam<float>("i_alpha_scaling", 0.0));
     }
-        dai::RawStereoDepthConfig config = stereo->initialConfig.get();
+    dai::RawStereoDepthConfig config = stereo->initialConfig.get();
     config.costMatching.disparityWidth = utils::getValFromMap(declareAndLogParam<std::string>("i_disparity_width", "DISPARITY_96"), disparityWidthMap);
     stereo->setExtendedDisparity(declareAndLogParam<bool>("i_extended_disp", false));
     config.costMatching.enableCompanding = declareAndLogParam<bool>("i_enable_companding", false);

@@ -87,7 +87,7 @@ void SysLogger::produceDiagnostics(diagnostic_updater::DiagnosticStatusWrapper& 
             stat.add("Leon CSS Chip Temperature", sysInfo.chipTemperature.css);
             stat.add("Leon MSS Chip Temperature", sysInfo.chipTemperature.mss);
             stat.add("UPA Chip Temperature", sysInfo.chipTemperature.upa);
-            stat.add("DSS Chip Temperature", sysInfo.chipTemperature.dss); 
+            stat.add("DSS Chip Temperature", sysInfo.chipTemperature.dss);
         } else {
             stat.summary(diagnostic_msgs::DiagnosticStatus::ERROR, "No Data");
         }
