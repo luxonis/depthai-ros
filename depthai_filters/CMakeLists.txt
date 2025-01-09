@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10.2)
-project(depthai_filters VERSION 2.10.3 LANGUAGES CXX C)
+project(depthai_filters VERSION 2.10.5 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

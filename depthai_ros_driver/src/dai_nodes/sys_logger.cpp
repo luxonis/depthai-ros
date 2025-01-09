@@ -72,7 +72,22 @@ void SysLogger::produceDiagnostics(diagnostic_updater::DiagnosticStatusWrapper& 
         auto logData = loggerQ->get<dai::SystemInformation>(std::chrono::seconds(5), timeout);
         if(!timeout) {
             stat.summary(diagnostic_msgs::DiagnosticStatus::OK, "System Information");
-            stat.add("System Information", sysInfoToString(*logData));
+            auto sysInfo = *logData;
+            stat.add("Leon CSS CPU Usage", sysInfo.leonCssCpuUsage.average * 100);
+            stat.add("Leon MSS CPU Usage", sysInfo.leonMssCpuUsage.average * 100);
+            stat.add("Ddr Memory Usage", sysInfo.ddrMemoryUsage.used / (1024.0f * 1024.0f));
+            stat.add("Ddr Memory Total", sysInfo.ddrMemoryUsage.total / (1024.0f * 1024.0f));
+            stat.add("Cmx Memory Usage", sysInfo.cmxMemoryUsage.used / (1024.0f * 1024.0f));
+            stat.add("Cmx Memory Total", sysInfo.cmxMemoryUsage.total);
+            stat.add("Leon CSS Memory Usage", sysInfo.leonCssMemoryUsage.used / (1024.0f * 1024.0f));
+            stat.add("Leon CSS Memory Total", sysInfo.leonCssMemoryUsage.total / (1024.0f * 1024.0f));
+            stat.add("Leon MSS Memory Usage", sysInfo.leonMssMemoryUsage.used / (1024.0f * 1024.0f));
+            stat.add("Leon MSS Memory Total", sysInfo.leonMssMemoryUsage.total / (1024.0f * 1024.0f));
+            stat.add("Average Chip Temperature", sysInfo.chipTemperature.average);
+            stat.add("Leon CSS Chip Temperature", sysInfo.chipTemperature.css);
+            stat.add("Leon MSS Chip Temperature", sysInfo.chipTemperature.mss);
+            stat.add("UPA Chip Temperature", sysInfo.chipTemperature.upa);
+            stat.add("DSS Chip Temperature", sysInfo.chipTemperature.dss); 
         } else {
             stat.summary(diagnostic_msgs::DiagnosticStatus::ERROR, "No Data");
         }

@@ -32,7 +32,7 @@ std::string BaseNode::getSocketName(dai::CameraBoardSocket socket) {
     return sensor_helpers::getSocketName(getROSNode(), socket);
 }
 std::string BaseNode::getTFPrefix(const std::string& frameName) {
-    auto prefix = std::string(getROSNode().getNamespace()) + "_" + frameName;
+    auto prefix = sensor_helpers::tfPrefix(getROSNode())+ "_" + frameName;
     prefix.erase(0, 1);
     return prefix;
 }

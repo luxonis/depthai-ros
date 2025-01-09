@@ -89,7 +89,7 @@ void ImagePublisher::createImageConverter(std::shared_ptr<dai::Device> device) {
     if(convConfig.alphaScalingEnabled) {
         converter->setAlphaScaling(convConfig.alphaScaling);
     }
-    if(!convConfig.outputDisparity) {
+    if(convConfig.isStereo && !convConfig.outputDisparity) {
         auto calHandler = device->readCalibration();
         double baseline = calHandler.getBaselineDistance(pubConfig.leftSocket, pubConfig.rightSocket, false);
         if(convConfig.reverseSocketOrder) {
@@ -105,8 +105,10 @@ std::shared_ptr<dai::node::VideoEncoder> ImagePublisher::createEncoder(std::shar
     auto enc = pipeline->create<dai::node::VideoEncoder>();
     enc->setQuality(encoderConfig.quality);
     enc->setProfile(encoderConfig.profile);
-    enc->setBitrate(encoderConfig.bitrate);
-    enc->setKeyframeFrequency(encoderConfig.frameFreq);
+    if(encoderConfig.profile != dai::VideoEncoderProperties::Profile::MJPEG) {
+        enc->setBitrate(encoderConfig.bitrate);
+        enc->setKeyframeFrequency(encoderConfig.frameFreq);
+    }
     return enc;
 }
 void ImagePublisher::createInfoManager(std::shared_ptr<dai::Device> device) {

@@ -95,6 +95,15 @@ bool rsCompabilityMode(ros::NodeHandle node) {
     node.getParam("camera_i_rs_compat", compat);
     return compat;
 }
+std::string tfPrefix(ros::NodeHandle node) {
+    bool pubTF = false;
+    std::string tfPrefix = node.getNamespace();
+    node.getParam("camera_i_publish_tf_from_calibration", pubTF);
+    if(pubTF) {
+        node.getParam("camera_i_tf_base_frame", tfPrefix);
+    }
+    return tfPrefix;
+}
 std::string getNodeName(ros::NodeHandle node, NodeNameEnum name) {
     if(rsCompabilityMode(node)) {
         return rsNodeNameMap.at(name);

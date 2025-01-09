@@ -53,6 +53,7 @@ extern const std::unordered_map<std::string, dai::ColorCameraProperties::SensorR
 extern const std::unordered_map<std::string, dai::CameraControl::FrameSyncMode> fSyncModeMap;
 extern const std::unordered_map<std::string, dai::CameraImageOrientation> cameraImageOrientationMap;
 bool rsCompabilityMode(ros::NodeHandle node);
+std::string tfPrefix(ros::NodeHandle node);
 std::string getSocketName(ros::NodeHandle node, dai::CameraBoardSocket socket);
 std::string getNodeName(ros::NodeHandle node, NodeNameEnum name);
 void basicCameraPub(const std::string& /*name*/,
