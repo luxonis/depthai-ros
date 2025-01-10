@@ -21,7 +21,7 @@ ImagePublisher::ImagePublisher(ros::NodeHandle node,
                                std::function<void(dai::Node::Input in)> linkFunc,
                                bool synced,
                                const utils::VideoEncoderConfig& encoderConfig)
-    : node(node), encConfig(encoderConfig), qName(qName), synced(synced), it(node) {
+    : node(node), it(node), encConfig(encoderConfig), qName(qName), synced(synced) {
     if(!synced) {
         xout = utils::setupXout(pipeline, qName);
     }
@@ -124,10 +124,10 @@ void ImagePublisher::createInfoManager(std::shared_ptr<dai::Device> device) {
     } else {
         infoManager->loadCameraInfo(pubConfig.calibrationFile);
     }
-};
+}
 ImagePublisher::~ImagePublisher() {
     closeQueue();
-};
+}
 
 void ImagePublisher::closeQueue() {
     if(dataQ) dataQ->close();

@@ -4,11 +4,13 @@ project(depthai_examples VERSION 2.10.5 LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-add_compile_options(-g)
 
 ## is used, also find other catkin packages
 if(POLICY CMP0057)
     cmake_policy(SET CMP0057 NEW)
+endif()
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic -Wno-deprecated-declarations -Wno-maybe-uninitialized)
 endif()
 
 set(_opencv_version 4)

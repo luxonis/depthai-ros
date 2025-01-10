@@ -17,6 +17,6 @@ std::shared_ptr<dai::node::XLinkOut> setupXout(std::shared_ptr<dai::Pipeline> pi
     xout->input.setWaitForMessage(false);
     xout->input.setQueueSize(1);
     return xout;
-};
+}
 }  // namespace utils
 }  // namespace depthai_ros_driver

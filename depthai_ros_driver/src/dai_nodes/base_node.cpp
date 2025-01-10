@@ -48,14 +48,14 @@ dai::Node::Input BaseNode::getInput(int /*linkType*/) {
 }
 dai::Node::Input BaseNode::getInputByName(const std::string& /*name*/) {
     throw(std::runtime_error("getInputByName() not implemented"));
-};
+}
 
 void BaseNode::closeQueues() {
     throw(std::runtime_error("closeQueues() not implemented"));
 }
 std::shared_ptr<dai::node::XLinkOut> BaseNode::setupXout(std::shared_ptr<dai::Pipeline> pipeline, const std::string& name) {
     return utils::setupXout(pipeline, name);
-};
+}
 
 std::shared_ptr<sensor_helpers::ImagePublisher> BaseNode::setupOutput(std::shared_ptr<dai::Pipeline> pipeline,
                                                                       const std::string& qName,
@@ -63,7 +63,7 @@ std::shared_ptr<sensor_helpers::ImagePublisher> BaseNode::setupOutput(std::share
                                                                       bool isSynced,
                                                                       const utils::VideoEncoderConfig& encoderConfig) {
     return std::make_shared<sensor_helpers::ImagePublisher>(getROSNode(), pipeline, qName, nodeLink, isSynced, encoderConfig);
-};
+}
 
 void BaseNode::setNames() {
     throw(std::runtime_error("setNames() not implemented"));
@@ -82,7 +82,7 @@ void BaseNode::link(dai::Node::Input /*in*/, int /*linkType = 0*/) {
 }
 std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> BaseNode::getPublishers() {
     return std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>>();
-};
+}
 
 void BaseNode::updateParams(parametersConfig& /*config*/) {
     return;
