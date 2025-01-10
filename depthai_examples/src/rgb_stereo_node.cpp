@@ -118,7 +118,6 @@ int main(int argc, char** argv) {
     auto stereoQueue = device.getOutputQueue("depth", 30, false);
     auto previewQueue = device.getOutputQueue("video", 30, false);
 
-    bool latched_cam_info = true;
     std::string stereo_uri = camera_param_uri + "/" + "right.yaml";
     std::string color_uri = camera_param_uri + "/" + "color.yaml";
 
