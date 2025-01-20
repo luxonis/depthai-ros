@@ -1,6 +1,7 @@
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 
 #include "camera_info_manager/camera_info_manager.h"
+#include "depthai-shared/common/CameraSensorType.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/VideoEncoder.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
@@ -8,19 +9,21 @@
 namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace sensor_helpers {
-std::vector<ImageSensor> availableSensors = {{"IMX378", "1080P", {"12MP", "4K", "1080P"}, true},
-                                             {"OV9282", "720P", {"800P", "720P", "400P"}, false},
-                                             {"OV9782", "720P", {"800P", "720P", "400P"}, true},
-                                             {"OV9281", "720P", {"800P", "720P", "400P"}, true},
-                                             {"IMX214", "1080P", {"13MP", "12MP", "4K", "1080P"}, true},
-                                             {"IMX412", "1080P", {"13MP", "12MP", "4K", "1080P"}, true},
-                                             {"OV7750", "480P", {"480P", "400P"}, false},
-                                             {"OV7251", "480P", {"480P", "400P"}, false},
-                                             {"IMX477", "1080P", {"12MP", "4K", "1080P"}, true},
-                                             {"IMX577", "1080P", {"12MP", "4K", "1080P"}, true},
-                                             {"AR0234", "1200P", {"1200P"}, true},
-                                             {"IMX582", "4K", {"48MP", "12MP", "4K"}, true},
-                                             {"LCM48", "4K", {"48MP", "12MP", "4K"}, true}};
+std::vector<ImageSensor> availableSensors = {{"IMX378", "1080P", {"12MP", "4K", "1080P"}, dai::CameraSensorType::COLOR},
+                                             {"IMX462", "1080P", {"1080P"}, dai::CameraSensorType::COLOR},
+                                             {"OV9282", "720P", {"800P", "720P", "400P"}, dai::CameraSensorType::MONO},
+                                             {"OV9782", "720P", {"800P", "720P", "400P"}, dai::CameraSensorType::COLOR},
+                                             {"OV9281", "720P", {"800P", "720P", "400P"}, dai::CameraSensorType::COLOR},
+                                             {"IMX214", "1080P", {"13MP", "12MP", "4K", "1080P"}, dai::CameraSensorType::COLOR},
+                                             {"IMX412", "1080P", {"13MP", "12MP", "4K", "1080P"}, dai::CameraSensorType::COLOR},
+                                             {"OV7750", "480P", {"480P", "400P"}, dai::CameraSensorType::MONO},
+                                             {"OV7251", "480P", {"480P", "400P"}, dai::CameraSensorType::MONO},
+                                             {"IMX477", "1080P", {"12MP", "4K", "1080P"}, dai::CameraSensorType::COLOR},
+                                             {"IMX577", "1080P", {"12MP", "4K", "1080P"}, dai::CameraSensorType::COLOR},
+                                             {"AR0234", "1200P", {"1200P"}, dai::CameraSensorType::COLOR},
+                                             {"IMX582", "4K", {"48MP", "12MP", "4K"}, dai::CameraSensorType::COLOR},
+                                             {"LCM48", "4K", {"48MP", "12MP", "4K"}, dai::CameraSensorType::COLOR},
+                                             {"TINY1C", "256", {"256"}, dai::CameraSensorType::THERMAL}};
 const std::unordered_map<std::string, dai::MonoCameraProperties::SensorResolution> monoResolutionMap = {
     {"400P", dai::MonoCameraProperties::SensorResolution::THE_400_P},
     {"480P", dai::MonoCameraProperties::SensorResolution::THE_480_P},
@@ -61,8 +64,8 @@ const std::unordered_map<dai::CameraBoardSocket, std::string> socketNameMap = {
     {dai::CameraBoardSocket::CAM_A, "rgb"},
     {dai::CameraBoardSocket::CAM_B, "left"},
     {dai::CameraBoardSocket::CAM_C, "right"},
-    {dai::CameraBoardSocket::CAM_D, "left_back"},
-    {dai::CameraBoardSocket::CAM_E, "right_back"},
+    {dai::CameraBoardSocket::CAM_D, "cam_d"},
+    {dai::CameraBoardSocket::CAM_E, "cam_e"},
 };
 const std::unordered_map<dai::CameraBoardSocket, std::string> rsSocketNameMap = {
     {dai::CameraBoardSocket::AUTO, "color"},

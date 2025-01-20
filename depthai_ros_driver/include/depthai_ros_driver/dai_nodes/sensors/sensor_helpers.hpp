@@ -10,6 +10,7 @@
 #include "depthai-shared/properties/VideoEncoderProperties.hpp"
 #include "depthai/pipeline/datatype/ADatatype.hpp"
 #include "depthai/pipeline/datatype/CameraControl.hpp"
+#include "depthai-shared/common/CameraSensorType.hpp"
 #include "image_transport/camera_publisher.h"
 #include "sensor_msgs/CameraInfo.h"
 
@@ -39,7 +40,7 @@ struct ImageSensor {
     std::string name;
     std::string defaultResolution;
     std::vector<std::string> allowedResolutions;
-    bool color;
+    dai::CameraSensorType sensorType;
     void getSizeFromResolution(const dai::ColorCameraProperties::SensorResolution& res, int& width, int& height);
 };
 

@@ -1,9 +1,11 @@
 #include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
 
 #include "depthai-shared/common/CameraBoardSocket.hpp"
+#include "depthai-shared/common/CameraFeatures.hpp"
 #include "depthai-shared/properties/ColorCameraProperties.hpp"
 #include "depthai/pipeline/node/ColorCamera.hpp"
 #include "depthai/pipeline/node/MonoCamera.hpp"
+#include "depthai/pipeline/node/Camera.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "ros/node_handle.h"
@@ -39,6 +41,16 @@ void SensorParamHandler::declareCommonParams(dai::CameraBoardSocket socket) {
     declareAndLogParam<bool>("i_synced", false);
     declareAndLogParam<bool>("i_publish_compressed", false);
 }
+
+void SensorParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, dai::CameraFeatures features, bool publish) {
+    cam->setBoardSocket(socketID);
+    cam->setFps(declareAndLogParam<double>("i_fps", 30.0));
+    declareAndLogParam<bool>("i_publish_topic", publish);
+    int width = declareAndLogParam<int>("i_width", features.width);
+    int height = declareAndLogParam<int>("i_height", features.height);
+    cam->setPreviewSize(width, height);
+}
+
 
 void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> monoCam, dai_nodes::sensor_helpers::ImageSensor sensor, bool publish) {
     monoCam->setBoardSocket(socketID);
