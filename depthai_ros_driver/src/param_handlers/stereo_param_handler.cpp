@@ -12,12 +12,14 @@
 namespace depthai_ros_driver {
 namespace param_handlers {
 StereoParamHandler::StereoParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name) : BaseParamHandler(node, name) {
-    depthPresetMap = {{"HIGH_ACCURACY", dai::node::StereoDepth::PresetMode::HIGH_ACCURACY},
-                      {"HIGH_DENSITY", dai::node::StereoDepth::PresetMode::HIGH_DENSITY},
-                      {"DEFAULT", dai::node::StereoDepth::PresetMode::DEFAULT},
-                      {"FACE", dai::node::StereoDepth::PresetMode::FACE},
-                      {"HIGH_DETAIL", dai::node::StereoDepth::PresetMode::HIGH_DETAIL},
-                      {"ROBOTICS", dai::node::StereoDepth::PresetMode::ROBOTICS}};
+    depthPresetMap = {
+        {"HIGH_ACCURACY", static_cast<dai::node::StereoDepth::PresetMode>(0)}, // HIGH_ACCURACY = 0
+        {"HIGH_DENSITY", static_cast<dai::node::StereoDepth::PresetMode>(1)},  // HIGH_DENSITY = 1
+        {"DEFAULT", static_cast<dai::node::StereoDepth::PresetMode>(2)},    // DEFAULT = 2
+        {"FACE", static_cast<dai::node::StereoDepth::PresetMode>(3)},       // FACE = 3
+        {"HIGH_DETAIL", static_cast<dai::node::StereoDepth::PresetMode>(4)}, // HIGH_DETAIL = 4
+        {"ROBOTICS", static_cast<dai::node::StereoDepth::PresetMode>(5)}     // ROBOTICS = 5
+    };
 
     disparityWidthMap = {
         {"DISPARITY_64", dai::StereoDepthConfig::CostMatching::DisparityWidth::DISPARITY_64},

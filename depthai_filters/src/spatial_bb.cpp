@@ -1,6 +1,6 @@
 #include "depthai_filters/spatial_bb.hpp"
 
-#include "cv_bridge/cv_bridge.h"
+#include "cv_bridge/cv_bridge.hpp"
 #include "depthai_filters/utils.hpp"
 #include "geometry_msgs/msg/point32.hpp"
 #include "opencv2/opencv.hpp"
