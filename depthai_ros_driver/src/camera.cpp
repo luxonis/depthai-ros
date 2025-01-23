@@ -30,10 +30,15 @@ void Camera::onConfigure() {
     setupQueues();
     setIR();
     paramCBHandle = this->add_on_set_parameters_callback(std::bind(&Camera::parameterCB, this, std::placeholders::_1));
-    startSrv = this->create_service<Trigger>("~/start_camera", std::bind(&Camera::startCB, this, std::placeholders::_1, std::placeholders::_2));
-    stopSrv = this->create_service<Trigger>("~/stop_camera", std::bind(&Camera::stopCB, this, std::placeholders::_1, std::placeholders::_2));
-    savePipelineSrv = this->create_service<Trigger>("~/save_pipeline", std::bind(&Camera::savePipelineCB, this, std::placeholders::_1, std::placeholders::_2));
-    saveCalibSrv = this->create_service<Trigger>("~/save_calibration", std::bind(&Camera::saveCalibCB, this, std::placeholders::_1, std::placeholders::_2));
+    srvGroup = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+    startSrv = this->create_service<Trigger>(
+        "~/start_camera", std::bind(&Camera::startCB, this, std::placeholders::_1, std::placeholders::_2), rmw_qos_profile_services_default, srvGroup);
+    stopSrv = this->create_service<Trigger>(
+        "~/stop_camera", std::bind(&Camera::stopCB, this, std::placeholders::_1, std::placeholders::_2), rmw_qos_profile_services_default, srvGroup);
+    savePipelineSrv = this->create_service<Trigger>(
+        "~/save_pipeline", std::bind(&Camera::savePipelineCB, this, std::placeholders::_1, std::placeholders::_2), rmw_qos_profile_services_default, srvGroup);
+    saveCalibSrv = this->create_service<Trigger>(
+        "~/save_calibration", std::bind(&Camera::saveCalibCB, this, std::placeholders::_1, std::placeholders::_2), rmw_qos_profile_services_default, srvGroup);
 
     // If model name not set get one from the device
     std::string camModel = ph->getParam<std::string>("i_tf_camera_model");
@@ -60,7 +65,7 @@ void Camera::onConfigure() {
                                                         ph->getParam<std::string>("i_tf_custom_xacro_args"),
                                                         ph->getParam<bool>("i_rs_compat"));
     }
-    diagSub = this->create_subscription<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10, std::bind(&Camera::diagCB, this, std::placeholders::_1));
+    // diagSub = this->create_subscription<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10, std::bind(&Camera::diagCB, this, std::placeholders::_1));
     RCLCPP_INFO(get_logger(), "Camera ready!");
 }
 
@@ -89,13 +94,14 @@ void Camera::start() {
 void Camera::stop() {
     RCLCPP_INFO(get_logger(), "Stopping camera.");
     if(camRunning) {
-        for(const auto& node : daiNodes) {
-            node->closeQueues();
-        }
+        // for(const auto& node : daiNodes) {
+        //     node->closeQueues();
+        // }
         daiNodes.clear();
         device.reset();
         pipeline.reset();
         camRunning = false;
+        RCLCPP_INFO(get_logger(), "Camera stopped!");
     } else {
         RCLCPP_INFO(get_logger(), "Camera already stopped!");
     }

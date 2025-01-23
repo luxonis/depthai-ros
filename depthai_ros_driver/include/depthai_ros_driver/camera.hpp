@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <rclcpp/callback_group.hpp>
 #include <string>
 #include <vector>
 
@@ -92,9 +93,10 @@ class Camera : public rclcpp::Node {
     std::shared_ptr<dai::Pipeline> pipeline;
     std::shared_ptr<dai::Device> device;
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
-    bool camRunning = false;
+    std::atomic<bool> camRunning = false;
     bool initialized = false;
     std::unique_ptr<dai::ros::TFPublisher> tfPub;
     rclcpp::TimerBase::SharedPtr startTimer;
+    rclcpp::CallbackGroup::SharedPtr srvGroup;
 };
 }  // namespace depthai_ros_driver
