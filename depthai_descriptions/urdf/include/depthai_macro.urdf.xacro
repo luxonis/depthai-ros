@@ -2,8 +2,7 @@
 <robot name="depthai_camera"
 	xmlns:xacro="http://ros.org/wiki/xacro">
 
-	<xacro:macro name="depthai_camera"
-		params="camera_name camera_model parent base_frame 
+	<xacro:macro name="depthai_camera" params="camera_name camera_model parent base_frame 
                                            cam_pos_x cam_pos_y cam_pos_z 
                                            cam_roll cam_pitch cam_yaw r:=0.8 g:=0.8 b:=0.8 a:=0.8 simulation:=false rs_compat:=false">
 
@@ -28,7 +27,7 @@
 			<xacro:property name="right_name" value="right" />
 		</xacro:unless>
 
-		<xacro:if value="${model in ['OAK-D-SR']}">
+		<xacro:if value="${model in ['OAK-D-SR', 'OAK-T']}">
 			<xacro:property name="baseline" value="0.02" />
 		</xacro:if>
 
@@ -36,10 +35,7 @@
 			<xacro:property name="has_imu" value="true" />
 		</xacro:if>
 
-		<xacro:base camera_name="${camera_name}" parent="${parent}" camera_model="${camera_model}"
-			base_frame="${base_frame}" cam_pos_x="${cam_pos_x}" cam_pos_y="${cam_pos_y}"
-			cam_pos_z="${cam_pos_z}" cam_roll="${cam_roll}" cam_pitch="${cam_pitch}"
-			cam_yaw="${cam_yaw}" has_imu="${has_imu}" simulation="${simulation}" />
+		<xacro:base camera_name="${camera_name}" parent="${parent}" camera_model="${camera_model}" base_frame="${base_frame}" cam_pos_x="${cam_pos_x}" cam_pos_y="${cam_pos_y}" cam_pos_z="${cam_pos_z}" cam_roll="${cam_roll}" cam_pitch="${cam_pitch}" cam_yaw="${cam_yaw}" has_imu="${has_imu}" simulation="${simulation}" />
 
 		<!-- RGB Camera -->
 		<xacro:unless value="${model in ['OAK-D-SR']}">
@@ -60,7 +56,7 @@
 			</joint>
 		</xacro:unless>
 		<!-- LR and SR POE have different baselines and positions -->
-		<xacro:unless value="${model in ['OAK-D-LR', 'OAK-D-SR-POE']}">
+		<xacro:unless value="${model in ['OAK-D-LR', 'OAK-D-SR-POE', 'OAK-T']}">
 
 			<!-- Left Camera -->
 			<link name="${camera_name}_${left_name}_${frame_suffix}" />
@@ -137,7 +133,7 @@
 		</xacro:if>
 
 		<xacro:if value="${model in ['OAK-D-SR-POE']}">
-		
+
 			<!-- left Camera -->
 			<link name="${camera_name}_${left_name}_${frame_suffix}" />
 
@@ -170,6 +166,26 @@
 				<origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}" />
 				<parent link="${camera_name}_${right_name}_${frame_suffix}" />
 				<child link="${camera_name}_${right_name}_${optical_frame_suffix}" />
+			</joint>
+		</xacro:if>
+
+		<xacro:if value="${model in ['OAK-T']}">
+
+			<!-- right Camera -->
+			<link name="${camera_name}_cam_e_${frame_suffix}" />
+
+			<joint name="${camera_name}_right_camera_joint" type="fixed">
+				<parent link="${base_frame}" />
+				<child link="${camera_name}_cam_e_${frame_suffix}" />
+				<origin xyz="0 -0.025 0" rpy="0 0 0" />
+			</joint>
+
+			<link name="${camera_name}_cam_e_${optical_frame_suffix}" />
+
+			<joint name="${camera_name}_right_camera_optical_joint" type="fixed">
+				<origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}" />
+				<parent link="${camera_name}_cam_e_${frame_suffix}" />
+				<child link="${camera_name}_cam_e_${optical_frame_suffix}" />
 			</joint>
 		</xacro:if>
 	</xacro:macro>
