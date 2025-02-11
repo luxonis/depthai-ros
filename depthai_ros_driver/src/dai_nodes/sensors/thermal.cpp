@@ -39,7 +39,7 @@ void Thermal::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
         encConfig.quality = ph->getParam<int>("i_low_bandwidth_quality");
         encConfig.enabled = ph->getParam<bool>("i_low_bandwidth");
 
-        thermalPub = setupOutput(pipeline, thermalQName,[&](auto input) { camNode->preview.link(input); }, ph->getParam<bool>("i_synced"), encConfig);
+        thermalPub = setupOutput(pipeline, thermalQName,[&](auto input) { camNode->video.link(input); }, ph->getParam<bool>("i_synced"), encConfig);
     }
 }
 

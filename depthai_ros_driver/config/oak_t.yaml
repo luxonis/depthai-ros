@@ -1,0 +1,7 @@
+
+/**:
+  ros__parameters:
+    camera:
+      i_nn_type: none
+      i_enable_ir: false
+      i_pipeline_type: Thermal

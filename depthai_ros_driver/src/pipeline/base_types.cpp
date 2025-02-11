@@ -208,6 +208,34 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBToF::createPipeline(std::sh
     daiNodes.push_back(std::move(tof));
     return daiNodes;
 }
+std::vector<std::unique_ptr<dai_nodes::BaseNode>> Thermal::createPipeline(std::shared_ptr<rclcpp::Node> node,
+                                                                         std::shared_ptr<dai::Device> device,
+                                                                         std::shared_ptr<dai::Pipeline> pipeline,
+                                                                         const std::string& nnType) {
+    using namespace dai_nodes::sensor_helpers;
+    std::string nTypeUpCase = utils::getUpperCaseStr(nnType);
+    auto nType = utils::getValFromMap(nTypeUpCase, nnTypeMap);
+    std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
+    auto rgb = std::make_unique<dai_nodes::SensorWrapper>("rgb", node, pipeline, device, dai::CameraBoardSocket::CAM_A);
+    switch(nType) {
+        case NNType::None:
+            break;
+        case NNType::RGB: {
+            auto nn = createNN(node, pipeline, *rgb);
+            daiNodes.push_back(std::move(nn));
+            break;
+        }
+        case NNType::Spatial: {
+            RCLCPP_WARN(node->get_logger(), "Spatial NN selected, but configuration is RGB. Please change camera.i_nn_type parameter to RGB.");
+        }
+        default:
+            break;
+    }
+    auto thermal = std::make_unique<dai_nodes::SensorWrapper>("thermal", node, pipeline, device, dai::CameraBoardSocket::CAM_E);
+    daiNodes.push_back(std::move(rgb));
+    daiNodes.push_back(std::move(thermal));
+    return daiNodes;
+}
 }  // namespace pipeline_gen
 }  // namespace depthai_ros_driver
 
@@ -223,3 +251,4 @@ PLUGINLIB_EXPORT_CLASS(depthai_ros_driver::pipeline_gen::StereoToF, depthai_ros_
 PLUGINLIB_EXPORT_CLASS(depthai_ros_driver::pipeline_gen::DepthToF, depthai_ros_driver::pipeline_gen::BasePipeline)
 PLUGINLIB_EXPORT_CLASS(depthai_ros_driver::pipeline_gen::ToF, depthai_ros_driver::pipeline_gen::BasePipeline)
 PLUGINLIB_EXPORT_CLASS(depthai_ros_driver::pipeline_gen::RGBToF, depthai_ros_driver::pipeline_gen::BasePipeline)
+PLUGINLIB_EXPORT_CLASS(depthai_ros_driver::pipeline_gen::Thermal, depthai_ros_driver::pipeline_gen::BasePipeline)
