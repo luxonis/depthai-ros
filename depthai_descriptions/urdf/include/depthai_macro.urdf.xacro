@@ -60,7 +60,7 @@
 			</joint>
 		</xacro:unless>
 		<!-- LR and SR POE have different baselines and positions -->
-		<xacro:unless value="${model in ['OAK-D-LR', 'OAK-D-SR-POE']}">
+		<xacro:unless value="${model in ['OAK-D-LR', 'OAK-D-SR-POE', 'OAK-T']}">
 
 			<!-- Left Camera -->
 			<link name="${camera_name}_${left_name}_${frame_suffix}" />
@@ -170,6 +170,25 @@
 				<origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}" />
 				<parent link="${camera_name}_${right_name}_${frame_suffix}" />
 				<child link="${camera_name}_${right_name}_${optical_frame_suffix}" />
+			</joint>
+		</xacro:if>
+		<xacro:if value="${model in ['OAK-T']}">
+
+			<!-- right Camera -->
+			<link name="${camera_name}_cam_e_${frame_suffix}" />
+
+			<joint name="${camera_name}_right_camera_joint" type="fixed">
+				<parent link="${base_frame}" />
+				<child link="${camera_name}_cam_e_${frame_suffix}" />
+				<origin xyz="0 -0.025 0" rpy="0 0 0" />
+			</joint>
+
+			<link name="${camera_name}_cam_e_${optical_frame_suffix}" />
+
+			<joint name="${camera_name}_right_camera_optical_joint" type="fixed">
+				<origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}" />
+				<parent link="${camera_name}_cam_e_${frame_suffix}" />
+				<child link="${camera_name}_cam_e_${optical_frame_suffix}" />
 			</joint>
 		</xacro:if>
 	</xacro:macro>
