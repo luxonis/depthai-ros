@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-project(depthai_bridge VERSION 2.10.4 LANGUAGES CXX C)
+project(depthai_bridge VERSION 2.10.5 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -28,6 +28,7 @@ message(STATUS "------------------------------------------")
 
 set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
 
+find_package(ament_index_cpp REQUIRED)
 find_package(camera_info_manager REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(depthai_ros_msgs REQUIRED)
@@ -45,6 +46,7 @@ find_package(composition_interfaces REQUIRED)
 find_package(ffmpeg_image_transport_msgs REQUIRED)
 
 set(dependencies
+  ament_index_cpp
   camera_info_manager
   cv_bridge
   depthai_ros_msgs

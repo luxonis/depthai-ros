@@ -1,5 +1,7 @@
 #include "depthai_ros_driver/param_handlers/stereo_param_handler.hpp"
 
+#include <depthai-shared/datatype/RawStereoDepthConfig.hpp>
+
 #include "depthai-shared/common/CameraFeatures.hpp"
 #include "depthai/pipeline/datatype/StereoDepthConfig.hpp"
 #include "depthai/pipeline/node/StereoDepth.hpp"
@@ -10,10 +12,12 @@
 namespace depthai_ros_driver {
 namespace param_handlers {
 StereoParamHandler::StereoParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name) : BaseParamHandler(node, name) {
-    depthPresetMap = {
-        {"HIGH_ACCURACY", dai::node::StereoDepth::PresetMode::HIGH_ACCURACY},
-        {"HIGH_DENSITY", dai::node::StereoDepth::PresetMode::HIGH_DENSITY},
-    };
+    depthPresetMap = {{"HIGH_ACCURACY", dai::node::StereoDepth::PresetMode::HIGH_ACCURACY},
+                      {"HIGH_DENSITY", dai::node::StereoDepth::PresetMode::HIGH_DENSITY},
+                      {"DEFAULT", dai::node::StereoDepth::PresetMode::DEFAULT},
+                      {"FACE", dai::node::StereoDepth::PresetMode::FACE},
+                      {"HIGH_DETAIL", dai::node::StereoDepth::PresetMode::HIGH_DETAIL},
+                      {"ROBOTICS", dai::node::StereoDepth::PresetMode::ROBOTICS}};
 
     disparityWidthMap = {
         {"DISPARITY_64", dai::StereoDepthConfig::CostMatching::DisparityWidth::DISPARITY_64},
@@ -139,34 +143,35 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     if(declareAndLogParam<bool>("i_subpixel", true) && !lowBandwidth) {
         stereo->initialConfig.setSubpixel(true);
         stereo->initialConfig.setSubpixelFractionalBits(declareAndLogParam<int>("i_subpixel_fractional_bits", 3));
-    }
-    else if(lowBandwidth) {
+    } else {
+        stereo->initialConfig.setSubpixel(false);
         RCLCPP_INFO(getROSNode()->get_logger(), "Subpixel disabled due to low bandwidth mode");
     }
     stereo->setRectifyEdgeFillColor(declareAndLogParam<int>("i_rectify_edge_fill_color", 0));
     if(declareAndLogParam<bool>("i_enable_alpha_scaling", false)) {
         stereo->setAlphaScaling(declareAndLogParam<float>("i_alpha_scaling", 0.0));
     }
-    auto config = stereo->initialConfig.get();
+    dai::RawStereoDepthConfig config = stereo->initialConfig.get();
     config.costMatching.disparityWidth = utils::getValFromMap(declareAndLogParam<std::string>("i_disparity_width", "DISPARITY_96"), disparityWidthMap);
     stereo->setExtendedDisparity(declareAndLogParam<bool>("i_extended_disp", false));
     config.costMatching.enableCompanding = declareAndLogParam<bool>("i_enable_companding", false);
-    config.postProcessing.temporalFilter.enable = declareAndLogParam<bool>("i_enable_temporal_filter", false);
-    if(config.postProcessing.temporalFilter.enable) {
+    if(declareAndLogParam<bool>("i_enable_temporal_filter", false)) {
+        config.postProcessing.temporalFilter.enable = true;
         config.postProcessing.temporalFilter.alpha = declareAndLogParam<float>("i_temporal_filter_alpha", 0.4);
         config.postProcessing.temporalFilter.delta = declareAndLogParam<int>("i_temporal_filter_delta", 20);
         config.postProcessing.temporalFilter.persistencyMode =
             utils::getValFromMap(declareAndLogParam<std::string>("i_temporal_filter_persistency", "VALID_2_IN_LAST_4"), temporalPersistencyMap);
     }
-    config.postProcessing.speckleFilter.enable = declareAndLogParam<bool>("i_enable_speckle_filter", false);
-    if(config.postProcessing.speckleFilter.enable) {
+    if(declareAndLogParam<bool>("i_enable_speckle_filter", false)) {
+        config.postProcessing.speckleFilter.enable = true;
         config.postProcessing.speckleFilter.speckleRange = declareAndLogParam<int>("i_speckle_filter_speckle_range", 50);
     }
     if(declareAndLogParam<bool>("i_enable_disparity_shift", false)) {
         config.algorithmControl.disparityShift = declareAndLogParam<int>("i_disparity_shift", 0);
     }
-    config.postProcessing.spatialFilter.enable = declareAndLogParam<bool>("i_enable_spatial_filter", false);
-    if(config.postProcessing.spatialFilter.enable) {
+
+    if(declareAndLogParam<bool>("i_enable_spatial_filter", false)) {
+        config.postProcessing.spatialFilter.enable = true;
         config.postProcessing.spatialFilter.holeFillingRadius = declareAndLogParam<int>("i_spatial_filter_hole_filling_radius", 2);
         config.postProcessing.spatialFilter.alpha = declareAndLogParam<float>("i_spatial_filter_alpha", 0.5);
         config.postProcessing.spatialFilter.delta = declareAndLogParam<int>("i_spatial_filter_delta", 20);

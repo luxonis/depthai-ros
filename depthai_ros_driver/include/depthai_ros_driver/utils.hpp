@@ -47,6 +47,7 @@ struct ImgConverterConfig {
     bool getBaseDeviceTimestamp = false;
     bool updateROSBaseTimeOnRosMsg = false;
     bool lowBandwidth = false;
+    bool isStereo = false;
     dai::RawImgFrame::Type encoding = dai::RawImgFrame::Type::BGR888i;
     bool addExposureOffset = false;
     dai::CameraExposureOffset expOffset = dai::CameraExposureOffset::START;
@@ -66,7 +67,7 @@ struct ImgPublisherConfig {
     dai::CameraBoardSocket rightSocket = dai::CameraBoardSocket::CAM_C;
     std::string calibrationFile = "";
     std::string topicSuffix = "/image_raw";
-	std::string infoSuffix = "";
+    std::string infoSuffix = "";
     std::string compressedTopicSuffix = "/image_raw/compressed";
     std::string infoMgrSuffix = "";
     bool rectified = false;

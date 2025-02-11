@@ -2,6 +2,12 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.10.5 (2025-01-09)
+-------------------
+* Fix low bandwidth issues
+* New stereo filters
+* Diagnostics update
+* Fix IR calculation
 
 2.10.4 (2024-11-07)
 -------------------

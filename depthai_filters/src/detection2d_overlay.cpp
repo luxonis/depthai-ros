@@ -13,8 +13,8 @@ Detection2DOverlay::Detection2DOverlay(const rclcpp::NodeOptions& options) : rcl
 void Detection2DOverlay::onInit() {
     previewSub.subscribe(this, "rgb/preview/image_raw");
     detSub.subscribe(this, "nn/detections");
-    sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), previewSub,  detSub);
-    sync->registerCallback(std::bind(&Detection2DOverlay::overlayCB, this, std::placeholders::_1, std::placeholders::_2 ));
+    sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), previewSub, detSub);
+    sync->registerCallback(std::bind(&Detection2DOverlay::overlayCB, this, std::placeholders::_1, std::placeholders::_2));
     overlayPub = this->create_publisher<sensor_msgs::msg::Image>("overlay", 10);
     labelMap = this->declare_parameter<std::vector<std::string>>("label_map", labelMap);
 }

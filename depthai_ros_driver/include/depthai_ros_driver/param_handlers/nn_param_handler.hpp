@@ -40,7 +40,7 @@ class NNParamHandler : public BaseParamHandler {
     template <typename T>
     void declareParams(std::shared_ptr<T> nn, std::shared_ptr<dai::node::ImageManip> imageManip) {
         declareAndLogParam<bool>("i_disable_resize", false);
-		declareAndLogParam<bool>("i_desqueeze_output", false);
+        declareAndLogParam<bool>("i_desqueeze_output", false);
         declareAndLogParam<bool>("i_enable_passthrough", false);
         declareAndLogParam<bool>("i_enable_passthrough_depth", false);
         declareAndLogParam<bool>("i_get_base_device_timestamp", false);
