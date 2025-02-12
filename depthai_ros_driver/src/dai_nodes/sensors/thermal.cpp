@@ -28,7 +28,7 @@ Thermal::Thermal(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> n
 Thermal::~Thermal() = default;
 void Thermal::setNames() {
     thermalQName = getName() + "_thermal";
-    rawQName = getName() + "thermal_raw";
+    rawQName = getName() + "_thermal_raw";
 }
 
 void Thermal::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
