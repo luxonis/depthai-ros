@@ -21,7 +21,7 @@ namespace param_handlers {
 class PipelineGenParamHandler;
 }  // namespace param_handlers
 namespace pipeline_gen {
-enum class PipelineType { RGB, RGBD, RGBStereo, Stereo, Depth, CamArray, DepthToF, StereoToF, ToF, RGBToF };
+enum class PipelineType { RGB, RGBD, RGBStereo, Stereo, Depth, CamArray, DepthToF, StereoToF, ToF, RGBToF, Thermal };
 
 class PipelineGenerator {
    public:

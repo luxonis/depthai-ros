@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="params_file" default="$(find depthai_ros_driver)/config/oak_t.yaml" />
+
+	<arg name="name" default="oak" />
+	<arg name="camera_model" default="OAK-T" />
+
+	<arg name="base_frame" default="oak-d_frame" />
+	<arg name="parent_frame" default="oak-d-base-frame" />
+
+	<arg name="cam_pos_x" default="0.0" />
+	<!-- Position respect to base frame (i.e. "base_link) -->
+	<arg name="cam_pos_y" default="0.0" />
+	<!-- Position respect to base frame (i.e. "base_link) -->
+	<arg name="cam_pos_z" default="0.0" />
+	<!-- Position respect to base frame (i.e. "base_link) -->
+	<arg name="cam_roll" default="0.0" />
+	<!-- Orientation respect to base frame (i.e. "base_link) -->
+	<arg name="cam_pitch" default="0.0" />
+	<!-- Orientation respect to base frame (i.e. "base_link) -->
+	<arg name="cam_yaw" default="0.0" />
+	<!-- Orientation respect to base frame (i.e. "base_link) -->
+
+	<rosparam file="$(arg params_file)" />
+	<include file="$(find depthai_ros_driver)/launch/camera.launch">
+		<arg name="name" value="$(arg name)" />
+		<arg name="params_file" value="$(arg params_file)" />
+		<arg name="base_frame" value="$(arg  name)" />
+		<arg name="parent_frame" value="$(arg  parent_frame)" />
+		<arg name="camera_model" value="$(arg  camera_model)" />
+		<arg name="cam_pos_x" value="$(arg  cam_pos_x)" />
+		<arg name="cam_pos_y" value="$(arg  cam_pos_y)" />
+		<arg name="cam_pos_z" value="$(arg  cam_pos_z)" />
+		<arg name="cam_roll" value="$(arg  cam_roll)" />
+		<arg name="cam_pitch" value="$(arg  cam_pitch)" />
+		<arg name="cam_yaw" value="$(arg  cam_yaw)" />
+		<arg name="rectify_rgb" value="false" />
+	</include>
+</launch>

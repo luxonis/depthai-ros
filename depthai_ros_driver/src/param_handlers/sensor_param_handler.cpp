@@ -48,6 +48,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, d
     declareAndLogParam<bool>("i_publish_topic", publish);
     int width = declareAndLogParam<int>("i_width", features.width);
     int height = declareAndLogParam<int>("i_height", features.height);
+    declareAndLogParam<bool>("i_publish_raw", true);
     cam->setPreviewSize(width, height);
 }
 
