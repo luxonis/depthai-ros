@@ -1,11 +1,11 @@
 #include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
-#include <depthai-shared/common/CameraFeatures.hpp>
 
 #include "depthai-shared/common/CameraBoardSocket.hpp"
+#include "depthai-shared/common/CameraFeatures.hpp"
 #include "depthai-shared/properties/ColorCameraProperties.hpp"
+#include "depthai/pipeline/node/Camera.hpp"
 #include "depthai/pipeline/node/ColorCamera.hpp"
 #include "depthai/pipeline/node/MonoCamera.hpp"
-#include "depthai/pipeline/node/Camera.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/logger.hpp"
@@ -51,7 +51,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, d
 
     int width = declareAndLogParam<int>("i_width", features.width);
     int height = declareAndLogParam<int>("i_height", features.height);
-    declareAndLogParam("i_publish_raw", false);
+    declareAndLogParam("i_publish_raw", true);
 
     cam->setPreviewSize(width, height);
 }
