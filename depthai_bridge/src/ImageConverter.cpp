@@ -445,8 +445,8 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
     // Setting Projection matrix if the cameras are stereo pair. Right as the first and left as the second.
     if(calibHandler.getStereoRightCameraId() != dai::CameraBoardSocket::AUTO && calibHandler.getStereoLeftCameraId() != dai::CameraBoardSocket::AUTO) {
         if(calibHandler.getStereoRightCameraId() == cameraId || calibHandler.getStereoLeftCameraId() == cameraId) {
-            std::vector<std::vector<float>> stereoIntrinsics = calibHandler.getCameraIntrinsics(
-                cameraId, cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);
+            std::vector<std::vector<float>> stereoIntrinsics =
+                calibHandler.getCameraIntrinsics(cameraId, cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);
 
             if(alphaScalingEnabled) {
                 cv::Mat cameraMatrix = cv::Mat(3, 3, CV_64F);

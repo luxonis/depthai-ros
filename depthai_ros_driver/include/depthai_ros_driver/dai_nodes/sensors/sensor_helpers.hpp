@@ -4,13 +4,13 @@
 #include <string>
 #include <vector>
 
+#include "depthai-shared/common/CameraSensorType.hpp"
 #include "depthai-shared/datatype/RawImgFrame.hpp"
 #include "depthai-shared/properties/ColorCameraProperties.hpp"
 #include "depthai-shared/properties/MonoCameraProperties.hpp"
 #include "depthai-shared/properties/VideoEncoderProperties.hpp"
 #include "depthai/pipeline/datatype/ADatatype.hpp"
 #include "depthai/pipeline/datatype/CameraControl.hpp"
-#include "depthai-shared/common/CameraSensorType.hpp"
 #include "image_transport/camera_publisher.h"
 #include "sensor_msgs/CameraInfo.h"
 
