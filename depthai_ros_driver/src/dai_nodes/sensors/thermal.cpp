@@ -2,18 +2,11 @@
 #include "depthai_ros_driver/dai_nodes/sensors/thermal.hpp"
 
 #include <memory>
-#include <sensor_msgs/image_encodings.hpp>
 
-#include "camera_info_manager/camera_info_manager.hpp"
-#include "cv_bridge/cv_bridge.h"
 #include "depthai-shared/common/CameraFeatures.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
-#include "depthai/pipeline/datatype/ImgFrame.hpp"
 #include "depthai/pipeline/node/Camera.hpp"
-#include "depthai/pipeline/node/XLinkIn.hpp"
-#include "depthai/pipeline/node/XLinkOut.hpp"
-#include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 #include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
 #include "depthai_ros_driver/utils.hpp"
