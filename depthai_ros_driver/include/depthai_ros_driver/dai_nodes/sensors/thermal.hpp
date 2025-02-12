@@ -16,6 +16,9 @@ namespace node {
 class Camera;
 class XLinkOut;
 }  // namespace node
+namespace ros {
+class ImageConverter;
+}
 }  // namespace dai
 
 namespace camera_info_manager {
@@ -54,6 +57,8 @@ class Thermal : public BaseNode {
     void thermalRawCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
     std::shared_ptr<sensor_helpers::ImagePublisher> thermalPub;
     std::shared_ptr<dai::node::Camera> camNode;
+    std::shared_ptr<dai::ros::ImageConverter> imageConverter;
+    std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
     std::unique_ptr<param_handlers::SensorParamHandler> ph;
     image_transport::CameraPublisher rawPub;
     dai::CameraBoardSocket boardSocket;
