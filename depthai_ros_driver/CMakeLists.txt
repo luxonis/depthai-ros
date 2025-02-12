@@ -52,7 +52,6 @@ vision_msgs
 
 set(CAM_DEPS
 depthai 
-depthai
 rclcpp 
 rclcpp_components 
 std_srvs
