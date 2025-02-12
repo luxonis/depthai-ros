@@ -2,19 +2,25 @@
 #pragma once
 
 #include <depthai-shared/common/CameraFeatures.hpp>
+#include <depthai/device/DataQueue.hpp>
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
+#include "image_transport/image_transport.hpp"
 
 namespace dai {
 class Pipeline;
 class Device;
-class DataInputQueue;
+class DataOutputQueue;
 class ADatatype;
 namespace node {
 class Camera;
+class XLinkOut;
 }  // namespace node
 }  // namespace dai
 
+namespace camera_info_manager {
+class CameraInfoManager;
+}
 namespace rclcpp {
 class Node;
 class Parameter;
@@ -45,11 +51,16 @@ class Thermal : public BaseNode {
     void closeQueues() override;
 
    private:
+    void thermalRawCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
     std::shared_ptr<sensor_helpers::ImagePublisher> thermalPub;
     std::shared_ptr<dai::node::Camera> camNode;
     std::unique_ptr<param_handlers::SensorParamHandler> ph;
+    image_transport::CameraPublisher rawPub;
     dai::CameraBoardSocket boardSocket;
-    std::string thermalQName;
+    sensor_msgs::msg::CameraInfo rawInfo;
+    std::shared_ptr<dai::node::XLinkOut> xoutRaw;
+    std::shared_ptr<dai::DataOutputQueue> rawQ;
+    std::string thermalQName, rawQName;
 };
 
 }  // namespace dai_nodes

@@ -462,7 +462,7 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
     if(calibHandler.getStereoRightCameraId() != dai::CameraBoardSocket::AUTO && calibHandler.getStereoLeftCameraId() != dai::CameraBoardSocket::AUTO) {
         if(calibHandler.getStereoRightCameraId() == cameraId || calibHandler.getStereoLeftCameraId() == cameraId) {
             std::vector<std::vector<float>> stereoIntrinsics = calibHandler.getCameraIntrinsics(
-                calibHandler.getStereoRightCameraId(), cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);
+                cameraId, cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);
 
             if(alphaScalingEnabled) {
                 cv::Mat cameraMatrix = cv::Mat(3, 3, CV_64F);

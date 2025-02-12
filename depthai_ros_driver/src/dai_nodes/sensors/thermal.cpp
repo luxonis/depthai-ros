@@ -1,11 +1,17 @@
 
 #include "depthai_ros_driver/dai_nodes/sensors/thermal.hpp"
-#include <depthai-shared/common/CameraFeatures.hpp>
 
+#include <memory>
+#include <sensor_msgs/image_encodings.hpp>
+
+#include "cv_bridge/cv_bridge.h"
+#include "depthai-shared/common/CameraFeatures.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/datatype/ImgFrame.hpp"
 #include "depthai/pipeline/node/Camera.hpp"
 #include "depthai/pipeline/node/XLinkIn.hpp"
+#include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 #include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
 #include "depthai_ros_driver/utils.hpp"
@@ -27,11 +33,11 @@ Thermal::Thermal(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> n
 Thermal::~Thermal() = default;
 void Thermal::setNames() {
     thermalQName = getName() + "_thermal";
+    rawQName = getName() + "thermal_raw";
 }
 
 void Thermal::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     if(ph->getParam<bool>("i_publish_topic")) {
-
         utils::VideoEncoderConfig encConfig;
         encConfig.profile = static_cast<dai::VideoEncoderProperties::Profile>(ph->getParam<int>("i_low_bandwidth_profile"));
         encConfig.bitrate = ph->getParam<int>("i_low_bandwidth_bitrate");
@@ -39,7 +45,12 @@ void Thermal::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
         encConfig.quality = ph->getParam<int>("i_low_bandwidth_quality");
         encConfig.enabled = ph->getParam<bool>("i_low_bandwidth");
 
-        thermalPub = setupOutput(pipeline, thermalQName,[&](auto input) { camNode->video.link(input); }, ph->getParam<bool>("i_synced"), encConfig);
+        thermalPub = setupOutput(pipeline, thermalQName, [&](auto input) { camNode->video.link(input); }, ph->getParam<bool>("i_synced"), encConfig);
+    }
+    if(ph->getParam<bool>("i_publish_raw")) {
+        xoutRaw = pipeline->create<dai::node::XLinkOut>();
+        xoutRaw->setStreamName(rawQName);
+        camNode->raw.link(xoutRaw->input);
     }
 }
 
@@ -70,10 +81,36 @@ void Thermal::setupQueues(std::shared_ptr<dai::Device> device) {
 
         thermalPub->setup(device, convConfig, pubConfig);
     }
+    if(ph->getParam<bool>("i_publish_raw")) {
+        rawPub = image_transport::create_camera_publisher(getROSNode().get(), "~/" + getName() + "/raw_data/image_raw");
+        rawQ = device->getOutputQueue(rawQName, ph->getParam<int>("i_max_q_size"), false);
+        rawQ->addCallback([this](const std::string& name, const std::shared_ptr<dai::ADatatype>& data) { thermalRawCB(name, data); });
+    }
 }
+
+void Thermal::thermalRawCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
+    auto temp = std::dynamic_pointer_cast<dai::ImgFrame>(data);
+    auto frame = temp->getCvFrame();
+    cv_bridge::CvImage imgBridge;
+    cv::Mat frameFp32(temp->getHeight(), temp->getWidth(), CV_32F);
+    frame.convertTo(frameFp32, CV_32F);
+    std_msgs::msg::Header header;
+    sensor_msgs::msg::Image img_msg;
+    header.stamp = getROSNode()->get_clock()->now();
+    auto tfPrefix = getOpticalTFPrefix(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
+    header.frame_id = tfPrefix;
+    rawInfo.header = header;
+    imgBridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::TYPE_32FC1, frameFp32);
+    imgBridge.toImageMsg(img_msg);
+    rawPub.publish(img_msg, rawInfo);
+}
+
 void Thermal::closeQueues() {
     if(ph->getParam<bool>("i_publish_topic")) {
         thermalPub->closeQueue();
+    }
+    if(ph->getParam<bool>("i_publish_raw")) {
+        rawQ->close();
     }
 }
 
