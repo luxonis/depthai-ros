@@ -101,7 +101,6 @@ ament_target_dependencies(${SENSOR_LIB_NAME} ${SENSOR_DEPS})
 target_link_libraries(
   ${SENSOR_LIB_NAME}
   ${COMMON_LIB_NAME}
-  depthai::opencv
 )
 set(NN_LIB_NAME ${PROJECT_NAME}_nn_nodes)
 add_library(
