@@ -44,6 +44,7 @@ jobs:
           depthai_bridge
           depthai_examples
           depthai_ros_msgs
+          depthai_ros_driver
           depthai_ros
   linting:
     name: ament_${{ matrix.linter }}
