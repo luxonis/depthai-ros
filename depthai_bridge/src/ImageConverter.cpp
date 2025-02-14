@@ -1,7 +1,6 @@
 
 #include "depthai_bridge/ImageConverter.hpp"
 
-
 #include "depthai-shared/datatype/RawEncodedFrame.hpp"
 #include "depthai/pipeline/datatype/EncodedFrame.hpp"
 #include "depthai_bridge/depthaiUtility.hpp"

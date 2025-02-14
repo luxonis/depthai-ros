@@ -42,8 +42,7 @@ void Mono::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
         encConfig.quality = ph->getParam<int>("i_low_bandwidth_quality");
         encConfig.enabled = ph->getParam<bool>("i_low_bandwidth");
 
-        imagePublisher = setupOutput(
-            pipeline, monoQName, [&](auto input) { monoCamNode->out.link(input); }, ph->getParam<bool>("i_synced"), encConfig);
+        imagePublisher = setupOutput(pipeline, monoQName, [&](auto input) { monoCamNode->out.link(input); }, ph->getParam<bool>("i_synced"), encConfig);
     }
     xinControl = pipeline->create<dai::node::XLinkIn>();
     xinControl->setStreamName(controlQName);
