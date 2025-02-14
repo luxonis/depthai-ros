@@ -1,7 +1,6 @@
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
 
-#include <depthai-shared/common/CameraSensorType.hpp>
-
+#include "depthai-shared/common/CameraSensorType.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/XLinkIn.hpp"
