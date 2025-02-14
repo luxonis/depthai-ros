@@ -3,10 +3,10 @@
 #include <deque>
 #include <memory>
 #include <string>
-#include <vision_msgs/msg/detection2_d_array.hpp>
 
 #include "depthai/pipeline/datatype/ImgDetections.hpp"
 #include "rclcpp/time.hpp"
+#include "vision_msgs/msg/detection2_d_array.hpp"
 
 namespace dai {
 

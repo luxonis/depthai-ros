@@ -1,11 +1,11 @@
 #pragma once
 
-#include <depthai_ros_msgs/msg/tracked_features.hpp>
 #include <deque>
 #include <memory>
 #include <string>
 
 #include "depthai/pipeline/datatype/TrackedFeatures.hpp"
+#include "depthai_ros_msgs/msg/tracked_features.hpp"
 #include "rclcpp/time.hpp"
 
 namespace dai {

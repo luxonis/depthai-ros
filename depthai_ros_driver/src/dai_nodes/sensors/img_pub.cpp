@@ -1,8 +1,7 @@
 #include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 
-#include <depthai-shared/properties/VideoEncoderProperties.hpp>
-
 #include "camera_info_manager/camera_info_manager.hpp"
+#include "depthai-shared/properties/VideoEncoderProperties.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/VideoEncoder.hpp"
@@ -89,6 +88,18 @@ void ImagePublisher::createImageConverter(std::shared_ptr<dai::Device> device) {
     converter->setUpdateRosBaseTimeOnToRosMsg(convConfig.updateROSBaseTimeOnRosMsg);
     if(convConfig.lowBandwidth) {
         converter->convertFromBitstream(convConfig.encoding);
+        if(!convConfig.outputDisparity) {
+            try {
+                auto calHandler = device->readCalibration();
+                double baseline = calHandler.getBaselineDistance(pubConfig.leftSocket, pubConfig.rightSocket, false);
+                if(convConfig.reverseSocketOrder) {
+                    baseline = calHandler.getBaselineDistance(pubConfig.rightSocket, pubConfig.leftSocket, false);
+                }
+                converter->convertDispToDepth(baseline);
+            } catch(const std::exception& e) {
+                RCLCPP_DEBUG(node->get_logger(), "Failed to convert disparity to depth: %s", e.what());
+            }
+        }
     }
     if(convConfig.addExposureOffset) {
         converter->addExposureOffset(convConfig.expOffset);

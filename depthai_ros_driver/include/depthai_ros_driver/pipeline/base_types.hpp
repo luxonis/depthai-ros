@@ -89,5 +89,12 @@ class RGBToF : public BasePipeline {
                                                                      std::shared_ptr<dai::Pipeline> pipeline,
                                                                      const std::string& nnType) override;
 };
+class Thermal : public BasePipeline {
+   public:
+    std::vector<std::unique_ptr<dai_nodes::BaseNode>> createPipeline(std::shared_ptr<rclcpp::Node> node,
+                                                                     std::shared_ptr<dai::Device> device,
+                                                                     std::shared_ptr<dai::Pipeline> pipeline,
+                                                                     const std::string& nnType) override;
+};
 }  // namespace pipeline_gen
 }  // namespace depthai_ros_driver
