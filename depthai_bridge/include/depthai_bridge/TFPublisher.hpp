@@ -32,8 +32,6 @@ class TFPublisher {
      * @brief Obtain URDF description by running Xacro with provided arguments.
      */
     std::string getURDF();
-    geometry_msgs::Quaternion quatFromRotM(nlohmann::json rotMatrix);
-    geometry_msgs::Vector3 transFromExtr(nlohmann::json translation);
     geometry_msgs::Vector3 transFromExtr(std::vector<float> translation);
     geometry_msgs::Quaternion quatFromRotM(std::vector<std::vector<float>> extrMat);
 
@@ -61,7 +59,7 @@ class TFPublisher {
      * Frame name is based on IMU name and uses following convention: [base_frame]_imu_frame.
      * If IMU extrinsics are not set, warning is printed out and imu frame is published with zero translation and rotation.
      */
-    void publishImuTransform(nlohmann::json json, ::ros::NodeHandle node);
+    void publishImuTransform(nlohmann::json json, ::ros::NodeHandle node, const dai::CalibrationHandler& calHandler);
     /**
      * @brief Check if model STL file is available in depthai_descriptions package.
      */

@@ -60,7 +60,7 @@ TFPublisher::TFPublisher(::ros::NodeHandle node,
     publishDescription(node);
     publishCamTransforms(camData, node, calHandler);
     if(imuFromDescr != "true") {
-        publishImuTransform(json, node);
+        publishImuTransform(json, node, calHandler);
     }
 }
 
@@ -88,7 +88,6 @@ void TFPublisher::publishCamTransforms(nlohmann::json camData, ::ros::NodeHandle
         auto currCam = static_cast<dai::CameraBoardSocket>(cam[0].get<int>());
         auto extrinsics = cam[1]["extrinsics"];
         if(extrinsics["toCameraSocket"] != -1) {
-
             auto toCam = static_cast<dai::CameraBoardSocket>(extrinsics["toCameraSocket"].get<int>());
             auto extrMat = calHandler.getCameraExtrinsics(currCam, toCam, false);
             ts.transform.rotation = quatFromRotM(extrMat);
@@ -119,23 +118,25 @@ void TFPublisher::publishCamTransforms(nlohmann::json camData, ::ros::NodeHandle
         tfPub->sendTransform(opticalTS);
     }
 }
-void TFPublisher::publishImuTransform(nlohmann::json json, ::ros::NodeHandle node) {
+void TFPublisher::publishImuTransform(nlohmann::json json, ::ros::NodeHandle node, const dai::CalibrationHandler& calHandler) {
     geometry_msgs::TransformStamped ts;
     ts.header.stamp = ::ros::Time::now();
     auto imuExtr = json["imuExtrinsics"];
     if(imuExtr["toCameraSocket"] != -1) {
         ts.header.frame_id = baseFrame + std::string("_") + getCamSocketName(imuExtr["toCameraSocket"].get<int>()) + std::string("_camera_frame");
+        ts.child_frame_id = baseFrame + std::string("_imu_frame");
+        auto extrMat = calHandler.getImuToCameraExtrinsics(static_cast<dai::CameraBoardSocket>(imuExtr["toCameraSocket"].get<int>()));
+        // pass parts of 4x4 matrix to transfFromExtr
+        std::vector<float> translation = {extrMat[0][3], extrMat[1][3], extrMat[2][3]};
+        ts.transform.translation = transFromExtr(translation);
+        // pass 3x3 rotation matrix to quatFromRotM
+        std::vector<std::vector<float>> rotMat = {
+            {extrMat[0][0], extrMat[0][1], extrMat[0][2]}, {extrMat[1][0], extrMat[1][1], extrMat[1][2]}, {extrMat[2][0], extrMat[2][1], extrMat[2][2]}};
+        ts.transform.rotation = quatFromRotM(rotMat);
+
     } else {
         ts.header.frame_id = baseFrame;
-    }
-    ts.child_frame_id = baseFrame + std::string("_imu_frame");
-
-    ts.transform.rotation = quatFromRotM(imuExtr["rotationMatrix"]);
-    ts.transform.translation = transFromExtr(imuExtr["translation"]);
-    bool zeroTrans = ts.transform.translation.x == 0 && ts.transform.translation.y == 0 && ts.transform.translation.z == 0;
-    bool zeroRot = ts.transform.rotation.w == 1 && ts.transform.rotation.x == 0 && ts.transform.rotation.y == 0 && ts.transform.rotation.z == 0;
-    if(zeroTrans || zeroRot) {
-        ROS_WARN("IMU extrinsics appear to be default. Check if the IMU is calibrated.");
+        ROS_WARN("No IMU extrinsics set. Publishing IMU frame with zero translation and rotation.");
         ts.transform.rotation.w = 1.0;
         ts.transform.rotation.x = 0.0;
         ts.transform.rotation.y = 0.0;
@@ -148,14 +149,6 @@ std::string TFPublisher::getCamSocketName(int socketNum) {
     return socketNameMap.at(static_cast<dai::CameraBoardSocket>(socketNum));
 }
 
-geometry_msgs::Vector3 TFPublisher::transFromExtr(nlohmann::json translation) {
-    geometry_msgs::Vector3 trans;
-    // optical coordinates to ROS
-    trans.x = translation["z"].get<float>() / 100.0;
-    trans.y = translation["x"].get<float>() / -100.0;
-    trans.z = translation["y"].get<float>() / -100.0;
-    return trans;
-}
 geometry_msgs::Vector3 TFPublisher::transFromExtr(std::vector<float> translation) {
     geometry_msgs::Vector3 trans;
     // optical coordinates to ROS
@@ -164,6 +157,7 @@ geometry_msgs::Vector3 TFPublisher::transFromExtr(std::vector<float> translation
     trans.z = translation[1] / -100.0;
     return trans;
 }
+
 geometry_msgs::Quaternion TFPublisher::quatFromRotM(std::vector<std::vector<float>> extrMat) {
     tf2::Matrix3x3 m(extrMat[0][0],
                      extrMat[0][1],
@@ -183,31 +177,7 @@ geometry_msgs::Quaternion TFPublisher::quatFromRotM(std::vector<std::vector<floa
     tf2::Quaternion q_flu(0.0, 0.0, 0.0, 1.0);
     tf2::Quaternion q_rot2rdf(-0.5, 0.5, -0.5, 0.5);
     tf2::Quaternion q_rdf = q_flu * q_rot2rdf;
-    q_rdf = q_rdf*q_extr;
-    tf2::Quaternion q_final = q_rdf * q_rot2rdf.inverse();
-    geometry_msgs::Quaternion msg_quat = tf2::toMsg(q_final);
-    return msg_quat;
-}
-geometry_msgs::Quaternion TFPublisher::quatFromRotM(nlohmann::json rotMatrix) {
-    tf2::Matrix3x3 m(rotMatrix[0][0],
-                     rotMatrix[0][1],
-                     rotMatrix[0][2],
-
-                     rotMatrix[1][0],
-                     rotMatrix[1][1],
-                     rotMatrix[1][2],
-
-                     rotMatrix[2][0],
-                     rotMatrix[2][1],
-                     rotMatrix[2][2]);
-
-    tf2::Quaternion q_extr;
-    m.getRotation(q_extr);
-    // optical coordinates to ROS
-    tf2::Quaternion q_flu(0.0, 0.0, 0.0, 1.0);
-    tf2::Quaternion q_rot2rdf(-0.5, 0.5, -0.5, 0.5);
-    tf2::Quaternion q_rdf = q_flu * q_rot2rdf;
-    q_rdf = q_rdf*q_extr;
+    q_rdf = q_rdf * q_extr;
     tf2::Quaternion q_final = q_rdf * q_rot2rdf.inverse();
     geometry_msgs::Quaternion msg_quat = tf2::toMsg(q_final);
     return msg_quat;
