@@ -23,7 +23,8 @@ PipelineGenerator::PipelineGenerator() {
                      {"DEPTHTOF", "depthai_ros_driver::pipeline_gen::DepthToF"},
                      {"STEREOTOF", "depthai_ros_driver::pipeline_gen::StereoToF"},
                      {"TOF", "depthai_ros_driver::pipeline_gen::ToF"},
-                     {"RGBTOF", "depthai_ros_driver::pipeline_gen::RGBToF"}};
+                     {"RGBTOF", "depthai_ros_driver::pipeline_gen::RGBToF"},
+                     {"THERMAL", "depthai_ros_driver::pipeline_gen::Thermal"}};
     pipelineTypeMap = {{"RGB", PipelineType::RGB},
                        {"RGBD", PipelineType::RGBD},
                        {"RGBSTEREO", PipelineType::RGBStereo},
@@ -33,7 +34,8 @@ PipelineGenerator::PipelineGenerator() {
                        {"DEPTHTOF", PipelineType::DepthToF},
                        {"STEREOTOF", PipelineType::StereoToF},
                        {"TOF", PipelineType::ToF},
-                       {"RGBTOF", PipelineType::RGBToF}};
+                       {"RGBTOF", PipelineType::RGBToF},
+                       {"THERMAL", PipelineType::Thermal}};
 }
 
 PipelineGenerator::~PipelineGenerator() = default;
@@ -102,7 +104,7 @@ std::string PipelineGenerator::validatePipeline(const std::string& typeStr, int 
             return "RGB";
         }
     } else if(sensorNum == 2) {
-        if(pType != PipelineType::Stereo && pType != PipelineType::Depth) {
+        if(pType != PipelineType::Stereo && pType != PipelineType::Depth && pType != PipelineType::CamArray && pType != PipelineType::Thermal) {
             ROS_ERROR("Invalid pipeline chosen for camera as it has only stereo pair. Switching to DEPTH.");
             return "DEPTH";
         }

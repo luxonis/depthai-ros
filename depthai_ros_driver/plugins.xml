@@ -39,4 +39,8 @@
 		base_class_type="depthai_ros_driver::pipeline_gen::BasePipeline">
 		<description>RGB + ToF Pipeline.</description>
 	</class>
+    <class type="depthai_ros_driver::pipeline_gen::Thermal"
+        base_class_type="depthai_ros_driver::pipeline_gen::BasePipeline">
+        <description>Thermal Pipeline.</description>
+    </class>
 </library>

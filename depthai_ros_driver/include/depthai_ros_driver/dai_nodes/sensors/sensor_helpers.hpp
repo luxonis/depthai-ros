@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "depthai-shared/common/CameraSensorType.hpp"
 #include "depthai-shared/datatype/RawImgFrame.hpp"
 #include "depthai-shared/properties/ColorCameraProperties.hpp"
 #include "depthai-shared/properties/MonoCameraProperties.hpp"
@@ -39,7 +40,7 @@ struct ImageSensor {
     std::string name;
     std::string defaultResolution;
     std::vector<std::string> allowedResolutions;
-    bool color;
+    dai::CameraSensorType sensorType;
     void getSizeFromResolution(const dai::ColorCameraProperties::SensorResolution& res, int& width, int& height);
 };
 

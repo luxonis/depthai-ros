@@ -15,7 +15,7 @@ on:
 jobs:
 
   style:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -42,7 +42,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3.3.0
+        with:
+          image: tonistiigi/binfmt:qemu-v7.0.0-28
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -65,6 +67,7 @@ jobs:
           build-args: |
             ROS_DISTRO=${{ matrix.ROS_DISTRO }}
             USE_RVIZ=1
+            BUILD_SEQUENTIAL=1
           platforms: |
             amd64
             arm64

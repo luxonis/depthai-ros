@@ -17,7 +17,7 @@ RGB::RGB(const std::string& daiNodeName,
          ros::NodeHandle node,
          std::shared_ptr<dai::Pipeline> pipeline,
          dai::CameraBoardSocket socket = dai::CameraBoardSocket::CAM_A,
-         sensor_helpers::ImageSensor sensor = {"IMX378", "4k", {"12mp", "4k"}, true},
+         sensor_helpers::ImageSensor sensor = {"IMX378", "4k", {"12mp", "4k"}, dai::CameraSensorType::COLOR},
          bool publish = true)
     : BaseNode(daiNodeName, node, pipeline) {
     ROS_DEBUG("Creating node %s", daiNodeName.c_str());

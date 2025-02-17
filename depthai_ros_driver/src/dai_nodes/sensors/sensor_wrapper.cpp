@@ -1,5 +1,6 @@
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
 
+#include "depthai-shared/common/CameraSensorType.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/XLinkIn.hpp"
@@ -9,6 +10,7 @@
 #include "depthai_ros_driver/dai_nodes/sensors/mono.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/rgb.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/thermal.hpp"
 #include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
 #include "ros/node_handle.h"
 
@@ -54,12 +56,21 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
         ROS_DEBUG("Node %s has sensor %s", daiNodeName.c_str(), sensorName.c_str());
         sensorData = *sensorIt;
         if(device->getDeviceName() == "OAK-D-SR") {
-            (*sensorIt).color = true;  // ov9282 is color sensor in this case
+            (*sensorIt).sensorType = dai::CameraSensorType::COLOR;  // ov9282 is color sensor in this case
         }
-        if((*sensorIt).color) {
+        if((*sensorIt).sensorType == dai::CameraSensorType::COLOR) {
             sensorNode = std::make_unique<RGB>(daiNodeName, node, pipeline, socket, (*sensorIt), publish);
-        } else {
+        } else if((*sensorIt).sensorType == dai::CameraSensorType::MONO) {
             sensorNode = std::make_unique<Mono>(daiNodeName, node, pipeline, socket, (*sensorIt), publish);
+        } else if((*sensorIt).sensorType == dai::CameraSensorType::THERMAL) {
+            for(auto& features : device->getConnectedCameraFeatures()) {
+                if(std::find_if(features.supportedTypes.begin(),
+                                features.supportedTypes.end(),
+                                [](const dai::CameraSensorType& type) { return type == dai::CameraSensorType::THERMAL; })
+                   != features.supportedTypes.end()) {
+                    sensorNode = std::make_unique<Thermal>(daiNodeName, node, pipeline, features);
+                }
+            }
         }
     }
     if(ph->getParam<bool>("i_enable_feature_tracker")) {

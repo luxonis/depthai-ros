@@ -6,7 +6,7 @@
   camera_i_laser_dot_brightness: 800.0
   camera_i_mx_id: ''
   camera_i_nn_type: spatial
-  camera_i_pipeline_type: rgbd
+  camera_i_pipeline_type: camarray
   camera_i_usb_port_id: ''
   camera_i_usb_speed: SUPER_PLUS
   nn_i_nn_config_path: depthai_ros_driver/mobilenet

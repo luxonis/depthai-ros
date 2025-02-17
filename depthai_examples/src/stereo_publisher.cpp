@@ -11,10 +11,6 @@
 #include "stereo_msgs/DisparityImage.h"
 
 // Inludes common necessary includes for development using depthai library
-#include <depthai_bridge/BridgePublisher.hpp>
-#include <depthai_bridge/DisparityConverter.hpp>
-#include <depthai_bridge/ImageConverter.hpp>
-
 #include "depthai/device/DataQueue.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"

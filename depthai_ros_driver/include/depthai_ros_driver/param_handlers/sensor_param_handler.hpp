@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "depthai-shared/common/CameraFeatures.hpp"
 #include "depthai/pipeline/datatype/CameraControl.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
@@ -13,6 +14,7 @@ namespace dai {
 namespace node {
 class MonoCamera;
 class ColorCamera;
+class Camera;
 }  // namespace node
 }  // namespace dai
 
@@ -29,6 +31,7 @@ class SensorParamHandler : public BaseParamHandler {
     void declareCommonParams(dai::CameraBoardSocket socket);
     void declareParams(std::shared_ptr<dai::node::MonoCamera> monoCam, dai_nodes::sensor_helpers::ImageSensor sensor, bool publish);
     void declareParams(std::shared_ptr<dai::node::ColorCamera> colorCam, dai_nodes::sensor_helpers::ImageSensor sensor, bool publish);
+    void declareParams(std::shared_ptr<dai::node::Camera> cam, dai::CameraFeatures, bool publish);
     dai::CameraControl setRuntimeParams(parametersConfig& config) override;
 
    private:

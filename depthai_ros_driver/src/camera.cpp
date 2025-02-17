@@ -232,7 +232,13 @@ void Camera::startDevice() {
             } else {
                 std::vector<dai::DeviceInfo> availableDevices = dai::Device::getAllAvailableDevices();
                 if(availableDevices.size() == 0) {
-                    throw std::runtime_error("No devices detected!");
+                    if(!ip.empty()) {
+                        dai::DeviceInfo info(ip);
+                        ROS_INFO("No devices detected by autodiscovery, trying to connect to camera via IP: %s", ip.c_str());
+                        availableDevices.push_back(info);
+                    } else {
+                        throw std::runtime_error("No devices detected!");
+                    }
                 }
                 dai::UsbSpeed speed = ph->getUSBSpeed();
 

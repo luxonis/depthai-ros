@@ -16,7 +16,8 @@ std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::encoding
                                                                                            {dai::RawImgFrame::Type::GRAY8, "mono8"},
                                                                                            {dai::RawImgFrame::Type::RAW8, "mono8"},
                                                                                            {dai::RawImgFrame::Type::RAW16, "16UC1"},
-                                                                                           {dai::RawImgFrame::Type::YUV420p, "YUV420"}};
+                                                                                           {dai::RawImgFrame::Type::YUV420p, "YUV420"},
+                                                                                           {dai::RawImgFrame::Type::GRAYF16, "32FC1"}};
 // TODO(sachin) : Move Planare to encodingEnumMap and use default planar namings. And convertt those that are not supported in ROS using ImageTransport in the
 // bridge.
 std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::planarEncodingEnumMap = {
@@ -192,20 +193,28 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
 
     } else if(encodingEnumMap.find(inData->getType()) != encodingEnumMap.end()) {
         // copying the data to ros msg
-        outImageMsg.header = header;
-        std::string temp_str(encodingEnumMap[inData->getType()]);
-        outImageMsg.encoding = temp_str;
-        outImageMsg.height = inData->getHeight();
-        outImageMsg.width = inData->getWidth();
-        outImageMsg.step = inData->getData().size() / inData->getHeight();
-        if(outImageMsg.encoding == "16UC1")
-            outImageMsg.is_bigendian = false;
-        else
-            outImageMsg.is_bigendian = true;
+        if(inData->getType() == dai::RawImgFrame::Type::GRAYF16) {
+            // we need to convert from FP16 to FP32
+            cv::Mat mat = cv::Mat(inData->getHeight(), inData->getWidth(), CV_16F, inData->getData().data());
+            cv::Mat frameFp32(inData->getHeight(), inData->getWidth(), CV_32F);
+            mat.convertTo(frameFp32, CV_32F);
+            cv_bridge::CvImage(header, sensor_msgs::image_encodings::TYPE_32FC1, frameFp32).toImageMsg(outImageMsg);
+        } else {
+            outImageMsg.header = header;
+            std::string temp_str(encodingEnumMap[inData->getType()]);
+            outImageMsg.encoding = temp_str;
+            outImageMsg.height = inData->getHeight();
+            outImageMsg.width = inData->getWidth();
+            outImageMsg.step = inData->getData().size() / inData->getHeight();
+            if(outImageMsg.encoding == "16UC1")
+                outImageMsg.is_bigendian = false;
+            else
+                outImageMsg.is_bigendian = true;
 
-        size_t size = inData->getData().size();
-        outImageMsg.data.reserve(size);
-        outImageMsg.data = std::move(inData->getData());
+            size_t size = inData->getData().size();
+            outImageMsg.data.reserve(size);
+            outImageMsg.data = std::move(inData->getData());
+        }
     }
     return outImageMsg;
 }
@@ -436,8 +445,8 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
     // Setting Projection matrix if the cameras are stereo pair. Right as the first and left as the second.
     if(calibHandler.getStereoRightCameraId() != dai::CameraBoardSocket::AUTO && calibHandler.getStereoLeftCameraId() != dai::CameraBoardSocket::AUTO) {
         if(calibHandler.getStereoRightCameraId() == cameraId || calibHandler.getStereoLeftCameraId() == cameraId) {
-            std::vector<std::vector<float>> stereoIntrinsics = calibHandler.getCameraIntrinsics(
-                calibHandler.getStereoRightCameraId(), cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);
+            std::vector<std::vector<float>> stereoIntrinsics =
+                calibHandler.getCameraIntrinsics(cameraId, cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);
 
             if(alphaScalingEnabled) {
                 cv::Mat cameraMatrix = cv::Mat(3, 3, CV_64F);
