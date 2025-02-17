@@ -70,7 +70,7 @@ jobs:
 
   docker-build:
     name: Build and Upload to Docker Hub
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
     env: 
