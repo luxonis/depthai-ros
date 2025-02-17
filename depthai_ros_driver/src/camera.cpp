@@ -27,30 +27,6 @@ void Camera::onInit() {
     savePipelineSrv = pNH.advertiseService("save_pipeline", &Camera::startCB, this);
     saveCalibSrv = pNH.advertiseService("save_calibration", &Camera::stopCB, this);
 
-    // If model name not set get one from the device
-    std::string camModel = ph->getParam<std::string>("i_tf_camera_model");
-    if(camModel.empty()) {
-        camModel = device->getDeviceName();
-    }
-
-    if(ph->getParam<bool>("i_publish_tf_from_calibration")) {
-        tfPub = std::make_unique<dai::ros::TFPublisher>(pNH,
-                                                        device->readCalibration(),
-                                                        device->getConnectedCameraFeatures(),
-                                                        ph->getParam<std::string>("i_tf_camera_name"),
-                                                        camModel,
-                                                        ph->getParam<std::string>("i_tf_base_frame"),
-                                                        ph->getParam<std::string>("i_tf_parent_frame"),
-                                                        ph->getParam<std::string>("i_tf_cam_pos_x"),
-                                                        ph->getParam<std::string>("i_tf_cam_pos_y"),
-                                                        ph->getParam<std::string>("i_tf_cam_pos_z"),
-                                                        ph->getParam<std::string>("i_tf_cam_roll"),
-                                                        ph->getParam<std::string>("i_tf_cam_pitch"),
-                                                        ph->getParam<std::string>("i_tf_cam_yaw"),
-                                                        ph->getParam<std::string>("i_tf_imu_from_descr"),
-                                                        ph->getParam<std::string>("i_tf_custom_urdf_location"),
-                                                        ph->getParam<std::string>("i_tf_custom_xacro_args"));
-    }
     diagSub = pNH.subscribe("/diagnostics", 1, &Camera::diagCB, this);
 }
 
@@ -174,6 +150,30 @@ void Camera::onConfigure() {
         getDeviceType();
         createPipeline();
         device->startPipeline(*pipeline);
+        // If model name not set get one from the device
+        std::string camModel = ph->getParam<std::string>("i_tf_camera_model");
+        if(camModel.empty()) {
+            camModel = device->getDeviceName();
+        }
+
+        if(ph->getParam<bool>("i_publish_tf_from_calibration")) {
+            tfPub = std::make_unique<dai::ros::TFPublisher>(pNH,
+                                                            device->readCalibration(),
+                                                            device->getConnectedCameraFeatures(),
+                                                            ph->getParam<std::string>("i_tf_camera_name"),
+                                                            camModel,
+                                                            ph->getParam<std::string>("i_tf_base_frame"),
+                                                            ph->getParam<std::string>("i_tf_parent_frame"),
+                                                            ph->getParam<std::string>("i_tf_cam_pos_x"),
+                                                            ph->getParam<std::string>("i_tf_cam_pos_y"),
+                                                            ph->getParam<std::string>("i_tf_cam_pos_z"),
+                                                            ph->getParam<std::string>("i_tf_cam_roll"),
+                                                            ph->getParam<std::string>("i_tf_cam_pitch"),
+                                                            ph->getParam<std::string>("i_tf_cam_yaw"),
+                                                            ph->getParam<std::string>("i_tf_imu_from_descr"),
+                                                            ph->getParam<std::string>("i_tf_custom_urdf_location"),
+                                                            ph->getParam<std::string>("i_tf_custom_xacro_args"));
+        }
         setupQueues();
         setIR();
     } catch(const std::runtime_error& e) {
