@@ -67,6 +67,7 @@ jobs:
           depthai_examples
           depthai_ros_msgs
           depthai_ros
+          depthai_ros_driver
 
   docker-build:
     name: Build and Upload to Docker Hub
