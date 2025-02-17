@@ -9,9 +9,7 @@
 
   <license>MIT</license>
 
-
-  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
-  
+  <buildtool_depend>catkin</buildtool_depend>
   <exec_depend>depthai</exec_depend>
   <exec_depend>depthai_ros_msgs</exec_depend>
   <exec_depend>depthai_bridge</exec_depend>
@@ -21,7 +19,7 @@
   <exec_depend>depthai_ros_driver</exec_depend>
 
   <export>
-    <build_type condition="$ROS_VERSION == 1">catkin</build_type>
+    <metapackage/>
   </export>
 
 </package>
