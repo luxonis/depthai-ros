@@ -7,7 +7,7 @@
         <arg name="name" value="$(arg name)"/>
     </include>
 
-    <node name="overlay" pkg="nodelet" type="nodelet" output="screen" required="true" args="load depthai_filters/ThermalTemp $(arg  name)_nodelet_manager">
+    <node name="thermal" pkg="nodelet" type="nodelet" output="screen" required="true" args="load depthai_filters/ThermalTemp $(arg  name)_nodelet_manager">
         <remap from="/thermal/raw_data/image_raw" to="$(arg name)/thermal/raw_data/image_raw"/>
     </node>
 </launch>
