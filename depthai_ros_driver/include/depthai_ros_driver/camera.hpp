@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <rclcpp/callback_group.hpp>
 #include <string>
 #include <vector>
 
@@ -9,6 +8,7 @@
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/param_handlers/camera_param_handler.hpp"
 #include "diagnostic_msgs/msg/diagnostic_array.hpp"
+#include "rclcpp/callback_group.hpp"
 #include "rclcpp/node.hpp"
 #include "std_srvs/srv/trigger.hpp"
 

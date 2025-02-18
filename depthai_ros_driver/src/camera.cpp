@@ -65,7 +65,7 @@ void Camera::onConfigure() {
                                                         ph->getParam<std::string>("i_tf_custom_xacro_args"),
                                                         ph->getParam<bool>("i_rs_compat"));
     }
-    // diagSub = this->create_subscription<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10, std::bind(&Camera::diagCB, this, std::placeholders::_1));
+    diagSub = this->create_subscription<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10, std::bind(&Camera::diagCB, this, std::placeholders::_1));
     RCLCPP_INFO(get_logger(), "Camera ready!");
 }
 
@@ -94,9 +94,9 @@ void Camera::start() {
 void Camera::stop() {
     RCLCPP_INFO(get_logger(), "Stopping camera.");
     if(camRunning) {
-        // for(const auto& node : daiNodes) {
-        //     node->closeQueues();
-        // }
+        for(const auto& node : daiNodes) {
+            node->closeQueues();
+        }
         daiNodes.clear();
         device.reset();
         pipeline.reset();
