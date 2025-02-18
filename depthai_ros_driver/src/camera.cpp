@@ -27,14 +27,6 @@ void Camera::onConfigure() {
     getDeviceType();
     createPipeline();
     device->startPipeline(*pipeline);
-    setupQueues();
-    setIR();
-    paramCBHandle = this->add_on_set_parameters_callback(std::bind(&Camera::parameterCB, this, std::placeholders::_1));
-    startSrv = this->create_service<Trigger>("~/start_camera", std::bind(&Camera::startCB, this, std::placeholders::_1, std::placeholders::_2));
-    stopSrv = this->create_service<Trigger>("~/stop_camera", std::bind(&Camera::stopCB, this, std::placeholders::_1, std::placeholders::_2));
-    savePipelineSrv = this->create_service<Trigger>("~/save_pipeline", std::bind(&Camera::savePipelineCB, this, std::placeholders::_1, std::placeholders::_2));
-    saveCalibSrv = this->create_service<Trigger>("~/save_calibration", std::bind(&Camera::saveCalibCB, this, std::placeholders::_1, std::placeholders::_2));
-
     // If model name not set get one from the device
     std::string camModel = ph->getParam<std::string>("i_tf_camera_model");
     if(camModel.empty()) {
@@ -60,6 +52,14 @@ void Camera::onConfigure() {
                                                         ph->getParam<std::string>("i_tf_custom_xacro_args"),
                                                         ph->getParam<bool>("i_rs_compat"));
     }
+    setupQueues();
+    setIR();
+    paramCBHandle = this->add_on_set_parameters_callback(std::bind(&Camera::parameterCB, this, std::placeholders::_1));
+    startSrv = this->create_service<Trigger>("~/start_camera", std::bind(&Camera::startCB, this, std::placeholders::_1, std::placeholders::_2));
+    stopSrv = this->create_service<Trigger>("~/stop_camera", std::bind(&Camera::stopCB, this, std::placeholders::_1, std::placeholders::_2));
+    savePipelineSrv = this->create_service<Trigger>("~/save_pipeline", std::bind(&Camera::savePipelineCB, this, std::placeholders::_1, std::placeholders::_2));
+    saveCalibSrv = this->create_service<Trigger>("~/save_calibration", std::bind(&Camera::saveCalibCB, this, std::placeholders::_1, std::placeholders::_2));
+
     diagSub = this->create_subscription<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10, std::bind(&Camera::diagCB, this, std::placeholders::_1));
     RCLCPP_INFO(get_logger(), "Camera ready!");
 }

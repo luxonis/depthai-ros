@@ -1,9 +1,9 @@
 #pragma once
 
-#include <depthai-shared/common/CameraSensorType.hpp>
 #include <string>
 #include <vector>
 
+#include "depthai-shared/common/CameraSensorType.hpp"
 #include "depthai-shared/properties/ColorCameraProperties.hpp"
 #include "depthai-shared/properties/MonoCameraProperties.hpp"
 #include "depthai/pipeline/Node.hpp"

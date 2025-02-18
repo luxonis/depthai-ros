@@ -1,11 +1,9 @@
 
 #pragma once
 
-#include <depthai-shared/common/CameraFeatures.hpp>
-#include <depthai/device/DataQueue.hpp>
+#include "depthai-shared/common/CameraFeatures.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
-#include "image_transport/image_transport.hpp"
 
 namespace dai {
 class Pipeline;
@@ -33,9 +31,9 @@ class ImagePublisher;
 class Thermal : public BaseNode {
    public:
     explicit Thermal(const std::string& daiNodeName,
-                 std::shared_ptr<rclcpp::Node> node,
-                 std::shared_ptr<dai::Pipeline> pipeline,
-                 dai::CameraFeatures camFeatures);
+                     std::shared_ptr<rclcpp::Node> node,
+                     std::shared_ptr<dai::Pipeline> pipeline,
+                     dai::CameraFeatures camFeatures);
     ~Thermal();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;

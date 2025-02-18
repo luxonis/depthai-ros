@@ -1,8 +1,7 @@
 #include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 
-#include <depthai-shared/properties/VideoEncoderProperties.hpp>
-
 #include "camera_info_manager/camera_info_manager.hpp"
+#include "depthai-shared/properties/VideoEncoderProperties.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/VideoEncoder.hpp"

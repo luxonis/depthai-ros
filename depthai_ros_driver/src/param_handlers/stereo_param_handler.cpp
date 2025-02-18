@@ -1,8 +1,7 @@
 #include "depthai_ros_driver/param_handlers/stereo_param_handler.hpp"
 
-#include <depthai-shared/datatype/RawStereoDepthConfig.hpp>
-
 #include "depthai-shared/common/CameraFeatures.hpp"
+#include "depthai-shared/datatype/RawStereoDepthConfig.hpp"
 #include "depthai/pipeline/datatype/StereoDepthConfig.hpp"
 #include "depthai/pipeline/node/StereoDepth.hpp"
 #include "depthai_ros_driver/utils.hpp"
