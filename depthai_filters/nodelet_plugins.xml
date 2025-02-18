@@ -29,4 +29,9 @@
     3D Features (PCL) publisher
     </description>
   </class>
+  <class name="depthai_filters/ThermalTemp" type="depthai_filters::ThermalTemp" base_class_type="nodelet::Nodelet">
+    <description>
+    Thermal temperature publisher
+    </description>
+  </class>
 </library>

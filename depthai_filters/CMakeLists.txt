@@ -59,6 +59,7 @@ add_library(${PROJECT_NAME} SHARED
     src/spatial_bb.cpp
     src/feature_tracker_overlay.cpp
     src/features_3d.cpp
+    src/thermal_temp.cpp
     src/utils.cpp
 )
 

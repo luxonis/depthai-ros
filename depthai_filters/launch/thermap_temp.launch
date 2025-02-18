@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="name" default="oak" />
+
+    <include file="$(find depthai_ros_driver)/launch/oak_t.launch">
+        <arg name="name" value="$(arg name)"/>
+    </include>
+
+    <node name="overlay" pkg="nodelet" type="nodelet" output="screen" required="true" args="load depthai_filters/ThermalTemp $(arg  name)_nodelet_manager">
+        <remap from="/thermal/raw_data/image_raw" to="$(arg name)/thermal/raw_data/image_raw"/>
+    </node>
+</launch>
