@@ -1,6 +1,11 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2.11.0 (2025-02-19)
+-------------------
+* Add Thermal support
+* Fix issues in TF Publisher
+* (ROS2) Separate callback groups for services
 
 2.10.5 (2025-01-09)
 -------------------
