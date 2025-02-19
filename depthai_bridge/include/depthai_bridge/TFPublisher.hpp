@@ -37,8 +37,8 @@ class TFPublisher {
      * @brief Obtain URDF description by running Xacro with provided arguments.
      */
     std::string getURDF();
-    geometry_msgs::msg::Quaternion quatFromRotM(nlohmann::json rotMatrix);
-    geometry_msgs::msg::Vector3 transFromExtr(nlohmann::json translation);
+    geometry_msgs::msg::Vector3 transFromExtr(std::vector<float> translation);
+    geometry_msgs::msg::Quaternion quatFromRotM(std::vector<std::vector<float>> extrMat);
 
    private:
     /**
@@ -58,13 +58,13 @@ class TFPublisher {
      * Frame names are based on socket names and use following convention: [base_frame]_[socket_name]_camera_frame and
      * [base_frame]_[socket_name]_camera_optical_frame
      */
-    void publishCamTransforms(nlohmann::json camData, std::shared_ptr<rclcpp::Node> node);
+    void publishCamTransforms(nlohmann::json camData, std::shared_ptr<rclcpp::Node> node, const dai::CalibrationHandler& calHandler);
     /**
      * @brief Publish IMU transform based on calibration data.
      * Frame name is based on IMU name and uses following convention: [base_frame]_imu_frame.
      * If IMU extrinsics are not set, warning is printed out and imu frame is published with zero translation and rotation.
      */
-    void publishImuTransform(nlohmann::json json, std::shared_ptr<rclcpp::Node> node);
+    void publishImuTransform(nlohmann::json json, std::shared_ptr<rclcpp::Node> node, const dai::CalibrationHandler& calHandler);
     /**
      * @brief Check if model STL file is available in depthai_descriptions package.
      */
