@@ -17,7 +17,7 @@ void ThermalTemp::onInit() {
     colorPub = pNH.advertise<sensor_msgs::Image>("thermal_colormap", 10);
 }
 
-void ThermalTemp::mouseCallback(int event, int x, int y, int flags, void* userdata) {
+void ThermalTemp::mouseCallback(int /* event */, int x, int y, int /* flags */, void* /* userdata */) {
     mouseX = x;
     mouseY = y;
 }
@@ -52,7 +52,7 @@ void ThermalTemp::subCB(const sensor_msgs::ImageConstPtr& img) {
     bool putTextLeft = mouseX > colormapped.cols / 2;
     cv::putText(colormapped, text, cv::Point(putTextLeft ? mouseX - 100 : mouseX + 10, mouseY - 10), cv::FONT_HERSHEY_SIMPLEX, 0.5, textColor, 1);
     cv::imshow(tempWindow, colormapped);
-    int key = cv::waitKey(1);
+    cv::waitKey(1);
     sensor_msgs::Image outMsg;
     cv_bridge::CvImage(img->header, sensor_msgs::image_encodings::BGR8, colormapped).toImageMsg(outMsg);
 
