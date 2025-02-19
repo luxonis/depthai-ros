@@ -8,6 +8,7 @@
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/param_handlers/camera_param_handler.hpp"
 #include "diagnostic_msgs/msg/diagnostic_array.hpp"
+#include "rclcpp/callback_group.hpp"
 #include "rclcpp/node.hpp"
 #include "std_srvs/srv/trigger.hpp"
 
@@ -92,9 +93,10 @@ class Camera : public rclcpp::Node {
     std::shared_ptr<dai::Pipeline> pipeline;
     std::shared_ptr<dai::Device> device;
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
-    bool camRunning = false;
+    std::atomic<bool> camRunning = false;
     bool initialized = false;
     std::unique_ptr<dai::ros::TFPublisher> tfPub;
     rclcpp::TimerBase::SharedPtr startTimer;
+    rclcpp::CallbackGroup::SharedPtr srvGroup;
 };
 }  // namespace depthai_ros_driver
