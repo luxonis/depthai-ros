@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-project(depthai_bridge VERSION 2.10.5 LANGUAGES CXX C)
+project(depthai_bridge VERSION 2.11.0 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

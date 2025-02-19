@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>depthai_examples</name>
-  <version>2.10.5</version>
+  <version>2.11.0</version>
   <description>The depthai_examples package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->

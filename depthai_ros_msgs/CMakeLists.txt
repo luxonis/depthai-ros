@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
 
-project(depthai_ros_msgs VERSION 2.10.5)
+project(depthai_ros_msgs VERSION 2.11.0)
 
 if(POLICY CMP0057)
     cmake_policy(SET CMP0057 NEW)
