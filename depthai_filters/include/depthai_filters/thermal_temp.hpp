@@ -15,7 +15,6 @@ class ThermalTemp : public rclcpp::Node {
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr colorPub;
     int mouseX = 0;
     int mouseY = 0;
-
 };
 
 }  // namespace depthai_filters
