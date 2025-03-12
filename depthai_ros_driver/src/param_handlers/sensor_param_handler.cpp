@@ -137,6 +137,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     int height = colorCam->getResolutionHeight();
 
     colorCam->setInterleaved(declareAndLogParam<bool>("i_interleaved", false));
+    colorCam->setColorOrder(utils::getValFromMap(declareAndLogParam<std::string>("i_color_order", "BGR"), dai_nodes::sensor_helpers::colorOrderMap));
 
     bool setIspScale = true;
     if(sensor.defaultResolution != "1080P"
@@ -160,7 +161,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
             err_stream << " which are not divisible by 16.\n";
             err_stream << "This will result in errors when aligning stereo to RGB. To fix that, either adjust i_num and i_den values";
             err_stream << " or set i_output_isp parameter to false and set i_width and i_height parameters accordingly.";
-            RCLCPP_ERROR(getROSNode()->get_logger(), err_stream.str().c_str());
+            RCLCPP_ERROR(getROSNode()->get_logger(), "%s", err_stream.str().c_str());
         }
     }
     int maxVideoWidth = 3840;

@@ -62,6 +62,11 @@ const std::unordered_map<NodeNameEnum, std::string> NodeNameMap = {
     {NodeNameEnum::NN, "nn"},
 };
 
+const std::unordered_map<std::string, dai::ColorCameraProperties::ColorOrder> colorOrderMap = {
+    {"BGR", dai::ColorCameraProperties::ColorOrder::BGR},
+    {"RGB", dai::ColorCameraProperties::ColorOrder::RGB},
+};
+
 bool rsCompabilityMode(std::shared_ptr<rclcpp::Node> node) {
     return node->get_parameter("camera.i_rs_compat").as_bool();
 }

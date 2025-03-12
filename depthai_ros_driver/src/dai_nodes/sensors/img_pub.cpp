@@ -88,7 +88,7 @@ void ImagePublisher::createImageConverter(std::shared_ptr<dai::Device> device) {
     converter->setUpdateRosBaseTimeOnToRosMsg(convConfig.updateROSBaseTimeOnRosMsg);
     if(convConfig.lowBandwidth) {
         converter->convertFromBitstream(convConfig.encoding);
-        if(!convConfig.outputDisparity) {
+        if(convConfig.isStereo && !convConfig.outputDisparity) {
             try {
                 auto calHandler = device->readCalibration();
                 double baseline = calHandler.getBaselineDistance(pubConfig.leftSocket, pubConfig.rightSocket, false);
