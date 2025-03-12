@@ -6,6 +6,7 @@
 #include "depthai_bridge/depthaiUtility.hpp"
 #include "opencv2/calib3d.hpp"
 #include "opencv2/imgcodecs.hpp"
+#include "sensor_msgs/image_encodings.hpp"
 
 namespace dai {
 
@@ -100,6 +101,12 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
         switch(srcType) {
             case dai::RawImgFrame::Type::BGR888i: {
                 encoding = sensor_msgs::image_encodings::BGR8;
+                decodeFlags = cv::IMREAD_COLOR;
+                channels = CV_8UC3;
+                break;
+            }
+            case dai::RawImgFrame::Type::RGB888i: {
+                encoding = sensor_msgs::image_encodings::RGB8;
                 decodeFlags = cv::IMREAD_COLOR;
                 channels = CV_8UC3;
                 break;

@@ -65,7 +65,6 @@ void Camera::onConfigure() {
     saveCalibSrv = this->create_service<Trigger>(
         "~/save_calibration", std::bind(&Camera::saveCalibCB, this, std::placeholders::_1, std::placeholders::_2), rmw_qos_profile_services_default, srvGroup);
 
-
     diagSub = this->create_subscription<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10, std::bind(&Camera::diagCB, this, std::placeholders::_1));
     RCLCPP_INFO(get_logger(), "Camera ready!");
 }

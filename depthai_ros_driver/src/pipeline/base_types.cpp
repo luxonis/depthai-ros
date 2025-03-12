@@ -209,9 +209,9 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBToF::createPipeline(std::sh
     return daiNodes;
 }
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> Thermal::createPipeline(std::shared_ptr<rclcpp::Node> node,
-                                                                         std::shared_ptr<dai::Device> device,
-                                                                         std::shared_ptr<dai::Pipeline> pipeline,
-                                                                         const std::string& nnType) {
+                                                                          std::shared_ptr<dai::Device> device,
+                                                                          std::shared_ptr<dai::Pipeline> pipeline,
+                                                                          const std::string& nnType) {
     using namespace dai_nodes::sensor_helpers;
     std::string nTypeUpCase = utils::getUpperCaseStr(nnType);
     auto nType = utils::getValFromMap(nTypeUpCase, nnTypeMap);

@@ -72,7 +72,11 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         convConfig.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
         convConfig.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
         convConfig.lowBandwidth = ph->getParam<bool>("i_low_bandwidth");
-        convConfig.encoding = dai::RawImgFrame::Type::BGR888i;
+        if(ph->getParam<std::string>("i_color_order") == "BGR") {
+            convConfig.encoding = dai::RawImgFrame::Type::BGR888i;
+        } else {
+            convConfig.encoding = dai::RawImgFrame::Type::RGB888i;
+        }
         convConfig.addExposureOffset = ph->getParam<bool>("i_add_exposure_offset");
         convConfig.expOffset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
         convConfig.reverseSocketOrder = ph->getParam<bool>("i_reverse_stereo_socket_order");

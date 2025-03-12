@@ -56,6 +56,7 @@ extern const std::unordered_map<std::string, dai::MonoCameraProperties::SensorRe
 extern const std::unordered_map<std::string, dai::ColorCameraProperties::SensorResolution> rgbResolutionMap;
 extern const std::unordered_map<std::string, dai::CameraControl::FrameSyncMode> fSyncModeMap;
 extern const std::unordered_map<std::string, dai::CameraImageOrientation> cameraImageOrientationMap;
+extern const std::unordered_map<std::string, dai::ColorCameraProperties::ColorOrder> colorOrderMap;
 bool rsCompabilityMode(std::shared_ptr<rclcpp::Node> node);
 std::string tfPrefix(std::shared_ptr<rclcpp::Node> node);
 std::string getSocketName(std::shared_ptr<rclcpp::Node> node, dai::CameraBoardSocket socket);
