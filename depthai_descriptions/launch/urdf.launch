@@ -34,5 +34,6 @@
 	<node name="$(arg tf_prefix)_state_publisher" pkg="robot_state_publisher"
 		type="robot_state_publisher" output="screen" required="true">
 		<remap from="robot_description" to="$(arg tf_prefix)/robot_description" />
+        <remap from="joint_states" to="$(arg tf_prefix)/joint_states"/>
 	</node>
 </launch>

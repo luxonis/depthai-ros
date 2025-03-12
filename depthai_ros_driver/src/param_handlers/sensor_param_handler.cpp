@@ -129,6 +129,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     int height = colorCam->getResolutionHeight();
 
     colorCam->setInterleaved(declareAndLogParam<bool>("i_interleaved", false));
+    colorCam->setColorOrder(utils::getValFromMap(declareAndLogParam<std::string>("i_color_order", "BGR"), dai_nodes::sensor_helpers::colorOrderMap));
 
     bool setIspScale = true;
     if(sensor.defaultResolution != "1080P"
