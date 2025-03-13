@@ -34,6 +34,10 @@ class ImuParamHandler : public BaseParamHandler {
     std::unordered_map<std::string, dai::ros::ImuSyncMethod> imuSyncMethodMap;
     std::unordered_map<std::string, imu::ImuMsgType> imuMessagetTypeMap;
     std::unordered_map<std::string, dai::IMUSensor> rotationVectorTypeMap;
+    std::unordered_map<std::string, dai::IMUSensor> imuAccelerometerModeMap;
+    std::unordered_map<std::string, dai::IMUSensor> imuGyroscopeModeMap;
+    std::unordered_map<std::string, dai::IMUSensor> imuMagnetometerModeMap;
+    std::unordered_map<std::string, dai::IMUSensor> imuRotationModeMap;
     imu::ImuMsgType getMsgType();
     dai::ros::ImuSyncMethod getSyncMethod();
 };

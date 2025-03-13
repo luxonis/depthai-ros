@@ -21,6 +21,20 @@ ImuParamHandler::ImuParamHandler(std::shared_ptr<rclcpp::Node> node, const std::
                              {"GEOMAGNETIC_ROTATION_VECTOR", dai::IMUSensor::GEOMAGNETIC_ROTATION_VECTOR},
                              {"ARVR_STABILIZED_ROTATION_VECTOR", dai::IMUSensor::ARVR_STABILIZED_ROTATION_VECTOR},
                              {"ARVR_STABILIZED_GAME_ROTATION_VECTOR", dai::IMUSensor::ARVR_STABILIZED_GAME_ROTATION_VECTOR}};
+    imuAccelerometerModeMap = {{"RAW", dai::IMUSensor::ACCELEROMETER_RAW},
+                               {"CALIBRATED", dai::IMUSensor::ACCELEROMETER},
+                               {"LINEAR", dai::IMUSensor::LINEAR_ACCELERATION},
+                               {"GRAVITY", dai::IMUSensor::GRAVITY}};
+    imuGyroscopeModeMap = {
+        {"RAW", dai::IMUSensor::GYROSCOPE_RAW}, {"CALIBRATED", dai::IMUSensor::GYROSCOPE_CALIBRATED}, {"UNCALIBRATED", dai::IMUSensor::GYROSCOPE_UNCALIBRATED}};
+    imuMagnetometerModeMap = {{"RAW", dai::IMUSensor::MAGNETOMETER_RAW},
+                              {"CALIBRATED", dai::IMUSensor::MAGNETOMETER_CALIBRATED},
+                              {"UNCALIBRATED", dai::IMUSensor::MAGNETOMETER_UNCALIBRATED}};
+    imuRotationModeMap = {{"DEFAULT", dai::IMUSensor::ROTATION_VECTOR},
+                          {"GAME", dai::IMUSensor::GAME_ROTATION_VECTOR},
+                          {"GEOMAGNETIC", dai::IMUSensor::GEOMAGNETIC_ROTATION_VECTOR},
+                          {"ARVR_STABILIZED", dai::IMUSensor::ARVR_STABILIZED_ROTATION_VECTOR},
+                          {"ARVR_STABILIZED_GAME", dai::IMUSensor::ARVR_STABILIZED_GAME_ROTATION_VECTOR}};
 }
 ImuParamHandler::~ImuParamHandler() = default;
 void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const std::string& imuType) {
@@ -33,25 +47,55 @@ void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const s
     declareAndLogParam<float>("i_rot_cov", -1.0);
     declareAndLogParam<float>("i_mag_cov", 0.0);
     declareAndLogParam<bool>("i_update_ros_base_time_on_ros_msg", false);
-    bool rotationAvailable = imuType == "BNO086";
-    if(declareAndLogParam<bool>("i_enable_rotation", false)) {
+    if(declareAndLogParam<bool>("i_enable_acc", true)) {
+        const std::string accelerometerModeName = utils::getUpperCaseStr(declareAndLogParam<std::string>("i_acc_mode", "raw"));
+        const dai::IMUSensor accelerometerMode = utils::getValFromMap(accelerometerModeName, imuAccelerometerModeMap);
+        const int accelerometerFreq = declareAndLogParam<int>("i_acc_freq", 400);
+        declareAndLogParam<float>("i_acc_cov", 0.0);
+
+        imu->enableIMUSensor(accelerometerMode, accelerometerFreq);
+    }
+
+    if(declareAndLogParam<bool>("i_enable_gyro", true)) {
+        const std::string gyroscopeModeName = utils::getUpperCaseStr(declareAndLogParam<std::string>("i_gyro_mode", "raw"));
+        const dai::IMUSensor gyroscopeMode = utils::getValFromMap(gyroscopeModeName, imuGyroscopeModeMap);
+        const int gyroscopeFreq = declareAndLogParam<int>("i_gyro_freq", 400);
+        declareAndLogParam<float>("i_gyro_cov", 0.0);
+
+        imu->enableIMUSensor(gyroscopeMode, gyroscopeFreq);
+    }
+
+    const bool magnetometerAvailable = imuType == "BNO086";
+    if(declareAndLogParam<bool>("i_enable_mag", magnetometerAvailable)) {
+        if(magnetometerAvailable) {
+            const std::string magnetometerModeName = utils::getUpperCaseStr(declareAndLogParam<std::string>("i_mag_mode", "raw"));
+            const dai::IMUSensor magnetometerMode = utils::getValFromMap(magnetometerModeName, imuMagnetometerModeMap);
+            const int magnetometerFreq = declareAndLogParam<int>("i_mag_freq", 100);
+            declareAndLogParam<float>("i_mag_cov", 0.0);
+
+            imu->enableIMUSensor(magnetometerMode, magnetometerFreq);
+        } else {
+            RCLCPP_ERROR(getROSNode()->get_logger(), "Magnetometer enabled but not available with current sensor");
+            declareAndLogParam<bool>("i_enable_mag", false, true);
+        }
+    }
+
+    const bool rotationAvailable = imuType == "BNO086";
+    if(declareAndLogParam<bool>("i_enable_rotation", rotationAvailable)) {
         if(rotationAvailable) {
-            auto rotationVecType = utils::getValFromMap(utils::getUpperCaseStr(declareAndLogParam<std::string>("i_rotation_vector_type", "ROTATION_VECTOR")),
-                                                        rotationVectorTypeMap);
-            imu->enableIMUSensor(rotationVecType, declareAndLogParam<int>("i_rot_freq", 400));
-            // if imu message type is IMU_WITH_MAG or IMU_WITH_MAG_SPLIT, enable magnetometer
-            if(messageType == "IMU_WITH_MAG" || messageType == "IMU_WITH_MAG_SPLIT") {
-                imu->enableIMUSensor(dai::IMUSensor::MAGNETOMETER_CALIBRATED, declareAndLogParam<int>("i_mag_freq", 100));
-            }
+            const std::string rotationModeName = utils::getUpperCaseStr(declareAndLogParam<std::string>("i_rot_mode", "default"));
+            const dai::IMUSensor rotationMode = utils::getValFromMap(rotationModeName, imuRotationModeMap);
+            const int rotationFreq = declareAndLogParam<int>("i_rot_freq", 400);
+            declareAndLogParam<float>("i_rot_cov", -1.0);
+
+            imu->enableIMUSensor(rotationMode, rotationFreq);
         } else {
             RCLCPP_ERROR(getROSNode()->get_logger(), "Rotation enabled but not available with current sensor");
             declareAndLogParam<bool>("i_enable_rotation", false, true);
         }
+        imu->setBatchReportThreshold(declareAndLogParam<int>("i_batch_report_threshold", 5));
+        imu->setMaxBatchReports(declareAndLogParam<int>("i_max_batch_reports", 10));
     }
-    imu->enableIMUSensor(dai::IMUSensor::ACCELEROMETER_RAW, declareAndLogParam<int>("i_acc_freq", 400));
-    imu->enableIMUSensor(dai::IMUSensor::GYROSCOPE_RAW, declareAndLogParam<int>("i_gyro_freq", 400));
-    imu->setBatchReportThreshold(declareAndLogParam<int>("i_batch_report_threshold", 5));
-    imu->setMaxBatchReports(declareAndLogParam<int>("i_max_batch_reports", 10));
 }
 
 dai::ros::ImuSyncMethod ImuParamHandler::getSyncMethod() {
