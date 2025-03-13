@@ -72,7 +72,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         convConfig.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
         convConfig.lowBandwidth = ph->getParam<bool>("i_low_bandwidth");
         if(ph->getParam<std::string>("i_color_order") == "BGR") {
-            convConfig.encoding = dai::RawImgFrame::Type::BGR888p;
+            convConfig.encoding = dai::RawImgFrame::Type::BGR888i;
         } else {
             convConfig.encoding = dai::RawImgFrame::Type::RGB888i;
         }
