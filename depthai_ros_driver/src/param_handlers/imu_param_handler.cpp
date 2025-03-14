@@ -37,10 +37,6 @@ void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const s
     declareAndLogParam<int>("i_max_q_size", 8);
     auto messageType = declareAndLogParam<std::string>("i_message_type", "IMU");
     declareAndLogParam<std::string>("i_sync_method", "LINEAR_INTERPOLATE_ACCEL");
-    declareAndLogParam<float>("i_acc_cov", 0.0);
-    declareAndLogParam<float>("i_gyro_cov", 0.0);
-    declareAndLogParam<float>("i_rot_cov", -1.0);
-    declareAndLogParam<float>("i_mag_cov", 0.0);
     declareAndLogParam<bool>("i_update_ros_base_time_on_ros_msg", false);
     if(declareAndLogParam<bool>("i_enable_acc", true)) {
         const std::string accelerometerModeName = utils::getUpperCaseStr(declareAndLogParam<std::string>("i_acc_mode", "raw"));
