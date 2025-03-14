@@ -103,6 +103,14 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> mo
     if(declareAndLogParam("r_set_luma_denoise", false)) {
         monoCam->initialControl.setLumaDenoise(lumaDenoise);
     }
+    bool setAutoExpRegion = declareAndLogParam<bool>("r_set_auto_exp_region", false);
+    int autoExpStartX = declareAndLogParam<int>("r_auto_exp_region_start_x", 0);
+    int autoExpStartY = declareAndLogParam<int>("r_auto_exp_region_start_y", 0);
+    int autoExpWidth = declareAndLogParam<int>("r_auto_exp_region_width", 0);
+    int autoExpHeight = declareAndLogParam<int>("r_auto_exp_region_height", 0);
+    if(setAutoExpRegion) {
+        monoCam->initialControl.setAutoExposureRegion(autoExpStartX, autoExpStartY, autoExpWidth, autoExpHeight);
+    }
 }
 
 void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> colorCam, dai_nodes::sensor_helpers::ImageSensor sensor, bool publish) {
@@ -211,6 +219,14 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     if(declareAndLogParam("r_set_luma_denoise", false)) {
         colorCam->initialControl.setLumaDenoise(lumaDenoise);
     }
+    bool setAutoExpRegion = declareAndLogParam<bool>("r_set_auto_exp_region", false);
+    int autoExpStartX = declareAndLogParam<int>("r_auto_exp_region_start_x", 0);
+    int autoExpStartY = declareAndLogParam<int>("r_auto_exp_region_start_y", 0);
+    int autoExpWidth = declareAndLogParam<int>("r_auto_exp_region_width", 0);
+    int autoExpHeight = declareAndLogParam<int>("r_auto_exp_region_height", 0);
+    if(setAutoExpRegion) {
+        colorCam->initialControl.setAutoExposureRegion(autoExpStartX, autoExpStartY, autoExpWidth, autoExpHeight);
+    }
 }
 dai::CameraControl SensorParamHandler::setRuntimeParams(parametersConfig& config) {
     dai::CameraControl ctrl;
@@ -244,6 +260,10 @@ dai::CameraControl SensorParamHandler::setRuntimeParams(parametersConfig& config
         if(config.rgb_r_set_luma_denoise) {
             ctrl.setLumaDenoise(config.rgb_r_luma_denoise);
         }
+        if(config.rgb_r_set_auto_exp_region) {
+            ctrl.setAutoExposureRegion(config.rgb_r_auto_exp_region_start_x, config.rgb_r_auto_exp_region_start_y, config.rgb_r_auto_exp_region_width,
+                                       config.rgb_r_auto_exp_region_height);
+        }
     } else if(getName() == "left") {
         if(config.left_r_set_man_exposure) {
             ctrl.setManualExposure(config.left_r_exposure, config.left_r_iso);
@@ -273,6 +293,10 @@ dai::CameraControl SensorParamHandler::setRuntimeParams(parametersConfig& config
         if(config.left_r_set_luma_denoise) {
             ctrl.setLumaDenoise(config.left_r_luma_denoise);
         }
+        if(config.left_r_set_auto_exp_region) {
+            ctrl.setAutoExposureRegion(config.left_r_auto_exp_region_start_x, config.left_r_auto_exp_region_start_y, config.left_r_auto_exp_region_width,
+                                       config.left_r_auto_exp_region_height);
+        }
     } else if(getName() == "right") {
         if(config.right_r_set_man_exposure) {
             ctrl.setManualExposure(config.right_r_exposure, config.right_r_iso);
@@ -301,6 +325,10 @@ dai::CameraControl SensorParamHandler::setRuntimeParams(parametersConfig& config
         }
         if(config.right_r_set_luma_denoise) {
             ctrl.setLumaDenoise(config.right_r_luma_denoise);
+        }
+        if(config.right_r_set_auto_exp_region) {
+            ctrl.setAutoExposureRegion(config.right_r_auto_exp_region_start_x, config.right_r_auto_exp_region_start_y, config.right_r_auto_exp_region_width,
+                                       config.right_r_auto_exp_region_height);
         }
     }
 
