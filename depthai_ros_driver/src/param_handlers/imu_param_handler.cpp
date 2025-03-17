@@ -47,7 +47,7 @@ void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const s
     }
 
     if(declareAndLogParam<bool>("i_enable_gyro", true)) {
-        const std::string gyroscopeModeName = utils::getUpperCaseStr(declareAndLogParam<std::string>("i_gyro_mode", "ACCELEROMETER_RAW"));
+        const std::string gyroscopeModeName = utils::getUpperCaseStr(declareAndLogParam<std::string>("i_gyro_mode", "GYROSCOPE_RAW"));
         const dai::IMUSensor gyroscopeMode = utils::getValFromMap(gyroscopeModeName, gyroscopeModeMap);
         const int gyroscopeFreq = declareAndLogParam<int>("i_gyro_freq", 400);
         declareAndLogParam<float>("i_gyro_cov", 0.0);
