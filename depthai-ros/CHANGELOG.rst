@@ -1,6 +1,10 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2.11.2 (2025-03-17)
+-------------------
+* Add autoexposure region settings
+* Add additional IMU parameters
 
 2.11.1 (2025-03-12)
 -------------------
