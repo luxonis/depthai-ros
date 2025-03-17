@@ -261,7 +261,9 @@ dai::CameraControl SensorParamHandler::setRuntimeParams(parametersConfig& config
             ctrl.setLumaDenoise(config.rgb_r_luma_denoise);
         }
         if(config.rgb_r_set_auto_exp_region) {
-            ctrl.setAutoExposureRegion(config.rgb_r_auto_exp_region_start_x, config.rgb_r_auto_exp_region_start_y, config.rgb_r_auto_exp_region_width,
+            ctrl.setAutoExposureRegion(config.rgb_r_auto_exp_region_start_x,
+                                       config.rgb_r_auto_exp_region_start_y,
+                                       config.rgb_r_auto_exp_region_width,
                                        config.rgb_r_auto_exp_region_height);
         }
     } else if(getName() == "left") {
@@ -294,7 +296,9 @@ dai::CameraControl SensorParamHandler::setRuntimeParams(parametersConfig& config
             ctrl.setLumaDenoise(config.left_r_luma_denoise);
         }
         if(config.left_r_set_auto_exp_region) {
-            ctrl.setAutoExposureRegion(config.left_r_auto_exp_region_start_x, config.left_r_auto_exp_region_start_y, config.left_r_auto_exp_region_width,
+            ctrl.setAutoExposureRegion(config.left_r_auto_exp_region_start_x,
+                                       config.left_r_auto_exp_region_start_y,
+                                       config.left_r_auto_exp_region_width,
                                        config.left_r_auto_exp_region_height);
         }
     } else if(getName() == "right") {
@@ -327,7 +331,9 @@ dai::CameraControl SensorParamHandler::setRuntimeParams(parametersConfig& config
             ctrl.setLumaDenoise(config.right_r_luma_denoise);
         }
         if(config.right_r_set_auto_exp_region) {
-            ctrl.setAutoExposureRegion(config.right_r_auto_exp_region_start_x, config.right_r_auto_exp_region_start_y, config.right_r_auto_exp_region_width,
+            ctrl.setAutoExposureRegion(config.right_r_auto_exp_region_start_x,
+                                       config.right_r_auto_exp_region_start_y,
+                                       config.right_r_auto_exp_region_width,
                                        config.right_r_auto_exp_region_height);
         }
     }
