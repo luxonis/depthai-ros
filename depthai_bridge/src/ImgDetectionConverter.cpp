@@ -7,51 +7,51 @@ namespace dai {
 namespace ros {
 
 ImgDetectionConverter::ImgDetectionConverter(std::string frameName, int width, int height, bool normalized, bool getBaseDeviceTimestamp)
-    : _frameName(frameName),
-      _width(width),
-      _height(height),
-      _normalized(normalized),
-      _steadyBaseTime(std::chrono::steady_clock::now()),
-      _getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
-    _rosBaseTime = rclcpp::Clock().now();
+    : frameName(frameName),
+      width(width),
+      height(height),
+      normalized(normalized),
+      steadyBaseTime(std::chrono::steady_clock::now()),
+      getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
+    rosBaseTime = rclcpp::Clock().now();
 }
 
 ImgDetectionConverter::~ImgDetectionConverter() = default;
 
 void ImgDetectionConverter::updateRosBaseTime() {
-    updateBaseTime(_steadyBaseTime, _rosBaseTime, _totalNsChange);
+    updateBaseTime(steadyBaseTime, rosBaseTime, totalNsChange);
 }
 
 void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, std::deque<VisionMsgs::Detection2DArray>& opDetectionMsgs) {
-    if(_updateRosBaseTimeOnToRosMsg) {
+    if(updateRosBaseTimeOnToRosMsg) {
         updateRosBaseTime();
     }
     std::chrono::_V2::steady_clock::time_point tstamp;
-    if(_getBaseDeviceTimestamp)
+    if(getBaseDeviceTimestamp)
         tstamp = inNetData->getTimestampDevice();
     else
         tstamp = inNetData->getTimestamp();
 
     VisionMsgs::Detection2DArray opDetectionMsg;
 
-    opDetectionMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
-    opDetectionMsg.header.frame_id = _frameName;
+    opDetectionMsg.header.stamp = getFrameTime(rosBaseTime, steadyBaseTime, tstamp);
+    opDetectionMsg.header.frame_id = frameName;
     opDetectionMsg.detections.resize(inNetData->detections.size());
 
     // TODO(Sachin): check if this works fine for normalized detection
     // publishing
     for(int i = 0; i < inNetData->detections.size(); ++i) {
         int xMin, yMin, xMax, yMax;
-        if(_normalized) {
+        if(normalized) {
             xMin = inNetData->detections[i].xmin;
             yMin = inNetData->detections[i].ymin;
             xMax = inNetData->detections[i].xmax;
             yMax = inNetData->detections[i].ymax;
         } else {
-            xMin = inNetData->detections[i].xmin * _width;
-            yMin = inNetData->detections[i].ymin * _height;
-            xMax = inNetData->detections[i].xmax * _width;
-            yMax = inNetData->detections[i].ymax * _height;
+            xMin = inNetData->detections[i].xmin * width;
+            yMin = inNetData->detections[i].ymin * height;
+            xMax = inNetData->detections[i].xmax * width;
+            yMax = inNetData->detections[i].ymax * height;
         }
 
         float xSize = xMax - xMin;
@@ -77,11 +77,7 @@ Detection2DArrayPtr ImgDetectionConverter::toRosMsgPtr(std::shared_ptr<dai::ImgD
     std::deque<VisionMsgs::Detection2DArray> msgQueue;
     toRosMsg(inNetData, msgQueue);
     auto msg = msgQueue.front();
-#ifdef IS_ROS2
     Detection2DArrayPtr ptr = std::make_shared<VisionMsgs::Detection2DArray>(msg);
-#else
-    Detection2DArrayPtr ptr = boost::make_shared<VisionMsgs::Detection2DArray>(msg);
-#endif
     return ptr;
 }
 

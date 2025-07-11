@@ -7,7 +7,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "depthai-shared/datatype/RawIMUData.hpp"
 #include "depthai/pipeline/datatype/IMUData.hpp"
 #include "depthai_bridge/depthaiUtility.hpp"
 #include "depthai_ros_msgs/msg/imu_with_magnetic_field.hpp"

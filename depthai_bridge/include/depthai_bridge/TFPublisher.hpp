@@ -1,5 +1,5 @@
 #pragma once
-#include "depthai-shared/common/CameraFeatures.hpp"
+#include "depthai/common/CameraFeatures.hpp"
 #include "depthai/device/CalibrationHandler.hpp"
 #include "geometry_msgs/msg/quaternion.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"

@@ -3,12 +3,10 @@
 #include <deque>
 #include <memory>
 #include <string>
-#include <tuple>
 #include <unordered_map>
 
-#include "cv_bridge/cv_bridge.hpp"
-#include "depthai-shared/common/CameraBoardSocket.hpp"
-#include "depthai-shared/common/Point2f.hpp"
+#include "depthai/common/CameraBoardSocket.hpp"
+#include "depthai/common/Point2f.hpp"
 #include "depthai/device/CalibrationHandler.hpp"
 #include "depthai/pipeline/datatype/EncodedFrame.hpp"
 #include "depthai/pipeline/datatype/ImgFrame.hpp"
@@ -17,7 +15,6 @@
 #include "sensor_msgs/msg/camera_info.hpp"
 #include "sensor_msgs/msg/compressed_image.hpp"
 #include "sensor_msgs/msg/image.hpp"
-#include "std_msgs/msg/header.hpp"
 
 namespace dai {
 
@@ -35,9 +32,9 @@ using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono
 class ImageConverter {
    public:
     // ImageConverter() = default;
-    ImageConverter(const std::string frameName, bool interleaved, bool getBaseDeviceTimestamp = false);
+    ImageConverter(const std::string& frameName, bool interleaved, bool getBaseDeviceTimestamp = false);
     ~ImageConverter();
-    ImageConverter(bool interleaved, bool getBaseDeviceTimestamp = false);
+    explicit ImageConverter(bool interleaved, bool getBaseDeviceTimestamp = false);
 
     /**
      * @brief Handles cases in which the ROS time shifts forward or backward
@@ -60,7 +57,7 @@ class ImageConverter {
      * @brief Sets converter behavior to convert from bitstream to raw data.
      * @param srcType: The type of the bitstream data used for conversion.
      */
-    void convertFromBitstream(dai::RawImgFrame::Type srcType);
+    void convertFromBitstream(dai::ImgFrame::Type srcType);
 
     /**
      * @brief Sets exposure offset when getting timestamps from the message.
@@ -117,10 +114,10 @@ class ImageConverter {
    private:
     void planarToInterleaved(const std::vector<uint8_t>& srcData, std::vector<uint8_t>& destData, int w, int h, int numPlanes, int bpp);
     void interleavedToPlanar(const std::vector<uint8_t>& srcData, std::vector<uint8_t>& destData, int w, int h, int numPlanes, int bpp);
-    static std::unordered_map<dai::RawImgFrame::Type, std::string> encodingEnumMap;
-    static std::unordered_map<dai::RawImgFrame::Type, std::string> planarEncodingEnumMap;
+    static std::unordered_map<dai::ImgFrame::Type, std::string> encodingEnumMap;
+    static std::unordered_map<dai::ImgFrame::Type, std::string> planarEncodingEnumMap;
 
-    // dai::RawImgFrame::Type _srcType;
+    // dai::ImgFrame::Type _srcType;
     bool daiInterleaved;
     // bool c
     const std::string frameName = "";
@@ -132,7 +129,7 @@ class ImageConverter {
     int64_t totalNsChange{0};
     // Whether to update the ROS base time on each message conversion
     bool updateRosBaseTimeOnToRosMsg{false};
-    dai::RawImgFrame::Type srcType;
+    dai::ImgFrame::Type srcType;
     bool fromBitstream = false;
     bool dispToDepth = false;
     bool addExpOffset = false;

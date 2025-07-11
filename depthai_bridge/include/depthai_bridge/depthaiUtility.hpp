@@ -86,7 +86,7 @@ inline rclcpp::Time getFrameTime(rclcpp::Time rclBaseTime,
     return rclStamp;
 }
 
-inline void updateBaseTime(std::chrono::time_point<std::chrono::steady_clock> steadyBaseTime, rclcpp::Time rclBaseTime, int64_t& totalNsChange) {
+inline void updateBaseTime(std::chrono::time_point<std::chrono::steady_clock> steadyBaseTime, rclcpp::Time& rclBaseTime, int64_t& totalNsChange) {
     rclcpp::Time currentRosTime = rclcpp::Clock().now();
     std::chrono::time_point<std::chrono::steady_clock> currentSteadyTime = std::chrono::steady_clock::now();
     // In nanoseconds

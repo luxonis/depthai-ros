@@ -35,7 +35,7 @@ class ImgDetectionConverter {
      * @param update: bool whether to automatically update the ROS base time on message conversion
      */
     void setUpdateRosBaseTimeOnToRosMsg(bool update = true) {
-        _updateRosBaseTimeOnToRosMsg = update;
+        updateRosBaseTimeOnToRosMsg = update;
     }
 
     void toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, std::deque<VisionMsgs::Detection2DArray>& opDetectionMsgs);
@@ -43,16 +43,16 @@ class ImgDetectionConverter {
     Detection2DArrayPtr toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData);
 
    private:
-    int _width, _height;
-    const std::string _frameName;
-    bool _normalized;
-    std::chrono::time_point<std::chrono::steady_clock> _steadyBaseTime;
-    rclcpp::Time _rosBaseTime;
-    bool _getBaseDeviceTimestamp;
+    int width, height;
+    const std::string frameName;
+    bool normalized;
+    std::chrono::time_point<std::chrono::steady_clock> steadyBaseTime;
+    rclcpp::Time rosBaseTime;
+    bool getBaseDeviceTimestamp;
     // For handling ROS time shifts and debugging
-    int64_t _totalNsChange{0};
+    int64_t totalNsChange{0};
     // Whether to update the ROS base time on each message conversion
-    bool _updateRosBaseTimeOnToRosMsg{false};
+    bool updateRosBaseTimeOnToRosMsg{false};
 };
 
 /** TODO(sachin): Do we need to have ros msg -> dai bounding box ?

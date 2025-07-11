@@ -1,7 +1,6 @@
-
 #include "depthai_bridge/ImageConverter.hpp"
 
-#include "depthai-shared/datatype/RawEncodedFrame.hpp"
+#include "cv_bridge/cv_bridge.hpp"
 #include "depthai/pipeline/datatype/EncodedFrame.hpp"
 #include "depthai_bridge/depthaiUtility.hpp"
 #include "opencv2/calib3d.hpp"
@@ -12,29 +11,29 @@ namespace dai {
 
 namespace ros {
 
-std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::encodingEnumMap = {{dai::RawImgFrame::Type::YUV422i, "yuv422"},
-                                                                                           {dai::RawImgFrame::Type::RGBA8888, "rgba8"},
-                                                                                           {dai::RawImgFrame::Type::RGB888i, "rgb8"},
-                                                                                           {dai::RawImgFrame::Type::BGR888i, "bgr8"},
-                                                                                           {dai::RawImgFrame::Type::GRAY8, "mono8"},
-                                                                                           {dai::RawImgFrame::Type::RAW8, "mono8"},
-                                                                                           {dai::RawImgFrame::Type::RAW16, "16UC1"},
-                                                                                           {dai::RawImgFrame::Type::YUV420p, "YUV420"},
-                                                                                           {dai::RawImgFrame::Type::GRAYF16, "32FC1"}};
+std::unordered_map<dai::ImgFrame::Type, std::string> ImageConverter::encodingEnumMap = {{dai::ImgFrame::Type::YUV422i, "yuv422"},
+                                                                                        {dai::ImgFrame::Type::RGBA8888, "rgba8"},
+                                                                                        {dai::ImgFrame::Type::RGB888i, "rgb8"},
+                                                                                        {dai::ImgFrame::Type::BGR888i, "bgr8"},
+                                                                                        {dai::ImgFrame::Type::GRAY8, "mono8"},
+                                                                                        {dai::ImgFrame::Type::RAW8, "mono8"},
+                                                                                        {dai::ImgFrame::Type::RAW16, "16UC1"},
+                                                                                        {dai::ImgFrame::Type::YUV420p, "YUV420"},
+                                                                                        {dai::ImgFrame::Type::GRAYF16, "32FC1"}};
 // TODO(sachin) : Move Planare to encodingEnumMap and use default planar namings. And convertt those that are not supported in ROS using ImageTransport in the
 // bridge.
-std::unordered_map<dai::RawImgFrame::Type, std::string> ImageConverter::planarEncodingEnumMap = {
-    {dai::RawImgFrame::Type::BGR888p, "rgb8"},  // 3_1_bgr8 represents 3 planes/channels and 1 byte per pixel in BGR format
-    {dai::RawImgFrame::Type::RGB888p, "rgb8"},
-    {dai::RawImgFrame::Type::NV12, "rgb8"},
-    {dai::RawImgFrame::Type::YUV420p, "rgb8"}};
+std::unordered_map<dai::ImgFrame::Type, std::string> ImageConverter::planarEncodingEnumMap = {
+    {dai::ImgFrame::Type::BGR888p, "rgb8"},  // 3_1_bgr8 represents 3 planes/channels and 1 byte per pixel in BGR format
+    {dai::ImgFrame::Type::RGB888p, "rgb8"},
+    {dai::ImgFrame::Type::NV12, "rgb8"},
+    {dai::ImgFrame::Type::YUV420p, "rgb8"}};
 
 ImageConverter::ImageConverter(bool interleaved, bool getBaseDeviceTimestamp)
     : daiInterleaved(interleaved), steadyBaseTime(std::chrono::steady_clock::now()), getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
     rosBaseTime = rclcpp::Clock().now();
 }
 
-ImageConverter::ImageConverter(const std::string frameName, bool interleaved, bool getBaseDeviceTimestamp)
+ImageConverter::ImageConverter(const std::string& frameName, bool interleaved, bool getBaseDeviceTimestamp)
     : frameName(frameName), daiInterleaved(interleaved), steadyBaseTime(std::chrono::steady_clock::now()), getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
     rosBaseTime = rclcpp::Clock().now();
 }
@@ -45,7 +44,7 @@ void ImageConverter::updateRosBaseTime() {
     updateBaseTime(steadyBaseTime, rosBaseTime, totalNsChange);
 }
 
-void ImageConverter::convertFromBitstream(dai::RawImgFrame::Type srcType) {
+void ImageConverter::convertFromBitstream(dai::ImgFrame::Type srcType) {
     fromBitstream = true;
     this->srcType = srcType;
 }
@@ -99,25 +98,25 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
         int channels;
         cv::Mat output;
         switch(srcType) {
-            case dai::RawImgFrame::Type::BGR888i: {
+            case dai::ImgFrame::Type::BGR888i: {
                 encoding = sensor_msgs::image_encodings::BGR8;
                 decodeFlags = cv::IMREAD_COLOR;
                 channels = CV_8UC3;
                 break;
             }
-            case dai::RawImgFrame::Type::RGB888i: {
+            case dai::ImgFrame::Type::RGB888i: {
                 encoding = sensor_msgs::image_encodings::RGB8;
                 decodeFlags = cv::IMREAD_COLOR;
                 channels = CV_8UC3;
                 break;
             }
-            case dai::RawImgFrame::Type::GRAY8: {
+            case dai::ImgFrame::Type::GRAY8: {
                 encoding = sensor_msgs::image_encodings::MONO8;
                 decodeFlags = cv::IMREAD_GRAYSCALE;
                 channels = CV_8UC1;
                 break;
             }
-            case dai::RawImgFrame::Type::RAW8: {
+            case dai::ImgFrame::Type::RAW8: {
                 encoding = sensor_msgs::image_encodings::TYPE_16UC1;
                 decodeFlags = cv::IMREAD_ANYDEPTH;
                 channels = CV_16UC1;
@@ -129,7 +128,7 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
             }
         }
 
-        output = cv::imdecode(cv::Mat(inData->getData()), decodeFlags);
+        output = cv::imdecode(cv::Mat(1, inData->getData().size(), channels, inData->getData().data()), decodeFlags);
 
         // converting disparity
         if(dispToDepth) {
@@ -154,13 +153,13 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
         cv::Size size = {0, 0};
         int type = 0;
         switch(inData->getType()) {
-            case dai::RawImgFrame::Type::BGR888p:
-            case dai::RawImgFrame::Type::RGB888p:
+            case dai::ImgFrame::Type::BGR888p:
+            case dai::ImgFrame::Type::RGB888p:
                 size = cv::Size(inData->getWidth(), inData->getHeight());
                 type = CV_8UC3;
                 break;
-            case dai::RawImgFrame::Type::YUV420p:
-            case dai::RawImgFrame::Type::NV12:
+            case dai::ImgFrame::Type::YUV420p:
+            case dai::ImgFrame::Type::NV12:
                 size = cv::Size(inData->getWidth(), inData->getHeight() * 3 / 2);
                 type = CV_8UC1;
                 break;
@@ -172,7 +171,7 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
         mat = cv::Mat(size, type, inData->getData().data());
 
         switch(inData->getType()) {
-            case dai::RawImgFrame::Type::RGB888p: {
+            case dai::ImgFrame::Type::RGB888p: {
                 cv::Size s(inData->getWidth(), inData->getHeight());
                 cv::Mat m1 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 2);
                 cv::Mat m2 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 1);
@@ -181,7 +180,7 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
                 cv::merge(channels, 3, output);
             } break;
 
-            case dai::RawImgFrame::Type::BGR888p: {
+            case dai::ImgFrame::Type::BGR888p: {
                 cv::Size s(inData->getWidth(), inData->getHeight());
                 cv::Mat m1 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 0);
                 cv::Mat m2 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 1);
@@ -190,11 +189,11 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
                 cv::merge(channels, 3, output);
             } break;
 
-            case dai::RawImgFrame::Type::YUV420p:
+            case dai::ImgFrame::Type::YUV420p:
                 cv::cvtColor(mat, output, cv::ColorConversionCodes::COLOR_YUV2BGR_IYUV);
                 break;
 
-            case dai::RawImgFrame::Type::NV12:
+            case dai::ImgFrame::Type::NV12:
                 cv::cvtColor(mat, output, cv::ColorConversionCodes::COLOR_YUV2BGR_NV12);
                 break;
 
@@ -207,7 +206,7 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
     } else if(encodingEnumMap.find(inData->getType()) != encodingEnumMap.end()) {
         // copying the data to ros msg
         outImageMsg.header = header;
-        if(inData->getType() == dai::RawImgFrame::Type::GRAYF16) {
+        if(inData->getType() == dai::ImgFrame::Type::GRAYF16) {
             // we need to convert from FP16 to FP32
             cv::Mat mat = cv::Mat(inData->getHeight(), inData->getWidth(), CV_16F, inData->getData().data());
             cv::Mat frameFp32(inData->getHeight(), inData->getWidth(), CV_32F);
@@ -226,7 +225,7 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
 
             size_t size = inData->getData().size();
             outImageMsg.data.reserve(size);
-            outImageMsg.data = std::move(inData->getData());
+            outImageMsg.data.assign(inData->getData().begin(), inData->getData().end());
         }
     }
     return outImageMsg;
@@ -268,7 +267,8 @@ ImageMsgs::CompressedImage ImageConverter::toRosCompressedMsg(std::shared_ptr<da
 
     outImageMsg.header = header;
     outImageMsg.format = "jpeg";
-    outImageMsg.data = inData->getData();
+    outImageMsg.data.reserve(inData->getData().size());
+    outImageMsg.data.assign(inData->getData().begin(), inData->getData().end());
     return outImageMsg;
 }
 
@@ -298,9 +298,10 @@ FFMPEGMsgs::FFMPEGPacket ImageConverter::toRosFFMPEGPacket(std::shared_ptr<dai::
     outFrameMsg.height = camHeight;
     outFrameMsg.encoding = ffmpegEncoding;
     outFrameMsg.pts = header.stamp.sec * 1000000000 + header.stamp.nanosec;  // in nanoseconds
-    outFrameMsg.flags = (int)(ft == RawEncodedFrame::FrameType::I);
+    outFrameMsg.flags = (int)(ft == EncodedFrame::FrameType::I);
     outFrameMsg.is_bigendian = false;
-    outFrameMsg.data = inData->getData();
+    outFrameMsg.data.reserve(inData->getData().size());
+    outFrameMsg.data.assign(inData->getData().begin(), inData->getData().end());
 
     return outFrameMsg;
 }
@@ -318,9 +319,9 @@ ImagePtr ImageConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData) {
 }
 
 void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outData) {
-    std::unordered_map<dai::RawImgFrame::Type, std::string>::iterator revEncodingIter;
+    std::unordered_map<dai::ImgFrame::Type, std::string>::iterator revEncodingIter;
     if(daiInterleaved) {
-        revEncodingIter = std::find_if(encodingEnumMap.begin(), encodingEnumMap.end(), [&](const std::pair<dai::RawImgFrame::Type, std::string>& pair) {
+        revEncodingIter = std::find_if(encodingEnumMap.begin(), encodingEnumMap.end(), [&](const std::pair<dai::ImgFrame::Type, std::string>& pair) {
             return pair.second == inMsg.encoding;
         });
         if(revEncodingIter == encodingEnumMap.end())
@@ -330,7 +331,7 @@ void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outD
 
         outData.setData(inMsg.data);
     } else {
-        revEncodingIter = std::find_if(encodingEnumMap.begin(), encodingEnumMap.end(), [&](const std::pair<dai::RawImgFrame::Type, std::string>& pair) {
+        revEncodingIter = std::find_if(encodingEnumMap.begin(), encodingEnumMap.end(), [&](const std::pair<dai::ImgFrame::Type, std::string>& pair) {
             return pair.second.find(inMsg.encoding) != std::string::npos;
         });
 
