@@ -81,14 +81,13 @@ OutputQueues createPipeline(dai::Pipeline& pipeline, PipelineOpts opts) {
 
     // RGB image
     auto camRgb = pipeline.create<dai::node::Camera>()->build(dai::CameraBoardSocket::CAM_A);
-    auto rgbOut = camRgb->requestOutput({opts.rgbWidth, opts.rgbHeight});
+    auto rgbOut = camRgb->requestOutput(std::pair<int, int>(opts.rgbWidth, opts.rgbHeight), dai::ImgFrame::Type::RGB888i, dai::ImgResizeMode::CROP, opts.stereoFPS, true);
     queues.rgbOut = rgbOut->createOutputQueue(8, false);
     queues.controlRgb = camRgb->inputControl.createInputQueue(8, false);
     rgbOut->link(stereo->inputAlignTo);
 
     stereo->depth.link(rgbd->inDepth);
-    auto* out = camRgb->requestOutput(std::pair<int, int>(640, 400), dai::ImgFrame::Type::RGB888i);
-    out->link(rgbd->inColor);
+    rgbOut->link(rgbd->inColor);
 
     auto spatialDetectionNetwork = pipeline.create<dai::node::SpatialDetectionNetwork>();
     spatialDetectionNetwork->setBoundingBoxScaleFactor(0.5f);
