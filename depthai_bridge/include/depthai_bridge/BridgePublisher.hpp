@@ -12,17 +12,15 @@
 #include "sensor_msgs/msg/camera_info.hpp"
 #include "sensor_msgs/msg/image.hpp"
 
-namespace dai {
-
-namespace ros {
+namespace depthai_bridge {
 
 namespace ImageMsgs = sensor_msgs::msg;
 using ImagePtr = ImageMsgs::Image::SharedPtr;
 
-template <class RosMsg, class SimMsg>
+template <class RosMsg, class DaiMsg>
 class BridgePublisher {
    public:
-    using ConvertFunc = std::function<void(std::shared_ptr<SimMsg>, std::deque<RosMsg>&)>;
+    using ConvertFunc = std::function<void(std::shared_ptr<DaiMsg>, std::deque<RosMsg>&)>;
     using CustomPublisher = typename std::conditional<std::is_same<RosMsg, ImageMsgs::Image>::value,
                                                       std::shared_ptr<image_transport::Publisher>,
                                                       typename rclcpp::Publisher<RosMsg>::SharedPtr>::type;
@@ -66,7 +64,7 @@ class BridgePublisher {
 
     void addPublisherCallback();
 
-    void publishHelper(std::shared_ptr<SimMsg> inData);
+    void publishHelper(std::shared_ptr<DaiMsg> inData);
 
     void startPublisherThread();
 
@@ -77,7 +75,7 @@ class BridgePublisher {
      * adding this callback will allow you to still be able to consume
      * the data for other processing using get() function .
      */
-    void daiCallback(const std::string& name, std::shared_ptr<ADatatype> data);
+    void daiCallback(const std::string& name, std::shared_ptr<dai::ADatatype> data);
 
     static const std::string LOG_TAG;
     std::shared_ptr<dai::MessageQueue> daiMessageQueue;
@@ -98,11 +96,11 @@ class BridgePublisher {
     bool lazyPublisher = true;
 };
 
-template <class RosMsg, class SimMsg>
-const std::string BridgePublisher<RosMsg, SimMsg>::LOG_TAG = "BridgePublisher";
+template <class RosMsg, class DaiMsg>
+const std::string BridgePublisher<RosMsg, DaiMsg>::LOG_TAG = "BridgePublisher";
 
-template <class RosMsg, class SimMsg>
-BridgePublisher<RosMsg, SimMsg>::BridgePublisher(std::shared_ptr<dai::MessageQueue> daiMessageQueue,
+template <class RosMsg, class DaiMsg>
+BridgePublisher<RosMsg, DaiMsg>::BridgePublisher(std::shared_ptr<dai::MessageQueue> daiMessageQueue,
                                                  std::shared_ptr<rclcpp::Node> node,
                                                  std::string rosTopic,
                                                  ConvertFunc converter,
@@ -112,8 +110,8 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(std::shared_ptr<dai::MessageQue
     rosPublisher = node->create_publisher<RosMsg>(rosTopic, qosSetting);
 }
 
-template <class RosMsg, class SimMsg>
-BridgePublisher<RosMsg, SimMsg>::BridgePublisher(std::shared_ptr<dai::MessageQueue> daiMessageQueue,
+template <class RosMsg, class DaiMsg>
+BridgePublisher<RosMsg, DaiMsg>::BridgePublisher(std::shared_ptr<dai::MessageQueue> daiMessageQueue,
                                                  std::shared_ptr<rclcpp::Node> node,
                                                  std::string rosTopic,
                                                  ConvertFunc converter,
@@ -132,8 +130,8 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(std::shared_ptr<dai::MessageQue
     rosPublisher = advertise(qosHistoryDepth, std::is_same<RosMsg, ImageMsgs::Image>{});
 }
 
-template <class RosMsg, class SimMsg>
-BridgePublisher<RosMsg, SimMsg>::BridgePublisher(std::shared_ptr<dai::MessageQueue> daiMessageQueue,
+template <class RosMsg, class DaiMsg>
+BridgePublisher<RosMsg, DaiMsg>::BridgePublisher(std::shared_ptr<dai::MessageQueue> daiMessageQueue,
                                                  std::shared_ptr<rclcpp::Node> node,
                                                  std::string rosTopic,
                                                  ConvertFunc converter,
@@ -152,15 +150,15 @@ BridgePublisher<RosMsg, SimMsg>::BridgePublisher(std::shared_ptr<dai::MessageQue
     rosPublisher = advertise(qosHistoryDepth, std::is_same<RosMsg, ImageMsgs::Image>{});
 }
 
-template <class RosMsg, class SimMsg>
-typename rclcpp::Publisher<RosMsg>::SharedPtr BridgePublisher<RosMsg, SimMsg>::advertise(int queueSize, std::false_type) {
+template <class RosMsg, class DaiMsg>
+typename rclcpp::Publisher<RosMsg>::SharedPtr BridgePublisher<RosMsg, DaiMsg>::advertise(int queueSize, std::false_type) {
     rclcpp::PublisherOptions options;
     options.qos_overriding_options = rclcpp::QosOverridingOptions();
     return node->create_publisher<RosMsg>(rosTopic, queueSize, options);
 }
 
-template <class RosMsg, class SimMsg>
-std::shared_ptr<image_transport::Publisher> BridgePublisher<RosMsg, SimMsg>::advertise(int queueSize, std::true_type) {
+template <class RosMsg, class DaiMsg>
+std::shared_ptr<image_transport::Publisher> BridgePublisher<RosMsg, DaiMsg>::advertise(int queueSize, std::true_type) {
     if(!cameraName.empty()) {
         isImageMessage = true;
         camInfoManager = std::make_unique<camera_info_manager::CameraInfoManager>(node.get(), cameraName, cameraParamUri);
@@ -174,14 +172,14 @@ std::shared_ptr<image_transport::Publisher> BridgePublisher<RosMsg, SimMsg>::adv
     return std::make_shared<image_transport::Publisher>(it.advertise(rosTopic, queueSize));
 }
 
-template <class RosMsg, class SimMsg>
-void BridgePublisher<RosMsg, SimMsg>::daiCallback(const std::string& name, std::shared_ptr<ADatatype> data) {
-    auto daiDataPtr = std::dynamic_pointer_cast<SimMsg>(data);
+template <class RosMsg, class DaiMsg>
+void BridgePublisher<RosMsg, DaiMsg>::daiCallback(const std::string& name, std::shared_ptr<dai::ADatatype> data) {
+    auto daiDataPtr = std::dynamic_pointer_cast<DaiMsg>(data);
     publishHelper(daiDataPtr);
 }
 
-template <class RosMsg, class SimMsg>
-void BridgePublisher<RosMsg, SimMsg>::startPublisherThread() {
+template <class RosMsg, class DaiMsg>
+void BridgePublisher<RosMsg, DaiMsg>::startPublisherThread() {
     if(isCallbackAdded) {
         throw std::runtime_error(
             "addPublisherCallback() function adds a callback to the"
@@ -192,7 +190,7 @@ void BridgePublisher<RosMsg, SimMsg>::startPublisherThread() {
     readingThread = std::thread([&]() {
         int messageCounter = 0;
         while(rclcpp::ok()) {
-            auto daiDataPtr = daiMessageQueue->tryGet<SimMsg>();
+            auto daiDataPtr = daiMessageQueue->tryGet<DaiMsg>();
             if(daiDataPtr == nullptr) {
                 messageCounter++;
                 if(messageCounter > sizeof(long)) {
@@ -206,14 +204,14 @@ void BridgePublisher<RosMsg, SimMsg>::startPublisherThread() {
     });
 }
 
-template <class RosMsg, class SimMsg>
-void BridgePublisher<RosMsg, SimMsg>::addPublisherCallback() {
-    daiMessageQueue->addCallback(std::bind(&BridgePublisher<RosMsg, SimMsg>::daiCallback, this, std::placeholders::_1, std::placeholders::_2));
+template <class RosMsg, class DaiMsg>
+void BridgePublisher<RosMsg, DaiMsg>::addPublisherCallback() {
+    daiMessageQueue->addCallback(std::bind(&BridgePublisher<RosMsg, DaiMsg>::daiCallback, this, std::placeholders::_1, std::placeholders::_2));
     isCallbackAdded = true;
 }
 
-template <class RosMsg, class SimMsg>
-void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDataPtr) {
+template <class RosMsg, class DaiMsg>
+void BridgePublisher<RosMsg, DaiMsg>::publishHelper(std::shared_ptr<DaiMsg> inDataPtr) {
     std::deque<RosMsg> opMsgs;
 
     int infoSubCount = 0, mainSubCount = 0;
@@ -243,11 +241,9 @@ void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDa
     }
 }
 
-template <class RosMsg, class SimMsg>
-BridgePublisher<RosMsg, SimMsg>::~BridgePublisher() {
+template <class RosMsg, class DaiMsg>
+BridgePublisher<RosMsg, DaiMsg>::~BridgePublisher() {
     if(readingThread.joinable()) readingThread.join();
 }
 
-}  // namespace ros
-
-}  // namespace dai
+}  // namespace depthai_bridge
