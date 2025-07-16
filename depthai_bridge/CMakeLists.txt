@@ -49,15 +49,17 @@ include_directories(
 )
 
 file(GLOB LIB_SRC
-"src/DisparityConverter.cpp"
-"src/ImageConverter.cpp"
-"src/ImgDetectionConverter.cpp"
-"src/SpatialDetectionConverter.cpp"
-"src/ImuConverter.cpp"
-"src/TFPublisher.cpp"
-"src/TrackedFeaturesConverter.cpp"
-"src/TrackDetectionConverter.cpp"
-"src/TrackSpatialDetectionConverter.cpp"
+    "src/BaseConverter.cpp"
+    "src/DisparityConverter.cpp"
+    "src/ImageConverter.cpp"
+    "src/ImgDetectionConverter.cpp"
+    "src/ImuConverter.cpp"
+    "src/PointCloudConverter.cpp"
+    "src/SpatialDetectionConverter.cpp"
+    "src/TFPublisher.cpp"
+    "src/TrackedFeaturesConverter.cpp"
+    "src/TrackDetectionConverter.cpp"
+    "src/TrackSpatialDetectionConverter.cpp"
 )
 
 add_library(${PROJECT_NAME} SHARED ${LIB_SRC})

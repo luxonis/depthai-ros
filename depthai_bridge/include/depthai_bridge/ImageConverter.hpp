@@ -15,10 +15,10 @@
 #include "sensor_msgs/msg/camera_info.hpp"
 #include "sensor_msgs/msg/compressed_image.hpp"
 #include "sensor_msgs/msg/image.hpp"
+#include "depthai_bridge/BaseConverter.hpp"
 
-namespace dai {
 
-namespace ros {
+namespace depthai_bridge {
 
 namespace StdMsgs = std_msgs::msg;
 namespace ImageMsgs = sensor_msgs::msg;
@@ -29,29 +29,10 @@ using CompImagePtr = ImageMsgs::CompressedImage::SharedPtr;
 
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration>;
 
-class ImageConverter {
+class ImageConverter : public BaseConverter {
    public:
-    // ImageConverter() = default;
     ImageConverter(const std::string& frameName, bool interleaved, bool getBaseDeviceTimestamp = false);
     ~ImageConverter();
-    explicit ImageConverter(bool interleaved, bool getBaseDeviceTimestamp = false);
-
-    /**
-     * @brief Handles cases in which the ROS time shifts forward or backward
-     *  Should be called at regular intervals or on-change of ROS time, depending
-     *  on monitoring.
-     *
-     */
-    void updateRosBaseTime();
-
-    /**
-     * @brief Commands the converter to automatically update the ROS base time on message conversion based on variable
-     *
-     * @param update: bool whether to automatically update the ROS base time on message conversion
-     */
-    void setUpdateRosBaseTimeOnToRosMsg(bool update = true) {
-        updateRosBaseTimeOnToRosMsg = update;
-    }
 
     /**
      * @brief Sets converter behavior to convert from bitstream to raw data.
@@ -108,8 +89,8 @@ class ImageConverter {
                                                   dai::CameraBoardSocket cameraId,
                                                   int width = -1,
                                                   int height = -1,
-                                                  Point2f topLeftPixelId = Point2f(),
-                                                  Point2f bottomRightPixelId = Point2f());
+                                                  dai::Point2f topLeftPixelId = dai::Point2f(),
+                                                  dai::Point2f bottomRightPixelId = dai::Point2f());
 
    private:
     void planarToInterleaved(const std::vector<uint8_t>& srcData, std::vector<uint8_t>& destData, int w, int h, int numPlanes, int bpp);
@@ -120,15 +101,6 @@ class ImageConverter {
     // dai::ImgFrame::Type _srcType;
     bool daiInterleaved;
     // bool c
-    const std::string frameName = "";
-    std::chrono::time_point<std::chrono::steady_clock> steadyBaseTime;
-
-    rclcpp::Time rosBaseTime;
-    bool getBaseDeviceTimestamp;
-    // For handling ROS time shifts and debugging
-    int64_t totalNsChange{0};
-    // Whether to update the ROS base time on each message conversion
-    bool updateRosBaseTimeOnToRosMsg{false};
     dai::ImgFrame::Type srcType;
     bool fromBitstream = false;
     bool dispToDepth = false;
@@ -143,6 +115,4 @@ class ImageConverter {
     std::string ffmpegEncoding = "libx264";
 };
 
-}  // namespace ros
-
-}  // namespace dai
+}  // namespace depthai_bridge

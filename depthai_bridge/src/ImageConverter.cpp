@@ -2,14 +2,11 @@
 
 #include "cv_bridge/cv_bridge.hpp"
 #include "depthai/pipeline/datatype/EncodedFrame.hpp"
-#include "depthai_bridge/depthaiUtility.hpp"
 #include "opencv2/calib3d.hpp"
 #include "opencv2/imgcodecs.hpp"
 #include "sensor_msgs/image_encodings.hpp"
 
-namespace dai {
-
-namespace ros {
+namespace depthai_bridge {
 
 std::unordered_map<dai::ImgFrame::Type, std::string> ImageConverter::encodingEnumMap = {{dai::ImgFrame::Type::YUV422i, "yuv422"},
                                                                                         {dai::ImgFrame::Type::RGBA8888, "rgba8"},
@@ -20,29 +17,16 @@ std::unordered_map<dai::ImgFrame::Type, std::string> ImageConverter::encodingEnu
                                                                                         {dai::ImgFrame::Type::RAW16, "16UC1"},
                                                                                         {dai::ImgFrame::Type::YUV420p, "YUV420"},
                                                                                         {dai::ImgFrame::Type::GRAYF16, "32FC1"}};
-// TODO(sachin) : Move Planare to encodingEnumMap and use default planar namings. And convertt those that are not supported in ROS using ImageTransport in the
-// bridge.
 std::unordered_map<dai::ImgFrame::Type, std::string> ImageConverter::planarEncodingEnumMap = {
     {dai::ImgFrame::Type::BGR888p, "rgb8"},  // 3_1_bgr8 represents 3 planes/channels and 1 byte per pixel in BGR format
     {dai::ImgFrame::Type::RGB888p, "rgb8"},
     {dai::ImgFrame::Type::NV12, "rgb8"},
     {dai::ImgFrame::Type::YUV420p, "rgb8"}};
 
-ImageConverter::ImageConverter(bool interleaved, bool getBaseDeviceTimestamp)
-    : daiInterleaved(interleaved), steadyBaseTime(std::chrono::steady_clock::now()), getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
-    rosBaseTime = rclcpp::Clock().now();
-}
-
 ImageConverter::ImageConverter(const std::string& frameName, bool interleaved, bool getBaseDeviceTimestamp)
-    : frameName(frameName), daiInterleaved(interleaved), steadyBaseTime(std::chrono::steady_clock::now()), getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
-    rosBaseTime = rclcpp::Clock().now();
-}
+    : BaseConverter(std::move(frameName), getBaseDeviceTimestamp), daiInterleaved(interleaved) {}
 
 ImageConverter::~ImageConverter() = default;
-
-void ImageConverter::updateRosBaseTime() {
-    updateBaseTime(steadyBaseTime, rosBaseTime, totalNsChange);
-}
 
 void ImageConverter::convertFromBitstream(dai::ImgFrame::Type srcType) {
     fromBitstream = true;
@@ -73,24 +57,8 @@ void ImageConverter::setFFMPEGEncoding(const std::string& encoding) {
 }
 
 ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> inData, const sensor_msgs::msg::CameraInfo& info) {
-    if(updateRosBaseTimeOnToRosMsg) {
-        updateRosBaseTime();
-    }
-    std::chrono::_V2::steady_clock::time_point tstamp;
-    if(getBaseDeviceTimestamp)
-        if(addExpOffset)
-            tstamp = inData->getTimestampDevice(expOffset);
-        else
-            tstamp = inData->getTimestampDevice();
-    else if(addExpOffset)
-        tstamp = inData->getTimestamp(expOffset);
-    else
-        tstamp = inData->getTimestamp();
     ImageMsgs::Image outImageMsg;
-    StdMsgs::Header header;
-    header.frame_id = frameName;
-
-    header.stamp = getFrameTime(rosBaseTime, steadyBaseTime, tstamp);
+    StdMsgs::Header header = getRosHeader(inData, addExpOffset, expOffset);
 
     if(fromBitstream) {
         std::string encoding;
@@ -165,7 +133,7 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
                 break;
 
             default:
-                std::runtime_error("Invalid dataType inputs..");
+                throw std::runtime_error("Invalid dataType inputs..");
                 break;
         }
         mat = cv::Mat(size, type, inData->getData().data());
@@ -230,40 +198,10 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
     }
     return outImageMsg;
 }
-std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration> getOffsetTimestamp(
-    std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration> ts,
-    CameraExposureOffset offset,
-    std::chrono::microseconds expTime) {
-    switch(offset) {
-        case CameraExposureOffset::START:
-            return ts - expTime;
-        case CameraExposureOffset::MIDDLE:
-            return ts - expTime / 2;
-        case CameraExposureOffset::END:
-        default:
-            return ts;
-    }
-}
 
 ImageMsgs::CompressedImage ImageConverter::toRosCompressedMsg(std::shared_ptr<dai::ImgFrame> inData) {
-    if(updateRosBaseTimeOnToRosMsg) {
-        updateRosBaseTime();
-    }
-    std::chrono::_V2::steady_clock::time_point tstamp;
-    if(getBaseDeviceTimestamp)
-        if(addExpOffset)
-            tstamp = getOffsetTimestamp(inData->getTimestampDevice(), expOffset, inData->getExposureTime());
-        else
-            tstamp = inData->getTimestampDevice();
-    else if(addExpOffset)
-        tstamp = getOffsetTimestamp(inData->getTimestamp(), expOffset, inData->getExposureTime());
-    else
-        tstamp = inData->getTimestamp();
-
     ImageMsgs::CompressedImage outImageMsg;
-    StdMsgs::Header header;
-    header.frame_id = frameName;
-    header.stamp = getFrameTime(rosBaseTime, steadyBaseTime, tstamp);
+    StdMsgs::Header header = getRosHeader(inData, addExpOffset, expOffset);
 
     outImageMsg.header = header;
     outImageMsg.format = "jpeg";
@@ -273,24 +211,8 @@ ImageMsgs::CompressedImage ImageConverter::toRosCompressedMsg(std::shared_ptr<da
 }
 
 FFMPEGMsgs::FFMPEGPacket ImageConverter::toRosFFMPEGPacket(std::shared_ptr<dai::EncodedFrame> inData) {
-    if(updateRosBaseTimeOnToRosMsg) {
-        updateRosBaseTime();
-    }
-    std::chrono::_V2::steady_clock::time_point tstamp;
-    if(getBaseDeviceTimestamp)
-        if(addExpOffset)
-            tstamp = getOffsetTimestamp(inData->getTimestampDevice(), expOffset, inData->getExposureTime());
-        else
-            tstamp = inData->getTimestampDevice();
-    else if(addExpOffset)
-        tstamp = getOffsetTimestamp(inData->getTimestamp(), expOffset, inData->getExposureTime());
-    else
-        tstamp = inData->getTimestamp();
-
     FFMPEGMsgs::FFMPEGPacket outFrameMsg;
-    StdMsgs::Header header;
-    header.frame_id = frameName;
-    header.stamp = getFrameTime(rosBaseTime, steadyBaseTime, tstamp);
+    StdMsgs::Header header = getRosHeader(inData, addExpOffset, expOffset);
     outFrameMsg.header = header;
     auto ft = inData->getFrameType();
 
@@ -298,7 +220,7 @@ FFMPEGMsgs::FFMPEGPacket ImageConverter::toRosFFMPEGPacket(std::shared_ptr<dai::
     outFrameMsg.height = camHeight;
     outFrameMsg.encoding = ffmpegEncoding;
     outFrameMsg.pts = header.stamp.sec * 1000000000 + header.stamp.nanosec;  // in nanoseconds
-    outFrameMsg.flags = (int)(ft == EncodedFrame::FrameType::I);
+    outFrameMsg.flags = (int)(ft == dai::EncodedFrame::FrameType::I);
     outFrameMsg.is_bigendian = false;
     outFrameMsg.data.reserve(inData->getData().size());
     outFrameMsg.data.assign(inData->getData().begin(), inData->getData().end());
@@ -346,19 +268,6 @@ void ImageConverter::toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outD
         outData.setData(opData);
     }
 
-    /** FIXME(sachin) : is this time convertion correct ???
-     * Print the original time and ros time in seconds in
-     * ImageFrame::toRosMsg(std::shared_ptr<dai::ImgFrame> inData,
-     *ImageMsgs::Image& opMsg) to cross verify..
-     **/
-    /* #ifdef IS_ROS2
-          TimePoint ts(std::chrono::seconds((int)inMsg.header.stamp.seconds ()) + std::chrono::nanoseconds(inMsg.header.stamp.nanoseconds()));
-      #else
-          TimePoint ts(std::chrono::seconds((int)inMsg.header.stamp.toSec()) + std::chrono::nanoseconds(inMsg.header.stamp.toNSec()));
-      #endif
-
-      outData.setTimestamp(ts);
-      outData.setSequenceNum(inMsg.header.seq); */
     outData.setWidth(inMsg.width);
     outData.setHeight(inMsg.height);
     outData.setType(revEncodingIter->first);
@@ -423,11 +332,14 @@ cv::Mat ImageConverter::rosMsgtoCvMat(ImageMsgs::Image& inMsg) {
         return rgb;
     } else {
         throw std::runtime_error("This frature is still WIP");
-        return rgb;
     }
 }
-ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
-    dai::CalibrationHandler calibHandler, dai::CameraBoardSocket cameraId, int width, int height, Point2f topLeftPixelId, Point2f bottomRightPixelId) {
+ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(dai::CalibrationHandler calibHandler,
+                                                              dai::CameraBoardSocket cameraId,
+                                                              int width,
+                                                              int height,
+                                                              dai::Point2f topLeftPixelId,
+                                                              dai::Point2f bottomRightPixelId) {
     std::vector<std::vector<float>> camIntrinsics, rectifiedRotation;
     std::vector<float> distCoeffs;
     std::vector<double> flatIntrinsics, distCoeffsDouble;
@@ -536,5 +448,4 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(
 
     return cameraData;
 }
-}  // namespace ros
-}  // namespace dai
+}  // namespace depthai_bridge

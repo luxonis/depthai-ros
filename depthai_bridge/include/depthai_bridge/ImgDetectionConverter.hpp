@@ -7,64 +7,24 @@
 #include "depthai/pipeline/datatype/ImgDetections.hpp"
 #include "rclcpp/time.hpp"
 #include "vision_msgs/msg/detection2_d_array.hpp"
+#include "depthai_bridge/BaseConverter.hpp"
 
-namespace dai {
-
-namespace ros {
+namespace depthai_bridge {
 
 namespace VisionMsgs = vision_msgs::msg;
 using Detection2DArrayPtr = VisionMsgs::Detection2DArray::SharedPtr;
 
-class ImgDetectionConverter {
+class ImgDetectionConverter : public BaseConverter {
    public:
-    // DetectionConverter() = default;
-    ImgDetectionConverter(std::string frameName, int width, int height, bool normalized = false, bool getBaseDeviceTimestamp = false);
+    explicit ImgDetectionConverter(std::string frameName, bool normalized = false, bool getBaseDeviceTimestamp = false);
     ~ImgDetectionConverter();
 
-    /**
-     * @brief Handles cases in which the ROS time shifts forward or backward
-     *  Should be called at regular intervals or on-change of ROS time, depending
-     *  on monitoring.
-     *
-     */
-    void updateRosBaseTime();
-
-    /**
-     * @brief Commands the converter to automatically update the ROS base time on message conversion based on variable
-     *
-     * @param update: bool whether to automatically update the ROS base time on message conversion
-     */
-    void setUpdateRosBaseTimeOnToRosMsg(bool update = true) {
-        updateRosBaseTimeOnToRosMsg = update;
-    }
-
-    void toRosMsg(std::shared_ptr<dai::ImgDetections> inNetData, std::deque<VisionMsgs::Detection2DArray>& opDetectionMsgs);
+    void toRosMsg(std::shared_ptr<dai::ImgDetections> inData, std::deque<VisionMsgs::Detection2DArray>& opDetectionMsgs);
 
     Detection2DArrayPtr toRosMsgPtr(std::shared_ptr<dai::ImgDetections> inNetData);
 
    private:
-    int width, height;
-    const std::string frameName;
     bool normalized;
-    std::chrono::time_point<std::chrono::steady_clock> steadyBaseTime;
-    rclcpp::Time rosBaseTime;
-    bool getBaseDeviceTimestamp;
-    // For handling ROS time shifts and debugging
-    int64_t totalNsChange{0};
-    // Whether to update the ROS base time on each message conversion
-    bool updateRosBaseTimeOnToRosMsg{false};
 };
 
-/** TODO(sachin): Do we need to have ros msg -> dai bounding box ?
- * is there any situation where we would need to have xlinkin to take bounding
- * box as input. One scenario would to take this as input and use ImageManip
- * node to crop the roi of the image. Since it is not available yet. Leaving
- * it out for now to speed up on other tasks feel free to raise a issue if you
- * feel that feature is good to have...
- */
-
-}  // namespace ros
-
-namespace rosBridge = ros;
-
-}  // namespace dai
+}  // namespace depthai_bridge

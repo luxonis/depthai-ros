@@ -18,8 +18,7 @@
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
-namespace dai {
-namespace ros {
+namespace depthai_bridge {
 TFPublisher::TFPublisher(std::shared_ptr<rclcpp::Node> node,
                          const dai::CalibrationHandler& calHandler,
                          const std::vector<dai::CameraFeatures>& camFeatures,
@@ -123,10 +122,7 @@ void TFPublisher::publishImuTransform(nlohmann::json json, std::shared_ptr<rclcp
         // pass parts of 4x4 matrix to transfFromExtr
         std::vector<float> translation = {extrMat[0][3], extrMat[1][3], extrMat[2][3]};
         ts.transform.translation = transFromExtr(translation);
-        // pass 3x3 rotation matrix to quatFromRotM
-        std::vector<std::vector<float>> rotMat = {
-            {extrMat[0][0], extrMat[0][1], extrMat[0][2]}, {extrMat[1][0], extrMat[1][1], extrMat[1][2]}, {extrMat[2][0], extrMat[2][1], extrMat[2][2]}};
-        ts.transform.rotation = quatFromRotM(rotMat);
+        ts.transform.rotation = quatFromRotM(extrMat);
     } else {
         ts.header.frame_id = baseFrame;
         RCLCPP_WARN(logger, "IMU extrinsics are not set. Publishing IMU frame with zero translation and rotation.");
@@ -267,5 +263,4 @@ std::string TFPublisher::getURDF() {
     }
     return result;
 }
-}  // namespace ros
-}  // namespace dai
+}  // namespace depthai_bridge

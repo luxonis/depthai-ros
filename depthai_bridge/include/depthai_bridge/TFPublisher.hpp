@@ -12,8 +12,7 @@ namespace rclcpp {
 class Node;
 }  // namespace rclcpp
 
-namespace dai {
-namespace ros {
+namespace depthai_bridge {
 class TFPublisher {
    public:
     explicit TFPublisher(std::shared_ptr<rclcpp::Node> node,
@@ -103,5 +102,4 @@ class TFPublisher {
         {dai::CameraBoardSocket::CAM_C, "infra1"},
     };
 };
-}  // namespace ros
-}  // namespace dai
+}  // namespace depthai_bridge

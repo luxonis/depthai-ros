@@ -3,9 +3,7 @@
 
 #include "depthai_bridge/depthaiUtility.hpp"
 
-namespace dai {
-
-namespace ros {
+namespace depthai_bridge {
 
 ImuConverter::ImuConverter(const std::string& frameName,
                            ImuSyncMethod syncMode,
@@ -16,47 +14,40 @@ ImuConverter::ImuConverter(const std::string& frameName,
                            bool enable_rotation,
                            bool enable_magn,
                            bool getBaseDeviceTimestamp)
-    : _frameName(frameName),
-      _syncMode(syncMode),
-      _linear_accel_cov(linear_accel_cov),
-      _angular_velocity_cov(angular_velocity_cov),
-      _rotation_cov(rotation_cov),
-      _magnetic_field_cov(magnetic_field_cov),
-      _enable_rotation(enable_rotation),
-      _enable_magn(enable_magn),
-      _sequenceNum(0),
-      _steadyBaseTime(std::chrono::steady_clock::now()),
-      _getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
-    _rosBaseTime = rclcpp::Clock().now();
-}
+    : BaseConverter(std::move(frameName), getBaseDeviceTimestamp),
+      syncMode(syncMode),
+      linear_accel_cov(linear_accel_cov),
+      angular_velocity_cov(angular_velocity_cov),
+      rotation_cov(rotation_cov),
+      magnetic_field_cov(magnetic_field_cov),
+      enable_rotation(enable_rotation),
+      enable_magn(enable_magn),
+      sequenceNum(0) {}
 
 ImuConverter::~ImuConverter() = default;
 
-void ImuConverter::updateRosBaseTime() {
-    updateBaseTime(_steadyBaseTime, _rosBaseTime, _totalNsChange);
-}
 
 void ImuConverter::fillImuMsg(ImuMsgs::Imu& msg, dai::IMUReportAccelerometer report) {
     msg.linear_acceleration.x = report.x;
     msg.linear_acceleration.y = report.y;
     msg.linear_acceleration.z = report.z;
-    msg.linear_acceleration_covariance = {_linear_accel_cov, 0.0, 0.0, 0.0, _linear_accel_cov, 0.0, 0.0, 0.0, _linear_accel_cov};
+    msg.linear_acceleration_covariance = {linear_accel_cov, 0.0, 0.0, 0.0, linear_accel_cov, 0.0, 0.0, 0.0, linear_accel_cov};
 }
 
 void ImuConverter::fillImuMsg(ImuMsgs::Imu& msg, dai::IMUReportGyroscope report) {
     msg.angular_velocity.x = report.x;
     msg.angular_velocity.y = report.y;
     msg.angular_velocity.z = report.z;
-    msg.angular_velocity_covariance = {_angular_velocity_cov, 0.0, 0.0, 0.0, _angular_velocity_cov, 0.0, 0.0, 0.0, _angular_velocity_cov};
+    msg.angular_velocity_covariance = {angular_velocity_cov, 0.0, 0.0, 0.0, angular_velocity_cov, 0.0, 0.0, 0.0, angular_velocity_cov};
 }
 
 void ImuConverter::fillImuMsg(ImuMsgs::Imu& msg, dai::IMUReportRotationVectorWAcc report) {
-    if(_enable_rotation) {
+    if(enable_rotation) {
         msg.orientation.x = report.i;
         msg.orientation.y = report.j;
         msg.orientation.z = report.k;
         msg.orientation.w = report.real;
-        msg.orientation_covariance = {_rotation_cov, 0.0, 0.0, 0.0, _rotation_cov, 0.0, 0.0, 0.0, _rotation_cov};
+        msg.orientation_covariance = {rotation_cov, 0.0, 0.0, 0.0, rotation_cov, 0.0, 0.0, 0.0, rotation_cov};
     } else {
         msg.orientation.x = 0.0;
         msg.orientation.y = 0.0;
@@ -86,14 +77,14 @@ void ImuConverter::fillImuMsg(depthai_ros_msgs::msg::ImuWithMagneticField& msg, 
     msg.field.magnetic_field.x = report.x;
     msg.field.magnetic_field.y = report.y;
     msg.field.magnetic_field.z = report.z;
-    msg.field.magnetic_field_covariance = {_magnetic_field_cov, 0.0, 0.0, 0.0, _magnetic_field_cov, 0.0, 0.0, 0.0, _magnetic_field_cov};
+    msg.field.magnetic_field_covariance = {magnetic_field_cov, 0.0, 0.0, 0.0, magnetic_field_cov, 0.0, 0.0, 0.0, magnetic_field_cov};
 }
 
 void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<ImuMsgs::Imu>& outImuMsgs) {
-    if(_updateRosBaseTimeOnToRosMsg) {
+    if(updateRosBaseTimeOnToRosMsg) {
         updateRosBaseTime();
     }
-    if(_syncMode != ImuSyncMethod::COPY) {
+    if(syncMode != ImuSyncMethod::COPY) {
         FillImuData_LinearInterpolation(inData->packets, outImuMsgs);
     } else {
         for(int i = 0; i < inData->packets.size(); ++i) {
@@ -102,11 +93,11 @@ void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<Imu
 
             ImuMsgs::Imu msg;
             std::chrono::_V2::steady_clock::time_point tstamp;
-            if(_getBaseDeviceTimestamp)
+            if(getBaseDeviceTimestamp)
                 tstamp = accel.getTimestampDevice();
             else
                 tstamp = accel.getTimestamp();
-            if(_enable_rotation) {
+            if(enable_rotation) {
                 auto rot = inData->packets[i].rotationVector;
                 CreateUnitMessage(msg, tstamp, accel, gyro, rot);
             } else {
@@ -119,10 +110,10 @@ void ImuConverter::toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<Imu
 }
 
 void ImuConverter::toRosDaiMsg(std::shared_ptr<dai::IMUData> inData, std::deque<depthai_ros_msgs::msg::ImuWithMagneticField>& outImuMsgs) {
-    if(_updateRosBaseTimeOnToRosMsg) {
+    if(updateRosBaseTimeOnToRosMsg) {
         updateRosBaseTime();
     }
-    if(_syncMode != ImuSyncMethod::COPY) {
+    if(syncMode != ImuSyncMethod::COPY) {
         FillImuData_LinearInterpolation(inData->packets, outImuMsgs);
     } else {
         for(int i = 0; i < inData->packets.size(); ++i) {
@@ -132,7 +123,7 @@ void ImuConverter::toRosDaiMsg(std::shared_ptr<dai::IMUData> inData, std::deque<
             auto magn = inData->packets[i].magneticField;
             depthai_ros_msgs::msg::ImuWithMagneticField msg;
             std::chrono::_V2::steady_clock::time_point tstamp;
-            if(_getBaseDeviceTimestamp)
+            if(getBaseDeviceTimestamp)
                 tstamp = accel.getTimestampDevice();
             else
                 tstamp = accel.getTimestamp();
@@ -142,5 +133,4 @@ void ImuConverter::toRosDaiMsg(std::shared_ptr<dai::IMUData> inData, std::deque<
     }
 }
 
-}  // namespace ros
-}  // namespace dai
+}  // namespace depthai_bridge

@@ -3,51 +3,43 @@
 
 #include "depthai_bridge/depthaiUtility.hpp"
 
-namespace dai {
-
-namespace ros {
+namespace depthai_bridge {
 
 DisparityConverter::DisparityConverter(
     const std::string frameName, float focalLength, float baseline, float minDepth, float maxDepth, bool getBaseDeviceTimestamp)
-    : _frameName(frameName),
-      _focalLength(focalLength),
-      _baseline(baseline / 100.0),
-      _minDepth(minDepth / 100.0),
-      _maxDepth(maxDepth / 100.0),
-      _steadyBaseTime(std::chrono::steady_clock::now()),
-      _getBaseDeviceTimestamp(getBaseDeviceTimestamp) {
-    _rosBaseTime = rclcpp::Clock().now();
-}
+    : BaseConverter(std::move(frameName), getBaseDeviceTimestamp),
+      focalLength(focalLength),
+      baseline(baseline / 100.0),
+      minDepth(minDepth / 100.0),
+      maxDepth(maxDepth / 100.0)
+{}
 
 DisparityConverter::~DisparityConverter() = default;
 
-void DisparityConverter::updateRosBaseTime() {
-    updateBaseTime(_steadyBaseTime, _rosBaseTime, _totalNsChange);
-}
 
 void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<DisparityMsgs::DisparityImage>& outDispImageMsgs) {
-    if(_updateRosBaseTimeOnToRosMsg) {
+    if(updateRosBaseTimeOnToRosMsg) {
         updateRosBaseTime();
     }
     std::chrono::_V2::steady_clock::time_point tstamp;
-    if(_getBaseDeviceTimestamp)
+    if(getBaseDeviceTimestamp)
         tstamp = inData->getTimestampDevice();
     else
         tstamp = inData->getTimestamp();
 
     DisparityMsgs::DisparityImage outDispImageMsg;
-    outDispImageMsg.header.frame_id = _frameName;
-    outDispImageMsg.f = _focalLength;
-    outDispImageMsg.min_disparity = _focalLength * _baseline / _maxDepth;
-    outDispImageMsg.max_disparity = _focalLength * _baseline / _minDepth;
+    outDispImageMsg.header.frame_id = frameName;
+    outDispImageMsg.f = focalLength;
+    outDispImageMsg.min_disparity = focalLength * baseline / maxDepth;
+    outDispImageMsg.max_disparity = focalLength * baseline / minDepth;
 
-    outDispImageMsg.t = _baseline / 100.0;  // converting cm to meters
+    outDispImageMsg.t = baseline / 100.0;  // converting cm to meters
 
     // copying the data to ros msg
     // outDispImageMsg.header       = imgHeader;
     // std::string temp_str(encodingEnumMap[inData->getType()]);
     ImageMsgs::Image& outImageMsg = outDispImageMsg.image;
-    outDispImageMsg.header.stamp = getFrameTime(_rosBaseTime, _steadyBaseTime, tstamp);
+    outDispImageMsg.header.stamp = getFrameTime(rosBaseTime, steadyBaseTime, tstamp);
 
     outImageMsg.encoding = sensor_msgs::image_encodings::TYPE_32FC1;
     outImageMsg.header = outDispImageMsg.header;
@@ -104,5 +96,4 @@ DisparityImagePtr DisparityConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame>
     return ptr;
 }
 
-}  // namespace ros
-}  // namespace dai
+}  // namespace depthai_bridge
