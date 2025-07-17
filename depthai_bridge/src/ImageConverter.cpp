@@ -330,8 +330,19 @@ cv::Mat ImageConverter::rosMsgtoCvMat(ImageMsgs::Image& inMsg) {
         cv::Mat nv_frame(inMsg.height * 3 / 2, inMsg.width, CV_8UC1, inMsg.data.data());
         cv::cvtColor(nv_frame, rgb, cv::COLOR_YUV2BGR_NV12);
         return rgb;
+    } else if(inMsg.encoding == "yuv420p") {
+        cv::Mat yuv_frame(inMsg.height * 3 / 2, inMsg.width, CV_8UC1, inMsg.data.data());
+        cv::cvtColor(yuv_frame, rgb, cv::COLOR_YUV2BGR_IYUV);
+        return rgb;
+    } else if(inMsg.encoding == "rgb8") {
+        cv::Mat rgb_frame(inMsg.height, inMsg.width, CV_8UC3, inMsg.data.data());
+        cv::cvtColor(rgb_frame, rgb, cv::COLOR_RGB2BGR);
+        return rgb;
+    } else if(inMsg.encoding == "bgr8") {
+        cv::Mat bgr_frame(inMsg.height, inMsg.width, CV_8UC3, inMsg.data.data());
+        return bgr_frame;
     } else {
-        throw std::runtime_error("This frature is still WIP");
+        throw std::runtime_error("Unsupported encoding");
     }
 }
 ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(dai::CalibrationHandler calibHandler,
