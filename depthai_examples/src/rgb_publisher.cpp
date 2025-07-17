@@ -1,0 +1,56 @@
+#include <cstdio>
+#include <functional>
+
+#include "rclcpp/rclcpp.hpp"
+
+// Includes common necessary includes for development using depthai library
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/MessageQueue.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/node/Camera.hpp"
+#include "depthai_bridge/BridgePublisher.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_bridge/TFPublisher.hpp"
+
+int main(int argc, char** argv) {
+    int width = 1280;
+    int height = 720;
+    rclcpp::init(argc, argv);
+    auto node = rclcpp::Node::make_shared("rgb_publisher");
+
+    auto device = std::make_shared<dai::Device>();
+    dai::Pipeline pipeline(device);
+
+    // Define sources and outputs
+    auto rgbCamera = pipeline.create<dai::node::Camera>()->build(dai::CameraBoardSocket::CAM_A);
+
+    // Create output queue
+    auto rgbOutputQueue = rgbCamera->requestOutput({width, height})->createOutputQueue(8, false);
+
+    pipeline.start();
+
+    // Create a bridge publisher for RGB images
+    std::string tfPrefix = "oak";
+    depthai_bridge::ImageConverter rgbConverter(tfPrefix + "_rgb_camera_optical_frame", false);
+
+    auto calibrationHandler = device->readCalibration();
+    auto tfPub = std::make_unique<depthai_bridge::TFPublisher>(node, calibrationHandler, device->getConnectedCameraFeatures(), "oak", device->getDeviceName());
+    auto rgbCameraInfo = rgbConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_A, width, height);
+
+    depthai_bridge::BridgePublisher<sensor_msgs::msg::Image, dai::ImgFrame> rgbPub(
+        rgbOutputQueue,
+        node,
+        "rgb/image",
+        std::bind(&depthai_bridge::ImageConverter::toRosMsg, &rgbConverter, std::placeholders::_1, std::placeholders::_2),
+        30,
+        rgbCameraInfo,
+        "rgb");
+
+    rgbPub.addPublisherCallback();
+
+    while(rclcpp::ok() && pipeline.isRunning()) {
+        rclcpp::spin(node);
+    }
+
+    return 0;
+}
