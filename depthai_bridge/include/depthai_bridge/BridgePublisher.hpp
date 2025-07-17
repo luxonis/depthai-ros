@@ -25,6 +25,16 @@ class BridgePublisher {
                                                       std::shared_ptr<image_transport::Publisher>,
                                                       typename rclcpp::Publisher<RosMsg>::SharedPtr>::type;
 
+/**
+ * @brief Constructor for BridgePublisher with default QoS settings.
+ *
+ * @param daiMessageQueue Shared pointer to the DepthAI message queue.
+ * @param node Shared pointer to the ROS 2 node.
+ * @param rosTopic The ROS topic to publish messages to.
+ * @param converter Function to convert DepthAI messages to ROS messages.
+ * @param qosSetting QoS settings for the ROS publisher.
+ * @param lazyPublisher Flag to enable lazy publishing.
+ */
     BridgePublisher(std::shared_ptr<dai::MessageQueue> daiMessageQueue,
                     std::shared_ptr<rclcpp::Node> node,
                     std::string rosTopic,
@@ -32,6 +42,18 @@ class BridgePublisher {
                     rclcpp::QoS qosSetting = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable(),
                     bool lazyPublisher = true);
 
+/**
+ * @brief Constructor for BridgePublisher with custom QoS history depth.
+ *
+ * @param daiMessageQueue Shared pointer to the DepthAI message queue.
+ * @param node Shared pointer to the ROS 2 node.
+ * @param rosTopic The ROS topic to publish messages to.
+ * @param converter Function to convert DepthAI messages to ROS messages.
+ * @param qosHistoryDepth History depth for the QoS settings.
+ * @param cameraParamUri URI for the camera parameters.
+ * @param cameraName Name of the camera.
+ * @param lazyPublisher Flag to enable lazy publishing.
+ */
     BridgePublisher(std::shared_ptr<dai::MessageQueue> daiMessageQueue,
                     std::shared_ptr<rclcpp::Node> node,
                     std::string rosTopic,
@@ -41,6 +63,18 @@ class BridgePublisher {
                     std::string cameraName = "",
                     bool lazyPublisher = true);
 
+/**
+ * @brief Constructor for BridgePublisher with custom camera info data.
+ *
+ * @param daiMessageQueue Shared pointer to the DepthAI message queue.
+ * @param node Shared pointer to the ROS 2 node.
+ * @param rosTopic The ROS topic to publish messages to.
+ * @param converter Function to convert DepthAI messages to ROS messages.
+ * @param qosHistoryDepth History depth for the QoS settings.
+ * @param cameraInfoData Camera info data for the ROS messages.
+ * @param cameraName Name of the camera.
+ * @param lazyPublisher Flag to enable lazy publishing.
+ */
     BridgePublisher(std::shared_ptr<dai::MessageQueue> daiMessageQueue,
                     std::shared_ptr<rclcpp::Node> node,
                     std::string rosTopic,
@@ -188,14 +222,9 @@ void BridgePublisher<RosMsg, DaiMsg>::startPublisherThread() {
     }
 
     readingThread = std::thread([&]() {
-        int messageCounter = 0;
         while(rclcpp::ok()) {
             auto daiDataPtr = daiMessageQueue->tryGet<DaiMsg>();
             if(daiDataPtr == nullptr) {
-                messageCounter++;
-                if(messageCounter > sizeof(long)) {
-                    messageCounter = 0;
-                }
                 continue;
             }
 
