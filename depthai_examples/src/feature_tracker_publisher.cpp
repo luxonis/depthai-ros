@@ -1,21 +1,18 @@
 #include <cstdio>
 #include <functional>
-#include <iostream>
-#include <tuple>
 
+#include "depthai_bridge/TFPublisher.hpp"
 #include "depthai_ros_msgs/msg/tracked_features.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 // Inludes common necessary includes for development using depthai library
-#include "depthai/device/DataQueue.hpp"
 #include "depthai/device/Device.hpp"
+#include "depthai/pipeline/MessageQueue.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/node/Camera.hpp"
 #include "depthai/pipeline/node/ColorCamera.hpp"
 #include "depthai/pipeline/node/FeatureTracker.hpp"
-#include "depthai/pipeline/node/MonoCamera.hpp"
 #include "depthai/pipeline/node/StereoDepth.hpp"
-#include "depthai/pipeline/node/XLinkIn.hpp"
-#include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_bridge/BridgePublisher.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_bridge/TrackedFeaturesConverter.hpp"
@@ -24,32 +21,20 @@ int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("feature_tracker");
 
-    dai::Pipeline pipeline;
+    auto device = std::make_shared<dai::Device>();
+    dai::Pipeline pipeline(device);
+
 
     // Define sources and outputs
-    auto monoLeft = pipeline.create<dai::node::MonoCamera>();
-    auto monoRight = pipeline.create<dai::node::MonoCamera>();
+    auto monoLeft = pipeline.create<dai::node::Camera>()->build(dai::CameraBoardSocket::CAM_B, {}, 30);
+    auto monoRight = pipeline.create<dai::node::Camera>()->build(dai::CameraBoardSocket::CAM_C, {}, 30);
     auto featureTrackerLeft = pipeline.create<dai::node::FeatureTracker>();
     auto featureTrackerRight = pipeline.create<dai::node::FeatureTracker>();
 
-    auto xoutTrackedFeaturesLeft = pipeline.create<dai::node::XLinkOut>();
-    auto xoutTrackedFeaturesRight = pipeline.create<dai::node::XLinkOut>();
-
-    xoutTrackedFeaturesLeft->setStreamName("trackedFeaturesLeft");
-    xoutTrackedFeaturesRight->setStreamName("trackedFeaturesRight");
-
-    // Properties
-    monoLeft->setResolution(dai::MonoCameraProperties::SensorResolution::THE_720_P);
-    monoLeft->setCamera("left");
-    monoRight->setResolution(dai::MonoCameraProperties::SensorResolution::THE_720_P);
-    monoRight->setCamera("right");
-
     // Linking
-    monoLeft->out.link(featureTrackerLeft->inputImage);
-    featureTrackerLeft->outputFeatures.link(xoutTrackedFeaturesLeft->input);
+    monoLeft->requestOutput({640, 400})->link(featureTrackerLeft->inputImage);
 
-    monoRight->out.link(featureTrackerRight->inputImage);
-    featureTrackerRight->outputFeatures.link(xoutTrackedFeaturesRight->input);
+    monoRight->requestOutput({640, 400})->link(featureTrackerRight->inputImage);
 
     // By default the least mount of resources are allocated
     // increasing it improves performance when optical flow is enabled
@@ -60,41 +45,41 @@ int main(int argc, char** argv) {
 
     auto featureTrackerConfig = featureTrackerRight->initialConfig.get();
 
-    std::shared_ptr<dai::Device> device;
-    std::vector<dai::DeviceInfo> availableDevices = dai::Device::getAllAvailableDevices();
-
-    std::cout << "Listing available devices..." << std::endl;
-    device = std::make_shared<dai::Device>(pipeline);
-    auto outputFeaturesLeftQueue = device->getOutputQueue("trackedFeaturesLeft", 8, false);
-    auto outputFeaturesRightQueue = device->getOutputQueue("trackedFeaturesRight", 8, false);
+    auto outputFeaturesLeftQueue = featureTrackerLeft->outputFeatures.createOutputQueue(8, false);
+    auto outputFeaturesRightQueue = featureTrackerRight->outputFeatures.createOutputQueue(8, false);
     std::string tfPrefix = "oak";
-    dai::rosBridge::TrackedFeaturesConverter leftConverter(tfPrefix + "_left_camera_optical_frame", true);
+    depthai_bridge::TrackedFeaturesConverter leftConverter(tfPrefix + "_left_camera_optical_frame", true);
 
-    dai::rosBridge::TrackedFeaturesConverter rightConverter(tfPrefix + "_right_camera_optical_frame", true);
+    depthai_bridge::TrackedFeaturesConverter rightConverter(tfPrefix + "_right_camera_optical_frame", true);
 
-    dai::rosBridge::BridgePublisher<depthai_ros_msgs::msg::TrackedFeatures, dai::TrackedFeatures> featuresPubL(
+    pipeline.start();
+    auto calibrationHandler = device->readCalibration();
+    auto tfPub = std::make_unique<depthai_bridge::TFPublisher>(node, calibrationHandler, device->getConnectedCameraFeatures(), "oak", device->getDeviceName());
+
+    depthai_bridge::BridgePublisher<depthai_ros_msgs::msg::TrackedFeatures, dai::TrackedFeatures> featuresPubL(
         outputFeaturesLeftQueue,
         node,
-        std::string("features_left"),
-        std::bind(&dai::rosBridge::TrackedFeaturesConverter::toRosMsg, &leftConverter, std::placeholders::_1, std::placeholders::_2),
+        "features_left",
+        std::bind(&depthai_bridge::TrackedFeaturesConverter::toRosMsg, &leftConverter, std::placeholders::_1, std::placeholders::_2),
         30,
         "",
         "features_left");
 
     featuresPubL.addPublisherCallback();
 
-    dai::rosBridge::BridgePublisher<depthai_ros_msgs::msg::TrackedFeatures, dai::TrackedFeatures> featuresPubR(
+    depthai_bridge::BridgePublisher<depthai_ros_msgs::msg::TrackedFeatures, dai::TrackedFeatures> featuresPubR(
         outputFeaturesRightQueue,
         node,
-        std::string("features_right"),
-        std::bind(&dai::rosBridge::TrackedFeaturesConverter::toRosMsg, &rightConverter, std::placeholders::_1, std::placeholders::_2),
+        "features_right",
+        std::bind(&depthai_bridge::TrackedFeaturesConverter::toRosMsg, &rightConverter, std::placeholders::_1, std::placeholders::_2),
         30,
         "",
         "features_right");
 
     featuresPubR.addPublisherCallback();
-    std::cout << "Ready." << std::endl;
-    rclcpp::spin(node);
+    while(rclcpp::ok() && pipeline.isRunning()) {
+        rclcpp::spin(node);
+    }
 
     return 0;
 }
