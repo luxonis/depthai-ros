@@ -22,7 +22,6 @@ protected:
     }
 };
 
-// Test for the constructor
 TEST_F(ImageConverterTest, ConstructorTest) {
     ImageConverter converter("test_frame", true, false);
     EXPECT_EQ(converter.getFrameName(), "test_frame");
@@ -30,7 +29,6 @@ TEST_F(ImageConverterTest, ConstructorTest) {
     EXPECT_FALSE(converter.isGetBaseDeviceTimestamp());
 }
 
-// Test for convertFromBitstream method
 TEST_F(ImageConverterTest, ConvertFromBitstreamTest) {
     ImageConverter converter("test_frame", true, false);
     converter.convertFromBitstream(dai::ImgFrame::Type::BGR888i);
@@ -38,7 +36,6 @@ TEST_F(ImageConverterTest, ConvertFromBitstreamTest) {
     EXPECT_EQ(converter.getSrcType(), dai::ImgFrame::Type::BGR888i);
 }
 
-// Test for convertDispToDepth method
 TEST_F(ImageConverterTest, ConvertDispToDepthTest) {
     ImageConverter converter("test_frame", true, false);
     converter.convertDispToDepth(0.1);
@@ -46,7 +43,6 @@ TEST_F(ImageConverterTest, ConvertDispToDepthTest) {
     EXPECT_EQ(converter.getBaseline(), 0.1);
 }
 
-// Test for addExposureOffset method
 TEST_F(ImageConverterTest, AddExposureOffsetTest) {
     ImageConverter converter("test_frame", true, false);
     dai::CameraExposureOffset offset;
@@ -55,14 +51,12 @@ TEST_F(ImageConverterTest, AddExposureOffsetTest) {
     EXPECT_EQ(converter.getExpOffset(), offset);
 }
 
-// Test for reverseStereoSocketOrder method
 TEST_F(ImageConverterTest, ReverseStereoSocketOrderTest) {
     ImageConverter converter("test_frame", true, false);
     converter.reverseStereoSocketOrder();
     EXPECT_TRUE(converter.isReversedStereoSocketOrder());
 }
 
-// Test for setAlphaScaling method
 TEST_F(ImageConverterTest, SetAlphaScalingTest) {
     ImageConverter converter("test_frame", true, false);
     converter.setAlphaScaling(0.5);
@@ -70,14 +64,12 @@ TEST_F(ImageConverterTest, SetAlphaScalingTest) {
     EXPECT_EQ(converter.getAlphaScalingFactor(), 0.5);
 }
 
-// Test for setFFMPEGEncoding method
 TEST_F(ImageConverterTest, SetFFMPEGEncodingTest) {
     ImageConverter converter("test_frame", true, false);
     converter.setFFMPEGEncoding("h264");
     EXPECT_EQ(converter.getFFMPEGEncoding(), "h264");
 }
 
-// Test for toRosMsgRawPtr method
 TEST_F(ImageConverterTest, ToRosMsgRawPtrTest) {
     ImageConverter converter("test_frame", true, false);
     std::shared_ptr<dai::ImgFrame> inData = std::make_shared<dai::ImgFrame>();
@@ -95,7 +87,6 @@ TEST_F(ImageConverterTest, ToRosMsgRawPtrTest) {
     EXPECT_EQ(outImageMsg.data.size(), 640 * 480 * 3);
 }
 
-// Test for toRosCompressedMsg method
 TEST_F(ImageConverterTest, ToRosCompressedMsgTest) {
     ImageConverter converter("test_frame", true, false);
     std::shared_ptr<dai::ImgFrame> inData = std::make_shared<dai::ImgFrame>();
@@ -109,7 +100,6 @@ TEST_F(ImageConverterTest, ToRosCompressedMsgTest) {
     EXPECT_EQ(outImageMsg.data.size(), 640 * 480 * 3);
 }
 
-// Test for toRosFFMPEGPacket method
 TEST_F(ImageConverterTest, ToRosFFMPEGPacketTest) {
     ImageConverter converter("test_frame", true, false);
     std::shared_ptr<dai::EncodedFrame> inData = std::make_shared<dai::EncodedFrame>();
@@ -122,7 +112,6 @@ TEST_F(ImageConverterTest, ToRosFFMPEGPacketTest) {
     EXPECT_EQ(outFrameMsg.data.size(), 640 * 480 * 3);
 }
 
-// Test for toRosMsg method
 TEST_F(ImageConverterTest, ToRosMsgTest) {
     ImageConverter converter("test_frame", true, false);
     std::shared_ptr<dai::ImgFrame> inData = std::make_shared<dai::ImgFrame>();
@@ -141,7 +130,6 @@ TEST_F(ImageConverterTest, ToRosMsgTest) {
     EXPECT_EQ(outImageMsgs.front().data.size(), 640 * 480 * 3);
 }
 
-// Test for toRosMsgPtr method
 TEST_F(ImageConverterTest, ToRosMsgPtrTest) {
     ImageConverter converter("test_frame", true, false);
     std::shared_ptr<dai::ImgFrame> inData = std::make_shared<dai::ImgFrame>();
@@ -158,7 +146,6 @@ TEST_F(ImageConverterTest, ToRosMsgPtrTest) {
     EXPECT_EQ(outImageMsg->data.size(), 640 * 480 * 3);
 }
 
-// Test for toDaiMsg method
 TEST_F(ImageConverterTest, ToDaiMsgTest) {
     ImageConverter converter("test_frame", true, false);
     sensor_msgs::msg::Image inMsg;
@@ -175,7 +162,6 @@ TEST_F(ImageConverterTest, ToDaiMsgTest) {
     EXPECT_EQ(outData.getData().size(), 640 * 480 * 3);
 }
 
-// Test for rosMsgtoCvMat method
 TEST_F(ImageConverterTest, RosMsgtoCvMatTest) {
     ImageConverter converter("test_frame", true, false);
     sensor_msgs::msg::Image inMsg;
@@ -202,10 +188,8 @@ TEST_F(ImageConverterTest, RosMsgtoCvMatTest) {
     EXPECT_EQ(cvMat.at<cv::Vec3b>(2, 2), cv::Vec3b(8, 8, 8));
 }
 
-// Test for calibrationToCameraInfo method
 TEST_F(ImageConverterTest, CalibrationToCameraInfoTest) {
     ImageConverter converter("test_frame", true, false);
-    // get calib.json file from share/resources and turn it to json format
     std::ifstream f(ament_index_cpp::get_package_share_directory("depthai_bridge") + "/resources/cal.json");
     nlohmann::json data = nlohmann::json::parse(f);
     dai::CalibrationHandler calibHandler = dai::CalibrationHandler::fromJson(data);

@@ -107,13 +107,25 @@ install(EXPORT depthai_bridgeTargets
 
 if(BUILD_TESTING)
     find_package(ament_cmake_gtest REQUIRED)
-    ament_add_gtest(${PROJECT_NAME}_image_converter_test test/ImageConverterTest.cpp)
-    target_include_directories(${PROJECT_NAME}_image_converter_test PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-  )
-    target_link_libraries(${PROJECT_NAME}_image_converter_test depthai_bridge)
-    # for calib.json
+    macro(bridge_test test_name test_src)
+        ament_add_gtest("${PROJECT_NAME}_${test_name}" "test/${test_src}")
+        target_include_directories("${PROJECT_NAME}_${test_name}" PUBLIC
+          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+          $<INSTALL_INTERFACE:include>
+        )
+        target_link_libraries("${PROJECT_NAME}_${test_name}" depthai_bridge)
+
+    endmacro()
+    bridge_test(image_converter_test ImageConverterTest.cpp)
+    bridge_test(img_det_converter_test ImgDetectionConverterTest.cpp)
+    bridge_test(imu_converter_test ImuConverterTest.cpp)
+    bridge_test(pointcloud_converter_test PointCloudConverterTest.cpp)
+    bridge_test(spatial_detection_converter_test SpatialDetectionConverterTest.cpp)
+    bridge_test(track_detection_converter_test TrackDetectionConverterTest.cpp)
+    bridge_test(track_spatial_detection_converter_test TrackSpatialDetectionConverterTest.cpp)
+    bridge_test(tracked_features_converter_test TrackedFeaturesConverterTest.cpp)
+
+    #   # for calib.json
     install(DIRECTORY resources DESTINATION share/${PROJECT_NAME})
 endif()
 

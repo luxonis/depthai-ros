@@ -1,4 +1,3 @@
-
 #include "depthai_bridge/DisparityConverter.hpp"
 
 #include "depthai_bridge/depthaiUtility.hpp"
@@ -11,36 +10,20 @@ DisparityConverter::DisparityConverter(
       focalLength(focalLength),
       baseline(baseline / 100.0),
       minDepth(minDepth / 100.0),
-      maxDepth(maxDepth / 100.0)
-{}
+      maxDepth(maxDepth / 100.0) {}
 
 DisparityConverter::~DisparityConverter() = default;
 
-
 void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<DisparityMsgs::DisparityImage>& outDispImageMsgs) {
-    if(updateRosBaseTimeOnToRosMsg) {
-        updateRosBaseTime();
-    }
-    std::chrono::_V2::steady_clock::time_point tstamp;
-    if(getBaseDeviceTimestamp)
-        tstamp = inData->getTimestampDevice();
-    else
-        tstamp = inData->getTimestamp();
-
     DisparityMsgs::DisparityImage outDispImageMsg;
-    outDispImageMsg.header.frame_id = frameName;
+    outDispImageMsg.header = getRosHeader(inData);
     outDispImageMsg.f = focalLength;
     outDispImageMsg.min_disparity = focalLength * baseline / maxDepth;
     outDispImageMsg.max_disparity = focalLength * baseline / minDepth;
 
     outDispImageMsg.t = baseline / 100.0;  // converting cm to meters
 
-    // copying the data to ros msg
-    // outDispImageMsg.header       = imgHeader;
-    // std::string temp_str(encodingEnumMap[inData->getType()]);
     ImageMsgs::Image& outImageMsg = outDispImageMsg.image;
-    outDispImageMsg.header.stamp = getFrameTime(rosBaseTime, steadyBaseTime, tstamp);
-
     outImageMsg.encoding = sensor_msgs::image_encodings::TYPE_32FC1;
     outImageMsg.header = outDispImageMsg.header;
     if(inData->getType() == dai::ImgFrame::Type::RAW8) {
@@ -57,8 +40,6 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::de
 
         unsigned char* daiImgData = reinterpret_cast<unsigned char*>(convertedData.data());
 
-        // TODO(Sachin): Try using assign since it is a vector
-        // img->data.assign(packet.data->cbegin(), packet.data->cend());
         memcpy(imageMsgDataPtr, daiImgData, size);
 
     } else {

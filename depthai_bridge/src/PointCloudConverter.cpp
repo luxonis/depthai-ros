@@ -1,6 +1,5 @@
 #include "depthai_bridge/PointCloudConverter.hpp"
 
-#include "depthai_bridge/depthaiUtility.hpp"
 #include "sensor_msgs/msg/point_field.hpp"
 
 namespace depthai_bridge {

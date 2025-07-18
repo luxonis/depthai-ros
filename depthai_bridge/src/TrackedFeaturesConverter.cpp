@@ -1,6 +1,5 @@
 #include "depthai_bridge/TrackedFeaturesConverter.hpp"
 
-#include "depthai_bridge/depthaiUtility.hpp"
 
 namespace depthai_bridge {
 

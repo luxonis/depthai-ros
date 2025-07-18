@@ -37,7 +37,7 @@ void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inData,
         opDetectionMsg.detections[i].results.resize(1);
 
         opDetectionMsg.detections[i].id = std::to_string(inData->detections[i].label);
-        opDetectionMsg.detections[i].results[0].hypothesis.class_id = std::to_string(inData->detections[i].label);
+        opDetectionMsg.detections[i].results[0].hypothesis.class_id = inData->detections[i].labelName;
         opDetectionMsg.detections[i].results[0].hypothesis.score = inData->detections[i].confidence;
         opDetectionMsg.detections[i].bbox.center.position.x = xCenter;
         opDetectionMsg.detections[i].bbox.center.position.y = yCenter;

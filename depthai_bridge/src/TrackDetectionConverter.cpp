@@ -1,7 +1,5 @@
 #include "depthai_bridge/TrackDetectionConverter.hpp"
 
-#include "depthai/depthai.hpp"
-#include "depthai_bridge/depthaiUtility.hpp"
 
 namespace depthai_bridge {
 
@@ -39,8 +37,8 @@ void TrackDetectionConverter::toRosMsg(std::shared_ptr<dai::Tracklets> trackData
 
         float xSize = xMax - xMin;
         float ySize = yMax - yMin;
-        float xCenter = xMin + xSize / 2.;
-        float yCenter = yMin + ySize / 2.;
+        float xCenter = xMin + xSize / 2;
+        float yCenter = yMin + ySize / 2;
 
         opDetectionMsg.detections[i].results.resize(1);
 
