@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
-project(depthai_examples VERSION 2.11.2 LANGUAGES CXX C)
+project(depthai_examples VERSION 3.0.0 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -12,7 +12,6 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 
-
 find_package(camera_info_manager REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(depthai CONFIG REQUIRED)
@@ -23,6 +22,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(stereo_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(vision_msgs REQUIRED)
+find_package(backward_ros REQUIRED)
 
 set(dependencies
 ${camera_info_manager_TARGETS}
@@ -42,34 +42,28 @@ include_directories(
 )
 
 
-macro(dai_add_node_ros2 node_name node_src)
-  add_executable("${node_name}" "${node_src}")
+macro(add_example node_name node_src)
+    add_executable("${node_name}" "${node_src}")
 
-  target_link_libraries("${node_name}"
+    target_link_libraries("${node_name}"
                         depthai::core
                         opencv_imgproc
                         opencv_highgui)
 
-  target_link_libraries("${node_name}"
+    target_link_libraries("${node_name}"
                             ${dependencies})
 
 endmacro()
 
 
-# dai_add_node_ros2(crop_control_service src/crop_control_service.cpp)
-# dai_add_node_ros2(mobilenet_node src/mobilenet_publisher.cpp)
-# dai_add_node_ros2(rgb_stereo_node src/rgb_stereo_node.cpp)
-dai_add_node_ros2(stereo_inertial_node src/stereo_inertial_publisher.cpp)
-# dai_add_node_ros2(feature_tracker src/feature_tracker_publisher.cpp)
-# dai_add_node_ros2(stereo_node src/stereo_publisher.cpp)
-# dai_add_node_ros2(yolov4_spatial_node src/yolov4_spatial_publisher.cpp)
-# dai_add_node_ros2(yolov4_node src/yolov4_publisher.cpp)
-# dai_add_node_ros2(tracker_yolov4_node src/tracker_yolov4_publisher.cpp)
-# dai_add_node_ros2(tracker_yolov4_spatial_node src/tracker_yolov4_spatial_publisher.cpp)
-
-
-
-
+add_example(rgbd_spatial_detections src/rgbd_spatial_detections.cpp)
+add_example(feature_tracker src/feature_tracker_publisher.cpp)
+add_example(converter_to_cv src/converter_to_cv.cpp)
+add_example(rgb_publisher src/rgb_publisher.cpp)
+add_example(rgbd_publisher src/rgbd_publisher.cpp)
+add_example(rgb_subscriber src/rgb_subscriber.cpp)
+add_example(disparity_publisher src/disparity_publisher.cpp)
+add_example(detection_publisher src/detection_publisher.cpp)
 install(DIRECTORY params DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY rviz DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY resources DESTINATION share/${PROJECT_NAME})
@@ -77,7 +71,15 @@ install(DIRECTORY launch/ DESTINATION share/${PROJECT_NAME}/launch
 FILES_MATCHING PATTERN "*.py")
 
 install(TARGETS
-        stereo_inertial_node
+        rgbd_spatial_detections
+        feature_tracker
+        converter_to_cv
+        rgb_publisher
+        rgbd_publisher
+        rgb_subscriber
+        disparity_publisher
+        detection_publisher
+
         DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
