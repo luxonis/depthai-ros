@@ -277,16 +277,9 @@ void ImageConverter::planarToInterleaved(const std::vector<uint8_t>& srcData, st
     if(numPlanes == 3) {
         // optimization (cache)
         for(int i = 0; i < w * h; i++) {
-            uint8_t b = srcData.data()[i + w * h * 0];
-            destData[i * 3 + 0] = b;
-        }
-        for(int i = 0; i < w * h; i++) {
-            uint8_t g = srcData.data()[i + w * h * 1];
-            destData[i * 3 + 1] = g;
-        }
-        for(int i = 0; i < w * h; i++) {
-            uint8_t r = srcData.data()[i + w * h * 2];
-            destData[i * 3 + 2] = r;
+            destData[i * 3 + 0] = srcData.data()[i + w * h * 0];
+            destData[i * 3 + 1] = srcData.data()[i + w * h * 1];
+            destData[i * 3 + 2] = srcData.data()[i + w * h * 2];
         }
     } else {
         throw std::runtime_error(
@@ -308,14 +301,6 @@ void ImageConverter::interleavedToPlanar(const std::vector<uint8_t>& srcData, st
             destData[i + w * h * 1] = g;
             destData[i + w * h * 2] = r;
         }
-        // for(int i = 0; i < w*h; i++) {
-        //     uint8_t g = srcData.data()[i + w*h * 1];
-        //     destData[i*3+1] = g;
-        // }
-        // for(int i = 0; i < w*h; i++) {
-        //     uint8_t r = srcData.data()[i + w*h * 2];
-        //     destData[i*3+2] = r;
-        // }
     } else {
         throw std::runtime_error(
             "If you encounter the scenario where you need this "

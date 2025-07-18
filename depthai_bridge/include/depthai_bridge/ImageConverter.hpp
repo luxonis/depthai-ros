@@ -92,9 +92,21 @@ class ImageConverter : public BaseConverter {
                                                   dai::Point2f topLeftPixelId = dai::Point2f(),
                                                   dai::Point2f bottomRightPixelId = dai::Point2f());
 
-   private:
     void planarToInterleaved(const std::vector<uint8_t>& srcData, std::vector<uint8_t>& destData, int w, int h, int numPlanes, int bpp);
     void interleavedToPlanar(const std::vector<uint8_t>& srcData, std::vector<uint8_t>& destData, int w, int h, int numPlanes, int bpp);
+
+    bool isDaiInterleaved() const { return daiInterleaved; }
+    bool isFromBitstream() const { return fromBitstream; }
+    dai::ImgFrame::Type getSrcType() const { return srcType; }
+    bool isDispToDepth() const { return dispToDepth; }
+    double getBaseline() const { return baseline; }
+    bool isAddExpOffset() const { return addExpOffset; }
+    dai::CameraExposureOffset getExpOffset() const { return expOffset; }
+    bool isReversedStereoSocketOrder() const { return reversedStereoSocketOrder; }
+    bool isAlphaScalingEnabled() const { return alphaScalingEnabled; }
+    double getAlphaScalingFactor() const { return alphaScalingFactor; }
+    std::string getFFMPEGEncoding() const { return ffmpegEncoding; }
+   private:
     static std::unordered_map<dai::ImgFrame::Type, std::string> encodingEnumMap;
     static std::unordered_map<dai::ImgFrame::Type, std::string> planarEncodingEnumMap;
 

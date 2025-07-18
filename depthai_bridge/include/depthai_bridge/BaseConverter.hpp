@@ -35,6 +35,12 @@ class BaseConverter {
                                        bool addExpOffset = false,
                                        dai::CameraExposureOffset offset = dai::CameraExposureOffset());
 
+    std::string getFrameName() const {
+        return frameName;
+    }
+    bool isGetBaseDeviceTimestamp() const { return getBaseDeviceTimestamp; }
+    bool isUpdateRosBaseTimeOnToRosMsg() const { return updateRosBaseTimeOnToRosMsg; }
+
    protected:
     const std::string frameName;
     std::chrono::time_point<std::chrono::steady_clock> steadyBaseTime;

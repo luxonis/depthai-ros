@@ -105,9 +105,18 @@ install(TARGETS depthai_bridge
 install(EXPORT depthai_bridgeTargets
       DESTINATION share/${PROJECT_NAME}/cmake)
 
+if(BUILD_TESTING)
+    find_package(ament_cmake_gtest REQUIRED)
+    ament_add_gtest(${PROJECT_NAME}_image_converter_test test/ImageConverterTest.cpp)
+    target_include_directories(${PROJECT_NAME}_image_converter_test PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+  )
+    target_link_libraries(${PROJECT_NAME}_image_converter_test depthai_bridge)
+    # for calib.json
+    install(DIRECTORY resources DESTINATION share/${PROJECT_NAME})
+endif()
 
-
-install(DIRECTORY rviz DESTINATION share/${PROJECT_NAME})
 
 ament_export_include_directories(include)
 ament_export_libraries(depthai_bridge)
