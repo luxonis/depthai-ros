@@ -1,6 +1,5 @@
 #include <cstdio>
 #include <functional>
-#include <rclcpp/logging.hpp>
 #include <tuple>
 
 #include "depthai/common/CameraBoardSocket.hpp"
@@ -19,6 +18,7 @@
 #include "depthai_bridge/SpatialDetectionConverter.hpp"
 #include "depthai_bridge/TFPublisher.hpp"
 #include "depthai_ros_msgs/msg/spatial_detection_array.hpp"
+#include "rclcpp/logging.hpp"
 #include "rclcpp/node.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "sensor_msgs/msg/imu.hpp"
@@ -72,7 +72,7 @@ OutputQueues createPipeline(dai::Pipeline& pipeline, PipelineOpts opts) {
     imu->setMaxBatchReports(20);  // Get one message only for now.
 
     auto rgbOut =
-        camRgb->requestOutput(std::pair<int, int>(opts.rgbWidth, opts.rgbHeight), dai::ImgFrame::Type::RGB888i, dai::ImgResizeMode::CROP, opts.stereoFPS, true);
+        camRgb->requestOutput(std::make_pair(opts.rgbWidth, opts.rgbHeight), dai::ImgFrame::Type::RGB888i, dai::ImgResizeMode::CROP, opts.stereoFPS, true);
 
     auto monoOutLeft = monoLeft->requestOutput(std::make_pair(opts.monoWidth, opts.monoHeight));
     monoOutLeft->link(stereo->left);
@@ -107,7 +107,7 @@ OutputQueues createPipeline(dai::Pipeline& pipeline, PipelineOpts opts) {
 
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
-    auto node = rclcpp::Node::make_shared("stereo_inertial_node");
+    auto node = rclcpp::Node::make_shared("rgbd_spatial_detections");
 
     std::string mxId = node->declare_parameter<std::string>("mxId", "");
     std::string ip = node->declare_parameter<std::string>("ip", "");
@@ -140,7 +140,6 @@ int main(int argc, char** argv) {
     } else if(!ip.empty()) {
         info = dai::DeviceInfo(ip);
     }
-
 
     auto infos = dai::Device::getAllAvailableDevices();
     RCLCPP_INFO(node->get_logger(), "Devices found: %zu", infos.size());
@@ -180,83 +179,83 @@ int main(int argc, char** argv) {
         }
     }
 
-    depthai_bridge::ImuConverter imuConverter(tfPrefix + "_imu_frame", imuMode, linearAccelCovariance, angularVelCovariance);
+    auto imuConverter = std::make_unique<depthai_bridge::ImuConverter>(tfPrefix + "_imu_frame", imuMode, linearAccelCovariance, angularVelCovariance);
     if(enableRosBaseTimeUpdate) {
     }
-    depthai_bridge::BridgePublisher<sensor_msgs::msg::Imu, dai::IMUData> imuPublish(
+    auto imuPublish = std::make_unique<depthai_bridge::BridgePublisher<sensor_msgs::msg::Imu, dai::IMUData>>(
         queues.imuOut,
         node,
         "imu",
-        std::bind(&depthai_bridge::ImuConverter::toRosMsg, &imuConverter, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&depthai_bridge::ImuConverter::toRosMsg, imuConverter.get(), std::placeholders::_1, std::placeholders::_2),
         30,
         "",
         "imu");
 
-    imuPublish.addPublisherCallback();
+    imuPublish->addPublisherCallback();
 
-    depthai_bridge::ImageConverter rgbConverter(tfPrefix + "_rgb_camera_optical_frame", false);
+    auto rgbConverter = std::make_unique<depthai_bridge::ImageConverter>(tfPrefix + "_rgb_camera_optical_frame", false);
     if(enableRosBaseTimeUpdate) {
-        imuConverter.setUpdateRosBaseTimeOnToRosMsg();
-        rgbConverter.setUpdateRosBaseTimeOnToRosMsg();
+        imuConverter->setUpdateRosBaseTimeOnToRosMsg();
+        rgbConverter->setUpdateRosBaseTimeOnToRosMsg();
     }
     auto calibrationHandler = device->readCalibration();
     auto tfPub = std::make_unique<depthai_bridge::TFPublisher>(node, calibrationHandler, device->getConnectedCameraFeatures(), "oak", device->getDeviceName());
     while(rclcpp::ok() && pipeline.isRunning()) {
-        depthai_bridge::PointCloudConverter pclConv(tfPrefix + "_rgb_camera_optical_frame", false);
-        depthai_bridge::BridgePublisher<sensor_msgs::msg::PointCloud2, dai::PointCloudData> pclPublish(
+        auto pclConv = std::make_unique<depthai_bridge::PointCloudConverter>(tfPrefix + "_rgb_camera_optical_frame", false);
+        auto pclPublish = std::make_unique<depthai_bridge::BridgePublisher<sensor_msgs::msg::PointCloud2, dai::PointCloudData>>(
             queues.pclOut,
             node,
             "stereo/points",
-            std::bind(&depthai_bridge::PointCloudConverter::toRosMsg, pclConv, std::placeholders::_1, std::placeholders::_2),
+            std::bind(&depthai_bridge::PointCloudConverter::toRosMsg, pclConv.get(), std::placeholders::_1, std::placeholders::_2),
             30,
             "",
             "pcl");
-        pclPublish.addPublisherCallback();
+        pclPublish->addPublisherCallback();
 
-        auto rgbCameraInfo = rgbConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_A, rgbWidth, rgbHeight);
-        depthai_bridge::BridgePublisher<sensor_msgs::msg::Image, dai::ImgFrame> depthPublish(
+        auto rgbCameraInfo = rgbConverter->calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_A, rgbWidth, rgbHeight);
+        auto depthPublish = std::make_unique<depthai_bridge::BridgePublisher<sensor_msgs::msg::Image, dai::ImgFrame>>(
             queues.stereoOut,
             node,
             "stereo/depth",
-            std::bind(&depthai_bridge::ImageConverter::toRosMsg, &rgbConverter, std::placeholders::_1, std::placeholders::_2),
+            std::bind(&depthai_bridge::ImageConverter::toRosMsg, rgbConverter.get(), std::placeholders::_1, std::placeholders::_2),
             30,
             rgbCameraInfo,
             "stereo");
-        depthPublish.addPublisherCallback();
+        depthPublish->addPublisherCallback();
 
         auto imgQueue = queues.rgbOut;
-        depthai_bridge::BridgePublisher<sensor_msgs::msg::Image, dai::ImgFrame> rgbPublish(
+        auto rgbPublish = std::make_unique<depthai_bridge::BridgePublisher<sensor_msgs::msg::Image, dai::ImgFrame>>(
             imgQueue,
             node,
             "color/image",
-            std::bind(&depthai_bridge::ImageConverter::toRosMsg, &rgbConverter, std::placeholders::_1, std::placeholders::_2),
+            std::bind(&depthai_bridge::ImageConverter::toRosMsg, rgbConverter.get(), std::placeholders::_1, std::placeholders::_2),
             30,
             rgbCameraInfo,
             "color");
-        rgbPublish.addPublisherCallback();
+        rgbPublish->addPublisherCallback();
 
         auto previewQueue = queues.previewOut;
         auto detectionQueue = queues.detectionOut;
-        auto previewCameraInfo = rgbConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_A);
+        auto previewCameraInfo = rgbConverter->calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_A);
 
-        depthai_bridge::BridgePublisher<sensor_msgs::msg::Image, dai::ImgFrame> previewPublish(
+        auto previewPublish = std::make_unique<depthai_bridge::BridgePublisher<sensor_msgs::msg::Image, dai::ImgFrame>>(
             previewQueue,
             node,
             "color/preview/image",
-            std::bind(&depthai_bridge::ImageConverter::toRosMsg, &rgbConverter, std::placeholders::_1, std::placeholders::_2),
+            std::bind(&depthai_bridge::ImageConverter::toRosMsg, rgbConverter.get(), std::placeholders::_1, std::placeholders::_2),
             30,
             previewCameraInfo,
             "color/preview");
-        previewPublish.addPublisherCallback();
+        previewPublish->addPublisherCallback();
 
-        depthai_bridge::SpatialDetectionConverter detConverter(tfPrefix + "_rgb_camera_optical_frame", false);
-        depthai_bridge::BridgePublisher<depthai_ros_msgs::msg::SpatialDetectionArray, dai::SpatialImgDetections> detectionPublish(
+        auto detConverter = std::make_unique<depthai_bridge::SpatialDetectionConverter>(tfPrefix + "_rgb_camera_optical_frame", false);
+        auto detectionPublish = std::make_unique<depthai_bridge::BridgePublisher<depthai_ros_msgs::msg::SpatialDetectionArray, dai::SpatialImgDetections>>(
             detectionQueue,
             node,
             "color/yolov4_Spatial_detections",
-            std::bind(&depthai_bridge::SpatialDetectionConverter::toRosMsg, &detConverter, std::placeholders::_1, std::placeholders::_2),
+            std::bind(&depthai_bridge::SpatialDetectionConverter::toRosMsg, detConverter.get(), std::placeholders::_1, std::placeholders::_2),
             30);
-        detectionPublish.addPublisherCallback();
+        detectionPublish->addPublisherCallback();
         rclcpp::spin(node);
     }
     return 0;

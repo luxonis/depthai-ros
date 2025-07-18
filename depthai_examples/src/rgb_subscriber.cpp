@@ -3,15 +3,13 @@
 #include <memory>
 #include <random>
 
-#include "rclcpp/rclcpp.hpp"
-
-// Includes common necessary includes for development using depthai library
-#include "depthai/device/Device.hpp"
+#include "cv_bridge/cv_bridge.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/host/HostNode.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_bridge/TFPublisher.hpp"
-#include "cv_bridge/cv_bridge.hpp"
+#include "rclcpp/node.hpp"
+
 cv::Mat generateRandomImage(int width, int height) {
     cv::Mat randomImage(height, width, CV_8UC3);
     std::random_device rd;

@@ -1,20 +1,18 @@
 #include <cstdio>
 #include <functional>
 
-#include "rclcpp/rclcpp.hpp"
-
-// Includes common necessary includes for development using depthai library
 #include "depthai/device/Device.hpp"
-#include "depthai/pipeline/MessageQueue.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/Camera.hpp"
 #include "depthai_bridge/BridgePublisher.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_bridge/TFPublisher.hpp"
+#include "rclcpp/node.hpp"
 
 int main(int argc, char** argv) {
     int width = 1280;
     int height = 720;
+    std::string tfPrefix = "oak";
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("rgb_publisher");
 
@@ -30,23 +28,23 @@ int main(int argc, char** argv) {
     pipeline.start();
 
     // Create a bridge publisher for RGB images
-    std::string tfPrefix = "oak";
-    depthai_bridge::ImageConverter rgbConverter(tfPrefix + "_rgb_camera_optical_frame", false);
+    auto rgbConverter = std::make_shared<depthai_bridge::ImageConverter>(tfPrefix + "_rgb_camera_optical_frame", false);
 
     auto calibrationHandler = device->readCalibration();
-    auto tfPub = std::make_unique<depthai_bridge::TFPublisher>(node, calibrationHandler, device->getConnectedCameraFeatures(), "oak", device->getDeviceName());
-    auto rgbCameraInfo = rgbConverter.calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_A, width, height);
+    auto tfPub =
+        std::make_unique<depthai_bridge::TFPublisher>(node, calibrationHandler, device->getConnectedCameraFeatures(), tfPrefix, device->getDeviceName());
+    auto rgbCameraInfo = rgbConverter->calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_A, width, height);
 
-    depthai_bridge::BridgePublisher<sensor_msgs::msg::Image, dai::ImgFrame> rgbPub(
+    auto rgbPub = std::make_unique<depthai_bridge::BridgePublisher<sensor_msgs::msg::Image, dai::ImgFrame>>(
         rgbOutputQueue,
         node,
         "rgb/image",
-        std::bind(&depthai_bridge::ImageConverter::toRosMsg, &rgbConverter, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&depthai_bridge::ImageConverter::toRosMsg, rgbConverter, std::placeholders::_1, std::placeholders::_2),
         30,
         rgbCameraInfo,
         "rgb");
 
-    rgbPub.addPublisherCallback();
+    rgbPub->addPublisherCallback();
 
     while(rclcpp::ok() && pipeline.isRunning()) {
         rclcpp::spin(node);

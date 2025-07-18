@@ -8,14 +8,6 @@
 #include "rclcpp/node.hpp"
 #include "sensor_msgs/msg/image.hpp"
 
-depthai_bridge::ImageConverter inputConverter("rgb_frame", true);
-
-void rgbCallback(const sensor_msgs::msg::Image::SharedPtr rgbImageMsg) {
-    cv::Mat rgbImage = inputConverter.rosMsgtoCvMat(*rgbImageMsg);
-    cv::imshow("video", rgbImage);
-    cv::waitKey(1);
-    return;
-}
 cv::Mat generateRandomImage(int width, int height) {
     cv::Mat randomImage(height, width, CV_8UC3);
     std::random_device rd;
@@ -32,9 +24,17 @@ cv::Mat generateRandomImage(int width, int height) {
 
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
+    auto inputConverter = std::make_shared<depthai_bridge::ImageConverter>("rgb_frame", true);
+
     auto node = rclcpp::Node::make_shared("rgb_subscriber_node");
 
-    rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub = node->create_subscription<sensor_msgs::msg::Image>("rgb_image", 5, &rgbCallback);
+    rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub =
+        node->create_subscription<sensor_msgs::msg::Image>("rgb_image", 5, [&](const sensor_msgs::msg::Image::SharedPtr rgbImageMsg) {
+            cv::Mat rgbImage = inputConverter->rosMsgtoCvMat(*rgbImageMsg);
+            cv::imshow("video", rgbImage);
+            cv::waitKey(1);
+            return;
+        });
 
     auto random_image_publisher = node->create_publisher<sensor_msgs::msg::Image>("rgb_image", 5);
 
