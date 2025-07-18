@@ -5,10 +5,10 @@
 #include <string>
 
 #include "depthai/pipeline/datatype/ImgFrame.hpp"
+#include "depthai_bridge/BaseConverter.hpp"
 #include "rclcpp/time.hpp"
 #include "sensor_msgs/image_encodings.hpp"
 #include "stereo_msgs/msg/disparity_image.hpp"
-#include "depthai_bridge/BaseConverter.hpp"
 
 namespace depthai_bridge {
 
@@ -27,6 +27,11 @@ class DisparityConverter : public BaseConverter {
 
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<DisparityMsgs::DisparityImage>& outImageMsg);
     DisparityImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
+
+    float getFocalLength() const;
+    float getBaseline() const;
+    float getMinDepth() const;
+    float getMaxDepth() const;
 
    private:
     const float focalLength = 882.2, baseline = 7.5, minDepth = 80, maxDepth;

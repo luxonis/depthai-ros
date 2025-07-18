@@ -36,12 +36,7 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::de
         outImageMsg.is_bigendian = true;
 
         std::vector<float> convertedData(inData->getData().begin(), inData->getData().end());
-        unsigned char* imageMsgDataPtr = reinterpret_cast<unsigned char*>(outImageMsg.data.data());
-
-        unsigned char* daiImgData = reinterpret_cast<unsigned char*>(convertedData.data());
-
-        memcpy(imageMsgDataPtr, daiImgData, size);
-
+        outImageMsg.data.assign(convertedData.begin(), convertedData.end());
     } else {
         outDispImageMsg.delta_d = 1.0 / 32.0;
         size_t size = inData->getHeight() * inData->getWidth() * sizeof(float);
@@ -50,18 +45,16 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::de
         outImageMsg.width = inData->getWidth();
         outImageMsg.step = size / inData->getHeight();
         outImageMsg.is_bigendian = true;
-        unsigned char* daiImgData = reinterpret_cast<unsigned char*>(inData->getData().data());
 
-        std::vector<int16_t> raw16Data(inData->getHeight() * inData->getWidth());
-        unsigned char* raw16DataPtr = reinterpret_cast<unsigned char*>(raw16Data.data());
-        memcpy(raw16DataPtr, daiImgData, inData->getData().size());
         std::vector<float> convertedData;
-        std::transform(
-            raw16Data.begin(), raw16Data.end(), std::back_inserter(convertedData), [](int16_t disp) -> std::size_t { return static_cast<float>(disp) / 32.0; });
+        convertedData.reserve(inData->getHeight() * inData->getWidth());
 
-        unsigned char* imageMsgDataPtr = reinterpret_cast<unsigned char*>(outImageMsg.data.data());
-        unsigned char* convertedDataPtr = reinterpret_cast<unsigned char*>(convertedData.data());
-        memcpy(imageMsgDataPtr, convertedDataPtr, size);
+        std::transform(reinterpret_cast<const int16_t*>(inData->getData().data()),
+                       reinterpret_cast<const int16_t*>(inData->getData().data() + inData->getData().size()),
+                       std::back_inserter(convertedData),
+                       [](int16_t disp) -> float { return static_cast<float>(disp) / 32.0; });
+
+        outImageMsg.data.assign(convertedData.begin(), convertedData.end());
     }
     outDispImageMsgs.push_back(outDispImageMsg);
     return;
@@ -77,4 +70,20 @@ DisparityImagePtr DisparityConverter::toRosMsgPtr(std::shared_ptr<dai::ImgFrame>
     return ptr;
 }
 
+// Getter methods
+float DisparityConverter::getFocalLength() const {
+    return focalLength;
+}
+
+float DisparityConverter::getBaseline() const {
+    return baseline;
+}
+
+float DisparityConverter::getMinDepth() const {
+    return minDepth;
+}
+
+float DisparityConverter::getMaxDepth() const {
+    return maxDepth;
+}
 }  // namespace depthai_bridge
