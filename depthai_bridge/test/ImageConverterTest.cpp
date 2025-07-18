@@ -1,18 +1,20 @@
-#include <fstream>
 #include <gtest/gtest.h>
-#include "depthai/depthai.hpp"
-#include "depthai_bridge/ImageConverter.hpp"
-#include "depthai/pipeline/datatype/ImgFrame.hpp"
-#include "sensor_msgs/msg/camera_info.hpp"
-#include "sensor_msgs/msg/image.hpp"
-#include "sensor_msgs/msg/compressed_image.hpp"
-#include "ffmpeg_image_transport_msgs/msg/ffmpeg_packet.hpp"
-#include "ament_index_cpp/get_package_share_directory.hpp"
 
-using namespace depthai_bridge;
+#include <fstream>
+
+#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "depthai/depthai.hpp"
+#include "depthai/pipeline/datatype/ImgFrame.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
+#include "ffmpeg_image_transport_msgs/msg/ffmpeg_packet.hpp"
+#include "sensor_msgs/msg/camera_info.hpp"
+#include "sensor_msgs/msg/compressed_image.hpp"
+#include "sensor_msgs/msg/image.hpp"
+
+namespace depthai_bridge {
 
 class ImageConverterTest : public ::testing::Test {
-protected:
+   protected:
     void SetUp() override {
         // Set up any necessary data or configurations here
     }
@@ -169,9 +171,9 @@ TEST_F(ImageConverterTest, RosMsgtoCvMatTest) {
     inMsg.width = 3;
     inMsg.height = 3;
     inMsg.data = {
-        0, 0, 0,   1, 1, 1,   2, 2, 2,  // Row 0
-        3, 3, 3,   4, 4, 4,   5, 5, 5,  // Row 1
-        6, 6, 6,   7, 7, 7,   8, 8, 8   // Row 2
+        0, 0, 0, 1, 1, 1, 2, 2, 2,  // Row 0
+        3, 3, 3, 4, 4, 4, 5, 5, 5,  // Row 1
+        6, 6, 6, 7, 7, 7, 8, 8, 8   // Row 2
     };
     auto cvMat = converter.rosMsgtoCvMat(inMsg);
     EXPECT_EQ(cvMat.rows, 3);
@@ -206,7 +208,8 @@ TEST_F(ImageConverterTest, CalibrationToCameraInfoTest) {
     EXPECT_EQ(cameraInfo.r.size(), 9);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
+}  // namespace depthai_bridge

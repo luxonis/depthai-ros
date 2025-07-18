@@ -7,6 +7,8 @@
 #include "depthai_bridge/PointCloudConverter.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 
+namespace depthai_bridge {
+
 TEST(PointCloudConverterTest, ToRosMsgColoredPointsTest) {
     dai::PointCloudData pclData;
     pclData.setWidth(2);
@@ -17,7 +19,7 @@ TEST(PointCloudConverterTest, ToRosMsgColoredPointsTest) {
     std::vector<dai::Point3fRGBA> pointsRGB = {{1.0f, 2.0f, 3.0f, 255, 0, 0}, {4.0f, 5.0f, 6.0f, 0, 255, 0}};
     pclData.setPointsRGB(pointsRGB);
 
-    depthai_bridge::PointCloudConverter converter("test_frame", false);
+    PointCloudConverter converter("test_frame", false);
 
     std::deque<sensor_msgs::msg::PointCloud2> pclMsgs;
     converter.toRosMsg(std::make_shared<dai::PointCloudData>(pclData), pclMsgs);
@@ -59,7 +61,7 @@ TEST(PointCloudConverterTest, ToRosMsgNonColoredPointsTest) {
     std::vector<dai::Point3f> points = {{1.0f, 2.0f, 3.0f}, {4.0f, 5.0f, 6.0f}};
     pclData.setPoints(points);
 
-    depthai_bridge::PointCloudConverter converter("test_frame", false);
+    PointCloudConverter converter("test_frame", false);
 
     std::deque<sensor_msgs::msg::PointCloud2> pclMsgs;
     converter.toRosMsg(std::make_shared<dai::PointCloudData>(pclData), pclMsgs);
@@ -84,3 +86,4 @@ TEST(PointCloudConverterTest, ToRosMsgNonColoredPointsTest) {
     EXPECT_FLOAT_EQ(data[4], 5.0f);
     EXPECT_FLOAT_EQ(data[5], 6.0f);
 }
+}  // namespace depthai_bridge
