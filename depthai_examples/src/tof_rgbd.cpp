@@ -41,18 +41,15 @@ int main(int argc, char** argv) {
     align->outputAligned.link(rgbd->inDepth);
 
     auto pclQ = rgbd->pcl.createOutputQueue();
-    auto tofOutputQueue = tofCamera->depth.createOutputQueue(8, false);
 
     pipeline.start();
 
     // Create a bridge publisher for tof images
-    auto tofConverter = std::make_shared<depthai_bridge::ImageConverter>(tfPrefix + "_rgb_camera_optical_frame", false);
     auto pclConverter = std::make_shared<depthai_bridge::PointCloudConverter>(tfPrefix + "_right_camera_optical_frame", false);
 
     auto calibrationHandler = device->readCalibration();
     auto tfPub =
         std::make_unique<depthai_bridge::TFPublisher>(node, calibrationHandler, device->getConnectedCameraFeatures(), tfPrefix, device->getDeviceName());
-    auto tofCameraInfo = tofConverter->calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_A, width, height);
 
     auto pclPub = std::make_unique<depthai_bridge::BridgePublisher<sensor_msgs::msg::PointCloud2, dai::PointCloudData>>(
         pclQ,
@@ -65,16 +62,6 @@ int main(int argc, char** argv) {
 
     pclPub->addPublisherCallback();
 
-    auto tofPub = std::make_unique<depthai_bridge::BridgePublisher<sensor_msgs::msg::Image, dai::ImgFrame>>(
-        tofOutputQueue,
-        node,
-        "tof/image",
-        std::bind(&depthai_bridge::ImageConverter::toRosMsg, tofConverter, std::placeholders::_1, std::placeholders::_2),
-        30,
-        tofCameraInfo,
-        "tof");
-
-    tofPub->addPublisherCallback();
     while(rclcpp::ok() && pipeline.isRunning()) {
         rclcpp::spin(node);
     }
