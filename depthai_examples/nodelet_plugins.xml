@@ -1,7 +1,0 @@
-<library path="lib/libnodelet_stereo">
-  <class name="depthai_examples/StereoNodelet" type="depthai_examples::StereoNodelet" base_class_type="nodelet::Nodelet">
-  <description>
-  This is stereo publishing nodelet.
-  </description>
-  </class>
-</library>
