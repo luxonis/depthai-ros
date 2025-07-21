@@ -1,0 +1,83 @@
+#include <cstdio>
+#include <depthai/pipeline/datatype/PointCloudData.hpp>
+#include <functional>
+
+#include "depthai/device/Device.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/node/Camera.hpp"
+#include "depthai/pipeline/node/ImageAlign.hpp"
+#include "depthai/pipeline/node/ToF.hpp"
+#include "depthai/pipeline/node/host/RGBD.hpp"
+#include "depthai_bridge/BridgePublisher.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_bridge/PointCloudConverter.hpp"
+#include "depthai_bridge/TFPublisher.hpp"
+#include "rclcpp/node.hpp"
+#include "sensor_msgs/msg/point_cloud2.hpp"
+
+int main(int argc, char** argv) {
+    int width = 640;
+    int height = 480;
+    std::string tfPrefix = "oak";
+    rclcpp::init(argc, argv);
+    auto node = rclcpp::Node::make_shared("tof_publisher");
+
+    auto device = std::make_shared<dai::Device>();
+    dai::Pipeline pipeline(device);
+
+    // Define sources and outputs
+    auto rgbCamera = pipeline.create<dai::node::Camera>()->build(dai::CameraBoardSocket::CAM_B, std::nullopt, 15);
+    auto tofCamera = pipeline.create<dai::node::ToF>()->build();
+    auto rgbd = pipeline.create<dai::node::RGBD>()->build();
+    rgbd->setDepthUnit(dai::StereoDepthConfig::AlgorithmControl::DepthUnit::METER);
+    auto align = pipeline.create<dai::node::ImageAlign>();
+
+    // Create output queue
+    auto rgbOut = rgbCamera->requestOutput({width, height}, dai::ImgFrame::Type::RGB888i, dai::ImgResizeMode::CROP, std::nullopt, true);
+    rgbOut->link(align->inputAlignTo);
+    tofCamera->depth.link(align->input);
+
+    rgbOut->link(rgbd->inColor);
+    align->outputAligned.link(rgbd->inDepth);
+
+    auto pclQ = rgbd->pcl.createOutputQueue();
+    auto tofOutputQueue = tofCamera->depth.createOutputQueue(8, false);
+
+    pipeline.start();
+
+    // Create a bridge publisher for tof images
+    auto tofConverter = std::make_shared<depthai_bridge::ImageConverter>(tfPrefix + "_rgb_camera_optical_frame", false);
+    auto pclConverter = std::make_shared<depthai_bridge::PointCloudConverter>(tfPrefix + "_right_camera_optical_frame", false);
+
+    auto calibrationHandler = device->readCalibration();
+    auto tfPub =
+        std::make_unique<depthai_bridge::TFPublisher>(node, calibrationHandler, device->getConnectedCameraFeatures(), tfPrefix, device->getDeviceName());
+    auto tofCameraInfo = tofConverter->calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_A, width, height);
+
+    auto pclPub = std::make_unique<depthai_bridge::BridgePublisher<sensor_msgs::msg::PointCloud2, dai::PointCloudData>>(
+        pclQ,
+        node,
+        "pcl/data",
+        std::bind(&depthai_bridge::PointCloudConverter::toRosMsg, pclConverter, std::placeholders::_1, std::placeholders::_2),
+        1,
+        "",
+        "pcl");
+
+    pclPub->addPublisherCallback();
+
+    auto tofPub = std::make_unique<depthai_bridge::BridgePublisher<sensor_msgs::msg::Image, dai::ImgFrame>>(
+        tofOutputQueue,
+        node,
+        "tof/image",
+        std::bind(&depthai_bridge::ImageConverter::toRosMsg, tofConverter, std::placeholders::_1, std::placeholders::_2),
+        30,
+        tofCameraInfo,
+        "tof");
+
+    tofPub->addPublisherCallback();
+    while(rclcpp::ok() && pipeline.isRunning()) {
+        rclcpp::spin(node);
+    }
+
+    return 0;
+}
