@@ -29,7 +29,6 @@ int main(int argc, char** argv) {
     auto rgbCamera = pipeline.create<dai::node::Camera>()->build(dai::CameraBoardSocket::CAM_B, std::nullopt, 15);
     auto tofCamera = pipeline.create<dai::node::ToF>()->build();
     auto rgbd = pipeline.create<dai::node::RGBD>()->build();
-    rgbd->setDepthUnit(dai::StereoDepthConfig::AlgorithmControl::DepthUnit::METER);
     auto align = pipeline.create<dai::node::ImageAlign>();
 
     // Create output queue
@@ -46,6 +45,7 @@ int main(int argc, char** argv) {
 
     // Create a bridge publisher for tof images
     auto pclConverter = std::make_shared<depthai_bridge::PointCloudConverter>(tfPrefix + "_right_camera_optical_frame", false);
+    pclConverter->setDepthUnit(dai::StereoDepthConfig::AlgorithmControl::DepthUnit::METER);
 
     auto calibrationHandler = device->readCalibration();
     auto tfPub =

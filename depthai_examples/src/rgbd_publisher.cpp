@@ -22,7 +22,6 @@ int main(int argc, char** argv) {
 
     // Define sources and outputs
     auto rgbd = pipeline.create<dai::node::RGBD>()->build(true);
-    rgbd->setDepthUnit(dai::StereoDepthConfig::AlgorithmControl::DepthUnit::METER);
 
     auto pclQ = rgbd->pcl.createOutputQueue(8, false);
 
@@ -34,6 +33,7 @@ int main(int argc, char** argv) {
     // Create a bridge publisher for RGB images
     auto pclConverter = std::make_shared<depthai_bridge::PointCloudConverter>(tfPrefix + "_rgb_camera_optical_frame", false);
 
+    pclConverter->setDepthUnit(dai::StereoDepthConfig::AlgorithmControl::DepthUnit::METER);
     auto pclPub = std::make_unique<depthai_bridge::BridgePublisher<sensor_msgs::msg::PointCloud2, dai::PointCloudData>>(
         pclQ,
         node,

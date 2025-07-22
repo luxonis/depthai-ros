@@ -63,8 +63,6 @@ OutputQueues createPipeline(dai::Pipeline& pipeline, PipelineOpts opts) {
     stereo->setExtendedDisparity(opts.extended);
     stereo->setSubpixel(opts.subpixel);
 
-    rgbd->setDepthUnit(dai::StereoDepthConfig::AlgorithmControl::DepthUnit::METER);
-
     // Imu
     imu->enableIMUSensor(dai::IMUSensor::ACCELEROMETER_RAW, 500);
     imu->enableIMUSensor(dai::IMUSensor::GYROSCOPE_RAW, 400);
@@ -202,6 +200,7 @@ int main(int argc, char** argv) {
     auto tfPub = std::make_unique<depthai_bridge::TFPublisher>(node, calibrationHandler, device->getConnectedCameraFeatures(), "oak", device->getDeviceName());
     while(rclcpp::ok() && pipeline.isRunning()) {
         auto pclConv = std::make_unique<depthai_bridge::PointCloudConverter>(tfPrefix + "_rgb_camera_optical_frame", false);
+        pclConv->setDepthUnit(dai::StereoDepthConfig::AlgorithmControl::DepthUnit::METER);
         auto pclPublish = std::make_unique<depthai_bridge::BridgePublisher<sensor_msgs::msg::PointCloud2, dai::PointCloudData>>(
             queues.pclOut,
             node,

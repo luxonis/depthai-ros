@@ -4,10 +4,37 @@
 
 namespace depthai_bridge {
 
-PointCloudConverter::PointCloudConverter(std::string frameName, bool getBaseDeviceTimestamp) : BaseConverter(std::move(frameName), getBaseDeviceTimestamp) {}
+PointCloudConverter::PointCloudConverter(std::string frameName, bool getBaseDeviceTimestamp)
+    : BaseConverter(std::move(frameName), getBaseDeviceTimestamp), scaleFactor(1.0) {}
 
 PointCloudConverter::~PointCloudConverter() = default;
 
+void PointCloudConverter::setDepthUnit(dai::StereoDepthConfig::AlgorithmControl::DepthUnit depthUnit) {
+    // Default is millimeter
+    switch(depthUnit) {
+        case dai::StereoDepthConfig::AlgorithmControl::DepthUnit::MILLIMETER:
+            scaleFactor = 1.0f;
+            break;
+        case dai::StereoDepthConfig::AlgorithmControl::DepthUnit::METER:
+            scaleFactor = 0.001f;
+            break;
+        case dai::StereoDepthConfig::AlgorithmControl::DepthUnit::CENTIMETER:
+            scaleFactor = 0.01f;
+            break;
+        case dai::StereoDepthConfig::AlgorithmControl::DepthUnit::FOOT:
+            scaleFactor = 0.3048f;
+            break;
+        case dai::StereoDepthConfig::AlgorithmControl::DepthUnit::INCH:
+            scaleFactor = 0.0254f;
+            break;
+        case dai::StereoDepthConfig::AlgorithmControl::DepthUnit::CUSTOM:
+            scaleFactor = 1.0f;
+            break;
+    }
+}
+double PointCloudConverter::getScaleFactor() const {
+    return scaleFactor;
+}
 void PointCloudConverter::toRosMsg(std::shared_ptr<dai::PointCloudData> inPcl, std::deque<sensor_msgs::msg::PointCloud2>& pclMsgs) {
     sensor_msgs::msg::PointCloud2 msg;
     bool isColored = inPcl->isColor();
@@ -59,9 +86,9 @@ void PointCloudConverter::toRosMsg(std::shared_ptr<dai::PointCloudData> inPcl, s
         for(size_t i = 0; i < points.size(); ++i) {
             float* ptr = reinterpret_cast<float*>(&msg.data[i * pointStep]);
             const auto& pt = points[i];
-            ptr[0] = pt.x;
-            ptr[1] = pt.y;
-            ptr[2] = pt.z;
+            ptr[0] = pt.x * scaleFactor;
+            ptr[1] = pt.y * scaleFactor;
+            ptr[2] = pt.z * scaleFactor;
             uint32_t rgb = (pt.r << 16) | (pt.g << 8) | pt.b;
             float rgb_float;
             std::memcpy(&rgb_float, &rgb, sizeof(float));
@@ -72,9 +99,9 @@ void PointCloudConverter::toRosMsg(std::shared_ptr<dai::PointCloudData> inPcl, s
         for(size_t i = 0; i < points.size(); ++i) {
             float* ptr = reinterpret_cast<float*>(&msg.data[i * pointStep]);
             const auto& pt = points[i];
-            ptr[0] = pt.x;
-            ptr[1] = pt.y;
-            ptr[2] = pt.z;
+            ptr[0] = pt.x * scaleFactor;
+            ptr[1] = pt.y * scaleFactor;
+            ptr[2] = pt.z * scaleFactor;
         }
     }
 
