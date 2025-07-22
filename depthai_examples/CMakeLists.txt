@@ -56,6 +56,7 @@ add_example(converter_to_cv src/converter_to_cv.cpp)
 add_example(rgb_publisher src/rgb_publisher.cpp)
 add_example(rgbd_publisher src/rgbd_publisher.cpp)
 add_example(rgb_subscriber src/rgb_subscriber.cpp)
+add_example(rgb_compressed_publisher src/rgb_compressed_publisher.cpp)
 add_example(disparity_publisher src/disparity_publisher.cpp)
 add_example(detection_publisher src/detection_publisher.cpp)
 add_example(thermal_publisher src/thermal_publisher.cpp)
@@ -69,6 +70,7 @@ install(
           rgb_publisher
           rgbd_publisher
           rgb_subscriber
+          rgb_compressed_publisher
           disparity_publisher
           detection_publisher
           tof_publisher

@@ -2,6 +2,8 @@
 
 #include "cv_bridge/cv_bridge.hpp"
 #include "depthai/pipeline/datatype/EncodedFrame.hpp"
+#include "depthai_bridge/depthaiUtility.hpp"
+#include "ffmpeg_image_transport_msgs/msg/ffmpeg_packet.hpp"
 #include "opencv2/calib3d.hpp"
 #include "opencv2/imgcodecs.hpp"
 #include "sensor_msgs/image_encodings.hpp"
@@ -56,9 +58,10 @@ void ImageConverter::setFFMPEGEncoding(const std::string& encoding) {
     ffmpegEncoding = encoding;
 }
 
-ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> inData, const sensor_msgs::msg::CameraInfo& info) {
+ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::EncodedFrame> inData, const sensor_msgs::msg::CameraInfo& info) {
     ImageMsgs::Image outImageMsg;
     StdMsgs::Header header = getRosHeader(inData, addExpOffset, expOffset);
+    outImageMsg.header = header;
 
     if(fromBitstream) {
         std::string encoding;
@@ -70,6 +73,12 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
                 encoding = sensor_msgs::image_encodings::BGR8;
                 decodeFlags = cv::IMREAD_COLOR;
                 channels = CV_8UC3;
+                break;
+            }
+            case dai::ImgFrame::Type::NV12: {
+                encoding = sensor_msgs::image_encodings::BGR8;
+                decodeFlags = cv::IMREAD_COLOR;
+                channels = CV_8UC1;
                 break;
             }
             case dai::ImgFrame::Type::RGB888i: {
@@ -112,8 +121,14 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
             output = depthOut.clone();
         }
         cv_bridge::CvImage(header, encoding, output).toImageMsg(outImageMsg);
-        return outImageMsg;
     }
+    return outImageMsg;
+}
+
+ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> inData, const sensor_msgs::msg::CameraInfo& info) {
+    ImageMsgs::Image outImageMsg;
+    StdMsgs::Header header = getRosHeader(inData, addExpOffset, expOffset);
+    outImageMsg.header = header;
 
     if(planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end()) {
         // cv::Mat inImg = inData->getCvFrame();
@@ -199,7 +214,7 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
     return outImageMsg;
 }
 
-ImageMsgs::CompressedImage ImageConverter::toRosCompressedMsg(std::shared_ptr<dai::ImgFrame> inData) {
+void ImageConverter::toRosCompressedMsg(std::shared_ptr<dai::EncodedFrame> inData, std::deque<ImageMsgs::CompressedImage>& outImageMsgs) {
     ImageMsgs::CompressedImage outImageMsg;
     StdMsgs::Header header = getRosHeader(inData, addExpOffset, expOffset);
 
@@ -207,11 +222,12 @@ ImageMsgs::CompressedImage ImageConverter::toRosCompressedMsg(std::shared_ptr<da
     outImageMsg.format = "jpeg";
     outImageMsg.data.reserve(inData->getData().size());
     outImageMsg.data.assign(inData->getData().begin(), inData->getData().end());
-    return outImageMsg;
+    outImageMsgs.push_back(outImageMsg);
 }
 
-FFMPEGMsgs::FFMPEGPacket ImageConverter::toRosFFMPEGPacket(std::shared_ptr<dai::EncodedFrame> inData) {
+void ImageConverter::toRosFFMPEGPacket(std::shared_ptr<dai::EncodedFrame> inData, std::deque<FFMPEGMsgs::FFMPEGPacket>& outImageMsgs) {
     FFMPEGMsgs::FFMPEGPacket outFrameMsg;
+    DEPTHAI_ROS_INFO_STREAM("test", updateRosBaseTimeOnToRosMsg);
     StdMsgs::Header header = getRosHeader(inData, addExpOffset, expOffset);
     outFrameMsg.header = header;
     auto ft = inData->getFrameType();
@@ -225,9 +241,15 @@ FFMPEGMsgs::FFMPEGPacket ImageConverter::toRosFFMPEGPacket(std::shared_ptr<dai::
     outFrameMsg.data.reserve(inData->getData().size());
     outFrameMsg.data.assign(inData->getData().begin(), inData->getData().end());
 
-    return outFrameMsg;
+    outImageMsgs.push_back(outFrameMsg);
 }
 void ImageConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs) {
+    auto outImageMsg = toRosMsgRawPtr(inData);
+    outImageMsgs.push_back(outImageMsg);
+    return;
+}
+
+void ImageConverter::toRosMsg(std::shared_ptr<dai::EncodedFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs) {
     auto outImageMsg = toRosMsgRawPtr(inData);
     outImageMsgs.push_back(outImageMsg);
     return;

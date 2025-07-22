@@ -46,8 +46,8 @@ class BaseConverter {
     std::chrono::time_point<std::chrono::steady_clock> steadyBaseTime;
     rclcpp::Time rosBaseTime;
     bool getBaseDeviceTimestamp;
-    int64_t totalNsChange{0};
-    bool updateRosBaseTimeOnToRosMsg{false};
+    int64_t totalNsChange;
+    bool updateRosBaseTimeOnToRosMsg;
 };
 
 }  // namespace depthai_bridge

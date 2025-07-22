@@ -10,13 +10,11 @@
 #include "depthai/device/CalibrationHandler.hpp"
 #include "depthai/pipeline/datatype/EncodedFrame.hpp"
 #include "depthai/pipeline/datatype/ImgFrame.hpp"
+#include "depthai_bridge/BaseConverter.hpp"
 #include "ffmpeg_image_transport_msgs/msg/ffmpeg_packet.hpp"
-#include "rclcpp/time.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
 #include "sensor_msgs/msg/compressed_image.hpp"
 #include "sensor_msgs/msg/image.hpp"
-#include "depthai_bridge/BaseConverter.hpp"
-
 
 namespace depthai_bridge {
 
@@ -70,13 +68,15 @@ class ImageConverter : public BaseConverter {
      */
     void setFFMPEGEncoding(const std::string& encoding);
 
+    void toRosMsg(std::shared_ptr<dai::EncodedFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs);
     void toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::deque<ImageMsgs::Image>& outImageMsgs);
+    ImageMsgs::Image toRosMsgRawPtr(std::shared_ptr<dai::EncodedFrame> inData, const sensor_msgs::msg::CameraInfo& info = sensor_msgs::msg::CameraInfo());
     ImageMsgs::Image toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> inData, const sensor_msgs::msg::CameraInfo& info = sensor_msgs::msg::CameraInfo());
     ImagePtr toRosMsgPtr(std::shared_ptr<dai::ImgFrame> inData);
 
-    FFMPEGMsgs::FFMPEGPacket toRosFFMPEGPacket(std::shared_ptr<dai::EncodedFrame> inData);
+    void toRosFFMPEGPacket(std::shared_ptr<dai::EncodedFrame> inData, std::deque<FFMPEGMsgs::FFMPEGPacket>& outImageMsgs);
 
-    ImageMsgs::CompressedImage toRosCompressedMsg(std::shared_ptr<dai::ImgFrame> inData);
+    void toRosCompressedMsg(std::shared_ptr<dai::EncodedFrame> inData, std::deque<ImageMsgs::CompressedImage>& outImageMsgs);
 
     void toDaiMsg(const ImageMsgs::Image& inMsg, dai::ImgFrame& outData);
 
@@ -95,24 +95,45 @@ class ImageConverter : public BaseConverter {
     void planarToInterleaved(const std::vector<uint8_t>& srcData, std::vector<uint8_t>& destData, int w, int h, int numPlanes, int bpp);
     void interleavedToPlanar(const std::vector<uint8_t>& srcData, std::vector<uint8_t>& destData, int w, int h, int numPlanes, int bpp);
 
-    bool isDaiInterleaved() const { return daiInterleaved; }
-    bool isFromBitstream() const { return fromBitstream; }
-    dai::ImgFrame::Type getSrcType() const { return srcType; }
-    bool isDispToDepth() const { return dispToDepth; }
-    double getBaseline() const { return baseline; }
-    bool isAddExpOffset() const { return addExpOffset; }
-    dai::CameraExposureOffset getExpOffset() const { return expOffset; }
-    bool isReversedStereoSocketOrder() const { return reversedStereoSocketOrder; }
-    bool isAlphaScalingEnabled() const { return alphaScalingEnabled; }
-    double getAlphaScalingFactor() const { return alphaScalingFactor; }
-    std::string getFFMPEGEncoding() const { return ffmpegEncoding; }
+    bool isDaiInterleaved() const {
+        return daiInterleaved;
+    }
+    bool isFromBitstream() const {
+        return fromBitstream;
+    }
+    dai::ImgFrame::Type getSrcType() const {
+        return srcType;
+    }
+    bool isDispToDepth() const {
+        return dispToDepth;
+    }
+    double getBaseline() const {
+        return baseline;
+    }
+    bool isAddExpOffset() const {
+        return addExpOffset;
+    }
+    dai::CameraExposureOffset getExpOffset() const {
+        return expOffset;
+    }
+    bool isReversedStereoSocketOrder() const {
+        return reversedStereoSocketOrder;
+    }
+    bool isAlphaScalingEnabled() const {
+        return alphaScalingEnabled;
+    }
+    double getAlphaScalingFactor() const {
+        return alphaScalingFactor;
+    }
+    std::string getFFMPEGEncoding() const {
+        return ffmpegEncoding;
+    }
+
    private:
     static std::unordered_map<dai::ImgFrame::Type, std::string> encodingEnumMap;
     static std::unordered_map<dai::ImgFrame::Type, std::string> planarEncodingEnumMap;
 
-    // dai::ImgFrame::Type _srcType;
     bool daiInterleaved;
-    // bool c
     dai::ImgFrame::Type srcType;
     bool fromBitstream = false;
     bool dispToDepth = false;
