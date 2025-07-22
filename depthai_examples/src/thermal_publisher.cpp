@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
         thermalOutputQueue,
         node,
         "thermal/image",
-        std::bind(&depthai_bridge::ImageConverter::toRosMsg, thermalConverter, std::placeholders::_1, std::placeholders::_2),
+        [thermalConverter](std::shared_ptr<dai::ImgFrame> msg, std::deque<sensor_msgs::msg::Image>& rosMsgs) { thermalConverter->toRosMsg(msg, rosMsgs); },
         30,
         thermalCameraInfo,
         "thermal");

@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
         qRgb,
         node,
         "rgb/image",
-        std::bind(&depthai_bridge::ImageConverter::toRosMsg, rgbConverter, std::placeholders::_1, std::placeholders::_2),
+        [rgbConverter](std::shared_ptr<dai::ImgFrame> msg, std::deque<sensor_msgs::msg::Image>& rosMsgs) { rgbConverter->toRosMsg(msg, rosMsgs); },
         30,
         rgbCameraInfo,
         "rgb");

@@ -177,7 +177,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    auto imuConverter = std::make_unique<depthai_bridge::ImuConverter>(tfPrefix + "_imu_frame", imuMode, linearAccelCovariance, angularVelCovariance);
+    auto imuConverter = std::make_shared<depthai_bridge::ImuConverter>(tfPrefix + "_imu_frame", imuMode, linearAccelCovariance, angularVelCovariance);
     if(enableRosBaseTimeUpdate) {
     }
     auto imuPublish = std::make_unique<depthai_bridge::BridgePublisher<sensor_msgs::msg::Imu, dai::IMUData>>(
@@ -191,7 +191,7 @@ int main(int argc, char** argv) {
 
     imuPublish->addPublisherCallback();
 
-    auto rgbConverter = std::make_unique<depthai_bridge::ImageConverter>(tfPrefix + "_rgb_camera_optical_frame", false);
+    auto rgbConverter = std::make_shared<depthai_bridge::ImageConverter>(tfPrefix + "_rgb_camera_optical_frame", false);
     if(enableRosBaseTimeUpdate) {
         imuConverter->setUpdateRosBaseTimeOnToRosMsg();
         rgbConverter->setUpdateRosBaseTimeOnToRosMsg();
@@ -216,7 +216,7 @@ int main(int argc, char** argv) {
             queues.stereoOut,
             node,
             "stereo/depth",
-            std::bind(&depthai_bridge::ImageConverter::toRosMsg, rgbConverter.get(), std::placeholders::_1, std::placeholders::_2),
+            [rgbConverter](std::shared_ptr<dai::ImgFrame> msg, std::deque<sensor_msgs::msg::Image>& rosMsgs) { rgbConverter->toRosMsg(msg, rosMsgs); },
             30,
             rgbCameraInfo,
             "stereo");
@@ -227,7 +227,7 @@ int main(int argc, char** argv) {
             imgQueue,
             node,
             "color/image",
-            std::bind(&depthai_bridge::ImageConverter::toRosMsg, rgbConverter.get(), std::placeholders::_1, std::placeholders::_2),
+            [rgbConverter](std::shared_ptr<dai::ImgFrame> msg, std::deque<sensor_msgs::msg::Image>& rosMsgs) { rgbConverter->toRosMsg(msg, rosMsgs); },
             30,
             rgbCameraInfo,
             "color");
@@ -241,7 +241,7 @@ int main(int argc, char** argv) {
             previewQueue,
             node,
             "color/preview/image",
-            std::bind(&depthai_bridge::ImageConverter::toRosMsg, rgbConverter.get(), std::placeholders::_1, std::placeholders::_2),
+            [rgbConverter](std::shared_ptr<dai::ImgFrame> msg, std::deque<sensor_msgs::msg::Image>& rosMsgs) { rgbConverter->toRosMsg(msg, rosMsgs); },
             30,
             previewCameraInfo,
             "color/preview");

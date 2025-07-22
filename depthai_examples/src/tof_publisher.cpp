@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
         tofOutputQueue,
         node,
         "tof/image",
-        std::bind(&depthai_bridge::ImageConverter::toRosMsg, tofConverter, std::placeholders::_1, std::placeholders::_2),
+        [tofConverter](std::shared_ptr<dai::ImgFrame> msg, std::deque<sensor_msgs::msg::Image>& rosMsgs) { tofConverter->toRosMsg(msg, rosMsgs); },
         30,
         tofCameraInfo,
         "tof");
