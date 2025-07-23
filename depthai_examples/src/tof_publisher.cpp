@@ -7,6 +7,7 @@
 #include "depthai_bridge/BridgePublisher.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_bridge/TFPublisher.hpp"
+#include "depthai_bridge/depthaiUtility.hpp"
 #include "rclcpp/node.hpp"
 
 int main(int argc, char** argv) {
@@ -28,7 +29,8 @@ int main(int argc, char** argv) {
     pipeline.start();
 
     // Create a bridge publisher for tof images
-    auto tofConverter = std::make_shared<depthai_bridge::ImageConverter>(tfPrefix + "_rgb_camera_optical_frame", false);
+    auto tofConverter = std::make_shared<depthai_bridge::ImageConverter>(
+        depthai_bridge::getFullOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_A, device->getDeviceName())), false);
 
     auto calibrationHandler = device->readCalibration();
     auto tfPub =

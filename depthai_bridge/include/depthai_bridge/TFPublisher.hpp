@@ -68,7 +68,6 @@ class TFPublisher {
      * @brief Check if model STL file is available in depthai_descriptions package.
      */
     bool modelNameAvailable();
-    std::string getCamSocketName(int socketNum);
     std::unique_ptr<rclcpp::AsyncParametersClient> paramClient;
     std::shared_ptr<tf2_ros::StaticTransformBroadcaster> tfPub;
     std::string camName;
@@ -87,19 +86,5 @@ class TFPublisher {
     std::vector<dai::CameraFeatures> camFeatures;
     bool rsCompatibilityMode;
     rclcpp::Logger logger;
-    const std::unordered_map<dai::CameraBoardSocket, std::string> socketNameMap = {
-        {dai::CameraBoardSocket::AUTO, "rgb"},
-        {dai::CameraBoardSocket::CAM_A, "rgb"},
-        {dai::CameraBoardSocket::CAM_B, "left"},
-        {dai::CameraBoardSocket::CAM_C, "right"},
-        {dai::CameraBoardSocket::CAM_D, "left_back"},
-        {dai::CameraBoardSocket::CAM_E, "right_back"},
-    };
-    const std::unordered_map<dai::CameraBoardSocket, std::string> rsSocketNameMap = {
-        {dai::CameraBoardSocket::AUTO, "color"},
-        {dai::CameraBoardSocket::CAM_A, "color"},
-        {dai::CameraBoardSocket::CAM_B, "infra2"},
-        {dai::CameraBoardSocket::CAM_C, "infra1"},
-    };
 };
 }  // namespace depthai_bridge

@@ -4,8 +4,9 @@
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/StereoDepth.hpp"
 #include "depthai_bridge/BridgePublisher.hpp"
-#include "depthai_bridge/TFPublisher.hpp"
 #include "depthai_bridge/DisparityConverter.hpp"
+#include "depthai_bridge/TFPublisher.hpp"
+#include "depthai_bridge/depthaiUtility.hpp"
 #include "rclcpp/node.hpp"
 #include "stereo_msgs/msg/disparity_image.hpp"
 
@@ -18,11 +19,16 @@ int main(int argc, char** argv) {
 
     auto stereo = pipeline.create<dai::node::StereoDepth>()->build(true);
 
-
     auto dispQ = stereo->disparity.createOutputQueue(8, false);
     std::string tfPrefix = "oak";
 
-    auto dispConv = std::make_shared<depthai_bridge::DisparityConverter>(tfPrefix + "_right_camera_optical_frame", true, 880, 7.5, 20, 2000);
+    auto dispConv = std::make_shared<depthai_bridge::DisparityConverter>(
+        depthai_bridge::getFullOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_C, device->getDeviceName())),
+        true,
+        880,
+        7.5,
+        20,
+        2000);
 
     pipeline.start();
     auto calibrationHandler = device->readCalibration();

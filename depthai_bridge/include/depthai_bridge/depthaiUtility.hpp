@@ -2,7 +2,10 @@
 
 #include <chrono>
 
-#include "rclcpp/rclcpp.hpp"
+#include "depthai/common/CameraBoardSocket.hpp"
+#include "rclcpp/clock.hpp"
+#include "rclcpp/logging.hpp"
+#include "rclcpp/time.hpp"
 
 namespace depthai_bridge {
 
@@ -98,6 +101,112 @@ inline void updateBaseTime(std::chrono::time_point<std::chrono::steady_clock> st
                                  "ROS base time changed by " << std::to_string(diff) << " ns. Total change: " << std::to_string(totalNsChange)
                                                              << " ns. New time: " << std::to_string(rclBaseTime.nanoseconds()) << " ns.");
     }
+}
+enum class DeviceNames { OAK_1, OAK_D, OAK_D_PRO, OAK_D_POE, OAK_THERMAL, OAK_SR, OAK_SR_POE };
+
+const std::unordered_map<DeviceNames, std::string> deviceNameMap = {
+    {DeviceNames::OAK_1, "OAK-1"},
+    {DeviceNames::OAK_D, "OAK-D"},
+    {DeviceNames::OAK_D_PRO, "OAK-D-PRO"},
+    {DeviceNames::OAK_D_POE, "OAK-D-POE"},
+    {DeviceNames::OAK_THERMAL, "OAK-T"},
+    {DeviceNames::OAK_SR, "OAK-SR"},
+    {DeviceNames::OAK_SR_POE, "OAK-SR-POE"},
+};
+
+const std::unordered_map<dai::CameraBoardSocket, std::string> defaultSocketMap = {
+    {dai::CameraBoardSocket::AUTO, "rgb"},
+    {dai::CameraBoardSocket::CAM_A, "rgb"},
+    {dai::CameraBoardSocket::CAM_B, "left"},
+    {dai::CameraBoardSocket::CAM_C, "right"},
+    {dai::CameraBoardSocket::CAM_D, "left_back"},
+    {dai::CameraBoardSocket::CAM_E, "right_back"},
+};
+
+const std::unordered_map<dai::CameraBoardSocket, std::string> letterSocketMap = {
+    {dai::CameraBoardSocket::AUTO, "auto"},
+    {dai::CameraBoardSocket::CAM_A, "cam_a"},
+    {dai::CameraBoardSocket::CAM_B, "cam_b"},
+    {dai::CameraBoardSocket::CAM_C, "cam_c"},
+    {dai::CameraBoardSocket::CAM_D, "cam_d"},
+    {dai::CameraBoardSocket::CAM_E, "cam_e"},
+};
+
+const std::unordered_map<dai::CameraBoardSocket, std::string> srPoeSocketMap = {
+    {dai::CameraBoardSocket::AUTO, "tof"},
+    {dai::CameraBoardSocket::CAM_A, "tof"},
+    {dai::CameraBoardSocket::CAM_B, "left"},
+    {dai::CameraBoardSocket::CAM_C, "right"},
+};
+
+const std::unordered_map<dai::CameraBoardSocket, std::string> thermalSocketMap = {
+    {dai::CameraBoardSocket::AUTO, "rgb"},
+    {dai::CameraBoardSocket::CAM_A, "rgb"},
+    {dai::CameraBoardSocket::CAM_B, "left"},
+    {dai::CameraBoardSocket::CAM_C, "right"},
+    {dai::CameraBoardSocket::CAM_D, "left_back"},
+    {dai::CameraBoardSocket::CAM_E, "thermal"},
+};
+
+const std::unordered_map<dai::CameraBoardSocket, std::string> rsSocketNameMap = {
+    {dai::CameraBoardSocket::AUTO, "color"},
+    {dai::CameraBoardSocket::CAM_A, "color"},
+    {dai::CameraBoardSocket::CAM_B, "infra2"},
+    {dai::CameraBoardSocket::CAM_C, "infra1"},
+    {dai::CameraBoardSocket::CAM_E, "infra4"},
+    {dai::CameraBoardSocket::CAM_D, "infra3"},
+};
+
+inline std::string getFullFrameName(const std::string& prefix, const std::string& frameName) {
+    return prefix + "_" + frameName;
+}
+
+inline std::string getFullOpticalFrameName(const std::string& prefix, const std::string& frameName, bool rsCompat = false) {
+    std::string suffix = "_camera_optical_frame";
+    if(rsCompat) {
+        suffix = "_optical_frame";
+    }
+    return getFullFrameName(prefix, frameName) + suffix;
+}
+
+inline void convertModelName(std::string& camModel) {
+    if(camModel.find("OAK-D-PRO-POE") != std::string::npos || camModel.find("OAK-D-PRO-W-POE") != std::string::npos
+       || camModel.find("OAK-D-S2-POE") != std::string::npos) {
+        camModel = "OAK-D-POE";
+    } else if(camModel.find("OAK-D-LITE") != std::string::npos) {
+        camModel = "OAK-D-PRO";
+    } else if(camModel.find("OAK-D-S2") != std::string::npos) {
+        camModel = "OAK-D-PRO";
+    } else if(camModel.find("OAK-D-PRO-W") != std::string::npos) {
+        camModel = "OAK-D-PRO";
+    } else if(camModel.find("OAK-D-PRO") != std::string::npos) {
+        camModel = "OAK-D-PRO";
+    } else if(camModel.find("OAK-D-POE") != std::string::npos) {
+        camModel = "OAK-D-POE";
+    } else if(camModel.find("OAK-D") != std::string::npos) {
+        camModel = "OAK-D";
+    } else {
+        DEPTHAI_ROS_WARN_STREAM_ONCE("depthai_bridge", "Unable to match model name: " << camModel << " to available model family.");
+    }
+}
+
+inline std::string getSocketName(dai::CameraBoardSocket socketNum, const std::string& deviceName = "", bool rsCompat = false, bool useSocketNames = false) {
+    std::string name = defaultSocketMap.at(socketNum);
+    if(rsCompat) {
+        name = rsSocketNameMap.at(socketNum);
+    }
+    if(deviceName.empty()) {
+        if(useSocketNames) {
+            name = letterSocketMap.at(socketNum);
+        }
+    } else {
+        if(deviceName == deviceNameMap.at(DeviceNames::OAK_SR_POE)) {
+            name = srPoeSocketMap.at(socketNum);
+        } else if(deviceName == deviceNameMap.at(DeviceNames::OAK_THERMAL)) {
+            name = thermalSocketMap.at(socketNum);
+        }
+    }
+    return name;
 }
 
 }  // namespace depthai_bridge

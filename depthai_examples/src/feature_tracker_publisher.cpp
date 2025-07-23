@@ -8,6 +8,7 @@
 #include "depthai_bridge/BridgePublisher.hpp"
 #include "depthai_bridge/TFPublisher.hpp"
 #include "depthai_bridge/TrackedFeaturesConverter.hpp"
+#include "depthai_bridge/depthaiUtility.hpp"
 #include "depthai_ros_msgs/msg/tracked_features.hpp"
 #include "rclcpp/node.hpp"
 
@@ -41,9 +42,11 @@ int main(int argc, char** argv) {
     auto outputFeaturesLeftQueue = featureTrackerLeft->outputFeatures.createOutputQueue(8, false);
     auto outputFeaturesRightQueue = featureTrackerRight->outputFeatures.createOutputQueue(8, false);
     std::string tfPrefix = "oak";
-    auto leftConverter = std::make_shared<depthai_bridge::TrackedFeaturesConverter>(tfPrefix + "_left_camera_optical_frame", true);
+    auto leftConverter = std::make_shared<depthai_bridge::TrackedFeaturesConverter>(
+        depthai_bridge::getFullOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_A, device->getDeviceName())), true);
 
-    auto rightConverter = std::make_shared<depthai_bridge::TrackedFeaturesConverter>(tfPrefix + "_right_camera_optical_frame", true);
+    auto rightConverter = std::make_shared<depthai_bridge::TrackedFeaturesConverter>(
+        depthai_bridge::getFullOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_A, device->getDeviceName())), true);
 
     pipeline.start();
     auto calibrationHandler = device->readCalibration();

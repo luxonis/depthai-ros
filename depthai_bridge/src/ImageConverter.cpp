@@ -131,7 +131,6 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
     outImageMsg.header = header;
 
     if(planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end()) {
-        // cv::Mat inImg = inData->getCvFrame();
         cv::Mat mat, output;
         cv::Size size = {0, 0};
         int type = 0;
@@ -187,7 +186,6 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
         cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, output).toImageMsg(outImageMsg);
 
     } else if(encodingEnumMap.find(inData->getType()) != encodingEnumMap.end()) {
-        // copying the data to ros msg
         outImageMsg.header = header;
         if(inData->getType() == dai::ImgFrame::Type::GRAYF16) {
             // we need to convert from FP16 to FP32
@@ -227,7 +225,6 @@ void ImageConverter::toRosCompressedMsg(std::shared_ptr<dai::EncodedFrame> inDat
 
 void ImageConverter::toRosFFMPEGPacket(std::shared_ptr<dai::EncodedFrame> inData, std::deque<FFMPEGMsgs::FFMPEGPacket>& outImageMsgs) {
     FFMPEGMsgs::FFMPEGPacket outFrameMsg;
-    DEPTHAI_ROS_INFO_STREAM("test", updateRosBaseTimeOnToRosMsg);
     StdMsgs::Header header = getRosHeader(inData, addExpOffset, expOffset);
     outFrameMsg.header = header;
     auto ft = inData->getFrameType();

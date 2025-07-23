@@ -1,10 +1,10 @@
 #include <cstdio>
-#include <depthai/pipeline/datatype/PointCloudData.hpp>
-#include <depthai/pipeline/datatype/StereoDepthConfig.hpp>
 #include <functional>
 
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/datatype/PointCloudData.hpp"
+#include "depthai/pipeline/datatype/StereoDepthConfig.hpp"
 #include "depthai/pipeline/node/host/RGBD.hpp"
 #include "depthai_bridge/BridgePublisher.hpp"
 #include "depthai_bridge/PointCloudConverter.hpp"

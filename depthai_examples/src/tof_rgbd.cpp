@@ -1,17 +1,17 @@
 #include <cstdio>
-#include <depthai/pipeline/datatype/PointCloudData.hpp>
 #include <functional>
 
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/datatype/PointCloudData.hpp"
 #include "depthai/pipeline/node/Camera.hpp"
 #include "depthai/pipeline/node/ImageAlign.hpp"
 #include "depthai/pipeline/node/ToF.hpp"
 #include "depthai/pipeline/node/host/RGBD.hpp"
 #include "depthai_bridge/BridgePublisher.hpp"
-#include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_bridge/PointCloudConverter.hpp"
 #include "depthai_bridge/TFPublisher.hpp"
+#include "depthai_bridge/depthaiUtility.hpp"
 #include "rclcpp/node.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 
@@ -44,7 +44,8 @@ int main(int argc, char** argv) {
     pipeline.start();
 
     // Create a bridge publisher for tof images
-    auto pclConverter = std::make_shared<depthai_bridge::PointCloudConverter>(tfPrefix + "_right_camera_optical_frame", false);
+    auto pclConverter = std::make_shared<depthai_bridge::PointCloudConverter>(
+        depthai_bridge::getFullOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_C, device->getDeviceName())), false);
     pclConverter->setDepthUnit(dai::StereoDepthConfig::AlgorithmControl::DepthUnit::METER);
 
     auto calibrationHandler = device->readCalibration();
