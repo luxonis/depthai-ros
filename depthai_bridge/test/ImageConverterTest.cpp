@@ -91,12 +91,13 @@ TEST_F(ImageConverterTest, ToRosMsgRawPtrTest) {
 
 TEST_F(ImageConverterTest, ToRosCompressedMsgTest) {
     ImageConverter converter("test_frame", true, false);
-    std::shared_ptr<dai::ImgFrame> inData = std::make_shared<dai::ImgFrame>();
+    std::shared_ptr<dai::EncodedFrame> inData = std::make_shared<dai::EncodedFrame>();
     inData->setWidth(640);
     inData->setHeight(480);
-    inData->setType(dai::ImgFrame::Type::BGR888i);
     inData->setData(std::vector<uint8_t>(640 * 480 * 3, 128));
-    auto outImageMsg = converter.toRosCompressedMsg(inData);
+    std::deque<sensor_msgs::msg::CompressedImage> outImageMsgs;
+    converter.toRosCompressedMsg(inData, outImageMsgs);
+    auto outImageMsg = outImageMsgs.front();
     EXPECT_EQ(outImageMsg.header.frame_id, "test_frame");
     EXPECT_EQ(outImageMsg.format, "jpeg");
     EXPECT_EQ(outImageMsg.data.size(), 640 * 480 * 3);
@@ -108,7 +109,10 @@ TEST_F(ImageConverterTest, ToRosFFMPEGPacketTest) {
     inData->setWidth(640);
     inData->setHeight(480);
     inData->setData(std::vector<uint8_t>(640 * 480 * 3, 128));
-    auto outFrameMsg = converter.toRosFFMPEGPacket(inData);
+    std::deque<FFMPEGMsgs::FFMPEGPacket> outImageMsgs;
+    converter.toRosFFMPEGPacket(inData, outImageMsgs);
+    auto outFrameMsg = outImageMsgs.front();
+
     EXPECT_EQ(outFrameMsg.header.frame_id, "test_frame");
     EXPECT_EQ(outFrameMsg.encoding, "libx264");
     EXPECT_EQ(outFrameMsg.data.size(), 640 * 480 * 3);
