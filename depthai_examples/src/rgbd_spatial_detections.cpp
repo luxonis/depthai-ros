@@ -38,6 +38,7 @@ struct OutputQueues {
     std::shared_ptr<dai::InputQueue> controlRgb;
 };
 struct PipelineOpts {
+    dai::Platform platform;
     std::string nnName;
     bool lrcheck;
     bool extended;
@@ -56,6 +57,7 @@ OutputQueues createPipeline(dai::Pipeline& pipeline, PipelineOpts opts) {
     auto rgbd = pipeline.create<dai::node::RGBD>()->build();
     auto imu = pipeline.create<dai::node::IMU>();
     auto spatialDetectionNetwork = pipeline.create<dai::node::SpatialDetectionNetwork>();
+    std::shared_ptr<dai::node::ImageAlign> align;
 
     // StereoDepth
     stereo->setRectifyEdgeFillColor(0);  // black, to better see the cutout
@@ -67,7 +69,7 @@ OutputQueues createPipeline(dai::Pipeline& pipeline, PipelineOpts opts) {
     imu->enableIMUSensor(dai::IMUSensor::ACCELEROMETER_RAW, 500);
     imu->enableIMUSensor(dai::IMUSensor::GYROSCOPE_RAW, 400);
     imu->setBatchReportThreshold(5);
-    imu->setMaxBatchReports(20);  // Get one message only for now.
+    imu->setMaxBatchReports(20);
 
     auto rgbOut =
         camRgb->requestOutput(std::make_pair(opts.rgbWidth, opts.rgbHeight), dai::ImgFrame::Type::RGB888i, dai::ImgResizeMode::CROP, opts.stereoFPS, true);
@@ -77,10 +79,18 @@ OutputQueues createPipeline(dai::Pipeline& pipeline, PipelineOpts opts) {
     auto monoOutRight = monoRight->requestOutput(std::make_pair(opts.monoWidth, opts.monoHeight));
     monoOutRight->link(stereo->right);
     auto stereoOut = stereo->depth.createOutputQueue(8, false);
-    rgbOut->link(stereo->inputAlignTo);
 
-    stereo->depth.link(rgbd->inDepth);
-    rgbOut->link(rgbd->inColor);
+    if(opts.platform == dai::Platform::RVC4) {
+        rgbOut->link(rgbd->inColor);
+        align = pipeline.create<dai::node::ImageAlign>();
+        stereo->depth.link(align->input);
+        rgbOut->link(align->inputAlignTo);
+        align->outputAligned.link(rgbd->inDepth);
+    } else {
+        rgbOut->link(rgbd->inColor);
+        rgbOut->link(stereo->inputAlignTo);
+        stereo->depth.link(rgbd->inDepth);
+    }
 
     spatialDetectionNetwork->setBoundingBoxScaleFactor(0.5f);
     spatialDetectionNetwork->setDepthLowerThreshold(100);
@@ -152,7 +162,7 @@ int main(int argc, char** argv) {
     auto device = std::make_shared<dai::Device>(info);
 
     dai::Pipeline pipeline(device);
-    PipelineOpts opts = {nnName, lrcheck, extended, subpixel, stereoFPS, rgbWidth, rgbHeight, monoWidth, monoHeight};
+    PipelineOpts opts = {device->getPlatform(), nnName, lrcheck, extended, subpixel, stereoFPS, rgbWidth, rgbHeight, monoWidth, monoHeight};
     auto queues = createPipeline(pipeline, opts);
 
     // Set manual exposure
@@ -166,16 +176,17 @@ int main(int argc, char** argv) {
 
     pipeline.start();
 
-    std::vector<std::tuple<std::string, int, int>> irDrivers = device->getIrDrivers();
-    if(!irDrivers.empty()) {
-        if(enableDotProjector) {
-            device->setIrLaserDotProjectorIntensity(dotProjectorIntensity);
-        }
-
-        if(enableFloodLight) {
-            device->setIrFloodLightIntensity(floodLightIntensity);
-        }
-    }
+    // for now not working on rvc4
+    // std::vector<std::tuple<std::string, int, int>> irDrivers = device->getIrDrivers();
+    // if(!irDrivers.empty()) {
+    //     if(enableDotProjector) {
+    //         device->setIrLaserDotProjectorIntensity(dotProjectorIntensity);
+    //     }
+    //
+    //     if(enableFloodLight) {
+    //         device->setIrFloodLightIntensity(floodLightIntensity);
+    //     }
+    // }
 
     auto imuConverter = std::make_shared<depthai_bridge::ImuConverter>(
         depthai_bridge::getFullFrameName(tfPrefix, "imu_frame"), imuMode, linearAccelCovariance, angularVelCovariance);
@@ -188,7 +199,7 @@ int main(int argc, char** argv) {
         std::bind(&depthai_bridge::ImuConverter::toRosMsg, imuConverter, std::placeholders::_1, std::placeholders::_2),
         30,
         "",
-        "imu");
+        "");
 
     imuPublish->addPublisherCallback();
 

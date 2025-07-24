@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
 
     dai::VideoEncoderProperties::Profile encProfile = static_cast<dai::VideoEncoderProperties::Profile>(
         node->declare_parameter<int>("profile", static_cast<int>(dai::VideoEncoderProperties::Profile::MJPEG)));
-    bool publishCompressed = node->declare_parameter<bool>("publish_compressed", true);
+    bool publishCompressed = node->declare_parameter<bool>("publish_compressed", false);
     auto device = std::make_shared<dai::Device>();
     dai::Pipeline pipeline(device);
 

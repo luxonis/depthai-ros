@@ -132,25 +132,9 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
 
     if(planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end()) {
         cv::Mat mat, output;
-        cv::Size size = {0, 0};
-        int type = 0;
-        switch(inData->getType()) {
-            case dai::ImgFrame::Type::BGR888p:
-            case dai::ImgFrame::Type::RGB888p:
-                size = cv::Size(inData->getWidth(), inData->getHeight());
-                type = CV_8UC3;
-                break;
-            case dai::ImgFrame::Type::YUV420p:
-            case dai::ImgFrame::Type::NV12:
-                size = cv::Size(inData->getWidth(), inData->getHeight() * 3 / 2);
-                type = CV_8UC1;
-                break;
+        cv::Size size = cv::Size(inData->getWidth(), inData->getHeight());
 
-            default:
-                throw std::runtime_error("Invalid dataType inputs..");
-                break;
-        }
-        mat = cv::Mat(size, type, inData->getData().data());
+        int type = 0;
 
         switch(inData->getType()) {
             case dai::ImgFrame::Type::RGB888p: {
@@ -172,15 +156,22 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
             } break;
 
             case dai::ImgFrame::Type::YUV420p:
+                type = CV_8UC1;
+                mat = cv::Mat(size, type, inData->getData().data());
                 cv::cvtColor(mat, output, cv::ColorConversionCodes::COLOR_YUV2BGR_IYUV);
                 break;
 
-            case dai::ImgFrame::Type::NV12:
-                cv::cvtColor(mat, output, cv::ColorConversionCodes::COLOR_YUV2BGR_NV12);
+            case dai::ImgFrame::Type::NV12: {
+                type = CV_8UC1;
+                int step = inData->getStride();
+                cv::Mat frameY(size, type, inData->getData().data(), step);
+                cv::Mat frameUV(size / 2, type, inData->getData().data() + inData->getPlaneStride(), step);
+                cv::cvtColorTwoPlane(frameY, frameUV, output, cv::ColorConversionCodes::COLOR_YUV2BGR_NV12);
                 break;
+            } break;
 
             default:
-                output = mat.clone();
+                output = cv::Mat(size, type, inData->getData().data());
                 break;
         }
         cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, output).toImageMsg(outImageMsg);
@@ -198,7 +189,7 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
             outImageMsg.encoding = temp_str;
             outImageMsg.height = inData->getHeight();
             outImageMsg.width = inData->getWidth();
-            outImageMsg.step = inData->getData().size() / inData->getHeight();
+            outImageMsg.step = inData->getStride();
             if(outImageMsg.encoding == "16UC1" || outImageMsg.encoding == "32FC1")
                 outImageMsg.is_bigendian = false;
             else

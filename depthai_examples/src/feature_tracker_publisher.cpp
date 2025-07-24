@@ -26,9 +26,31 @@ int main(int argc, char** argv) {
     auto featureTrackerRight = pipeline.create<dai::node::FeatureTracker>();
 
     // Linking
-    monoLeft->requestOutput({640, 400})->link(featureTrackerLeft->inputImage);
+    monoLeft->requestOutput({640, 640}, dai::ImgFrame::Type::GRAY8)->link(featureTrackerLeft->inputImage);
 
-    monoRight->requestOutput({640, 400})->link(featureTrackerRight->inputImage);
+    monoRight->requestOutput({640, 640}, dai::ImgFrame::Type::GRAY8)->link(featureTrackerRight->inputImage);
+    featureTrackerLeft->initialConfig->setCornerDetector(dai::FeatureTrackerConfig::CornerDetector::Type::HARRIS);
+    featureTrackerLeft->initialConfig->setMotionEstimator(false);
+    featureTrackerLeft->initialConfig->setNumTargetFeatures(256);
+
+    auto motionEstimator = dai::FeatureTrackerConfig::MotionEstimator();
+    motionEstimator.enable = true;
+    featureTrackerLeft->initialConfig->setMotionEstimator(motionEstimator);
+
+    auto cornerDetector = dai::FeatureTrackerConfig::CornerDetector();
+    cornerDetector.numMaxFeatures = 256;
+    cornerDetector.numTargetFeatures = cornerDetector.numMaxFeatures;
+    auto thresholds = dai::FeatureTrackerConfig::CornerDetector::Thresholds();
+    thresholds.initialValue = 20000;  // Default value
+
+    cornerDetector.thresholds = thresholds;
+    featureTrackerLeft->initialConfig->setCornerDetector(cornerDetector);
+
+    featureTrackerRight->initialConfig->setCornerDetector(dai::FeatureTrackerConfig::CornerDetector::Type::HARRIS);
+    featureTrackerRight->initialConfig->setMotionEstimator(false);
+    featureTrackerRight->initialConfig->setNumTargetFeatures(256);
+    featureTrackerRight->initialConfig->setCornerDetector(cornerDetector);
+    featureTrackerRight->initialConfig->setMotionEstimator(motionEstimator);
 
     // By default the least mount of resources are allocated
     // increasing it improves performance when optical flow is enabled
@@ -37,6 +59,8 @@ int main(int argc, char** argv) {
     featureTrackerLeft->setHardwareResources(numShaves, numMemorySlices);
     featureTrackerRight->setHardwareResources(numShaves, numMemorySlices);
 
+    featureTrackerLeft->initialConfig->setCornerDetector(cornerDetector);
+    featureTrackerRight->initialConfig->setCornerDetector(cornerDetector);
     auto featureTrackerConfig = featureTrackerRight->initialConfig.get();
 
     auto outputFeaturesLeftQueue = featureTrackerLeft->outputFeatures.createOutputQueue(8, false);
