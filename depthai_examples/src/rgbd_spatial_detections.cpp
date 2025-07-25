@@ -189,7 +189,7 @@ int main(int argc, char** argv) {
     // }
 
     auto imuConverter = std::make_shared<depthai_bridge::ImuConverter>(
-        depthai_bridge::getFullFrameName(tfPrefix, "imu_frame"), imuMode, linearAccelCovariance, angularVelCovariance);
+        depthai_bridge::getFrameName(tfPrefix, "imu_frame"), imuMode, linearAccelCovariance, angularVelCovariance);
     if(enableRosBaseTimeUpdate) {
     }
     auto imuPublish = std::make_unique<depthai_bridge::BridgePublisher<sensor_msgs::msg::Imu, dai::IMUData>>(
@@ -204,7 +204,7 @@ int main(int argc, char** argv) {
     imuPublish->addPublisherCallback();
 
     auto rgbConverter = std::make_shared<depthai_bridge::ImageConverter>(
-        depthai_bridge::getFullOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_A, device->getDeviceName())), false);
+        depthai_bridge::getOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_A, device->getDeviceName())), false);
     if(enableRosBaseTimeUpdate) {
         imuConverter->setUpdateRosBaseTimeOnToRosMsg();
         rgbConverter->setUpdateRosBaseTimeOnToRosMsg();
@@ -213,7 +213,7 @@ int main(int argc, char** argv) {
     auto tfPub = std::make_unique<depthai_bridge::TFPublisher>(node, calibrationHandler, device->getConnectedCameraFeatures(), "oak", device->getDeviceName());
     while(rclcpp::ok() && pipeline.isRunning()) {
         auto pclConv = std::make_shared<depthai_bridge::PointCloudConverter>(
-            depthai_bridge::getFullOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_A, device->getDeviceName())), false);
+            depthai_bridge::getOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_A, device->getDeviceName())), false);
         pclConv->setDepthUnit(dai::StereoDepthConfig::AlgorithmControl::DepthUnit::METER);
         auto pclPublish = std::make_unique<depthai_bridge::BridgePublisher<sensor_msgs::msg::PointCloud2, dai::PointCloudData>>(
             queues.pclOut,
@@ -262,7 +262,7 @@ int main(int argc, char** argv) {
         previewPublish->addPublisherCallback();
 
         auto detConverter = std::make_shared<depthai_bridge::SpatialDetectionConverter>(
-            depthai_bridge::getFullOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_A, device->getDeviceName())), false);
+            depthai_bridge::getOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_A, device->getDeviceName())), false);
         auto detectionPublish = std::make_unique<depthai_bridge::BridgePublisher<depthai_ros_msgs::msg::SpatialDetectionArray, dai::SpatialImgDetections>>(
             detectionQueue,
             node,

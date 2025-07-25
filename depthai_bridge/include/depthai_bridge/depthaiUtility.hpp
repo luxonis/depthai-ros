@@ -157,16 +157,16 @@ const std::unordered_map<dai::CameraBoardSocket, std::string> rsSocketNameMap = 
     {dai::CameraBoardSocket::CAM_D, "infra3"},
 };
 
-inline std::string getFullFrameName(const std::string& prefix, const std::string& frameName) {
+inline std::string getFrameName(const std::string& prefix, const std::string& frameName) {
     return prefix + "_" + frameName;
 }
 
-inline std::string getFullOpticalFrameName(const std::string& prefix, const std::string& frameName, bool rsCompat = false) {
+inline std::string getOpticalFrameName(const std::string& prefix, const std::string& frameName, bool rsCompat = false) {
     std::string suffix = "_camera_optical_frame";
     if(rsCompat) {
         suffix = "_optical_frame";
     }
-    return getFullFrameName(prefix, frameName) + suffix;
+    return getFrameName(prefix, frameName) + suffix;
 }
 
 inline void convertModelName(std::string& camModel) {

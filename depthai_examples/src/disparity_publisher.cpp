@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
     std::string tfPrefix = "oak";
 
     auto dispConv = std::make_shared<depthai_bridge::DisparityConverter>(
-        depthai_bridge::getFullOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_C, device->getDeviceName())),
+        depthai_bridge::getOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_C, device->getDeviceName())),
         true,
         880,
         7.5,

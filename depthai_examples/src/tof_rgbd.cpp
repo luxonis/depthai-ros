@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
 
     // Create a bridge publisher for tof images
     auto pclConverter = std::make_shared<depthai_bridge::PointCloudConverter>(
-        depthai_bridge::getFullOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_C, device->getDeviceName())), false);
+        depthai_bridge::getOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_C, device->getDeviceName())), false);
     pclConverter->setDepthUnit(dai::StereoDepthConfig::AlgorithmControl::DepthUnit::METER);
 
     auto calibrationHandler = device->readCalibration();

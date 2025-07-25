@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
 
     // Create a bridge publisher for RGB images
     auto rgbConverter = std::make_shared<depthai_bridge::ImageConverter>(
-        depthai_bridge::getFullOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_A, device->getDeviceName())), false);
+        depthai_bridge::getOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_A, device->getDeviceName())), false);
 
     auto calibrationHandler = device->readCalibration();
     auto tfPub =

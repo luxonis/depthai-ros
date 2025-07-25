@@ -67,10 +67,10 @@ int main(int argc, char** argv) {
     auto outputFeaturesRightQueue = featureTrackerRight->outputFeatures.createOutputQueue(8, false);
     std::string tfPrefix = "oak";
     auto leftConverter = std::make_shared<depthai_bridge::TrackedFeaturesConverter>(
-        depthai_bridge::getFullOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_A, device->getDeviceName())), true);
+        depthai_bridge::getOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_A, device->getDeviceName())), true);
 
     auto rightConverter = std::make_shared<depthai_bridge::TrackedFeaturesConverter>(
-        depthai_bridge::getFullOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_A, device->getDeviceName())), true);
+        depthai_bridge::getOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_A, device->getDeviceName())), true);
 
     pipeline.start();
     auto calibrationHandler = device->readCalibration();
