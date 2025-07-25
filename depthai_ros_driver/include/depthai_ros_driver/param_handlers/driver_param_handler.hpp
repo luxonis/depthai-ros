@@ -17,12 +17,11 @@ class Parameter;
 namespace depthai_ros_driver {
 namespace param_handlers {
 
-class CameraParamHandler : public BaseParamHandler {
+class DriverParamHandler : public BaseParamHandler {
    public:
-    explicit CameraParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name);
-    ~CameraParamHandler();
+    explicit DriverParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name, const std::string& deviceName, bool rsCompat);
+    ~DriverParamHandler();
     void declareParams();
-    dai::CameraControl setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;
     dai::UsbSpeed getUSBSpeed();
 
    private:

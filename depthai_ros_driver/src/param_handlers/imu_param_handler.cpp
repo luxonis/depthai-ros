@@ -8,11 +8,12 @@
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-ImuParamHandler::ImuParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name) : BaseParamHandler(node, name) {
+ImuParamHandler::ImuParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name, const std::string& deviceName, bool rsCompat)
+    : BaseParamHandler(node, name, deviceName, rsCompat) {
     syncMethodMap = {
-        {"COPY", dai::ros::ImuSyncMethod::COPY},
-        {"LINEAR_INTERPOLATE_GYRO", dai::ros::ImuSyncMethod::LINEAR_INTERPOLATE_GYRO},
-        {"LINEAR_INTERPOLATE_ACCEL", dai::ros::ImuSyncMethod::LINEAR_INTERPOLATE_ACCEL},
+        {"COPY", depthai_bridge::ImuSyncMethod::COPY},
+        {"LINEAR_INTERPOLATE_GYRO", depthai_bridge::ImuSyncMethod::LINEAR_INTERPOLATE_GYRO},
+        {"LINEAR_INTERPOLATE_ACCEL", depthai_bridge::ImuSyncMethod::LINEAR_INTERPOLATE_ACCEL},
     };
     messagetTypeMap = {
         {"IMU", imu::ImuMsgType::IMU}, {"IMU_WITH_MAG", imu::ImuMsgType::IMU_WITH_MAG}, {"IMU_WITH_MAG_SPLIT", imu::ImuMsgType::IMU_WITH_MAG_SPLIT}};
@@ -90,7 +91,7 @@ void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const s
     }
 }
 
-dai::ros::ImuSyncMethod ImuParamHandler::getSyncMethod() {
+depthai_bridge::ImuSyncMethod ImuParamHandler::getSyncMethod() {
     return utils::getValFromMap(utils::getUpperCaseStr(getParam<std::string>("i_sync_method")), syncMethodMap);
 }
 
@@ -98,9 +99,5 @@ imu::ImuMsgType ImuParamHandler::getMsgType() {
     return utils::getValFromMap(utils::getUpperCaseStr(getParam<std::string>("i_message_type")), messagetTypeMap);
 }
 
-dai::CameraControl ImuParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& /*params*/) {
-    dai::CameraControl ctrl;
-    return ctrl;
-}
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver

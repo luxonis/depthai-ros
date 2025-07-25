@@ -3,7 +3,7 @@
 #include <fstream>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
-#include "depthai-shared/common/CameraBoardSocket.hpp"
+#include "depthai/common/CameraBoardSocket.hpp"
 #include "depthai/pipeline/node/DetectionNetwork.hpp"
 #include "depthai/pipeline/node/ImageManip.hpp"
 #include "depthai/pipeline/node/NeuralNetwork.hpp"

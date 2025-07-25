@@ -1,10 +1,9 @@
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 
 #include "camera_info_manager/camera_info_manager.hpp"
-#include "depthai-shared/common/CameraSensorType.hpp"
+#include "depthai/common/CameraSensorType.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/VideoEncoder.hpp"
-#include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/logger.hpp"
@@ -13,37 +12,6 @@ namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace sensor_helpers {
 
-std::vector<ImageSensor> availableSensors = {{"IMX378", "1080P", {"12MP", "4K", "1080P"}, dai::CameraSensorType::COLOR},
-                                             {"IMX462", "1080P", {"1080P"}, dai::CameraSensorType::COLOR},
-                                             {"OV9282", "720P", {"800P", "720P", "400P"}, dai::CameraSensorType::MONO},
-                                             {"OV9782", "720P", {"800P", "720P", "400P"}, dai::CameraSensorType::COLOR},
-                                             {"OV9281", "720P", {"800P", "720P", "400P"}, dai::CameraSensorType::COLOR},
-                                             {"IMX214", "1080P", {"13MP", "12MP", "4K", "1080P"}, dai::CameraSensorType::COLOR},
-                                             {"IMX412", "1080P", {"13MP", "12MP", "4K", "1080P"}, dai::CameraSensorType::COLOR},
-                                             {"OV7750", "480P", {"480P", "400P"}, dai::CameraSensorType::MONO},
-                                             {"OV7251", "480P", {"480P", "400P"}, dai::CameraSensorType::MONO},
-                                             {"IMX477", "1080P", {"12MP", "4K", "1080P"}, dai::CameraSensorType::COLOR},
-                                             {"IMX577", "1080P", {"12MP", "4K", "1080P"}, dai::CameraSensorType::COLOR},
-                                             {"AR0234", "1200P", {"1200P"}, dai::CameraSensorType::COLOR},
-                                             {"IMX582", "4K", {"48MP", "12MP", "4K"}, dai::CameraSensorType::COLOR},
-                                             {"LCM48", "4K", {"48MP", "12MP", "4K"}, dai::CameraSensorType::COLOR},
-                                             {"TINY1C", "256", {"256"}, dai::CameraSensorType::THERMAL}};
-const std::unordered_map<dai::CameraBoardSocket, std::string> socketNameMap = {
-    {dai::CameraBoardSocket::AUTO, "rgb"},
-    {dai::CameraBoardSocket::CAM_A, "rgb"},
-    {dai::CameraBoardSocket::CAM_B, "left"},
-    {dai::CameraBoardSocket::CAM_C, "right"},
-    {dai::CameraBoardSocket::CAM_D, "cam_d"},
-    {dai::CameraBoardSocket::CAM_E, "cam_e"},
-};
-const std::unordered_map<dai::CameraBoardSocket, std::string> rsSocketNameMap = {
-    {dai::CameraBoardSocket::AUTO, "color"},
-    {dai::CameraBoardSocket::CAM_A, "color"},
-    {dai::CameraBoardSocket::CAM_B, "infra2"},
-    {dai::CameraBoardSocket::CAM_C, "infra1"},
-    {dai::CameraBoardSocket::CAM_D, "infra4"},
-    {dai::CameraBoardSocket::CAM_E, "infra3"},
-};
 const std::unordered_map<NodeNameEnum, std::string> rsNodeNameMap = {
     {NodeNameEnum::RGB, "color"},
     {NodeNameEnum::Left, "infra2"},
@@ -68,14 +36,7 @@ const std::unordered_map<std::string, dai::ColorCameraProperties::ColorOrder> co
 };
 
 bool rsCompabilityMode(std::shared_ptr<rclcpp::Node> node) {
-    return node->get_parameter("camera.i_rs_compat").as_bool();
-}
-
-std::string tfPrefix(std::shared_ptr<rclcpp::Node> node) {
-    if(node->get_parameter("camera.i_publish_tf_from_calibration").as_bool()) {
-        return node->get_parameter("camera.i_tf_base_frame").as_string();
-    }
-    return node->get_name();
+    return node->get_parameter("driver.i_rs_compat").as_bool();
 }
 std::string getNodeName(std::shared_ptr<rclcpp::Node> node, NodeNameEnum name) {
     if(rsCompabilityMode(node)) {
@@ -84,33 +45,6 @@ std::string getNodeName(std::shared_ptr<rclcpp::Node> node, NodeNameEnum name) {
     return NodeNameMap.at(name);
 }
 
-std::string getSocketName(std::shared_ptr<rclcpp::Node> node, dai::CameraBoardSocket socket) {
-    if(rsCompabilityMode(node)) {
-        return rsSocketNameMap.at(socket);
-    }
-    return socketNameMap.at(socket);
-}
-const std::unordered_map<std::string, dai::MonoCameraProperties::SensorResolution> monoResolutionMap = {
-    {"400P", dai::MonoCameraProperties::SensorResolution::THE_400_P},
-    {"480P", dai::MonoCameraProperties::SensorResolution::THE_480_P},
-    {"720P", dai::MonoCameraProperties::SensorResolution::THE_720_P},
-    {"800P", dai::MonoCameraProperties::SensorResolution::THE_800_P},
-    {"1200P", dai::MonoCameraProperties::SensorResolution::THE_1200_P},
-};
-
-const std::unordered_map<std::string, dai::ColorCameraProperties::SensorResolution> rgbResolutionMap = {
-    {"720P", dai::ColorCameraProperties::SensorResolution::THE_720_P},
-    {"1080P", dai::ColorCameraProperties::SensorResolution::THE_1080_P},
-    {"4K", dai::ColorCameraProperties::SensorResolution::THE_4_K},
-    {"12MP", dai::ColorCameraProperties::SensorResolution::THE_12_MP},
-    {"13MP", dai::ColorCameraProperties::SensorResolution::THE_13_MP},
-    {"800P", dai::ColorCameraProperties::SensorResolution::THE_800_P},
-    {"1200P", dai::ColorCameraProperties::SensorResolution::THE_1200_P},
-    {"5MP", dai::ColorCameraProperties::SensorResolution::THE_5_MP},
-    {"4000x3000", dai::ColorCameraProperties::SensorResolution::THE_4000X3000},
-    {"5312X6000", dai::ColorCameraProperties::SensorResolution::THE_5312X6000},
-    {"48MP", dai::ColorCameraProperties::SensorResolution::THE_48_MP},
-    {"1440X1080", dai::ColorCameraProperties::SensorResolution::THE_1440X1080}};
 
 const std::unordered_map<std::string, dai::CameraControl::FrameSyncMode> fSyncModeMap = {
     {"OFF", dai::CameraControl::FrameSyncMode::OFF},
@@ -127,7 +61,7 @@ const std::unordered_map<std::string, dai::CameraImageOrientation> cameraImageOr
 
 void basicCameraPub(const std::string& /*name*/,
                     const std::shared_ptr<dai::ADatatype>& data,
-                    dai::ros::ImageConverter& converter,
+                    depthai_bridge::ImageConverter& converter,
                     image_transport::CameraPublisher& pub,
                     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager) {
     if(rclcpp::ok() && (pub.getNumSubscribers() > 0)) {
@@ -140,7 +74,7 @@ void basicCameraPub(const std::string& /*name*/,
 }
 
 sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
-                                          std::shared_ptr<dai::ros::ImageConverter> converter,
+                                          std::shared_ptr<depthai_bridge::ImageConverter> converter,
                                           std::shared_ptr<dai::Device> device,
                                           dai::CameraBoardSocket socket,
                                           int width,

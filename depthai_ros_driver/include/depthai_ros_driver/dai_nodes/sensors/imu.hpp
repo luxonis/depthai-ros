@@ -9,17 +9,16 @@
 namespace dai {
 class Pipeline;
 class Device;
-class DataOutputQueue;
+class MessageQueue;
 class ADatatype;
 namespace node {
 class IMU;
-class XLinkOut;
 }  // namespace node
-namespace ros {
-class ImuConverter;
-}
 }  // namespace dai
 
+namespace depthai_bridge {
+class ImuConverter;
+}
 namespace rclcpp {
 class Node;
 class Parameter;
@@ -36,17 +35,18 @@ class Imu : public BaseNode {
     explicit Imu(const std::string& daiNodeName,
                  std::shared_ptr<rclcpp::Node> node,
                  std::shared_ptr<dai::Pipeline> pipeline,
-                 std::shared_ptr<dai::Device> device);
+                 std::shared_ptr<dai::Device> device,
+                 bool rsCompat);
     ~Imu();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(dai::Node::Input in, int linkType = 0) override;
     void setNames() override;
-    void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
+    void setInOut(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
 
    private:
-    std::unique_ptr<dai::ros::ImuConverter> imuConverter;
+    std::unique_ptr<depthai_bridge::ImuConverter> imuConverter;
     void imuRosQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
     void imuDaiRosQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
     void imuMagQCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
@@ -55,8 +55,7 @@ class Imu : public BaseNode {
     rclcpp::Publisher<depthai_ros_msgs::msg::ImuWithMagneticField>::SharedPtr daiImuPub;
     std::shared_ptr<dai::node::IMU> imuNode;
     std::unique_ptr<param_handlers::ImuParamHandler> ph;
-    std::shared_ptr<dai::DataOutputQueue> imuQ;
-    std::shared_ptr<dai::node::XLinkOut> xoutImu;
+    std::shared_ptr<dai::MessageQueue> imuQ;
     std::string imuQName;
 };
 

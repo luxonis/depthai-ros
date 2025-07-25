@@ -11,6 +11,7 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>ament_cmake_auto</depend>
   <depend>camera_calibration</depend>
+  <depend>camera_info_manager</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>

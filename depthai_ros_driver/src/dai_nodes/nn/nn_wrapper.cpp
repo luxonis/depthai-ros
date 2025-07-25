@@ -39,7 +39,7 @@ NNWrapper::~NNWrapper() = default;
 
 void NNWrapper::setNames() {}
 
-void NNWrapper::setXinXout(std::shared_ptr<dai::Pipeline> /*pipeline*/) {}
+void NNWrapper::setInOut(std::shared_ptr<dai::Pipeline> /*pipeline*/) {}
 
 void NNWrapper::setupQueues(std::shared_ptr<dai::Device> device) {
     nnNode->setupQueues(device);

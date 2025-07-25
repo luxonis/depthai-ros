@@ -36,7 +36,7 @@ SpatialNNWrapper::SpatialNNWrapper(const std::string& daiNodeName,
 SpatialNNWrapper::~SpatialNNWrapper() = default;
 void SpatialNNWrapper::setNames() {}
 
-void SpatialNNWrapper::setXinXout(std::shared_ptr<dai::Pipeline> /*pipeline*/) {}
+void SpatialNNWrapper::setInOut(std::shared_ptr<dai::Pipeline> /*pipeline*/) {}
 
 void SpatialNNWrapper::setupQueues(std::shared_ptr<dai::Device> device) {
     nnNode->setupQueues(device);

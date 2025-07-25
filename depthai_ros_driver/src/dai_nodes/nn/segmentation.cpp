@@ -36,7 +36,7 @@ Segmentation::Segmentation(const std::string& daiNodeName,
     ph->declareParams(segNode, imageManip);
     RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
     imageManip->out.link(segNode->input);
-    setXinXout(pipeline);
+    setInOut(pipeline);
 }
 
 Segmentation::~Segmentation() = default;
@@ -46,7 +46,7 @@ void Segmentation::setNames() {
     ptQName = getName() + "_pt";
 }
 
-void Segmentation::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
+void Segmentation::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
     xoutNN = pipeline->create<dai::node::XLinkOut>();
     xoutNN->setStreamName(nnQName);
     segNode->out.link(xoutNN->input);
@@ -62,9 +62,9 @@ void Segmentation::setupQueues(std::shared_ptr<dai::Device> device) {
     nnPub = image_transport::create_camera_publisher(getROSNode().get(), "~/" + getName() + "/image_raw");
     nnQ->addCallback(std::bind(&Segmentation::segmentationCB, this, std::placeholders::_1, std::placeholders::_2));
     if(ph->getParam<bool>("i_enable_passthrough")) {
-        auto tfPrefix = getOpticalTFPrefix(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
+        auto tfPrefix = getOpticalFrameName(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
         ptQ = device->getOutputQueue(ptQName, ph->getParam<int>("i_max_q_size"), false);
-        imageConverter = std::make_unique<dai::ros::ImageConverter>(tfPrefix, false);
+        imageConverter = std::make_unique<depthai_bridge::ImageConverter>(tfPrefix, false);
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
             getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
         infoManager->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
@@ -97,7 +97,7 @@ void Segmentation::segmentationCB(const std::string& /*name*/, const std::shared
     sensor_msgs::msg::Image img_msg;
     std_msgs::msg::Header header;
     header.stamp = getROSNode()->get_clock()->now();
-    auto tfPrefix = getOpticalTFPrefix(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
+    auto tfPrefix = getOpticalFrameName(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
     header.frame_id = tfPrefix;
     nnInfo.header = header;
     imgBridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, cv_frame);

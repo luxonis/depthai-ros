@@ -22,11 +22,11 @@ namespace depthai_ros_driver {
 namespace dai_nodes {
 class SysLogger : public BaseNode {
    public:
-    SysLogger(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline);
+    SysLogger(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline, std::string deviceName, bool rsCompat);
     ~SysLogger();
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void setNames() override;
-    void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
+    void setInOut(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
 
    private:
@@ -35,7 +35,7 @@ class SysLogger : public BaseNode {
     std::shared_ptr<diagnostic_updater::Updater> updater;
     std::shared_ptr<dai::node::XLinkOut> xoutLogger;
     std::shared_ptr<dai::node::SystemLogger> sysNode;
-    std::shared_ptr<dai::DataOutputQueue> loggerQ;
+    std::shared_ptr<dai::MessageQueue> loggerQ;
     std::string loggerQName;
 };
 }  // namespace dai_nodes

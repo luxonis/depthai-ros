@@ -1,15 +1,16 @@
 #include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 
 #include "camera_info_manager/camera_info_manager.hpp"
-#include "depthai-shared/properties/VideoEncoderProperties.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/VideoEncoder.hpp"
-#include "depthai/pipeline/node/XLinkOut.hpp"
+#include "depthai/properties/VideoEncoderProperties.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/utils.hpp"
+#include "ffmpeg_image_transport_msgs/msg/ffmpeg_packet.hpp"
 #include "image_transport/image_transport.hpp"
+#include "sensor_msgs/msg/compressed_image.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -17,37 +18,14 @@ namespace sensor_helpers {
 ImagePublisher::ImagePublisher(std::shared_ptr<rclcpp::Node> node,
                                std::shared_ptr<dai::Pipeline> pipeline,
                                const std::string& qName,
-                               std::function<void(dai::Node::Input in)> linkFunc,
+                               dai::Node::Output out,
                                bool synced,
                                bool ipcEnabled,
                                const utils::VideoEncoderConfig& encoderConfig)
-    : node(node), encConfig(encoderConfig), qName(qName), ipcEnabled(ipcEnabled), synced(synced) {
-    if(!synced) {
-        xout = utils::setupXout(pipeline, qName);
-    }
-
-    linkCB = linkFunc;
+    : node(node), encConfig(encoderConfig), out(out), qName(qName), ipcEnabled(ipcEnabled), synced(synced) {
     if(encoderConfig.enabled) {
         encoder = createEncoder(pipeline, encoderConfig);
-        linkFunc(encoder->input);
-
-        if(!synced) {
-            if(encoderConfig.profile == dai::VideoEncoderProperties::Profile::MJPEG) {
-                encoder->bitstream.link(xout->input);
-            } else {
-                encoder->out.link(xout->input);
-            }
-        } else {
-            if(encoderConfig.profile == dai::VideoEncoderProperties::Profile::MJPEG) {
-                linkCB = [&](dai::Node::Input input) { encoder->bitstream.link(input); };
-            } else {
-                linkCB = [&](dai::Node::Input input) { encoder->out.link(input); };
-            }
-        }
-    } else {
-        if(!synced) {
-            linkFunc(xout->input);
-        }
+        this->out.link(encoder->input);
     }
 }
 void ImagePublisher::setup(std::shared_ptr<dai::Device> device, const utils::ImgConverterConfig& convConf, const utils::ImgPublisherConfig& pubConf) {
@@ -78,13 +56,13 @@ void ImagePublisher::setup(std::shared_ptr<dai::Device> device, const utils::Img
         imgPubIT = image_transport::create_camera_publisher(node.get(), pubConfig.topicName + pubConfig.topicSuffix);
     }
     if(!synced) {
-        dataQ = device->getOutputQueue(getQueueName(), pubConf.maxQSize, pubConf.qBlocking);
+        dataQ = out.createOutputQueue(pubConf.maxQSize, pubConf.qBlocking);
         addQueueCB(dataQ);
     }
 }
 
 void ImagePublisher::createImageConverter(std::shared_ptr<dai::Device> device) {
-    converter = std::make_shared<dai::ros::ImageConverter>(convConfig.tfPrefix, convConfig.interleaved, convConfig.getBaseDeviceTimestamp);
+    converter = std::make_shared<depthai_bridge::ImageConverter>(convConfig.tfPrefix, convConfig.interleaved, convConfig.getBaseDeviceTimestamp);
     converter->setUpdateRosBaseTimeOnToRosMsg(convConfig.updateROSBaseTimeOnRosMsg);
     if(convConfig.lowBandwidth) {
         converter->convertFromBitstream(convConfig.encoding);
@@ -154,12 +132,12 @@ void ImagePublisher::closeQueue() {
     if(dataQ) dataQ->close();
 }
 void ImagePublisher::link(dai::Node::Input in) {
-    linkCB(in);
+    out.link(in);
 }
-std::shared_ptr<dai::DataOutputQueue> ImagePublisher::getQueue() {
+std::shared_ptr<dai::MessageQueue> ImagePublisher::getQueue() {
     return dataQ;
 }
-void ImagePublisher::addQueueCB(const std::shared_ptr<dai::DataOutputQueue>& queue) {
+void ImagePublisher::addQueueCB(const std::shared_ptr<dai::MessageQueue>& queue) {
     dataQ = queue;
     qName = queue->getName();
     cbID = dataQ->addCallback([this](const std::shared_ptr<dai::ADatatype>& data) { publish(data); });
@@ -173,13 +151,15 @@ std::shared_ptr<Image> ImagePublisher::convertData(const std::shared_ptr<dai::AD
     auto img = std::make_shared<Image>();
     if(pubConfig.publishCompressed) {
         if(encConfig.profile == dai::VideoEncoderProperties::Profile::MJPEG) {
-            auto daiImg = std::dynamic_pointer_cast<dai::ImgFrame>(data);
-            auto rawMsg = converter->toRosCompressedMsg(daiImg);
-            img->compressedImg = std::make_unique<sensor_msgs::msg::CompressedImage>(rawMsg);
+            auto daiImg = std::dynamic_pointer_cast<dai::EncodedFrame>(data);
+            std::deque<sensor_msgs::msg::CompressedImage> deq;
+            converter->toRosCompressedMsg(daiImg, deq);
+            img->compressedImg = std::make_unique<sensor_msgs::msg::CompressedImage>(deq.front());
         } else {
             auto daiImg = std::dynamic_pointer_cast<dai::EncodedFrame>(data);
-            auto rawMsg = converter->toRosFFMPEGPacket(daiImg);
-            img->ffmpegPacket = std::make_unique<ffmpeg_image_transport_msgs::msg::FFMPEGPacket>(rawMsg);
+            std::deque<ffmpeg_image_transport_msgs::msg::FFMPEGPacket> deq;
+            converter->toRosFFMPEGPacket(daiImg, deq);
+            img->ffmpegPacket = std::make_unique<ffmpeg_image_transport_msgs::msg::FFMPEGPacket>(deq.front());
         }
     } else {
         auto daiImg = std::dynamic_pointer_cast<dai::ImgFrame>(data);

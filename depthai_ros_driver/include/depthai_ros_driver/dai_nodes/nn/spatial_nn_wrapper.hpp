@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "depthai-shared/common/CameraBoardSocket.hpp"
+#include "depthai/common/CameraBoardSocket.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 
 namespace dai {
@@ -37,7 +37,7 @@ class SpatialNNWrapper : public BaseNode {
     void link(dai::Node::Input in, int linkType = 0) override;
     dai::Node::Input getInput(int linkType = 0) override;
     void setNames() override;
-    void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
+    void setInOut(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
 
    private:

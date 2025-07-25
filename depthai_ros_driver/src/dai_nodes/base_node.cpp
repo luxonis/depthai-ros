@@ -1,10 +1,9 @@
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 
-#include "depthai-shared/common/CameraBoardSocket.hpp"
+#include "depthai/common/CameraBoardSocket.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
-#include "depthai/pipeline/node/VideoEncoder.hpp"
-#include "depthai/pipeline/node/XLinkOut.hpp"
+#include "depthai_bridge/depthaiUtility.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/utils.hpp"
@@ -12,8 +11,12 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-BaseNode::BaseNode(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> /*pipeline*/)
-    : baseNode(node), baseDAINodeName(daiNodeName), logger(node->get_logger()) {
+BaseNode::BaseNode(const std::string& daiNodeName,
+                   std::shared_ptr<rclcpp::Node> node,
+                   std::shared_ptr<dai::Pipeline> pipeline,
+                   std::string deviceName, bool rsCompat
+                   )
+    : baseNode(node), pipeline(pipeline), deviceName(deviceName), baseDAINodeName(daiNodeName), rsCompat(rsCompat), logger(node->get_logger()) {
     intraProcessEnabled = node->get_node_options().use_intra_process_comms();
 };
 BaseNode::~BaseNode() = default;
@@ -37,24 +40,35 @@ rclcpp::Logger BaseNode::getLogger() {
     return logger;
 }
 
-bool BaseNode::rsCompabilityMode() {
-    return sensor_helpers::rsCompabilityMode(getROSNode());
-}
 
 std::string BaseNode::getSocketName(dai::CameraBoardSocket socket) {
-    return sensor_helpers::getSocketName(getROSNode(), socket);
+    return depthai_bridge::getSocketName(socket, deviceName, rsCompat);
 }
 
-std::string BaseNode::getTFPrefix(const std::string& frameName) {
-    return sensor_helpers::tfPrefix(getROSNode()) + "_" + frameName;
+bool BaseNode::rsCompatibilityMode() {
+    return rsCompat;
 }
 
-std::string BaseNode::getOpticalTFPrefix(const std::string& frameName) {
-    std::string suffix = "_camera_optical_frame";
-    if(sensor_helpers::rsCompabilityMode(getROSNode())) {
-        suffix = "_optical_frame";
+std::string BaseNode::getFrameName(const std::string& frameName) {
+    std::string prefix;
+    if(getROSNode()->get_parameter("driver.i_publish_tf_from_calibration").as_bool()) {
+        prefix = getROSNode()->get_parameter("driver.i_tf_base_frame").as_string();
+    } else {
+        prefix = getROSNode()->get_name();
     }
-    return getTFPrefix(frameName) + suffix;
+
+    return depthai_bridge::getFrameName(prefix, frameName);
+}
+
+std::string BaseNode::getOpticalFrameName(const std::string& frameName) {
+    std::string prefix;
+    if(getROSNode()->get_parameter("driver.i_publish_tf_from_calibration").as_bool()) {
+        prefix = getROSNode()->get_parameter("driver.i_tf_base_frame").as_string();
+    } else {
+        prefix = getROSNode()->get_name();
+    }
+
+    return depthai_bridge::getOpticalFrameName(prefix, frameName, rsCompat);
 }
 dai::Node::Input BaseNode::getInput(int /*linkType = 0*/) {
     throw(std::runtime_error("getInput() not implemented"));
@@ -68,24 +82,17 @@ void BaseNode::closeQueues() {
     throw(std::runtime_error("closeQueues() not implemented"));
 };
 
-std::shared_ptr<dai::node::XLinkOut> BaseNode::setupXout(std::shared_ptr<dai::Pipeline> pipeline, const std::string& name) {
-    return utils::setupXout(pipeline, name);
-};
-
-std::shared_ptr<sensor_helpers::ImagePublisher> BaseNode::setupOutput(std::shared_ptr<dai::Pipeline> pipeline,
-                                                                      const std::string& qName,
-                                                                      std::function<void(dai::Node::Input input)> nodeLink,
-                                                                      bool isSynced,
-                                                                      const utils::VideoEncoderConfig& encoderConfig) {
-    return std::make_shared<sensor_helpers::ImagePublisher>(getROSNode(), pipeline, qName, nodeLink, isSynced, ipcEnabled(), encoderConfig);
+std::shared_ptr<sensor_helpers::ImagePublisher> BaseNode::setupOutput(
+    std::shared_ptr<dai::Pipeline> pipeline, const std::string& qName, dai::Node::Output out, bool isSynced, const utils::VideoEncoderConfig& encoderConfig) {
+    return std::make_shared<sensor_helpers::ImagePublisher>(getROSNode(), pipeline, qName, out, isSynced, ipcEnabled(), encoderConfig);
 };
 
 void BaseNode::setNames() {
     throw(std::runtime_error("setNames() not implemented"));
 };
 
-void BaseNode::setXinXout(std::shared_ptr<dai::Pipeline> /*pipeline*/) {
-    throw(std::runtime_error("setXinXout() not implemented"));
+void BaseNode::setInOut(std::shared_ptr<dai::Pipeline> /*pipeline*/) {
+    throw(std::runtime_error("setInOut() not implemented"));
 };
 
 void BaseNode::setupQueues(std::shared_ptr<dai::Device> /*device*/) {

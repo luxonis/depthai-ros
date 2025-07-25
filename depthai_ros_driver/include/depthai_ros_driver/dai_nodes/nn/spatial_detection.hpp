@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "camera_info_manager/camera_info_manager.hpp"
-#include "depthai-shared/common/CameraBoardSocket.hpp"
+#include "depthai/common/CameraBoardSocket.hpp"
 #include "depthai/device/DataQueue.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
@@ -40,7 +40,7 @@ class SpatialDetection : public BaseNode {
         ph->declareParams(spatialNode, imageManip);
         RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
         imageManip->out.link(spatialNode->input);
-        setXinXout(pipeline);
+        setInOut(pipeline);
     }
     ~SpatialDetection() = default;
     void updateParams(const std::vector<rclcpp::Parameter>& params) override {
@@ -49,7 +49,7 @@ class SpatialDetection : public BaseNode {
     void setupQueues(std::shared_ptr<dai::Device> device) override {
         nnQ = device->getOutputQueue(nnQName, ph->getParam<int>("i_max_q_size"), false);
         std::string socketName = getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")));
-        auto tfPrefix = getOpticalTFPrefix(socketName);
+        auto tfPrefix = getOpticalFrameName(socketName);
         int width;
         int height;
         if(ph->getParam<bool>("i_disable_resize")) {
@@ -59,7 +59,7 @@ class SpatialDetection : public BaseNode {
             width = imageManip->initialConfig.getResizeConfig().width;
             height = imageManip->initialConfig.getResizeConfig().height;
         }
-        detConverter = std::make_unique<dai::ros::SpatialDetectionConverter>(tfPrefix, width, height, false, ph->getParam<bool>("i_get_base_device_timestamp"));
+        detConverter = std::make_unique<depthai_bridge::SpatialDetectionConverter>(tfPrefix, width, height, false, ph->getParam<bool>("i_get_base_device_timestamp"));
         detConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
         nnQ->addCallback(std::bind(&SpatialDetection::spatialCB, this, std::placeholders::_1, std::placeholders::_2));
         rclcpp::PublisherOptions options;
@@ -86,7 +86,7 @@ class SpatialDetection : public BaseNode {
         if(ph->getParam<bool>("i_enable_passthrough_depth")) {
             dai::CameraBoardSocket socket = static_cast<dai::CameraBoardSocket>(ph->getOtherNodeParam<int>("stereo", "i_board_socket_id"));
             if(!ph->getOtherNodeParam<bool>("stereo", "i_align_depth")) {
-                tfPrefix = getTFPrefix("right");
+                tfPrefix = getFrameName("right");
             };
             utils::ImgConverterConfig convConf;
             convConf.tfPrefix = tfPrefix;
@@ -122,7 +122,7 @@ class SpatialDetection : public BaseNode {
         ptQName = getName() + "_pt";
         ptDepthQName = getName() + "_pt_depth";
     };
-    void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override {
+    void setInOut(std::shared_ptr<dai::Pipeline> pipeline) override {
         xoutNN = pipeline->create<dai::node::XLinkOut>();
         xoutNN->setStreamName(nnQName);
         spatialNode->out.link(xoutNN->input);
@@ -154,10 +154,10 @@ class SpatialDetection : public BaseNode {
             deq.pop_front();
         }
     };
-    std::unique_ptr<dai::ros::SpatialDetectionConverter> detConverter;
+    std::unique_ptr<depthai_bridge::SpatialDetectionConverter> detConverter;
     std::vector<std::string> labelNames;
     rclcpp::Publisher<vision_msgs::msg::Detection3DArray>::SharedPtr detPub;
-    std::shared_ptr<dai::ros::ImageConverter> ptImageConverter, ptDepthImageConverter;
+    std::shared_ptr<depthai_bridge::ImageConverter> ptImageConverter, ptDepthImageConverter;
     std::shared_ptr<sensor_helpers::ImagePublisher> ptPub, ptDepthPub;
     std::shared_ptr<camera_info_manager::CameraInfoManager> ptInfoMan, ptDepthInfoMan;
     std::shared_ptr<T> spatialNode;

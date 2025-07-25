@@ -9,7 +9,6 @@ class Device;
 class DataInputQueue;
 class ADatatype;
 namespace node {
-class Camera;
 class ToF;
 class ImageAlign;
 class XLinkIn;
@@ -35,6 +34,8 @@ class ToF : public BaseNode {
     explicit ToF(const std::string& daiNodeName,
                  std::shared_ptr<rclcpp::Node> node,
                  std::shared_ptr<dai::Pipeline> pipeline,
+                 const std::string& deviceName,
+                 bool rsCompat,
                  dai::CameraBoardSocket boardSocket = dai::CameraBoardSocket::CAM_A);
     ~ToF();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
@@ -42,13 +43,12 @@ class ToF : public BaseNode {
     void link(dai::Node::Input in, int linkType = 0) override;
     dai::Node::Input getInput(int linkType = 0) override;
     void setNames() override;
-    void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
+    void setInOut(std::shared_ptr<dai::Pipeline> pipeline) override;
     std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
     void closeQueues() override;
 
    private:
     std::shared_ptr<sensor_helpers::ImagePublisher> tofPub;
-    std::shared_ptr<dai::node::Camera> camNode;
     std::shared_ptr<dai::node::ToF> tofNode;
     std::shared_ptr<dai::node::ImageAlign> alignNode;
     std::unique_ptr<param_handlers::ToFParamHandler> ph;

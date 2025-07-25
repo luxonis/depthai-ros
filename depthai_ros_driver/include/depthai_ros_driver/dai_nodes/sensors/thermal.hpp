@@ -1,6 +1,6 @@
 #pragma once
 
-#include "depthai-shared/common/CameraFeatures.hpp"
+#include "depthai/common/CameraFeatures.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 
@@ -9,7 +9,7 @@ class Pipeline;
 class Device;
 class ADatatype;
 namespace node {
-class Camera;
+class Thermal;
 }  // namespace node
 }  // namespace dai
 
@@ -32,19 +32,20 @@ class Thermal : public BaseNode {
     explicit Thermal(const std::string& daiNodeName,
                      std::shared_ptr<rclcpp::Node> node,
                      std::shared_ptr<dai::Pipeline> pipeline,
-                     dai::CameraFeatures camFeatures);
+                     const std::string& deviceName,
+                     bool rsCompat);
     ~Thermal();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(dai::Node::Input in, int linkType = 0) override;
     void setNames() override;
-    void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
+    void setInOut(std::shared_ptr<dai::Pipeline> pipeline) override;
     std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
     void closeQueues() override;
 
    private:
     std::shared_ptr<sensor_helpers::ImagePublisher> thermalPub, thermalRawPub;
-    std::shared_ptr<dai::node::Camera> camNode;
+    std::shared_ptr<dai::node::Thermal> camNode;
     std::unique_ptr<param_handlers::SensorParamHandler> ph;
     dai::CameraBoardSocket boardSocket;
     std::string thermalQName, rawQName;

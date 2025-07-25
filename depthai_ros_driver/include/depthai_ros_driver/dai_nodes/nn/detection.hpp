@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "depthai-shared/common/CameraBoardSocket.hpp"
+#include "depthai/common/CameraBoardSocket.hpp"
 #include "depthai/device/DataQueue.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
@@ -47,7 +47,7 @@ class Detection : public BaseNode {
         ph->declareParams(detectionNode, imageManip);
         RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
         imageManip->out.link(detectionNode->input);
-        setXinXout(pipeline);
+        setInOut(pipeline);
     }
     ~Detection() = default;
     /**
@@ -59,7 +59,7 @@ class Detection : public BaseNode {
     void setupQueues(std::shared_ptr<dai::Device> device) override {
         nnQ = device->getOutputQueue(nnQName, ph->getParam<int>("i_max_q_size"), false);
         std::string socketName = getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")));
-        auto tfPrefix = getOpticalTFPrefix(socketName);
+        auto tfPrefix = getOpticalFrameName(socketName);
         int width;
         int height;
         if(ph->getParam<bool>("i_disable_resize")) {
@@ -73,7 +73,7 @@ class Detection : public BaseNode {
             height = imageManip->initialConfig.getResizeConfig().height;
         }
 
-        detConverter = std::make_unique<dai::ros::ImgDetectionConverter>(tfPrefix, width, height, false, ph->getParam<bool>("i_get_base_device_timestamp"));
+        detConverter = std::make_unique<depthai_bridge::ImgDetectionConverter>(tfPrefix, width, height, false, ph->getParam<bool>("i_get_base_device_timestamp"));
         detConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
         rclcpp::PublisherOptions options;
         options.qos_overriding_options = rclcpp::QosOverridingOptions();
@@ -129,7 +129,7 @@ class Detection : public BaseNode {
      *
      * @param      pipeline  The pipeline
      */
-    void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override {
+    void setInOut(std::shared_ptr<dai::Pipeline> pipeline) override {
         xoutNN = pipeline->create<dai::node::XLinkOut>();
         xoutNN->setStreamName(nnQName);
         detectionNode->out.link(xoutNN->input);
@@ -168,7 +168,7 @@ class Detection : public BaseNode {
             deq.pop_front();
         }
     };
-    std::unique_ptr<dai::ros::ImgDetectionConverter> detConverter;
+    std::unique_ptr<depthai_bridge::ImgDetectionConverter> detConverter;
     std::vector<std::string> labelNames;
     rclcpp::Publisher<vision_msgs::msg::Detection2DArray>::SharedPtr detPub;
     std::shared_ptr<sensor_helpers::ImagePublisher> ptPub;

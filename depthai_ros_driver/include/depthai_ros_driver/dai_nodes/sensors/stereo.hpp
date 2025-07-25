@@ -4,19 +4,18 @@
 #include <string>
 #include <vector>
 
-#include "depthai-shared/common/CameraBoardSocket.hpp"
-#include "depthai-shared/common/CameraFeatures.hpp"
+#include "depthai/common/CameraBoardSocket.hpp"
+#include "depthai/common/CameraFeatures.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
 
 namespace dai {
 class Pipeline;
 class Device;
-class DataOutputQueue;
+class MessageQueue;
 class ADatatype;
 class ImgFrame;
 namespace node {
 class StereoDepth;
-class XLinkOut;
 class VideoEncoder;
 }  // namespace node
 }  // namespace dai
@@ -45,6 +44,7 @@ class Stereo : public BaseNode {
                     std::shared_ptr<rclcpp::Node> node,
                     std::shared_ptr<dai::Pipeline> pipeline,
                     std::shared_ptr<dai::Device> device,
+                    bool rsCompat,
                     dai::CameraBoardSocket leftSocket = dai::CameraBoardSocket::CAM_B,
                     dai::CameraBoardSocket rightSocket = dai::CameraBoardSocket::CAM_C);
     ~Stereo();
@@ -53,7 +53,7 @@ class Stereo : public BaseNode {
     void link(dai::Node::Input in, int linkType = 1) override;
     dai::Node::Input getInput(int linkType = 0) override;
     void setNames() override;
-    void setXinXout(std::shared_ptr<dai::Pipeline> pipeline) override;
+    void setInOut(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
     std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
 
@@ -75,8 +75,7 @@ class Stereo : public BaseNode {
     std::unique_ptr<SensorWrapper> right;
     std::unique_ptr<BaseNode> featureTrackerLeftR, featureTrackerRightR, nnNode;
     std::unique_ptr<param_handlers::StereoParamHandler> ph;
-    std::shared_ptr<dai::DataOutputQueue> leftRectQ, rightRectQ;
-    std::shared_ptr<dai::node::XLinkOut> xoutStereo, xoutLeftRect, xoutRightRect;
+    std::shared_ptr<dai::MessageQueue> leftRectQ, rightRectQ;
     std::string stereoQName, leftRectQName, rightRectQName;
     dai::CameraFeatures leftSensInfo, rightSensInfo;
     rclcpp::TimerBase::SharedPtr syncTimer;

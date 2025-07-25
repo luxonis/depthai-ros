@@ -1,13 +1,14 @@
-#include "depthai_ros_driver/param_handlers/camera_param_handler.hpp"
+#include "depthai_ros_driver/param_handlers/driver_param_handler.hpp"
 
-#include "depthai-shared/common/UsbSpeed.hpp"
+#include "depthai/common/UsbSpeed.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/logger.hpp"
 #include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-CameraParamHandler::CameraParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name) : BaseParamHandler(node, name) {
+DriverParamHandler::DriverParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name, const std::string& deviceName, bool rsCompat)
+    : BaseParamHandler(node, name, deviceName, rsCompat) {
     usbSpeedMap = {
         {"LOW", dai::UsbSpeed::LOW},
         {"FULL", dai::UsbSpeed::FULL},
@@ -16,12 +17,12 @@ CameraParamHandler::CameraParamHandler(std::shared_ptr<rclcpp::Node> node, const
         {"SUPER_PLUS", dai::UsbSpeed::SUPER_PLUS},
     };
 }
-CameraParamHandler::~CameraParamHandler() = default;
+DriverParamHandler::~DriverParamHandler() = default;
 
-dai::UsbSpeed CameraParamHandler::getUSBSpeed() {
+dai::UsbSpeed DriverParamHandler::getUSBSpeed() {
     return utils::getValFromMap(getParam<std::string>("i_usb_speed"), usbSpeedMap);
 }
-void CameraParamHandler::declareParams() {
+void DriverParamHandler::declareParams() {
     declareAndLogParam<std::string>("i_pipeline_type", "RGBD");
     declareAndLogParam<std::string>("i_nn_type", "spatial");
     declareAndLogParam<bool>("i_enable_imu", true);
@@ -54,10 +55,6 @@ void CameraParamHandler::declareParams() {
     declareAndLogParam<std::string>("i_tf_imu_from_descr", "false");
     declareAndLogParam<std::string>("i_tf_custom_urdf_location", "");
     declareAndLogParam<std::string>("i_tf_custom_xacro_args", "");
-}
-dai::CameraControl CameraParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& /*params*/) {
-    dai::CameraControl ctrl;
-    return ctrl;
 }
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver

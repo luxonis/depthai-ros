@@ -24,7 +24,7 @@ Mono::Mono(const std::string& daiNodeName,
     monoCamNode = pipeline->create<dai::node::MonoCamera>();
     ph = std::make_unique<param_handlers::SensorParamHandler>(node, daiNodeName, socket);
     ph->declareParams(monoCamNode, sensor, publish);
-    setXinXout(pipeline);
+    setInOut(pipeline);
     RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
 }
 Mono::~Mono() = default;
@@ -33,7 +33,7 @@ void Mono::setNames() {
     controlQName = getName() + "_control";
 }
 
-void Mono::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
+void Mono::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
     if(ph->getParam<bool>("i_publish_topic")) {
         utils::VideoEncoderConfig encConfig;
         encConfig.profile = static_cast<dai::VideoEncoderProperties::Profile>(ph->getParam<int>("i_low_bandwidth_profile"));
@@ -51,7 +51,7 @@ void Mono::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
 
 void Mono::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_publish_topic")) {
-        auto tfPrefix = getOpticalTFPrefix(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
+        auto tfPrefix = getOpticalFrameName(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
         utils::ImgConverterConfig convConf;
         convConf.tfPrefix = tfPrefix;
         convConf.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");

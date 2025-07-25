@@ -1,10 +1,9 @@
 #include "depthai_ros_driver/dai_nodes/sensors/imu.hpp"
 
-#include "depthai/device/DataQueue.hpp"
+#include "depthai/pipeline/MessageQueue.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/IMU.hpp"
-#include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_bridge/ImuConverter.hpp"
 #include "depthai_ros_driver/param_handlers/imu_param_handler.hpp"
 #include "depthai_ros_driver/utils.hpp"
@@ -13,14 +12,13 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-Imu::Imu(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device)
-    : BaseNode(daiNodeName, node, pipeline) {
+Imu::Imu(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device, bool rsCompat)
+    : BaseNode(daiNodeName, node, pipeline, device->getDeviceName(), rsCompat) {
     RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     imuNode = pipeline->create<dai::node::IMU>();
-    ph = std::make_unique<param_handlers::ImuParamHandler>(node, daiNodeName);
+    ph = std::make_unique<param_handlers::ImuParamHandler>(node, daiNodeName, device->getDeviceName(), rsCompat);
     ph->declareParams(imuNode, device->getConnectedIMU());
-    setXinXout(pipeline);
     RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
 }
 Imu::~Imu() = default;
@@ -28,21 +26,18 @@ void Imu::setNames() {
     imuQName = getName() + "_imu";
 }
 
-void Imu::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
-    xoutImu = pipeline->create<dai::node::XLinkOut>();
-    xoutImu->setStreamName(imuQName);
-    imuNode->out.link(xoutImu->input);
+void Imu::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
 }
 
 void Imu::setupQueues(std::shared_ptr<dai::Device> device) {
-    imuQ = device->getOutputQueue(imuQName, ph->getParam<int>("i_max_q_size"), false);
+    imuQ = imuNode->out.createOutputQueue(ph->getParam<int>("i_max_q_size"), false);
     auto tfPrefix = std::string(getROSNode()->get_name()) + "_" + getName();
     auto imuMode = ph->getSyncMethod();
     rclcpp::PublisherOptions options;
     options.qos_overriding_options = rclcpp::QosOverridingOptions();
     param_handlers::imu::ImuMsgType msgType = ph->getMsgType();
     bool enableMagn = msgType == param_handlers::imu::ImuMsgType::IMU_WITH_MAG || msgType == param_handlers::imu::ImuMsgType::IMU_WITH_MAG_SPLIT;
-    imuConverter = std::make_unique<dai::ros::ImuConverter>(tfPrefix + "_frame",
+    imuConverter = std::make_unique<depthai_bridge::ImuConverter>(tfPrefix + "_frame",
                                                             imuMode,
                                                             ph->getParam<float>("i_acc_cov"),
                                                             ph->getParam<float>("i_gyro_cov"),
@@ -53,7 +48,7 @@ void Imu::setupQueues(std::shared_ptr<dai::Device> device) {
                                                             ph->getParam<bool>("i_get_base_device_timestamp"));
     imuConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
     std::string topicSuffix = "/data";
-    if(rsCompabilityMode()) {
+    if(rsCompatibilityMode()) {
         topicSuffix = "";
     }
     switch(msgType) {
