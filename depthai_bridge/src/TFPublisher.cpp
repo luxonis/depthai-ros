@@ -138,11 +138,12 @@ void TFPublisher::publishImuTransform(nlohmann::json json, std::shared_ptr<rclcp
         ts.transform.rotation.z = -0.5;
     } else {
         ts.header.frame_id = baseFrame;
-        RCLCPP_WARN(logger, "IMU extrinsics are not set. Publishing IMU frame with zero translation and rotation.");
-        ts.transform.rotation.w = 1.0;
-        ts.transform.rotation.x = 0.0;
-        ts.transform.rotation.y = 0.0;
-        ts.transform.rotation.z = 0.0;
+        RCLCPP_WARN(logger, "IMU extrinsics are not set. Publishing IMU frame with zero translation and RDF orientation.");
+        // imu is already being output in RDF format
+        ts.transform.rotation.w = 0.5;
+        ts.transform.rotation.x = -0.5;
+        ts.transform.rotation.y = 0.5;
+        ts.transform.rotation.z = -0.5;
     }
     tfPub->sendTransform(ts);
 }
