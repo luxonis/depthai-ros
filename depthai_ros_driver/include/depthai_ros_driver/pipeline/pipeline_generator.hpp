@@ -53,7 +53,8 @@ class PipelineGenerator {
                                                                      std::shared_ptr<dai::Device> device,
                                                                      std::shared_ptr<dai::Pipeline> pipeline,
                                                                      const std::string& pipelineType,
-                                                                     const std::string& nnType);
+                                                                     const std::string& nnType,
+                                                                     bool rsCompat);
 
    protected:
     std::unordered_map<std::string, std::string> pluginTypeMap;

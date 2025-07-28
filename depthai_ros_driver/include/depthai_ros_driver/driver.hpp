@@ -93,6 +93,7 @@ class Driver : public rclcpp::Node {
     std::shared_ptr<dai::Pipeline> pipeline;
     std::shared_ptr<dai::Device> device;
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
+    std::string deviceName;
     std::atomic<bool> camRunning = false;
     bool initialized = false;
     std::unique_ptr<depthai_bridge::TFPublisher> tfPub;

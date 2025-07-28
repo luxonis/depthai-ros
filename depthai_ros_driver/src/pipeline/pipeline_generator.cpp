@@ -44,8 +44,11 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
                                                                                     std::shared_ptr<dai::Device> device,
                                                                                     std::shared_ptr<dai::Pipeline> pipeline,
                                                                                     const std::string& pipelineType,
-                                                                                    const std::string& nnType) {
-    ph = std::make_unique<param_handlers::PipelineGenParamHandler>(node, "pipeline_gen");
+                                                                                    const std::string& nnType,
+                                                                                    bool rsCompat) {
+    auto deviceName = device->getDeviceName();
+    RCLCPP_INFO(node->get_logger(), "Creating pipeline for device: %s", deviceName.c_str());
+    ph = std::make_unique<param_handlers::PipelineGenParamHandler>(node, "pipeline_gen", deviceName, rsCompat);
     ph->declareParams();
     RCLCPP_INFO(node->get_logger(), "Pipeline type: %s", pipelineType.c_str());
     std::string pluginType = pipelineType;
@@ -62,7 +65,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
 
     try {
         std::shared_ptr<BasePipeline> pipelinePlugin = pipelineLoader.createSharedInstance(pluginType);
-        daiNodes = pipelinePlugin->createPipeline(node, device, pipeline, nnType);
+        daiNodes = pipelinePlugin->createPipeline(node, device, pipeline, deviceName, rsCompat, nnType);
     } catch(pluginlib::PluginlibException& ex) {
         RCLCPP_ERROR(node->get_logger(), "The plugin failed to load for some reason. Error: %s\n", ex.what());
         throw std::runtime_error("Plugin loading failed.");
@@ -72,16 +75,16 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
         if(device->getConnectedIMU() == "NONE" || device->getConnectedIMU().empty()) {
             RCLCPP_WARN(node->get_logger(), "IMU enabled but not available!");
         } else {
-            auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device);
+            auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device, rsCompat);
             daiNodes.push_back(std::move(imu));
         }
     }
-    if(ph->getParam<bool>("i_enable_diagnostics")) {
-        auto sysLogger = std::make_unique<dai_nodes::SysLogger>("sys_logger", node, pipeline);
-        daiNodes.push_back(std::move(sysLogger));
-    }
+    // if(ph->getParam<bool>("i_enable_diagnostics")) {
+    //     auto sysLogger = std::make_unique<dai_nodes::SysLogger>("sys_logger", node, pipeline, deviceName, rsCompat);
+    //     daiNodes.push_back(std::move(sysLogger));
+    // }
     if(ph->getParam<bool>("i_enable_sync")) {
-        auto sync = std::make_unique<dai_nodes::Sync>("sync", node, pipeline);
+        auto sync = std::make_unique<dai_nodes::Sync>("sync", node, pipeline, deviceName, rsCompat);
         for(auto& daiNode : daiNodes) {
             auto pubs = daiNode->getPublishers();
             RCLCPP_DEBUG(node->get_logger(), "Number of synced publishers found for %s: %zu", daiNode->getName().c_str(), pubs.size());

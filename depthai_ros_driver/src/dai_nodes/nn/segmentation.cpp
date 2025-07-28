@@ -2,13 +2,12 @@
 
 #include "camera_info_manager/camera_info_manager.hpp"
 #include "cv_bridge/cv_bridge.hpp"
-#include "depthai/device/DataQueue.hpp"
+#include "depthai/pipeline/MessageQueue.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/datatype/NNData.hpp"
 #include "depthai/pipeline/node/ImageManip.hpp"
 #include "depthai/pipeline/node/NeuralNetwork.hpp"
-#include "depthai/pipeline/node/XLinkOut.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
@@ -26,13 +25,15 @@ namespace nn {
 Segmentation::Segmentation(const std::string& daiNodeName,
                            std::shared_ptr<rclcpp::Node> node,
                            std::shared_ptr<dai::Pipeline> pipeline,
+                           const std::string& deviceName,
+                           bool rsCompat,
                            const dai::CameraBoardSocket& socket)
-    : BaseNode(daiNodeName, node, pipeline) {
+    : BaseNode(daiNodeName, node, pipeline, deviceName, rsCompat) {
     RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     segNode = pipeline->create<dai::node::NeuralNetwork>();
     imageManip = pipeline->create<dai::node::ImageManip>();
-    ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName, socket);
+    ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName, deviceName, rsCompat, socket);
     ph->declareParams(segNode, imageManip);
     RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
     imageManip->out.link(segNode->input);
@@ -47,23 +48,15 @@ void Segmentation::setNames() {
 }
 
 void Segmentation::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
-    xoutNN = pipeline->create<dai::node::XLinkOut>();
-    xoutNN->setStreamName(nnQName);
-    segNode->out.link(xoutNN->input);
-    if(ph->getParam<bool>("i_enable_passthrough")) {
-        xoutPT = pipeline->create<dai::node::XLinkOut>();
-        xoutPT->setStreamName(ptQName);
-        segNode->passthrough.link(xoutPT->input);
-    }
 }
 
 void Segmentation::setupQueues(std::shared_ptr<dai::Device> device) {
-    nnQ = device->getOutputQueue(nnQName, ph->getParam<int>("i_max_q_size"), false);
+    nnQ = segNode->out.createOutputQueue(ph->getParam<int>("i_max_q_size"), false);
     nnPub = image_transport::create_camera_publisher(getROSNode().get(), "~/" + getName() + "/image_raw");
     nnQ->addCallback(std::bind(&Segmentation::segmentationCB, this, std::placeholders::_1, std::placeholders::_2));
     if(ph->getParam<bool>("i_enable_passthrough")) {
         auto tfPrefix = getOpticalFrameName(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
-        ptQ = device->getOutputQueue(ptQName, ph->getParam<int>("i_max_q_size"), false);
+        ptQ = segNode->passthrough.createOutputQueue(ph->getParam<int>("i_max_q_size"), false);
         imageConverter = std::make_unique<depthai_bridge::ImageConverter>(tfPrefix, false);
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
             getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());

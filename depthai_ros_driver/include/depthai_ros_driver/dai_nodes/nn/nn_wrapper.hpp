@@ -23,12 +23,17 @@ class NNParamHandler;
 }
 
 namespace dai_nodes {
+class SensorWrapper;
+class Stereo;
 
 class NNWrapper : public BaseNode {
    public:
     explicit NNWrapper(const std::string& daiNodeName,
                        std::shared_ptr<rclcpp::Node> node,
                        std::shared_ptr<dai::Pipeline> pipeline,
+                       const std::string& deviceName,
+                       bool rsCompat,
+                       SensorWrapper& camNode,
                        const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A);
     ~NNWrapper();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;

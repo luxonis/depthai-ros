@@ -13,8 +13,6 @@ namespace depthai_ros_driver {
 Driver::Driver(const rclcpp::NodeOptions& options) : rclcpp::Node("camera", options) {
     //  Since we cannot use shared_from this before the object is initialized, we need to use a timer to start the device.
     startTimer = this->create_wall_timer(std::chrono::seconds(1), [this]() {
-        ph = std::make_unique<param_handlers::DriverParamHandler>(shared_from_this(), "camera");
-        ph->declareParams();
         start();
         startTimer->cancel();
     });
@@ -24,9 +22,10 @@ Driver::~Driver() {
     stop();
 }
 void Driver::onConfigure() {
+    ph = std::make_unique<param_handlers::DriverParamHandler>(shared_from_this(), "driver");
+    ph->declareParams();
     getDeviceType();
     createPipeline();
-    device->startPipeline(*pipeline);
     setupQueues();
     setIR();
     paramCBHandle = this->add_on_set_parameters_callback(std::bind(&Driver::parameterCB, this, std::placeholders::_1));
@@ -38,34 +37,36 @@ void Driver::onConfigure() {
 
     if(ph->getParam<bool>("i_publish_tf_from_calibration")) {
         tfPub = std::make_unique<depthai_bridge::TFPublisher>(shared_from_this(),
-                                                        device->readCalibration(),
-                                                        device->getConnectedDriverFeatures(),
-                                                        ph->getParam<std::string>("i_tf_camera_name"),
-                                                        camModel,
-                                                        ph->getParam<std::string>("i_tf_base_frame"),
-                                                        ph->getParam<std::string>("i_tf_parent_frame"),
-                                                        ph->getParam<std::string>("i_tf_cam_pos_x"),
-                                                        ph->getParam<std::string>("i_tf_cam_pos_y"),
-                                                        ph->getParam<std::string>("i_tf_cam_pos_z"),
-                                                        ph->getParam<std::string>("i_tf_cam_roll"),
-                                                        ph->getParam<std::string>("i_tf_cam_pitch"),
-                                                        ph->getParam<std::string>("i_tf_cam_yaw"),
-                                                        ph->getParam<std::string>("i_tf_imu_from_descr"),
-                                                        ph->getParam<std::string>("i_tf_custom_urdf_location"),
-                                                        ph->getParam<std::string>("i_tf_custom_xacro_args"),
-                                                        ph->getParam<bool>("i_rs_compat"));
+                                                              device->readCalibration(),
+                                                              device->getConnectedCameraFeatures(),
+                                                              ph->getParam<std::string>("i_tf_camera_name"),
+                                                              camModel,
+                                                              ph->getParam<std::string>("i_tf_base_frame"),
+                                                              ph->getParam<std::string>("i_tf_parent_frame"),
+                                                              ph->getParam<std::string>("i_tf_cam_pos_x"),
+                                                              ph->getParam<std::string>("i_tf_cam_pos_y"),
+                                                              ph->getParam<std::string>("i_tf_cam_pos_z"),
+                                                              ph->getParam<std::string>("i_tf_cam_roll"),
+                                                              ph->getParam<std::string>("i_tf_cam_pitch"),
+                                                              ph->getParam<std::string>("i_tf_cam_yaw"),
+                                                              ph->getParam<std::string>("i_tf_imu_from_descr"),
+                                                              ph->getParam<std::string>("i_tf_custom_urdf_location"),
+                                                              ph->getParam<std::string>("i_tf_custom_xacro_args"),
+                                                              ph->getParam<bool>("i_rs_compat"));
     }
     srvGroup = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+    
     startSrv = this->create_service<Trigger>(
-        "~/start_camera", std::bind(&Driver::startCB, this, std::placeholders::_1, std::placeholders::_2), rmw_qos_profile_services_default, srvGroup);
+        "~/start_camera", std::bind(&Driver::startCB, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS(), srvGroup);
     stopSrv = this->create_service<Trigger>(
-        "~/stop_camera", std::bind(&Driver::stopCB, this, std::placeholders::_1, std::placeholders::_2), rmw_qos_profile_services_default, srvGroup);
+        "~/stop_camera", std::bind(&Driver::stopCB, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS(), srvGroup);
     savePipelineSrv = this->create_service<Trigger>(
-        "~/save_pipeline", std::bind(&Driver::savePipelineCB, this, std::placeholders::_1, std::placeholders::_2), rmw_qos_profile_services_default, srvGroup);
+        "~/save_pipeline", std::bind(&Driver::savePipelineCB, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS(), srvGroup);
     saveCalibSrv = this->create_service<Trigger>(
-        "~/save_calibration", std::bind(&Driver::saveCalibCB, this, std::placeholders::_1, std::placeholders::_2), rmw_qos_profile_services_default, srvGroup);
+        "~/save_calibration", std::bind(&Driver::saveCalibCB, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS(), srvGroup);
 
     diagSub = this->create_subscription<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10, std::bind(&Driver::diagCB, this, std::placeholders::_1));
+    pipeline->start();
     RCLCPP_INFO(get_logger(), "Driver ready!");
 }
 
@@ -121,7 +122,7 @@ void Driver::restart() {
 void Driver::saveCalib() {
     auto calibHandler = device->readCalibration();
     std::stringstream savePath;
-    savePath << "/tmp/" << device->getMxId().c_str() << "_calibration.json";
+    savePath << "/tmp/" << device->getDeviceId().c_str() << "_calibration.json";
     RCLCPP_INFO(get_logger(), "Saving calibration to: %s", savePath.str().c_str());
     calibHandler.eepromToJsonFile(savePath.str());
 }
@@ -139,7 +140,7 @@ void Driver::saveCalibCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Res
 
 void Driver::savePipeline() {
     std::stringstream savePath;
-    savePath << "/tmp/" << device->getMxId().c_str() << "_pipeline.json";
+    savePath << "/tmp/" << device->getDeviceId().c_str() << "_pipeline.json";
     RCLCPP_INFO(get_logger(), "Saving pipeline schema to: %s", savePath.str().c_str());
     std::ofstream file(savePath.str());
     file << pipeline->serializeToJson()["pipeline"];
@@ -160,19 +161,19 @@ void Driver::stopCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response
     res->success = true;
 }
 void Driver::getDeviceType() {
-    pipeline = std::make_shared<dai::Pipeline>();
     startDevice();
-    auto name = device->getDeviceName();
-    RCLCPP_INFO(get_logger(), "Device type: %s", name.c_str());
-    for(auto& sensor : device->getDriverSensorNames()) {
+    pipeline = std::make_shared<dai::Pipeline>(device);
+    deviceName = device->getDeviceName();
+    RCLCPP_INFO(get_logger(), "Device type: %s", deviceName.c_str());
+    for(auto& sensor : device->getCameraSensorNames()) {
         RCLCPP_DEBUG(get_logger(), "Socket %d - %s", static_cast<int>(sensor.first), sensor.second.c_str());
     }
-    auto ir_drivers = device->getIrDrivers();
-    if(ir_drivers.empty()) {
-        RCLCPP_DEBUG(get_logger(), "Device has no IR drivers");
-    } else {
-        RCLCPP_DEBUG(get_logger(), "IR Drivers present");
-    }
+    // auto ir_drivers = device->getIrDrivers();
+    // if(ir_drivers.empty()) {
+    //     RCLCPP_DEBUG(get_logger(), "Device has no IR drivers");
+    // } else {
+    //     RCLCPP_DEBUG(get_logger(), "IR Drivers present");
+    // }
 }
 
 void Driver::createPipeline() {
@@ -180,8 +181,12 @@ void Driver::createPipeline() {
     if(!ph->getParam<std::string>("i_external_calibration_path").empty()) {
         loadCalib(ph->getParam<std::string>("i_external_calibration_path"));
     }
-    daiNodes =
-        generator->createPipeline(shared_from_this(), device, pipeline, ph->getParam<std::string>("i_pipeline_type"), ph->getParam<std::string>("i_nn_type"));
+    daiNodes = generator->createPipeline(shared_from_this(),
+                                         device,
+                                         pipeline,
+                                         ph->getParam<std::string>("i_pipeline_type"),
+                                         ph->getParam<std::string>("i_nn_type"),
+                                         ph->getParam<bool>("i_rs_compat"));
     if(ph->getParam<bool>("i_pipeline_dump")) {
         savePipeline();
     }
@@ -199,12 +204,12 @@ void Driver::setupQueues() {
 void Driver::startDevice() {
     rclcpp::Rate r(1.0);
     while(rclcpp::ok() && !camRunning) {
-        auto mxid = ph->getParam<std::string>("i_mx_id");
+        auto deviceId = ph->getParam<std::string>("i_device_id");
         auto ip = ph->getParam<std::string>("i_ip");
         auto usb_id = ph->getParam<std::string>("i_usb_port_id");
         try {
-            if(mxid.empty() && ip.empty() && usb_id.empty()) {
-                RCLCPP_INFO(get_logger(), "No ip/mxid specified, connecting to the next available device.");
+            if(deviceId.empty() && ip.empty() && usb_id.empty()) {
+                RCLCPP_INFO(get_logger(), "No ip/ID specified, connecting to the next available device.");
                 auto info = dai::Device::getAnyAvailableDevice();
                 auto speed = ph->getUSBSpeed();
                 device = std::make_shared<dai::Device>(std::get<1>(info), speed);
@@ -223,8 +228,8 @@ void Driver::startDevice() {
                 }
                 dai::UsbSpeed speed = ph->getUSBSpeed();
                 for(const auto& info : availableDevices) {
-                    if(!mxid.empty() && info.getMxId() == mxid) {
-                        RCLCPP_INFO(get_logger(), "Connecting to the camera using mxid: %s", mxid.c_str());
+                    if(!deviceId.empty() && info.getDeviceId() == deviceId) {
+                        RCLCPP_INFO(get_logger(), "Connecting to the camera using ID: %s", deviceId.c_str());
                         if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
                             device = std::make_shared<dai::Device>(info, speed);
                             camRunning = true;
@@ -248,7 +253,7 @@ void Driver::startDevice() {
                             throw std::runtime_error("Device is already booted in different process.");
                         }
                     } else {
-                        RCLCPP_INFO(get_logger(), "Ignoring device info: MXID: %s, Name: %s", info.getMxId().c_str(), info.name.c_str());
+                        RCLCPP_INFO(get_logger(), "Ignoring device info: ID: %s, Name: %s", info.getDeviceId().c_str(), info.name.c_str());
                     }
                 }
             }
@@ -258,7 +263,10 @@ void Driver::startDevice() {
         r.sleep();
     }
 
-    RCLCPP_INFO(get_logger(), "Driver with MXID: %s and Name: %s connected!", device->getMxId().c_str(), device->getDeviceInfo().name.c_str());
+    // device = std::make_shared<dai::Device>();
+
+    
+    RCLCPP_INFO(get_logger(), "Driver with ID: %s and Name: %s connected!", device->getDeviceId().c_str(), device->getDeviceInfo().name.c_str());
     auto protocol = device->getDeviceInfo().getXLinkDeviceDesc().protocol;
 
     if(protocol != XLinkProtocol_t::X_LINK_TCP_IP) {

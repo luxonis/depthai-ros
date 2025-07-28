@@ -11,11 +11,8 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-BaseNode::BaseNode(const std::string& daiNodeName,
-                   std::shared_ptr<rclcpp::Node> node,
-                   std::shared_ptr<dai::Pipeline> pipeline,
-                   std::string deviceName, bool rsCompat
-                   )
+BaseNode::BaseNode(
+    const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline, std::string deviceName, bool rsCompat)
     : baseNode(node), pipeline(pipeline), deviceName(deviceName), baseDAINodeName(daiNodeName), rsCompat(rsCompat), logger(node->get_logger()) {
     intraProcessEnabled = node->get_node_options().use_intra_process_comms();
 };
@@ -40,11 +37,13 @@ rclcpp::Logger BaseNode::getLogger() {
     return logger;
 }
 
-
 std::string BaseNode::getSocketName(dai::CameraBoardSocket socket) {
     return depthai_bridge::getSocketName(socket, deviceName, rsCompat);
 }
 
+std::string BaseNode::getDeviceName() {
+    return deviceName;
+}
 bool BaseNode::rsCompatibilityMode() {
     return rsCompat;
 }
@@ -83,7 +82,7 @@ void BaseNode::closeQueues() {
 };
 
 std::shared_ptr<sensor_helpers::ImagePublisher> BaseNode::setupOutput(
-    std::shared_ptr<dai::Pipeline> pipeline, const std::string& qName, dai::Node::Output out, bool isSynced, const utils::VideoEncoderConfig& encoderConfig) {
+    std::shared_ptr<dai::Pipeline> pipeline, const std::string& qName, dai::Node::Output* out, bool isSynced, const utils::VideoEncoderConfig& encoderConfig) {
     return std::make_shared<sensor_helpers::ImagePublisher>(getROSNode(), pipeline, qName, out, isSynced, ipcEnabled(), encoderConfig);
 };
 

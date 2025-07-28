@@ -180,27 +180,6 @@ def launch_setup(context, *args, **kwargs):
             output="log",
             arguments=["-d", LaunchConfiguration("rviz_config")],
         ),
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                os.path.join(urdf_launch_dir, "urdf_launch.py")
-            ),
-            launch_arguments={
-                "namespace": namespace,
-                "tf_prefix": name,
-                "camera_model": camera_model,
-                "base_frame": name,
-                "parent_frame": parent_frame,
-                "cam_pos_x": cam_pos_x,
-                "cam_pos_y": cam_pos_y,
-                "cam_pos_z": cam_pos_z,
-                "cam_roll": cam_roll,
-                "cam_pitch": cam_pitch,
-                "cam_yaw": cam_yaw,
-                "use_composition": use_composition,
-                "use_base_descr": publish_tf_from_calibration,
-                "rs_compat": rs_compat,
-            }.items(),
-        ),
         ComposableNodeContainer(
             name=f"{name}_container",
             namespace=namespace,
@@ -209,7 +188,7 @@ def launch_setup(context, *args, **kwargs):
             composable_node_descriptions=[
                 ComposableNode(
                     package="depthai_ros_driver",
-                    plugin="depthai_ros_driver::Camera",
+                    plugin="depthai_ros_driver::Driver",
                     name=name,
                     namespace=namespace,
                     parameters=[
@@ -222,59 +201,6 @@ def launch_setup(context, *args, **kwargs):
             arguments=["--ros-args", "--log-level", log_level],
             prefix=[launch_prefix],
             output="both",
-        ),
-        LoadComposableNodes(
-            condition=IfCondition(rectify_rgb),
-            target_container=f"{namespace}/{name}_container",
-            composable_node_descriptions=[
-                ComposableNode(
-                    package="image_proc",
-                    plugin="image_proc::RectifyNode",
-                    name="rectify_color_node",
-                    namespace=namespace,
-                    remappings=[
-                        ("image", f"{name}/{color_sens_name}/image_raw"),
-                        ("camera_info", f"{name}/{color_sens_name}/camera_info"),
-                        ("image_rect", f"{name}/{color_sens_name}/image_rect"),
-                        (
-                            "image_rect/compressed",
-                            f"{name}/{color_sens_name}/image_rect/compressed",
-                        ),
-                        (
-                            "image_rect/compressedDepth",
-                            f"{name}/{color_sens_name}/image_rect/compressedDepth",
-                        ),
-                        (
-                            "image_rect/theora",
-                            f"{name}/{color_sens_name}/image_rect/theora",
-                        ),
-                    ],
-                )
-            ],
-        ),
-        LoadComposableNodes(
-            condition=IfCondition(pointcloud_enable),
-            target_container=f"{namespace}/{name}_container",
-            composable_node_descriptions=[
-                ComposableNode(
-                    package="depth_image_proc",
-                    plugin="depth_image_proc::PointCloudXyzrgbNode",
-                    name="point_cloud_xyzrgb_node",
-                    namespace=namespace,
-                    remappings=[
-                        (
-                            "depth_registered/image_rect",
-                            f"{name}/{stereo_sens_name}/{depth_topic_suffix}",
-                        ),
-                        (
-                            "rgb/image_rect_color",
-                            f"{name}/{color_sens_name}/image_rect",
-                        ),
-                        ("rgb/camera_info", f"{name}/{color_sens_name}/camera_info"),
-                        ("points", points_topic_name),
-                    ],
-                ),
-            ],
         ),
     ]
 

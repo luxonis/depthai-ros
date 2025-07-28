@@ -2,9 +2,8 @@
 
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
-#include "depthai/pipeline/node/DetectionNetwork.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/detection.hpp"
-#include "depthai_ros_driver/dai_nodes/nn/segmentation.hpp"
+// #include "depthai_ros_driver/dai_nodes/nn/segmentation.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
 #include "rclcpp/node.hpp"
 
@@ -13,24 +12,27 @@ namespace dai_nodes {
 NNWrapper::NNWrapper(const std::string& daiNodeName,
                      std::shared_ptr<rclcpp::Node> node,
                      std::shared_ptr<dai::Pipeline> pipeline,
+                     const std::string& deviceName,
+                     bool rsCompat,
+                     SensorWrapper& camNode,
                      const dai::CameraBoardSocket& socket)
-    : BaseNode(daiNodeName, node, pipeline) {
+    : BaseNode(daiNodeName, node, pipeline, deviceName, rsCompat) {
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s base", daiNodeName.c_str());
-    ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName, socket);
+    ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName, deviceName, rsCompat, socket);
     auto family = ph->getNNFamily();
     switch(family) {
-        case param_handlers::nn::NNFamily::Yolo: {
-            nnNode = std::make_unique<dai_nodes::nn::Detection<dai::node::YoloDetectionNetwork>>(getName(), getROSNode(), pipeline, socket);
+        case param_handlers::nn::NNFamily::Detection: {
+            nnNode = std::make_unique<dai_nodes::nn::Detection>(getName(), getROSNode(), pipeline, deviceName, rsCompat, camNode, socket);
             break;
         }
-        case param_handlers::nn::NNFamily::Mobilenet: {
-            nnNode = std::make_unique<dai_nodes::nn::Detection<dai::node::MobileNetDetectionNetwork>>(getName(), getROSNode(), pipeline, socket);
+        default:
+            RCLCPP_ERROR(node->get_logger(), "NN family %d not supported", static_cast<int>(family));
             break;
-        }
-        case param_handlers::nn::NNFamily::Segmentation: {
-            nnNode = std::make_unique<dai_nodes::nn::Segmentation>(getName(), getROSNode(), pipeline, socket);
-            break;
-        }
+            // disabled for now
+            // case param_handlers::nn::NNFamily::Segmentation: {
+            //     nnNode = std::make_unique<dai_nodes::nn::Segmentation>(getName(), getROSNode(), pipeline, deviceName, rsCompat, socket);
+            //     break;
+            // }
     }
 
     RCLCPP_DEBUG(node->get_logger(), "Base node %s created", daiNodeName.c_str());

@@ -63,7 +63,7 @@ class ImagePublisher {
     ImagePublisher(std::shared_ptr<rclcpp::Node> node,
                    std::shared_ptr<dai::Pipeline> pipeline,
                    const std::string& qName,
-                   dai::Node::Output out,
+                   dai::Node::Output* out,
                    bool synced = false,
                    bool ipcEnabled = false,
                    const utils::VideoEncoderConfig& encoderConfig = {});
@@ -77,7 +77,7 @@ class ImagePublisher {
     void setup(std::shared_ptr<dai::Device> device, const utils::ImgConverterConfig& convConf, const utils::ImgPublisherConfig& pubConf);
     void createImageConverter(std::shared_ptr<dai::Device> device);
     void createInfoManager(std::shared_ptr<dai::Device> device);
-    void addQueueCB(const std::shared_ptr<dai::MessageQueue>& queue);
+    void addQueueCB();
     void closeQueue();
     std::shared_ptr<dai::MessageQueue> getQueue();
     void link(dai::Node::Input in);
@@ -99,7 +99,7 @@ class ImagePublisher {
     std::shared_ptr<depthai_bridge::ImageConverter> converter;
     std::shared_ptr<dai::node::XLinkOut> xout;
     std::shared_ptr<dai::node::VideoEncoder> encoder;
-    dai::Node::Output out;
+    dai::Node::Output* out;
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr imgPub;
     rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr infoPub;
     rclcpp::Publisher<ffmpeg_image_transport_msgs::msg::FFMPEGPacket>::SharedPtr ffmpegPub;

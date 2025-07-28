@@ -1,6 +1,7 @@
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 
 #include "camera_info_manager/camera_info_manager.hpp"
+#include "depthai/capabilities/ImgFrameCapability.hpp"
 #include "depthai/common/CameraSensorType.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/VideoEncoder.hpp"
@@ -45,6 +46,11 @@ std::string getNodeName(std::shared_ptr<rclcpp::Node> node, NodeNameEnum name) {
     return NodeNameMap.at(name);
 }
 
+const std::unordered_map<std::string, dai::ImgResizeMode> resizeModeMap = {
+    {"CROP", dai::ImgResizeMode::CROP},
+    {"LETTERBOX", dai::ImgResizeMode::LETTERBOX},
+    {"STRETCH", dai::ImgResizeMode::STRETCH},
+};
 
 const std::unordered_map<std::string, dai::CameraControl::FrameSyncMode> fSyncModeMap = {
     {"OFF", dai::CameraControl::FrameSyncMode::OFF},

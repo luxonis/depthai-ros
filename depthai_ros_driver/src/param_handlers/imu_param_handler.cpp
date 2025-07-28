@@ -86,9 +86,9 @@ void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const s
             RCLCPP_ERROR(getROSNode()->get_logger(), "Rotation enabled but not available with current sensor");
             declareAndLogParam<bool>("i_enable_rotation", false, true);
         }
-        imu->setBatchReportThreshold(declareAndLogParam<int>("i_batch_report_threshold", 5));
-        imu->setMaxBatchReports(declareAndLogParam<int>("i_max_batch_reports", 10));
     }
+    imu->setBatchReportThreshold(declareAndLogParam<int>("i_batch_report_threshold", 10));
+    imu->setMaxBatchReports(declareAndLogParam<int>("i_max_batch_reports", 10));
 }
 
 depthai_bridge::ImuSyncMethod ImuParamHandler::getSyncMethod() {

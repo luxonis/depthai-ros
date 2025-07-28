@@ -56,6 +56,7 @@ class Stereo : public BaseNode {
     void setInOut(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
     std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
+    std::shared_ptr<dai::node::StereoDepth> getUnderlyingNode();
 
    private:
     void setupStereoQueue(std::shared_ptr<dai::Device> device);

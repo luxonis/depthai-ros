@@ -37,7 +37,11 @@ class BaseNode {
      * @param      pipeline     The pipeline
      * @param      device       The device
      */
-    BaseNode(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline, std::string deviceName, bool rsCompatibility);
+    BaseNode(const std::string& daiNodeName,
+             std::shared_ptr<rclcpp::Node> node,
+             std::shared_ptr<dai::Pipeline> pipeline,
+             std::string deviceName,
+             bool rsCompatibility);
     virtual ~BaseNode();
     virtual void updateParams(const std::vector<rclcpp::Parameter>& params);
     virtual void link(dai::Node::Input in, int linkType = 0);
@@ -57,7 +61,7 @@ class BaseNode {
     virtual void setInOut(std::shared_ptr<dai::Pipeline> pipeline) = 0;
     std::shared_ptr<sensor_helpers::ImagePublisher> setupOutput(std::shared_ptr<dai::Pipeline> pipeline,
                                                                 const std::string& qName,
-                                                                dai::Node::Output out,
+                                                                dai::Node::Output* out,
                                                                 bool isSynced = false,
                                                                 const utils::VideoEncoderConfig& encoderConfig = {});
     virtual void closeQueues() = 0;
@@ -90,6 +94,7 @@ class BaseNode {
     std::string getOpticalFrameName(const std::string& frameName = "");
     bool ipcEnabled();
     std::string getSocketName(dai::CameraBoardSocket socket);
+    std::string getDeviceName();
     bool rsCompatibilityMode();
     rclcpp::Logger getLogger();
 

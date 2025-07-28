@@ -38,10 +38,10 @@ void Thermal::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
         encConfig.quality = ph->getParam<int>("i_low_bandwidth_quality");
         encConfig.enabled = ph->getParam<bool>("i_low_bandwidth");
 
-        thermalPub = setupOutput(pipeline, thermalQName, camNode->color, ph->getParam<bool>("i_synced"), encConfig);
+        thermalPub = setupOutput(pipeline, thermalQName, &camNode->color, ph->getParam<bool>("i_synced"), encConfig);
     }
     if(ph->getParam<bool>("i_publish_raw")) {
-        thermalRawPub = setupOutput(pipeline, rawQName, camNode->temperature, ph->getParam<bool>("i_synced"));
+        thermalRawPub = setupOutput(pipeline, rawQName, &camNode->temperature, ph->getParam<bool>("i_synced"));
     }
 }
 

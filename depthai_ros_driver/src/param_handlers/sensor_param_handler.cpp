@@ -1,11 +1,10 @@
 #include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
+#include <memory>
 
 #include "depthai/common/CameraBoardSocket.hpp"
-#include "depthai/common/CameraFeatures.hpp"
 #include "depthai/pipeline/node/Camera.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/utils.hpp"
-#include "rclcpp/logger.hpp"
 #include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {
@@ -24,9 +23,9 @@ void SensorParamHandler::declareCommonParams(dai::CameraBoardSocket socket) {
     socketID = static_cast<dai::CameraBoardSocket>(declareAndLogParam<int>(ParamNames::BOARD_SOCKET_ID, static_cast<int>(socket)));
     declareAndLogParam<bool>(ParamNames::ENABLE_FEATURE_TRACKER, false);
     declareAndLogParam<bool>(ParamNames::ENABLE_NN, false);
+    declareAndLogParam<int>(ParamNames::MAX_Q_SIZE, 8);
 }
-void SensorParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, dai::CameraFeatures features, bool publish) {
-    cam->build(socketID);
+void SensorParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, bool publish) {
     declareAndLogParam<bool>(ParamNames::LOW_BANDWIDTH, false);
     declareAndLogParam<int>(ParamNames::LOW_BANDWIDTH_PROFILE, 4);
     declareAndLogParam<int>(ParamNames::LOW_BANDWIDTH_FRAME_FREQ, 30);
@@ -44,9 +43,11 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, d
     declareAndLogParam<bool>(ParamNames::SYNCED, false);
     declareAndLogParam<bool>(ParamNames::PUBLISH_COMPRESSED, false);
 
-    int width = declareAndLogParam<int>(ParamNames::WIDTH, features.width);
-    int height = declareAndLogParam<int>(ParamNames::HEIGHT, features.height);
-    declareAndLogParam<bool>(ParamNames::PUBLISH_RAW, true);
+    declareAndLogParam<int>(ParamNames::WIDTH, 1280);
+    declareAndLogParam<int>(ParamNames::HEIGHT, 720);
+    declareAndLogParam<float>(ParamNames::FPS, 30.0);
+    declareAndLogParam<bool>(ParamNames::UNDISTORTED, true);
+    declareAndLogParam<std::string>(ParamNames::RESIZE_MODE, "CROP");
 
     size_t iso = declareAndLogParam(ParamNames::ISO, 800, getRangedIntDescriptor(100, 1600));
     size_t exposure = declareAndLogParam(ParamNames::EXPOSURE, 1000, getRangedIntDescriptor(1, 33000));
@@ -76,7 +77,6 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, d
     if(declareAndLogParam(ParamNames::SET_MAN_WHITEBALANCE, false)) {
         cam->initialControl.setManualWhiteBalance(declareAndLogParam<int>(ParamNames::WHITEBALANCE, 3000));
     }
-    // TODO(mihael): add support for setting manual focus and whitebalance (and other params)
     int sharpness = declareAndLogParam<int>(ParamNames::SHARPNESS, 1);
     if(declareAndLogParam(ParamNames::SET_SHARPNESS, false)) {
         cam->initialControl.setSharpness(sharpness);

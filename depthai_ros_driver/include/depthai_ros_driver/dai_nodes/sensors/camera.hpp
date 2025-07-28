@@ -33,12 +33,12 @@ class ImagePublisher;
 class Camera : public BaseNode {
    public:
     explicit Camera(const std::string& daiNodeName,
-                 std::shared_ptr<rclcpp::Node> node,
-                 std::shared_ptr<dai::Pipeline> pipeline,
-                 const std::string& deviceName,
-                  bool rsCompat,
-                 dai::CameraBoardSocket socket,
-                 bool publish);
+                    std::shared_ptr<rclcpp::Node> node,
+                    std::shared_ptr<dai::Pipeline> pipeline,
+                    const std::string& deviceName,
+                    bool rsCompat,
+                    dai::CameraBoardSocket socket,
+                    bool publish);
     ~Camera();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
@@ -47,11 +47,12 @@ class Camera : public BaseNode {
     void setInOut(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
     std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
+    std::shared_ptr<dai::node::Camera> getUnderlyingNode();
 
    private:
     std::shared_ptr<sensor_helpers::ImagePublisher> rgbPub, previewPub;
     std::vector<std::string> outputNames;
-    std::vector<std::pair<std::string,dai::Node::Output*>> outputs;
+    std::vector<std::pair<std::string, dai::Node::Output*>> outputs;
 
     std::shared_ptr<dai::node::Camera> camNode;
     std::unique_ptr<param_handlers::SensorParamHandler> ph;

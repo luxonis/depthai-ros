@@ -1,5 +1,7 @@
 #include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 
+#include <rclcpp/logging.hpp>
+
 #include "camera_info_manager/camera_info_manager.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
@@ -18,14 +20,14 @@ namespace sensor_helpers {
 ImagePublisher::ImagePublisher(std::shared_ptr<rclcpp::Node> node,
                                std::shared_ptr<dai::Pipeline> pipeline,
                                const std::string& qName,
-                               dai::Node::Output out,
+                               dai::Node::Output* out,
                                bool synced,
                                bool ipcEnabled,
                                const utils::VideoEncoderConfig& encoderConfig)
     : node(node), encConfig(encoderConfig), out(out), qName(qName), ipcEnabled(ipcEnabled), synced(synced) {
     if(encoderConfig.enabled) {
         encoder = createEncoder(pipeline, encoderConfig);
-        this->out.link(encoder->input);
+        this->out->link(encoder->input);
     }
 }
 void ImagePublisher::setup(std::shared_ptr<dai::Device> device, const utils::ImgConverterConfig& convConf, const utils::ImgPublisherConfig& pubConf) {
@@ -48,16 +50,12 @@ void ImagePublisher::setup(std::shared_ptr<dai::Device> device, const utils::Img
         }
         infoPub =
             node->create_publisher<sensor_msgs::msg::CameraInfo>(pubConfig.topicName + pubConfig.infoSuffix + "/camera_info", rclcpp::QoS(10), pubOptions);
-    } else if(ipcEnabled) {
-        imgPub = node->create_publisher<sensor_msgs::msg::Image>(pubConfig.topicName + pubConfig.topicSuffix, rclcpp::QoS(10), pubOptions);
-        infoPub =
-            node->create_publisher<sensor_msgs::msg::CameraInfo>(pubConfig.topicName + pubConfig.infoSuffix + "/camera_info", rclcpp::QoS(10), pubOptions);
     } else {
         imgPubIT = image_transport::create_camera_publisher(node.get(), pubConfig.topicName + pubConfig.topicSuffix);
     }
     if(!synced) {
-        dataQ = out.createOutputQueue(pubConf.maxQSize, pubConf.qBlocking);
-        addQueueCB(dataQ);
+        dataQ = out->createOutputQueue(pubConf.maxQSize, pubConf.qBlocking);
+        addQueueCB();
     }
 }
 
@@ -132,14 +130,12 @@ void ImagePublisher::closeQueue() {
     if(dataQ) dataQ->close();
 }
 void ImagePublisher::link(dai::Node::Input in) {
-    out.link(in);
+    out->link(in);
 }
 std::shared_ptr<dai::MessageQueue> ImagePublisher::getQueue() {
     return dataQ;
 }
-void ImagePublisher::addQueueCB(const std::shared_ptr<dai::MessageQueue>& queue) {
-    dataQ = queue;
-    qName = queue->getName();
+void ImagePublisher::addQueueCB() {
     cbID = dataQ->addCallback([this](const std::shared_ptr<dai::ADatatype>& data) { publish(data); });
 }
 

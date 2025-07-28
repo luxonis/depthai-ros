@@ -50,7 +50,8 @@ Stereo::Stereo(const std::string& daiNodeName,
                  getSocketName(leftSensInfo.socket).c_str(),
                  getSocketName(rightSensInfo.socket).c_str());
     left = std::make_unique<SensorWrapper>(getSocketName(leftSensInfo.socket), node, pipeline, device->getDeviceName(), rsCompat, leftSensInfo.socket, false);
-    right = std::make_unique<SensorWrapper>(getSocketName(rightSensInfo.socket), node, pipeline, device->getDeviceName(), rsCompat, rightSensInfo.socket, false);
+    right =
+        std::make_unique<SensorWrapper>(getSocketName(rightSensInfo.socket), node, pipeline, device->getDeviceName(), rsCompat, rightSensInfo.socket, false);
     stereoCamNode = pipeline->create<dai::node::StereoDepth>();
     ph->declareParams(stereoCamNode);
     setInOut(pipeline);
@@ -79,15 +80,13 @@ void Stereo::setNames() {
     rightRectQName = getName() + "_right_rect";
 }
 
+std::shared_ptr<dai::node::StereoDepth> Stereo::getUnderlyingNode() {
+    return stereoCamNode;
+}
+
 void Stereo::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
     bool outputDisparity = ph->getParam<bool>("i_output_disparity");
     bool lowBandwidth = ph->getParam<bool>("i_low_bandwidth");
-    std::function<void(dai::Node::Input)> stereoLinkChoice;
-    if(outputDisparity || lowBandwidth) {
-        stereoLinkChoice = [&](auto input) { stereoCamNode->disparity.link(input); };
-    } else {
-        stereoLinkChoice = [&](auto input) { stereoCamNode->depth.link(input); };
-    }
     if(ph->getParam<bool>("i_publish_topic")) {
         utils::VideoEncoderConfig encConf;
         encConf.profile = static_cast<dai::VideoEncoderProperties::Profile>(ph->getParam<int>("i_low_bandwidth_profile"));
@@ -96,7 +95,11 @@ void Stereo::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
         encConf.quality = ph->getParam<int>("i_low_bandwidth_quality");
         encConf.enabled = lowBandwidth;
 
-        // stereoPub = setupOutput(pipeline, stereoQName, stereoLinkChoice, ph->getParam<bool>("i_synced"), encConf);
+        if(outputDisparity || lowBandwidth) {
+            stereoPub = setupOutput(pipeline, stereoQName, &stereoCamNode->disparity, ph->getParam<bool>("i_synced"), encConf);
+        } else {
+            stereoPub = setupOutput(pipeline, stereoQName, &stereoCamNode->depth, ph->getParam<bool>("i_synced"), encConf);
+        }
     }
 
     if(ph->getParam<bool>("i_left_rect_publish_topic") || ph->getParam<bool>("i_publish_synced_rect_pair")) {
@@ -107,8 +110,7 @@ void Stereo::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
         encConf.quality = ph->getParam<int>("i_left_rect_low_bandwidth_quality");
         encConf.enabled = ph->getParam<bool>("i_left_rect_low_bandwidth");
 
-        // leftRectPub = setupOutput(
-        //     pipeline, leftRectQName, [&](auto input) { stereoCamNode->rectifiedLeft.link(input); }, ph->getParam<bool>("i_left_rect_synced"), encConf);
+        leftRectPub = setupOutput(pipeline, leftRectQName, &stereoCamNode->rectifiedLeft, ph->getParam<bool>("i_left_rect_synced"), encConf);
     }
 
     if(ph->getParam<bool>("i_right_rect_publish_topic") || ph->getParam<bool>("i_publish_synced_rect_pair")) {
@@ -118,19 +120,21 @@ void Stereo::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
         encConf.frameFreq = ph->getParam<int>("i_right_rect_low_bandwidth_frame_freq");
         encConf.quality = ph->getParam<int>("i_right_rect_low_bandwidth_quality");
         encConf.enabled = ph->getParam<bool>("i_right_rect_low_bandwidth");
-        // rightRectPub = setupOutput(
-        //     pipeline, rightRectQName, [&](auto input) { stereoCamNode->rectifiedRight.link(input); }, ph->getParam<bool>("i_right_rect_synced"), encConf);
+        rightRectPub = setupOutput(pipeline, rightRectQName, &stereoCamNode->rectifiedRight, ph->getParam<bool>("i_right_rect_synced"), encConf);
     }
 
     if(ph->getParam<bool>("i_left_rect_enable_feature_tracker")) {
-        // featureTrackerLeftR = std::make_unique<FeatureTracker>(leftSensInfo.name + std::string("_rect_feature_tracker"), getROSNode(), pipeline, device->getDeviceName(), rsCompat);
-
-        // stereoCamNode->rectifiedLeft.link(featureTrackerLeftR->getInput());
+        featureTrackerLeftR = std::make_unique<FeatureTracker>(
+            leftSensInfo.name + std::string("_rect_feature_tracker"), getROSNode(), pipeline, getDeviceName(), rsCompatibilityMode());
+        auto in = featureTrackerLeftR->getInput();
+        stereoCamNode->rectifiedLeft.link(in);
     }
 
     if(ph->getParam<bool>("i_right_rect_enable_feature_tracker")) {
-        // featureTrackerRightR = std::make_unique<FeatureTracker>(rightSensInfo.name + std::string("_rect_feature_tracker"), getROSNode(), pipeline);
-        // stereoCamNode->rectifiedRight.link(featureTrackerRightR->getInput());
+        featureTrackerRightR = std::make_unique<FeatureTracker>(
+            rightSensInfo.name + std::string("_rect_feature_tracker"), getROSNode(), pipeline, getDeviceName(), rsCompatibilityMode());
+        auto in = featureTrackerRightR->getInput();
+        stereoCamNode->rectifiedRight.link(in);
     }
 }
 

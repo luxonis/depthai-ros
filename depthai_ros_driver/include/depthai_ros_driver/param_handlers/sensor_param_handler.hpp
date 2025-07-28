@@ -1,5 +1,6 @@
 #pragma once
 
+#include <depthai/capabilities/ImgFrameCapability.hpp>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -23,6 +24,7 @@ class Parameter;
 namespace depthai_ros_driver {
 namespace param_handlers {
 class SensorParamHandler : public BaseParamHandler {
+   public:
     struct ParamNames {
         static constexpr const char* LOW_BANDWIDTH = "i_low_bandwidth";
         static constexpr const char* LOW_BANDWIDTH_PROFILE = "i_low_bandwidth_profile";
@@ -35,6 +37,8 @@ class SensorParamHandler : public BaseParamHandler {
         static constexpr const char* UPDATE_ROS_BASE_TIME_ON_ROS_MSG = "i_update_ros_base_time_on_ros_msg";
         static constexpr const char* ENABLE_LAZY_PUBLISHER = "i_enable_lazy_publisher";
         static constexpr const char* PUBLISH_TOPIC = "i_publish_topic";
+        static constexpr const char* MAX_Q_SIZE = "i_max_q_size";
+
         static constexpr const char* ADD_EXPOSURE_OFFSET = "i_add_exposure_offset";
         static constexpr const char* EXPOSURE_OFFSET = "i_exposure_offset";
         static constexpr const char* REVERSE_STEREO_SOCKET_ORDER = "i_reverse_stereo_socket_order";
@@ -42,7 +46,9 @@ class SensorParamHandler : public BaseParamHandler {
         static constexpr const char* PUBLISH_COMPRESSED = "i_publish_compressed";
         static constexpr const char* WIDTH = "i_width";
         static constexpr const char* HEIGHT = "i_height";
-        static constexpr const char* PUBLISH_RAW = "i_publish_raw";
+        static constexpr const char* FPS = "i_fps";
+        static constexpr const char* RESIZE_MODE = "i_resize_mode";
+        static constexpr const char* UNDISTORTED = "i_undistorted";
         static constexpr const char* ISO = "r_iso";
         static constexpr const char* EXPOSURE = "r_exposure";
         static constexpr const char* SET_MAN_EXPOSURE = "r_set_man_exposure";
@@ -77,18 +83,17 @@ class SensorParamHandler : public BaseParamHandler {
         static constexpr const char* ENABLE_FEATURE_TRACKER = "i_enable_feature_tracker";
         static constexpr const char* ENABLE_NN = "i_enable_nn";
     };
-
-   public:
     explicit SensorParamHandler(
         std::shared_ptr<rclcpp::Node> node, const std::string& name, const std::string& deviceName, bool rsCompat, dai::CameraBoardSocket socket);
     ~SensorParamHandler();
     void declareCommonParams(dai::CameraBoardSocket socket);
-    void declareParams(std::shared_ptr<dai::node::Camera> cam, dai::CameraFeatures, bool publish);
+    void declareParams(std::shared_ptr<dai::node::Camera> cam, bool publish);
     std::shared_ptr<dai::CameraControl> setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;
 
    private:
     dai::CameraBoardSocket socketID;
     std::unordered_map<dai::ImgFrame::Type, std::string> frameTypeMap;
+    std::unordered_map<dai::ImgResizeMode, std::string> resizeTypeMap;
 };
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver

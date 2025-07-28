@@ -30,7 +30,7 @@ void DriverParamHandler::declareParams() {
     declareAndLogParam<bool>("i_enable_sync", true);
     declareAndLogParam<bool>("i_enable_ir", true);
     declareAndLogParam<std::string>("i_usb_speed", "SUPER");
-    declareAndLogParam<std::string>("i_mx_id", "");
+    declareAndLogParam<std::string>("i_device_id", "");
     declareAndLogParam<std::string>("i_ip", "");
     declareAndLogParam<std::string>("i_usb_port_id", "");
     declareAndLogParam<bool>("i_pipeline_dump", false);
@@ -41,7 +41,7 @@ void DriverParamHandler::declareParams() {
     declareAndLogParam<bool>("i_restart_on_diagnostics_error", false);
     declareAndLogParam<bool>("i_rs_compat", false);
 
-    declareAndLogParam<bool>("i_publish_tf_from_calibration", false);
+    declareAndLogParam<bool>("i_publish_tf_from_calibration", true);
     declareAndLogParam<std::string>("i_tf_camera_name", getROSNode()->get_name());
     declareAndLogParam<std::string>("i_tf_camera_model", "");
     declareAndLogParam<std::string>("i_tf_base_frame", "oak");

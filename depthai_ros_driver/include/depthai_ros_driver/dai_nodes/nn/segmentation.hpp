@@ -14,17 +14,15 @@
 namespace dai {
 class Pipeline;
 class Device;
-class DataOutputQueue;
 class ADatatype;
 namespace node {
 class NeuralNetwork;
 class ImageManip;
-class XLinkOut;
 }  // namespace node
-namespace ros {
+}  // namespace dai
+namespace depthai_bridge {
 class ImageConverter;
 }
-}  // namespace dai
 namespace camera_info_manager {
 class CameraInfoManager;
 }
@@ -44,6 +42,8 @@ class Segmentation : public BaseNode {
     Segmentation(const std::string& daiNodeName,
                  std::shared_ptr<rclcpp::Node> node,
                  std::shared_ptr<dai::Pipeline> pipeline,
+                 const std::string& deviceName,
+                 bool rsCompat,
                  const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A);
     ~Segmentation();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
@@ -65,8 +65,7 @@ class Segmentation : public BaseNode {
     std::shared_ptr<dai::node::NeuralNetwork> segNode;
     std::shared_ptr<dai::node::ImageManip> imageManip;
     std::unique_ptr<param_handlers::NNParamHandler> ph;
-    std::shared_ptr<dai::DataOutputQueue> nnQ, ptQ;
-    std::shared_ptr<dai::node::XLinkOut> xoutNN, xoutPT;
+    std::shared_ptr<dai::MessageQueue> nnQ, ptQ;
     std::string nnQName, ptQName;
 };
 

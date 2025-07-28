@@ -15,6 +15,9 @@ namespace dai {
 class Pipeline;
 class Device;
 class MessageQueue;
+namespace node {
+class Camera;
+}
 }  // namespace dai
 namespace depthai_bridge {
 class ImageConverter;
@@ -30,6 +33,8 @@ namespace param_handlers {
 class SensorParamHandler;
 }
 namespace dai_nodes {
+
+class Camera;
 
 class SensorWrapper : public BaseNode {
    public:
@@ -48,10 +53,12 @@ class SensorWrapper : public BaseNode {
     void setInOut(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;
     std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
+    std::shared_ptr<dai::node::Camera> getUnderlyingNode();
 
    private:
     void subCB(const sensor_msgs::msg::Image& img);
-    std::unique_ptr<BaseNode> sensorNode, featureTrackerNode, nnNode;
+    std::unique_ptr<Camera> sensorNode;
+    std::unique_ptr<BaseNode> featureTrackerNode, nnNode;
     std::unique_ptr<param_handlers::SensorParamHandler> ph;
     std::unique_ptr<depthai_bridge::ImageConverter> converter;
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub;

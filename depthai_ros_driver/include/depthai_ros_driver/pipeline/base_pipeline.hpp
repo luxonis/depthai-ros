@@ -9,6 +9,7 @@
 #include "depthai_ros_driver/dai_nodes/nn/nn_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/nn_wrapper.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/spatial_nn_wrapper.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/camera.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/stereo.hpp"
 
@@ -27,31 +28,35 @@ enum class NNType { None, RGB, Spatial };
 class BasePipeline {
    public:
     ~BasePipeline() = default;
-    std::unique_ptr<dai_nodes::BaseNode> createNN(std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline, dai_nodes::BaseNode& daiNode) {
+    std::unique_ptr<dai_nodes::BaseNode> createNN(std::shared_ptr<rclcpp::Node> node,
+                                                  std::shared_ptr<dai::Pipeline> pipeline,
+                                                  dai_nodes::SensorWrapper& camNode,
+                                                  const std::string& deviceName,
+                                                  bool rsCompat) {
         using namespace dai_nodes::sensor_helpers;
-        auto nn = std::make_unique<dai_nodes::NNWrapper>(getNodeName(node, NodeNameEnum::NN), node, pipeline);
-        daiNode.link(nn->getInput(), static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
+        auto nn = std::make_unique<dai_nodes::NNWrapper>(getNodeName(node, NodeNameEnum::NN), node, pipeline, deviceName, rsCompat, camNode);
         return nn;
     }
     std::unique_ptr<dai_nodes::BaseNode> createSpatialNN(std::shared_ptr<rclcpp::Node> node,
                                                          std::shared_ptr<dai::Pipeline> pipeline,
-                                                         dai_nodes::BaseNode& daiNode,
-                                                         dai_nodes::BaseNode& daiStereoNode) {
+                                                         dai_nodes::SensorWrapper& camNode,
+                                                         dai_nodes::Stereo& stereoNode,
+                                                         const std::string& deviceName,
+                                                         bool rsCompat) {
         using namespace dai_nodes::sensor_helpers;
-        auto nn = std::make_unique<dai_nodes::SpatialNNWrapper>(getNodeName(node, NodeNameEnum::NN), node, pipeline);
-        daiNode.link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::input)),
-                     static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
-        daiStereoNode.link(nn->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::inputDepth)));
+        auto nn = std::make_unique<dai_nodes::SpatialNNWrapper>(getNodeName(node, NodeNameEnum::NN), node, pipeline, deviceName, rsCompat, camNode, stereoNode);
         return nn;
     }
 
     virtual std::vector<std::unique_ptr<dai_nodes::BaseNode>> createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                              std::shared_ptr<dai::Device> device,
                                                                              std::shared_ptr<dai::Pipeline> pipeline,
+                                                                             const std::string& deviceName,
+                                                                             bool rsCompat,
                                                                              const std::string& nnType) = 0;
 
    protected:
-    BasePipeline(){};
+    BasePipeline() {};
     std::unordered_map<std::string, NNType> nnTypeMap = {
         {"", NNType::None},
         {"NONE", NNType::None},
