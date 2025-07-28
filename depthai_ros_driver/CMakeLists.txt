@@ -76,6 +76,7 @@ add_library(
   src/param_handlers/nn_param_handler.cpp
   src/param_handlers/sensor_param_handler.cpp
   src/param_handlers/feature_tracker_param_handler.cpp
+  src/param_handlers/rgbd_param_handler.cpp
   src/param_handlers/stereo_param_handler.cpp
   src/param_handlers/tof_param_handler.cpp
   src/param_handlers/pipeline_gen_param_handler.cpp
@@ -92,12 +93,11 @@ add_library(
   ${SENSOR_LIB_NAME} SHARED
   src/dai_nodes/sensors/imu.cpp
   src/dai_nodes/sensors/camera.cpp
-  # src/dai_nodes/sensors/rgb.cpp
-  # src/dai_nodes/sensors/mono.cpp
   src/dai_nodes/sensors/feature_tracker.cpp
   src/dai_nodes/sensors/sensor_wrapper.cpp
   src/dai_nodes/sensors/stereo.cpp
   src/dai_nodes/sensors/thermal.cpp
+  src/dai_nodes/sensors/rgbd.cpp
   src/dai_nodes/sensors/tof.cpp
   src/dai_nodes/sensors/sync.cpp
 )

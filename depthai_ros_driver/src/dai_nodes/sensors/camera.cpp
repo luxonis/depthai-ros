@@ -45,11 +45,8 @@ void Camera::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
     auto fps = ph->getParam<float>(ParamNames::FPS);
     dai::ImgFrame::Type type = dai::ImgFrame::Type::NV12;
     auto boardSocket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>(ParamNames::BOARD_SOCKET_ID));
-    if(boardSocket == dai::CameraBoardSocket::CAM_A){
-        type = dai::ImgFrame::Type::RGB888i;
-    }
     defaultOut = camNode->requestOutput(std::pair<int, int>(width, height),
-                                        type,
+                                        {},
                                         utils::getValFromMap(ph->getParam<std::string>(ParamNames::RESIZE_MODE), sensor_helpers::resizeModeMap),
                                         fps,
                                         ph->getParam<bool>(ParamNames::UNDISTORTED));
