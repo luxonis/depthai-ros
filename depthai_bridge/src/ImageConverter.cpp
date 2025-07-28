@@ -135,28 +135,29 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
         cv::Size size = cv::Size(inData->getWidth(), inData->getHeight());
 
         int type = 0;
-
         switch(inData->getType()) {
             case dai::ImgFrame::Type::RGB888p: {
-                cv::Size s(inData->getWidth(), inData->getHeight());
-                cv::Mat m1 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 2);
-                cv::Mat m2 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 1);
-                cv::Mat m3 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 0);
+                cv::Mat m1 = cv::Mat(size, CV_8UC1, inData->getData().data() + size.area() * 2);
+                cv::Mat m2 = cv::Mat(size, CV_8UC1, inData->getData().data() + size.area() * 1);
+                cv::Mat m3 = cv::Mat(size, CV_8UC1, inData->getData().data() + size.area() * 0);
                 cv::Mat channels[3] = {m1, m2, m3};
+                type = CV_8UC3;
                 cv::merge(channels, 3, output);
             } break;
 
             case dai::ImgFrame::Type::BGR888p: {
-                cv::Size s(inData->getWidth(), inData->getHeight());
-                cv::Mat m1 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 0);
-                cv::Mat m2 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 1);
-                cv::Mat m3 = cv::Mat(s, CV_8UC1, inData->getData().data() + s.area() * 2);
+                cv::Mat m1 = cv::Mat(size, CV_8UC1, inData->getData().data() + size.area() * 0);
+                cv::Mat m2 = cv::Mat(size, CV_8UC1, inData->getData().data() + size.area() * 1);
+                cv::Mat m3 = cv::Mat(size, CV_8UC1, inData->getData().data() + size.area() * 2);
                 cv::Mat channels[3] = {m1, m2, m3};
+                type = CV_8UC3;
                 cv::merge(channels, 3, output);
             } break;
 
             case dai::ImgFrame::Type::YUV420p:
                 type = CV_8UC1;
+
+                size = cv::Size(inData->getWidth(), inData->getHeight() * 3 / 2);
                 mat = cv::Mat(size, type, inData->getData().data());
                 cv::cvtColor(mat, output, cv::ColorConversionCodes::COLOR_YUV2BGR_IYUV);
                 break;
