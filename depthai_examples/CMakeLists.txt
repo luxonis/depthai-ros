@@ -53,6 +53,7 @@ endmacro()
 add_example(rgbd_spatial_detections src/rgbd_spatial_detections.cpp)
 add_example(feature_tracker src/feature_tracker_publisher.cpp)
 add_example(converter_to_cv src/converter_to_cv.cpp)
+add_example(imu_publisher src/imu_publisher.cpp)
 add_example(rgb_publisher src/rgb_publisher.cpp)
 add_example(rgbd_publisher src/rgbd_publisher.cpp)
 add_example(rgb_subscriber src/rgb_subscriber.cpp)
@@ -67,6 +68,7 @@ install(
   TARGETS rgbd_spatial_detections
           feature_tracker
           converter_to_cv
+          imu_publisher
           rgb_publisher
           rgbd_publisher
           rgb_subscriber
