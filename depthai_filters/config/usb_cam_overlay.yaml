@@ -1,6 +1,6 @@
 /oak:
   ros__parameters:
-    camera:
+    driver:
       i_nn_type: rgb
       i_pipeline_type: rgb
     rgb:

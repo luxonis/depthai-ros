@@ -32,7 +32,7 @@ def launch_setup(context, *args, **kwargs):
                         remappings=[
                                     ('stereo/camera_info', name+'/stereo/camera_info'),
                                     ('nn/spatial_detections', name+'/nn/spatial_detections'),
-                                    ('rgb/preview/image_raw', name+'/rgb/preview/image_raw'),
+                                    ('nn/passthrough/image_raw', name+'/nn/passthrough/image_raw'),
                                     ],
                         parameters=[params_file],
                     ),

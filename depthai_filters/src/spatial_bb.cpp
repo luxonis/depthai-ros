@@ -11,7 +11,7 @@ SpatialBB::SpatialBB(const rclcpp::NodeOptions& options) : rclcpp::Node("spatial
     onInit();
 }
 void SpatialBB::onInit() {
-    previewSub.subscribe(this, "rgb/preview/image_raw");
+    previewSub.subscribe(this, "nn/passthrough/image_raw");
     infoSub.subscribe(this, "stereo/camera_info");
     detSub.subscribe(this, "nn/spatial_detections");
     sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), previewSub, infoSub, detSub);
@@ -52,7 +52,7 @@ void SpatialBB::overlayCB(const sensor_msgs::msg::Image::ConstSharedPtr& preview
         auto y2 = detection.bbox.center.position.y + detections->detections[0].bbox.size.y / 2.0;
 
         cv::rectangle(previewMat, cv::Rect(cv::Point(x1, y1), cv::Point(x2, y2)), blue);
-        auto labelStr = labelMap[stoi(detection.results[0].hypothesis.class_id)];
+        auto labelStr = detection.results[0].hypothesis.class_id;
         utils::addTextToFrame(previewMat, labelStr, x1 + 10, y1 + 10);
         auto confidence = detection.results[0].hypothesis.score;
         std::stringstream confStr;
@@ -133,7 +133,7 @@ void SpatialBB::overlayCB(const sensor_msgs::msg::Image::ConstSharedPtr& preview
         text_marker.pose.position.z = box_marker.points[0].z + 0.1;  // Adjust this value to position the text above the box
 
         // Set the text to the detection label
-        text_marker.text = labelMap[stoi(detection.results[0].hypothesis.class_id)];
+        text_marker.text = detection.results[0].hypothesis.class_id;
         marker_array.markers.push_back(text_marker);
     }
     markerPub->publish(marker_array);
