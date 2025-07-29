@@ -1,7 +1,7 @@
 #include "depthai_ros_driver/dai_nodes/sensors/imu.hpp"
 
-#include "depthai/pipeline/MessageQueue.hpp"
 #include "depthai/device/Device.hpp"
+#include "depthai/pipeline/MessageQueue.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/IMU.hpp"
 #include "depthai_bridge/ImuConverter.hpp"
@@ -12,7 +12,11 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-Imu::Imu(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device, bool rsCompat)
+Imu::Imu(const std::string& daiNodeName,
+         std::shared_ptr<rclcpp::Node> node,
+         std::shared_ptr<dai::Pipeline> pipeline,
+         std::shared_ptr<dai::Device> device,
+         bool rsCompat)
     : BaseNode(daiNodeName, node, pipeline, device->getDeviceName(), rsCompat) {
     RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
     setNames();
@@ -26,8 +30,7 @@ void Imu::setNames() {
     imuQName = getName() + "_imu";
 }
 
-void Imu::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
-}
+void Imu::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {}
 
 void Imu::setupQueues(std::shared_ptr<dai::Device> device) {
     imuQ = imuNode->out.createOutputQueue(ph->getParam<int>("i_max_q_size"), false);
@@ -38,14 +41,14 @@ void Imu::setupQueues(std::shared_ptr<dai::Device> device) {
     param_handlers::imu::ImuMsgType msgType = ph->getMsgType();
     bool enableMagn = msgType == param_handlers::imu::ImuMsgType::IMU_WITH_MAG || msgType == param_handlers::imu::ImuMsgType::IMU_WITH_MAG_SPLIT;
     imuConverter = std::make_unique<depthai_bridge::ImuConverter>(tfPrefix,
-                                                            imuMode,
-                                                            ph->getParam<float>("i_acc_cov"),
-                                                            ph->getParam<float>("i_gyro_cov"),
-                                                            ph->getParam<float>("i_rot_cov"),
-                                                            ph->getParam<float>("i_mag_cov"),
-                                                            ph->getParam<bool>("i_enable_rotation"),
-                                                            enableMagn,
-                                                            ph->getParam<bool>("i_get_base_device_timestamp"));
+                                                                  imuMode,
+                                                                  ph->getParam<float>("i_acc_cov"),
+                                                                  ph->getParam<float>("i_gyro_cov"),
+                                                                  ph->getParam<float>("i_rot_cov"),
+                                                                  ph->getParam<float>("i_mag_cov"),
+                                                                  ph->getParam<bool>("i_enable_rotation"),
+                                                                  enableMagn,
+                                                                  ph->getParam<bool>("i_get_base_device_timestamp"));
     imuConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
     std::string topicSuffix = "/data";
     if(rsCompatibilityMode()) {
@@ -79,38 +82,44 @@ void Imu::closeQueues() {
 }
 
 void Imu::imuRosQCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
-    auto imuData = std::dynamic_pointer_cast<dai::IMUData>(data);
-    std::deque<sensor_msgs::msg::Imu> deq;
-    imuConverter->toRosMsg(imuData, deq);
-    while(deq.size() > 0) {
-        auto currMsg = deq.front();
-        rosImuPub->publish(currMsg);
-        deq.pop_front();
+    if(rclcpp::ok()) {
+        auto imuData = std::dynamic_pointer_cast<dai::IMUData>(data);
+        std::deque<sensor_msgs::msg::Imu> deq;
+        imuConverter->toRosMsg(imuData, deq);
+        while(deq.size() > 0) {
+            auto currMsg = deq.front();
+            rosImuPub->publish(currMsg);
+            deq.pop_front();
+        }
     }
 }
 void Imu::imuDaiRosQCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
-    auto imuData = std::dynamic_pointer_cast<dai::IMUData>(data);
-    std::deque<depthai_ros_msgs::msg::ImuWithMagneticField> deq;
-    imuConverter->toRosDaiMsg(imuData, deq);
-    while(deq.size() > 0) {
-        auto currMsg = deq.front();
-        daiImuPub->publish(currMsg);
-        deq.pop_front();
+    if(rclcpp::ok()) {
+        auto imuData = std::dynamic_pointer_cast<dai::IMUData>(data);
+        std::deque<depthai_ros_msgs::msg::ImuWithMagneticField> deq;
+        imuConverter->toRosDaiMsg(imuData, deq);
+        while(deq.size() > 0) {
+            auto currMsg = deq.front();
+            daiImuPub->publish(currMsg);
+            deq.pop_front();
+        }
     }
 }
 void Imu::imuMagQCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
-    auto imuData = std::dynamic_pointer_cast<dai::IMUData>(data);
-    std::deque<depthai_ros_msgs::msg::ImuWithMagneticField> deq;
-    imuConverter->toRosDaiMsg(imuData, deq);
-    while(deq.size() > 0) {
-        auto currMsg = deq.front();
-        sensor_msgs::msg::Imu imu = currMsg.imu;
-        sensor_msgs::msg::MagneticField field = currMsg.field;
-        imu.header = currMsg.header;
-        field.header = currMsg.header;
-        rosImuPub->publish(imu);
-        magPub->publish(field);
-        deq.pop_front();
+    if(rclcpp::ok()) {
+        auto imuData = std::dynamic_pointer_cast<dai::IMUData>(data);
+        std::deque<depthai_ros_msgs::msg::ImuWithMagneticField> deq;
+        imuConverter->toRosDaiMsg(imuData, deq);
+        while(deq.size() > 0) {
+            auto currMsg = deq.front();
+            sensor_msgs::msg::Imu imu = currMsg.imu;
+            sensor_msgs::msg::MagneticField field = currMsg.field;
+            imu.header = currMsg.header;
+            field.header = currMsg.header;
+            rosImuPub->publish(imu);
+            magPub->publish(field);
+            deq.pop_front();
+        }
     }
 }
 void Imu::link(dai::Node::Input in, int /*linkType*/) {

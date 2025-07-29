@@ -27,12 +27,14 @@ RGBD::RGBD(const std::string& daiNodeName,
     RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     rgbdNode = pipeline->create<dai::node::RGBD>()->build();
+    ph = std::make_unique<param_handlers::RGBDParamHandler>(node, daiNodeName, device->getDeviceName(), rsCompat);
+    ph->declareParams(rgbdNode);
     auto color = camNode.getUnderlyingNode();
     auto stereo = stereoNode.getUnderlyingNode();
     auto platform = device->getPlatform();
     if(platform == dai::Platform::RVC4) {
         auto* out = color->requestOutput(
-            std::pair<int, int>(1280, 720),
+            std::pair<int, int>(ph->getOtherNodeParam<int>(camNode.getName(), "i_width"), ph->getOtherNodeParam<int>(camNode.getName(), "i_height")),
             dai::ImgFrame::Type::RGB888i,
             dai::ImgResizeMode::CROP,
             30.0);
@@ -43,7 +45,7 @@ RGBD::RGBD(const std::string& daiNodeName,
         align->outputAligned.link(rgbdNode->inDepth);
     } else {
         auto* out = color->requestOutput(
-            std::pair<int, int>(1280,720),
+            std::pair<int, int>(ph->getOtherNodeParam<int>(camNode.getName(), "i_width"), ph->getOtherNodeParam<int>(camNode.getName(), "i_height")),
             dai::ImgFrame::Type::RGB888i,
             dai::ImgResizeMode::CROP,
             30.0);
@@ -52,8 +54,6 @@ RGBD::RGBD(const std::string& daiNodeName,
         stereo->depth.link(rgbdNode->inDepth);
     }
 
-    ph = std::make_unique<param_handlers::RGBDParamHandler>(node, daiNodeName, device->getDeviceName(), rsCompat);
-    ph->declareParams(rgbdNode);
     RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
 }
 RGBD::~RGBD() = default;
@@ -80,14 +80,14 @@ void RGBD::closeQueues() {
 }
 
 void RGBD::pclCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
-    auto featureData = std::dynamic_pointer_cast<dai::PointCloudData>(data);
-    std::deque<sensor_msgs::msg::PointCloud2> deq;
-    pclConv->toRosMsg(featureData, deq);
-    while(deq.size() > 0) {
-        auto currMsg = deq.front();
-        pclPub->publish(currMsg);
-        deq.pop_front();
-    }
+        auto pclData = std::dynamic_pointer_cast<dai::PointCloudData>(data);
+        std::deque<sensor_msgs::msg::PointCloud2> deq;
+        pclConv->toRosMsg(pclData, deq);
+        while(deq.size() > 0) {
+            auto currMsg = deq.front();
+            pclPub->publish(currMsg);
+            deq.pop_front();
+        }
 }
 
 void RGBD::link(dai::Node::Input in, int /*linkType*/) {

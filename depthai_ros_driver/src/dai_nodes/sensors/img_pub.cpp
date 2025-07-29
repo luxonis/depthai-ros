@@ -112,7 +112,8 @@ void ImagePublisher::createInfoManager(std::shared_ptr<dai::Device> device) {
     infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
         node->create_sub_node(std::string(node->get_name()) + "/" + pubConfig.daiNodeName).get(), "/" + pubConfig.daiNodeName + pubConfig.infoMgrSuffix);
     if(pubConfig.calibrationFile.empty()) {
-        auto info = sensor_helpers::getCalibInfo(node->get_logger(), converter, device, pubConfig.socket, pubConfig.width, pubConfig.height);
+        auto calHandler = device->readCalibration();
+        auto info = sensor_helpers::getCalibInfo(node->get_logger(), converter, calHandler, pubConfig.socket, pubConfig.width, pubConfig.height);
         if(pubConfig.rectified) {
             std::fill(info.d.begin(), info.d.end(), 0.0);
             info.r[0] = info.r[4] = info.r[8] = 1.0;
@@ -143,7 +144,12 @@ std::string ImagePublisher::getQueueName() {
     return qName;
 }
 std::shared_ptr<Image> ImagePublisher::convertData(const std::shared_ptr<dai::ADatatype>& data) {
-    auto info = infoManager->getCameraInfo();
+    auto daiImg = std::dynamic_pointer_cast<dai::ImgFrame>(data);
+    auto info = converter->generateCameraInfo(daiImg);
+    if(pubConfig.rectified) {
+        std::fill(info.d.begin(), info.d.end(), 0.0);
+        info.r[0] = info.r[4] = info.r[8] = 1.0;
+    }
     auto img = std::make_shared<Image>();
     if(pubConfig.publishCompressed) {
         if(encConfig.profile == dai::VideoEncoderProperties::Profile::MJPEG) {

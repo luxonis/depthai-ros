@@ -49,7 +49,7 @@ class Detection : public BaseNode {
         ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName, deviceName, rsCompat, socket);
         ph->declareParams(detectionNode);
         dai::NNModelDescription description;
-        description.model = ph->getParam<std::string>("i_model_name");
+        description.model = ph->getParam<std::string>("i_nn_model");
         detectionNode->build(camNode.getUnderlyingNode(), description);
 
         RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());

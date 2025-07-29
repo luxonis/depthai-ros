@@ -3,6 +3,7 @@
 #include "camera_info_manager/camera_info_manager.hpp"
 #include "depthai/capabilities/ImgFrameCapability.hpp"
 #include "depthai/common/CameraSensorType.hpp"
+#include "depthai/depthai.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/VideoEncoder.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
@@ -81,14 +82,13 @@ void basicCameraPub(const std::string& /*name*/,
 
 sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
                                           std::shared_ptr<depthai_bridge::ImageConverter> converter,
-                                          std::shared_ptr<dai::Device> device,
+                                          dai::CalibrationHandler calHandler,
                                           dai::CameraBoardSocket socket,
                                           int width,
                                           int height) {
     sensor_msgs::msg::CameraInfo info;
-    auto calibHandler = device->readCalibration();
     try {
-        info = converter->calibrationToCameraInfo(calibHandler, socket, width, height);
+        info = converter->calibrationToCameraInfo(calHandler, socket, width, height);
     } catch(std::runtime_error& e) {
         RCLCPP_ERROR(logger, "No calibration for socket %d! Publishing empty camera_info.", static_cast<int>(socket));
     }

@@ -1,4 +1,5 @@
 #include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
+
 #include <memory>
 
 #include "depthai/common/CameraBoardSocket.hpp"
@@ -43,9 +44,10 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, b
     declareAndLogParam<bool>(ParamNames::SYNCED, false);
     declareAndLogParam<bool>(ParamNames::PUBLISH_COMPRESSED, false);
 
-    declareAndLogParam<int>(ParamNames::WIDTH, 1280);
-    declareAndLogParam<int>(ParamNames::HEIGHT, 720);
-    declareAndLogParam<float>(ParamNames::FPS, 30.0);
+    declareAndLogParam<int>(ParamNames::WIDTH, 640);
+    declareAndLogParam<int>(ParamNames::HEIGHT, 400);
+    float fps = 30.0;
+    declareAndLogParam<float>(ParamNames::FPS, fps);
     declareAndLogParam<bool>(ParamNames::UNDISTORTED, true);
     declareAndLogParam<std::string>(ParamNames::RESIZE_MODE, "CROP");
 

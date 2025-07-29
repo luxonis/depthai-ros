@@ -18,9 +18,6 @@ Driver::Driver(const rclcpp::NodeOptions& options) : rclcpp::Node("camera", opti
     });
     rclcpp::on_shutdown([this]() { stop(); });
 }
-Driver::~Driver() {
-    stop();
-}
 void Driver::onConfigure() {
     ph = std::make_unique<param_handlers::DriverParamHandler>(shared_from_this(), "driver");
     ph->declareParams();
@@ -168,6 +165,7 @@ void Driver::getDeviceType() {
     for(auto& sensor : device->getCameraSensorNames()) {
         RCLCPP_DEBUG(get_logger(), "Socket %d - %s", static_cast<int>(sensor.first), sensor.second.c_str());
     }
+    // not working on OAK4 right now
     // auto ir_drivers = device->getIrDrivers();
     // if(ir_drivers.empty()) {
     //     RCLCPP_DEBUG(get_logger(), "Device has no IR drivers");
@@ -280,7 +278,7 @@ void Driver::startDevice() {
 }
 
 void Driver::setIR() {
-    if(ph->getParam<bool>("i_enable_ir") && !device->getIrDrivers().empty()) {
+    if(ph->getParam<bool>("i_enable_ir")/*  && !device->getIrDrivers().empty() */) {
         // Normalize laserdot brightness to 0-1 range, max value can be 1200mA
         float laserdotBrightness = float(ph->getParam<int>("i_laser_dot_brightness"));
         if(laserdotBrightness > 1.0) {
@@ -298,7 +296,7 @@ void Driver::setIR() {
 
 rcl_interfaces::msg::SetParametersResult Driver::parameterCB(const std::vector<rclcpp::Parameter>& params) {
     for(const auto& p : params) {
-        if(ph->getParam<bool>("i_enable_ir") && !device->getIrDrivers().empty()) {
+        if(ph->getParam<bool>("i_enable_ir") /* && !device->getIrDrivers().empty() */) {
             if(p.get_name() == ph->getFullParamName("i_laser_dot_brightness")) {
                 float laserdotBrightness = float(p.get_value<int>());
                 if(laserdotBrightness > 1.0) {

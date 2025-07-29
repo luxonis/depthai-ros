@@ -114,6 +114,10 @@ std::shared_ptr<dai::node::Camera> SensorWrapper::getUnderlyingNode(){
     return sensorNode->getUnderlyingNode();
 }
 
+dai::Node::Output* SensorWrapper::getDefaultOut(){
+    return sensorNode->getDefaultOut();
+}
+
 std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> SensorWrapper::getPublishers() {
     if(ph->getParam<bool>("i_disable_node")) {
         return std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>>();

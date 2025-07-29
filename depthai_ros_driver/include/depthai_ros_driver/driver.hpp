@@ -23,10 +23,6 @@ class Driver : public rclcpp::Node {
    public:
     explicit Driver(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
     /**
-     * @brief      Destructor of the class Driver. Stops the device and destroys the pipeline.
-     */
-    ~Driver();
-    /**
      * @brief Creates the pipeline and starts the device. Also sets up parameter callback and services.
      */
     void onConfigure();

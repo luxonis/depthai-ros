@@ -41,7 +41,7 @@ class SpatialDetection : public BaseNode {
         ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName, deviceName, rsCompat, socket);
         ph->declareParams(spatialNode);
         dai::NNModelDescription description;
-        description.model = ph->getParam<std::string>("i_model_name");
+        description.model = ph->getParam<std::string>("i_nn_model");
         spatialNode->build(camNode.getUnderlyingNode(), stereoNode.getUnderlyingNode(), description);
         RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
         setInOut(pipeline);

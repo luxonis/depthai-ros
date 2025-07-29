@@ -12,6 +12,9 @@ RGBDParamHandler::~RGBDParamHandler() = default;
 void RGBDParamHandler::declareParams(std::shared_ptr<dai::node::RGBD> rgbd) {
     declareAndLogParam<bool>("i_publish_topic", true);
     declareAndLogParam<int>("i_board_socket_id", static_cast<int>(dai::CameraBoardSocket::CAM_A));
+    declareAndLogParam<int>("i_max_q_size", 8);
+    declareAndLogParam<bool>("i_get_base_device_timestamp", false);
+    declareAndLogParam<bool>("i_update_ros_base_time_on_ros_msg", false);
 }
 
 }  // namespace param_handlers

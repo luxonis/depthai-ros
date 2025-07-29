@@ -11,7 +11,7 @@ namespace depthai_ros_driver {
 namespace param_handlers {
 StereoParamHandler::StereoParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name, const std::string& deviceName, bool rsCompat)
     : BaseParamHandler(node, name, deviceName, rsCompat) {
-    depthPresetMap = {{"HIGH_ACCURACY", dai::node::StereoDepth::PresetMode::FAST_ACCURACY},
+    depthPresetMap = {{"FAST_ACCURACY", dai::node::StereoDepth::PresetMode::FAST_ACCURACY},
                       {"DEFAULT", dai::node::StereoDepth::PresetMode::DEFAULT},
                       {"FACE", dai::node::StereoDepth::PresetMode::FACE},
                       {"HIGH_DETAIL", dai::node::StereoDepth::PresetMode::HIGH_DETAIL},
@@ -105,14 +105,14 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<bool>("i_synced", false);
 
     stereo->setLeftRightCheck(declareAndLogParam<bool>("i_lr_check", true));
-    int width = 1280;
-    int height = 720;
+    int width = 640;
+    int height = 400;
     std::string socketName;
     if(declareAndLogParam<bool>("i_align_depth", true)) {
         socketName = getSocketName(alignSocket);
         try {
-            width = getROSNode()->get_parameter(socketName + ".i_width").as_int();
-            height = getROSNode()->get_parameter(socketName + ".i_height").as_int();
+            width = getOtherNodeParam<int>(socketName, "i_width");
+            height = getOtherNodeParam<int>(socketName, "i_height");
         } catch(rclcpp::exceptions::ParameterNotDeclaredException& e) {
             RCLCPP_ERROR(getROSNode()->get_logger(), "%s parameters not set, defaulting to 1280x720 unless specified otherwise.", socketName.c_str());
         }
@@ -123,20 +123,20 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     if(declareAndLogParam<bool>("i_set_input_size", false)) {
         stereo->setInputResolution(declareAndLogParam<int>("i_input_width", 1280), declareAndLogParam<int>("i_input_height", 720));
     }
+    auto depthPreset = depthPresetMap.at(declareAndLogParam<std::string>("i_depth_preset", "FAST_ACCURACY"));
+    stereo->setDefaultProfilePreset(depthPreset);
     width = declareAndLogParam<int>("i_width", width);
     height = declareAndLogParam<int>("i_height", height);
-    stereo->setOutputSize(width, height);
-    stereo->setDefaultProfilePreset(depthPresetMap.at(declareAndLogParam<std::string>("i_depth_preset", "HIGH_ACCURACY")));
-    if(declareAndLogParam<bool>("i_enable_distortion_correction", false)) {
+    if(declareAndLogParam<bool>("i_enable_distortion_correction", true)) {
         stereo->enableDistortionCorrection(true);
     }
     if(declareAndLogParam<bool>("i_set_disparity_to_depth_use_spec_translation", false)) {
         stereo->setDisparityToDepthUseSpecTranslation(true);
     }
-
+    //
     stereo->initialConfig->setBilateralFilterSigma(declareAndLogParam<int>("i_bilateral_sigma", 0));
     stereo->initialConfig->setLeftRightCheckThreshold(declareAndLogParam<int>("i_lrc_threshold", 10));
-    // stereo->initialConfig->setMedianFilter(static_cast<dai::MedianFilter>(declareAndLogParam<int>("i_depth_filter_size", 5)));
+    // // stereo->initialConfig->setMedianFilter(static_cast<dai::MedianFilter>(declareAndLogParam<int>("i_depth_filter_size", 5)));
     stereo->initialConfig->setConfidenceThreshold(declareAndLogParam<int>("i_stereo_conf_threshold", 240));
     if(declareAndLogParam<bool>("i_subpixel", true) && !lowBandwidth) {
         stereo->initialConfig->setSubpixel(true);

@@ -10,7 +10,7 @@ PipelineGenParamHandler::PipelineGenParamHandler(std::shared_ptr<rclcpp::Node> n
 PipelineGenParamHandler::~PipelineGenParamHandler() = default;
 
 void PipelineGenParamHandler::declareParams() {
-    declareAndLogParam<bool>("i_enable_imu", true);
+    declareAndLogParam<bool>("i_enable_imu", false);
     declareAndLogParam<bool>("i_enable_diagnostics", true);
     declareAndLogParam<bool>("i_enable_sync", false);
 }

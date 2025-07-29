@@ -5,6 +5,7 @@
 
 #include "depthai/capabilities/ImgFrameCapability.hpp"
 #include "depthai/common/CameraSensorType.hpp"
+#include "depthai/depthai.hpp"
 #include "depthai/pipeline/Node.hpp"
 #include "depthai/pipeline/datatype/ADatatype.hpp"
 #include "depthai/pipeline/datatype/CameraControl.hpp"
@@ -16,6 +17,7 @@
 
 namespace dai {
 class Device;
+class CalibrationHandler;
 class Pipeline;
 class MessageQueue;
 namespace node {
@@ -53,7 +55,7 @@ void basicCameraPub(const std::string& /*name*/,
 
 sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
                                           std::shared_ptr<depthai_bridge::ImageConverter> converter,
-                                          std::shared_ptr<dai::Device> device,
+                                          dai::CalibrationHandler calHandler,
                                           dai::CameraBoardSocket socket,
                                           int width = 0,
                                           int height = 0);

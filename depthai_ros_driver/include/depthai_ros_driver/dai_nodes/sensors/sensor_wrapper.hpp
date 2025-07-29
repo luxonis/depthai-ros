@@ -54,6 +54,7 @@ class SensorWrapper : public BaseNode {
     void closeQueues() override;
     std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
     std::shared_ptr<dai::node::Camera> getUnderlyingNode();
+    dai::Node::Output* getDefaultOut();
 
    private:
     void subCB(const sensor_msgs::msg::Image& img);

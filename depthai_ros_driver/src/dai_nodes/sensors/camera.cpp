@@ -103,6 +103,11 @@ void Camera::link(dai::Node::Input in, int linkType) {
     defaultOut->link(in);
 }
 
+
+dai::Node::Output* Camera::getDefaultOut(){
+    return defaultOut;
+}
+
 std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> Camera::getPublishers() {
     std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> publishers;
     if(ph->getParam<bool>(param_handlers::SensorParamHandler::ParamNames::PUBLISH_TOPIC)) {
