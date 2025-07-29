@@ -190,7 +190,8 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
             outImageMsg.encoding = temp_str;
             outImageMsg.height = inData->getHeight();
             outImageMsg.width = inData->getWidth();
-            outImageMsg.step = inData->getStride();
+            outImageMsg.step = inData->getData().size() / inData->getHeight();
+            ;
             if(outImageMsg.encoding == "16UC1" || outImageMsg.encoding == "32FC1")
                 outImageMsg.is_bigendian = false;
             else
@@ -341,6 +342,53 @@ cv::Mat ImageConverter::rosMsgtoCvMat(ImageMsgs::Image& inMsg) {
         throw std::runtime_error("Unsupported encoding");
     }
 }
+
+sensor_msgs::msg::CameraInfo ImageConverter::generateCameraInfo(std::shared_ptr<dai::ImgFrame> imgFrame) const {
+    sensor_msgs::msg::CameraInfo cameraInfo;
+
+    // Get the ImgTransformation from the ImgFrame
+    const auto& transformation = imgFrame->transformation;
+
+    // Set the width and height
+    cameraInfo.width = transformation.getSize().first;
+    cameraInfo.height = transformation.getSize().second;
+
+    // Set the intrinsic matrix
+    const auto& intrinsicMatrix = transformation.getIntrinsicMatrix();
+    for(int i = 0; i < 3; ++i) {
+        for(int j = 0; j < 3; ++j) {
+            cameraInfo.k[i * 3 + j] = intrinsicMatrix[i][j];
+        }
+    }
+
+    // Set the distortion model
+    cameraInfo.distortion_model = "rational_polynomial";
+
+    // Set the distortion coefficients
+    const auto& distortionCoeffs = transformation.getDistortionCoefficients();
+    cameraInfo.d.resize(distortionCoeffs.size());
+    for(size_t i = 0; i < distortionCoeffs.size(); ++i) {
+        cameraInfo.d[i] = distortionCoeffs[i];
+    }
+
+    // Set the projection matrix (assuming no rotation or translation)
+    for(int i = 0; i < 3; ++i) {
+        for(int j = 0; j < 3; ++j) {
+            cameraInfo.p[i * 4 + j] = intrinsicMatrix[i][j];
+        }
+        cameraInfo.p[i * 4 + 3] = 0.0;
+    }
+
+    // Set the rectification matrix (identity matrix)
+    for(int i = 0; i < 3; ++i) {
+        for(int j = 0; j < 3; ++j) {
+            cameraInfo.r[i * 3 + j] = (i == j) ? 1.0 : 0.0;
+        }
+    }
+
+    return cameraInfo;
+}
+
 ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(dai::CalibrationHandler calibHandler,
                                                               dai::CameraBoardSocket cameraId,
                                                               int width,
