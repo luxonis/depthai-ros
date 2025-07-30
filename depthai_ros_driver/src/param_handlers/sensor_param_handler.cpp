@@ -25,8 +25,6 @@ void SensorParamHandler::declareCommonParams(dai::CameraBoardSocket socket) {
     declareAndLogParam<bool>(ParamNames::ENABLE_FEATURE_TRACKER, false);
     declareAndLogParam<bool>(ParamNames::ENABLE_NN, false);
     declareAndLogParam<int>(ParamNames::MAX_Q_SIZE, 8);
-}
-void SensorParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, bool publish) {
     declareAndLogParam<bool>(ParamNames::LOW_BANDWIDTH, false);
     declareAndLogParam<int>(ParamNames::LOW_BANDWIDTH_PROFILE, 4);
     declareAndLogParam<int>(ParamNames::LOW_BANDWIDTH_FRAME_FREQ, 30);
@@ -37,13 +35,15 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, b
     declareAndLogParam<std::string>(ParamNames::CALIBRATION_FILE, "");
     declareAndLogParam<bool>(ParamNames::UPDATE_ROS_BASE_TIME_ON_ROS_MSG, false);
     declareAndLogParam<bool>(ParamNames::ENABLE_LAZY_PUBLISHER, true);
-    declareAndLogParam<bool>(ParamNames::PUBLISH_TOPIC, publish);
     declareAndLogParam<bool>(ParamNames::ADD_EXPOSURE_OFFSET, false);
     declareAndLogParam<int>(ParamNames::EXPOSURE_OFFSET, 0);
     declareAndLogParam<bool>(ParamNames::REVERSE_STEREO_SOCKET_ORDER, false);
     declareAndLogParam<bool>(ParamNames::SYNCED, false);
     declareAndLogParam<bool>(ParamNames::PUBLISH_COMPRESSED, false);
+}
+void SensorParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, bool publish) {
 
+    declareAndLogParam<bool>(ParamNames::PUBLISH_TOPIC, publish);
     declareAndLogParam<int>(ParamNames::WIDTH, 640);
     declareAndLogParam<int>(ParamNames::HEIGHT, 400);
     float fps = 30.0;

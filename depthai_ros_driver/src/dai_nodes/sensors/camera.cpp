@@ -39,7 +39,7 @@ std::shared_ptr<dai::node::Camera> Camera::getUnderlyingNode() {
     return camNode;
 }
 void Camera::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
-    using ParamNames = param_handlers::SensorParamHandler::ParamNames;
+    using ParamNames = param_handlers::ParamNames;
     auto width = ph->getParam<int>(ParamNames::WIDTH);
     auto height = ph->getParam<int>(ParamNames::HEIGHT);
     auto fps = ph->getParam<float>(ParamNames::FPS);
@@ -64,7 +64,7 @@ void Camera::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
 }
 
 void Camera::setupQueues(std::shared_ptr<dai::Device> device) {
-    using ParamNames = param_handlers::SensorParamHandler::ParamNames;
+    using ParamNames = param_handlers::ParamNames;
     controlQ = camNode->inputControl.createInputQueue(8, false);
     if(ph->getParam<bool>(ParamNames::PUBLISH_TOPIC)) {
         auto tfPrefix = getOpticalFrameName(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>(ParamNames::BOARD_SOCKET_ID))));
@@ -94,7 +94,7 @@ void Camera::setupQueues(std::shared_ptr<dai::Device> device) {
 }
 
 void Camera::closeQueues() {
-    if(ph->getParam<bool>(param_handlers::SensorParamHandler::ParamNames::PUBLISH_TOPIC)) {
+    if(ph->getParam<bool>(param_handlers::ParamNames::PUBLISH_TOPIC)) {
         rgbPub->closeQueue();
     }
 }
@@ -110,7 +110,7 @@ dai::Node::Output* Camera::getDefaultOut(){
 
 std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> Camera::getPublishers() {
     std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> publishers;
-    if(ph->getParam<bool>(param_handlers::SensorParamHandler::ParamNames::PUBLISH_TOPIC)) {
+    if(ph->getParam<bool>(param_handlers::ParamNames::PUBLISH_TOPIC)) {
         publishers.push_back(rgbPub);
     }
     return publishers;

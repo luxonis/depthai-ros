@@ -23,7 +23,7 @@ ToF::ToF(const std::string& daiNodeName,
     tofNode = pipeline->create<dai::node::ToF>();
     boardSocket = socket;
     ph = std::make_unique<param_handlers::ToFParamHandler>(node, daiNodeName, deviceName, rsCompat);
-    ph->declareParams(tofNode);
+    ph->declareParams(tofNode, socket);
     setInOut(pipeline);
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
 }
@@ -31,18 +31,12 @@ ToF::~ToF() = default;
 void ToF::setNames() {
     tofQName = getName() + "_tof";
 }
+std::shared_ptr<dai::node::ToF> ToF::getUnderlyingNode() {
+    return tofNode;
+}
 
 void ToF::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
     if(ph->getParam<bool>("i_publish_topic")) {
-        bool align = boardSocket == dai::CameraBoardSocket::CAM_A;
-        std::function<void(dai::Node::Input)> tofLinkChoice;
-        if(align) {
-            tofLinkChoice = [&](auto input) { tofNode->depth.link(input); };
-        } else {
-            alignNode = pipeline->create<dai::node::ImageAlign>();
-            tofNode->depth.link(alignNode->input);
-            tofLinkChoice = [&](auto input) { alignNode->outputAligned.link(input); };
-        }
         utils::VideoEncoderConfig encConfig;
         encConfig.profile = static_cast<dai::VideoEncoderProperties::Profile>(ph->getParam<int>("i_low_bandwidth_profile"));
         encConfig.bitrate = ph->getParam<int>("i_low_bandwidth_bitrate");
@@ -88,9 +82,6 @@ void ToF::closeQueues() {
     }
 }
 
-dai::Node::Input ToF::getInput(int /*linkType*/) {
-    return alignNode->inputAlignTo;
-}
 
 void ToF::link(dai::Node::Input in, int /*linkType*/) {
     tofNode->depth.link(in);

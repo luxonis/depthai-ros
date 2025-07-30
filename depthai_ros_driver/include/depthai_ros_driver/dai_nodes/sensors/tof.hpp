@@ -41,16 +41,15 @@ class ToF : public BaseNode {
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(dai::Node::Input in, int linkType = 0) override;
-    dai::Node::Input getInput(int linkType = 0) override;
     void setNames() override;
     void setInOut(std::shared_ptr<dai::Pipeline> pipeline) override;
     std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
     void closeQueues() override;
+    std::shared_ptr<dai::node::ToF> getUnderlyingNode();
 
    private:
     std::shared_ptr<sensor_helpers::ImagePublisher> tofPub;
     std::shared_ptr<dai::node::ToF> tofNode;
-    std::shared_ptr<dai::node::ImageAlign> alignNode;
     std::unique_ptr<param_handlers::ToFParamHandler> ph;
     dai::CameraBoardSocket boardSocket;
     std::string tofQName;

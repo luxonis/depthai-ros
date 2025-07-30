@@ -1,5 +1,6 @@
 #pragma once
 
+#include <depthai/pipeline/datatype/ImageFiltersConfig.hpp>
 #include <memory>
 #include <string>
 
@@ -25,8 +26,9 @@ class ToFParamHandler : public BaseParamHandler {
    public:
     explicit ToFParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name, const std::string& deviceName, bool rsCompat);
     ~ToFParamHandler();
-    void declareParams(std::shared_ptr<dai::node::ToF> tof);
+    void declareParams(std::shared_ptr<dai::node::ToF> tof, dai::CameraBoardSocket socket);
     std::unordered_map<std::string, dai::MedianFilter> medianFilterMap;
+    std::unordered_map<std::string, dai::ImageFiltersPresetMode> presetModeMap;
 };
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver
