@@ -20,7 +20,7 @@ class Parameter;
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-class SensorParamHandler;
+class ThermalParamHandler;
 }
 namespace dai_nodes {
 
@@ -46,7 +46,7 @@ class Thermal : public BaseNode {
    private:
     std::shared_ptr<sensor_helpers::ImagePublisher> thermalPub, thermalRawPub;
     std::shared_ptr<dai::node::Thermal> camNode;
-    std::unique_ptr<param_handlers::SensorParamHandler> ph;
+    std::unique_ptr<param_handlers::ThermalParamHandler> ph;
     dai::CameraBoardSocket boardSocket;
     std::string thermalQName, rawQName;
 };

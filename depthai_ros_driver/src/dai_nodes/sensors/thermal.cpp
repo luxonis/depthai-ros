@@ -7,19 +7,21 @@
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/Thermal.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
-#include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
+#include "depthai_ros_driver/param_handlers/thermal_param_handler.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/node.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-Thermal::Thermal(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline, const std::string& deviceName, bool rsCompat)
+Thermal::Thermal(
+    const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline, const std::string& deviceName, bool rsCompat)
     : BaseNode(daiNodeName, node, pipeline, deviceName, rsCompat) {
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     camNode = pipeline->create<dai::node::Thermal>();
-    // ph = std::make_unique<param_handlers::SensorParamHandler>(node, daiNodeName, boardSocket);
-    // ph->declareParams(camNode,  true);
+    ph = std::make_unique<param_handlers::ThermalParamHandler>(node, getName(), deviceName, rsCompat);
+    ph->declareParams(camNode);
+    boardSocket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>(param_handlers::ParamNames::BOARD_SOCKET_ID));
     setInOut(pipeline);
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
 }
