@@ -78,6 +78,7 @@ add_library(
   src/param_handlers/feature_tracker_param_handler.cpp
   src/param_handlers/rgbd_param_handler.cpp
   src/param_handlers/stereo_param_handler.cpp
+  src/param_handlers/thermal_param_handler.cpp
   src/param_handlers/tof_param_handler.cpp
   src/param_handlers/pipeline_gen_param_handler.cpp
   src/param_handlers/sync_param_handler.cpp
@@ -170,12 +171,6 @@ install(EXPORT ${PROJECT_NAME}Targets
       DESTINATION share/${PROJECT_NAME}/cmake)
 install(TARGETS driver_node DESTINATION lib/${PROJECT_NAME})
 ament_python_install_package(${PROJECT_NAME})
-# Install Python executables
-install(
-  PROGRAMS
-  scripts/obj_pub.py
-  DESTINATION lib/${PROJECT_NAME}
-)
 
 ament_export_include_directories(
   include
