@@ -137,7 +137,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     stereo->initialConfig->setBilateralFilterSigma(declareAndLogParam<int>("i_bilateral_sigma", 0));
     stereo->initialConfig->setLeftRightCheckThreshold(declareAndLogParam<int>("i_lrc_threshold", 10));
     // // stereo->initialConfig->setMedianFilter(static_cast<dai::MedianFilter>(declareAndLogParam<int>("i_depth_filter_size", 5)));
-    stereo->initialConfig->setConfidenceThreshold(declareAndLogParam<int>("i_stereo_conf_threshold", 240));
+    stereo->initialConfig->setConfidenceThreshold(declareAndLogParam<int>("i_stereo_conf_threshold", 15));
     if(declareAndLogParam<bool>("i_subpixel", true) && !lowBandwidth) {
         stereo->initialConfig->setSubpixel(true);
         stereo->initialConfig->setSubpixelFractionalBits(declareAndLogParam<int>("i_subpixel_fractional_bits", 3));
