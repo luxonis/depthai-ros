@@ -226,22 +226,20 @@ std::string TFPublisher::prepareXacroArgs() {
 }
 
 void TFPublisher::convertModelName() {
-    std::map<std::string, std::string> modelMappings = {
-        {"OAK-D-SR-POE", "OAK-D-SR-POE"},
-        {"OAK-D-PRO-W-POE", "OAK-D-POE"},
-        {"OAK-D-PRO-POE", "OAK-D-POE"},
-        {"OAK-D-S2-POE", "OAK-D-POE"},
-        {"OAK-D-POE", "OAK-D-POE"},
-        {"OAK-D-LITE", "OAK-D-PRO"},
-        {"OAK-D-S2", "OAK-D-PRO"},
-        {"OAK-D-PRO-W", "OAK-D-PRO"},
-        {"OAK-D-PRO", "OAK-D-PRO"},
-        {"OAK-D", "OAK-D"},
-        {"OAK-T", "OAK-T"}
-    };
+    std::map<std::string, std::string> modelMappings = {{"OAK-D-SR-POE", "OAK-D-SR-POE"},
+                                                        {"OAK-D-PRO-W-POE", "OAK-D-POE"},
+                                                        {"OAK-D-PRO-POE", "OAK-D-POE"},
+                                                        {"OAK-D-S2-POE", "OAK-D-POE"},
+                                                        {"OAK-D-POE", "OAK-D-POE"},
+                                                        {"OAK-D-LITE", "OAK-D-PRO"},
+                                                        {"OAK-D-S2", "OAK-D-PRO"},
+                                                        {"OAK-D-PRO-W", "OAK-D-PRO"},
+                                                        {"OAK-D-PRO", "OAK-D-PRO"},
+                                                        {"OAK-D", "OAK-D"},
+                                                        {"OAK-T", "OAK-T"}};
 
-    for (const auto& [key, value] : modelMappings) {
-        if (camModel==key) {
+    for(const auto& [key, value] : modelMappings) {
+        if(camModel == key) {
             camModel = value;
             return;
         }

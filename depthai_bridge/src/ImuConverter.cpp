@@ -25,7 +25,6 @@ ImuConverter::ImuConverter(const std::string& frameName,
 
 ImuConverter::~ImuConverter() = default;
 
-
 void ImuConverter::fillImuMsg(ImuMsgs::Imu& msg, dai::IMUReportAccelerometer report) {
     msg.linear_acceleration.x = report.x;
     msg.linear_acceleration.y = report.y;

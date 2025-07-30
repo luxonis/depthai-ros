@@ -15,9 +15,7 @@ class TrackedFeaturesConverter : public BaseConverter {
     explicit TrackedFeaturesConverter(std::string frameName, bool getBaseDeviceTimestamp = false);
     ~TrackedFeaturesConverter();
 
-
     void toRosMsg(std::shared_ptr<dai::TrackedFeatures> inFeatures, std::deque<depthai_ros_msgs::msg::TrackedFeatures>& featureMsgs);
-
 };
 
 }  // namespace depthai_bridge

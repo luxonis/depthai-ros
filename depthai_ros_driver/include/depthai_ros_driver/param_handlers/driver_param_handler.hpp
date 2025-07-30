@@ -19,7 +19,7 @@ namespace param_handlers {
 
 class DriverParamHandler : public BaseParamHandler {
    public:
-    explicit DriverParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name, const std::string& deviceName="", bool rsCompat=false);
+    explicit DriverParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name, const std::string& deviceName = "", bool rsCompat = false);
     ~DriverParamHandler();
     void declareParams();
     dai::UsbSpeed getUSBSpeed();

@@ -1,18 +1,11 @@
 #include "depthai_bridge/TrackDetectionConverter.hpp"
 
-
 namespace depthai_bridge {
 
 TrackDetectionConverter::TrackDetectionConverter(std::string frameName, int width, int height, bool normalized, float thresh, bool getBaseDeviceTimestamp)
-    : BaseConverter(std::move(frameName), getBaseDeviceTimestamp),
-      width(width),
-      height(height),
-      normalized(normalized),
-      thresh(thresh){
-}
+    : BaseConverter(std::move(frameName), getBaseDeviceTimestamp), width(width), height(height), normalized(normalized), thresh(thresh) {}
 
 TrackDetectionConverter::~TrackDetectionConverter() = default;
-
 
 void TrackDetectionConverter::toRosMsg(std::shared_ptr<dai::Tracklets> trackData, std::deque<depthai_ros_msgs::msg::TrackDetection2DArray>& opDetectionMsgs) {
     depthai_ros_msgs::msg::TrackDetection2DArray opDetectionMsg;

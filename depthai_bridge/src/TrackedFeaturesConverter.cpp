@@ -1,6 +1,5 @@
 #include "depthai_bridge/TrackedFeaturesConverter.hpp"
 
-
 namespace depthai_bridge {
 
 TrackedFeaturesConverter::TrackedFeaturesConverter(std::string frameName, bool getBaseDeviceTimestamp)
@@ -8,9 +7,7 @@ TrackedFeaturesConverter::TrackedFeaturesConverter(std::string frameName, bool g
 
 TrackedFeaturesConverter::~TrackedFeaturesConverter() = default;
 
-
 void TrackedFeaturesConverter::toRosMsg(std::shared_ptr<dai::TrackedFeatures> inFeatures, std::deque<depthai_ros_msgs::msg::TrackedFeatures>& featureMsgs) {
-
     depthai_ros_msgs::msg::TrackedFeatures msg;
 
     msg.header = getRosHeader(inFeatures);

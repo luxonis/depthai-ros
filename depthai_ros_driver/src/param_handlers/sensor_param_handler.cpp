@@ -42,7 +42,6 @@ void SensorParamHandler::declareCommonParams(dai::CameraBoardSocket socket) {
     declareAndLogParam<bool>(ParamNames::PUBLISH_COMPRESSED, false);
 }
 void SensorParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, bool publish) {
-
     declareAndLogParam<bool>(ParamNames::PUBLISH_TOPIC, publish);
     declareAndLogParam<int>(ParamNames::WIDTH, 640);
     declareAndLogParam<int>(ParamNames::HEIGHT, 400);

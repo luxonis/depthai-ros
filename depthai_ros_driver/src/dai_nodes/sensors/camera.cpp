@@ -103,8 +103,7 @@ void Camera::link(dai::Node::Input in, int linkType) {
     defaultOut->link(in);
 }
 
-
-dai::Node::Output* Camera::getDefaultOut(){
+dai::Node::Output* Camera::getDefaultOut() {
     return defaultOut;
 }
 

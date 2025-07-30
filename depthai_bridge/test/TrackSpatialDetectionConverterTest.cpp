@@ -1,7 +1,9 @@
 #include <gtest/gtest.h>
+
+#include <memory>
+
 #include "depthai_bridge/TrackSpatialDetectionConverter.hpp"
 #include "depthai_ros_msgs/msg/track_detection2_d_array.hpp"
-#include <memory>
 
 namespace depthai_bridge {
 

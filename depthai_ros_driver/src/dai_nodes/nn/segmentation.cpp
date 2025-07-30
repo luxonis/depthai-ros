@@ -2,8 +2,8 @@
 
 #include "camera_info_manager/camera_info_manager.hpp"
 #include "cv_bridge/cv_bridge.hpp"
-#include "depthai/pipeline/MessageQueue.hpp"
 #include "depthai/device/Device.hpp"
+#include "depthai/pipeline/MessageQueue.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/datatype/NNData.hpp"
 #include "depthai/pipeline/node/ImageManip.hpp"
@@ -47,8 +47,7 @@ void Segmentation::setNames() {
     ptQName = getName() + "_pt";
 }
 
-void Segmentation::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
-}
+void Segmentation::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {}
 
 void Segmentation::setupQueues(std::shared_ptr<dai::Device> device) {
     nnQ = segNode->out.createOutputQueue(ph->getParam<int>("i_max_q_size"), false);

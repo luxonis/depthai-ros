@@ -1,6 +1,5 @@
 #include "depthai_bridge/TrackSpatialDetectionConverter.hpp"
 
-
 namespace depthai_bridge {
 
 TrackSpatialDetectionConverter::TrackSpatialDetectionConverter(

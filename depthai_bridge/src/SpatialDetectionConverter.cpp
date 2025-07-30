@@ -9,7 +9,6 @@ SpatialDetectionConverter::SpatialDetectionConverter(std::string frameName, bool
 
 SpatialDetectionConverter::~SpatialDetectionConverter() = default;
 
-
 void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetections> inNetData,
                                          std::deque<SpatialMessages::SpatialDetectionArray>& opDetectionMsgs) {
     SpatialMessages::SpatialDetectionArray opDetectionMsg;

@@ -38,8 +38,12 @@ class BaseConverter {
     std::string getFrameName() const {
         return frameName;
     }
-    bool isGetBaseDeviceTimestamp() const { return getBaseDeviceTimestamp; }
-    bool isUpdateRosBaseTimeOnToRosMsg() const { return updateRosBaseTimeOnToRosMsg; }
+    bool isGetBaseDeviceTimestamp() const {
+        return getBaseDeviceTimestamp;
+    }
+    bool isUpdateRosBaseTimeOnToRosMsg() const {
+        return updateRosBaseTimeOnToRosMsg;
+    }
 
    protected:
     const std::string frameName;

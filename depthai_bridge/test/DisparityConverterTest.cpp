@@ -1,8 +1,10 @@
 #include <gtest/gtest.h>
+
+#include <deque>
+#include <memory>
+
 #include "depthai_bridge/DisparityConverter.hpp"
 #include "depthai_bridge/depthaiUtility.hpp"
-#include <memory>
-#include <deque>
 
 namespace depthai_bridge {
 

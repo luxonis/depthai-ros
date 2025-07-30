@@ -52,7 +52,7 @@ void Driver::onConfigure() {
                                                               ph->getParam<bool>("i_rs_compat"));
     }
     srvGroup = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
-    
+
     startSrv = this->create_service<Trigger>(
         "~/start_camera", std::bind(&Driver::startCB, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS(), srvGroup);
     stopSrv = this->create_service<Trigger>(
@@ -179,10 +179,7 @@ void Driver::createPipeline() {
     if(!ph->getParam<std::string>("i_external_calibration_path").empty()) {
         loadCalib(ph->getParam<std::string>("i_external_calibration_path"));
     }
-    daiNodes = generator->createPipeline(shared_from_this(),
-                                         device,
-                                         pipeline,
-                                         ph->getParam<bool>("i_rs_compat"));
+    daiNodes = generator->createPipeline(shared_from_this(), device, pipeline, ph->getParam<bool>("i_rs_compat"));
     if(ph->getParam<bool>("i_pipeline_dump")) {
         savePipeline();
     }
@@ -261,7 +258,6 @@ void Driver::startDevice() {
 
     // device = std::make_shared<dai::Device>();
 
-    
     RCLCPP_INFO(get_logger(), "Driver with ID: %s and Name: %s connected!", device->getDeviceId().c_str(), device->getDeviceInfo().name.c_str());
     auto protocol = device->getDeviceInfo().getXLinkDeviceDesc().protocol;
 
@@ -276,7 +272,7 @@ void Driver::startDevice() {
 }
 
 void Driver::setIR() {
-    if(ph->getParam<bool>("i_enable_ir")/*  && !device->getIrDrivers().empty() */) {
+    if(ph->getParam<bool>("i_enable_ir") /*  && !device->getIrDrivers().empty() */) {
         // Normalize laserdot brightness to 0-1 range, max value can be 1200mA
         float laserdotBrightness = float(ph->getParam<int>("i_laser_dot_brightness"));
         if(laserdotBrightness > 1.0) {

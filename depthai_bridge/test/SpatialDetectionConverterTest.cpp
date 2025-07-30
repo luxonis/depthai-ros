@@ -1,8 +1,10 @@
 
 #include <gtest/gtest.h>
-#include "depthai_bridge/SpatialDetectionConverter.hpp"
+
 #include <deque>
 #include <memory>
+
+#include "depthai_bridge/SpatialDetectionConverter.hpp"
 
 namespace depthai_bridge {
 

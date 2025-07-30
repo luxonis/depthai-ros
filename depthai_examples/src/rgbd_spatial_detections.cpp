@@ -193,13 +193,7 @@ int main(int argc, char** argv) {
     if(enableRosBaseTimeUpdate) {
     }
     auto imuPublish = std::make_unique<depthai_bridge::BridgePublisher<sensor_msgs::msg::Imu, dai::IMUData>>(
-        queues.imuOut,
-        node,
-        "imu",
-        std::bind(&depthai_bridge::ImuConverter::toRosMsg, imuConverter, std::placeholders::_1, std::placeholders::_2),
-        30,
-        "",
-        "");
+        queues.imuOut, node, "imu", std::bind(&depthai_bridge::ImuConverter::toRosMsg, imuConverter, std::placeholders::_1, std::placeholders::_2), 30, "", "");
 
     imuPublish->addPublisherCallback();
 

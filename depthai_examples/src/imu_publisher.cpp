@@ -8,8 +8,8 @@
 #include "depthai_bridge/ImuConverter.hpp"
 #include "depthai_bridge/TFPublisher.hpp"
 #include "depthai_bridge/depthaiUtility.hpp"
-#include "sensor_msgs/msg/imu.hpp"
 #include "rclcpp/node.hpp"
+#include "sensor_msgs/msg/imu.hpp"
 
 int main(int argc, char** argv) {
     std::string tfPrefix = "oak";
@@ -35,8 +35,7 @@ int main(int argc, char** argv) {
 
     // Create a bridge publisher for RGB images
     depthai_bridge::ImuSyncMethod imuMode = depthai_bridge::ImuSyncMethod::COPY;
-    auto imuConv = std::make_shared<depthai_bridge::ImuConverter>(
-        depthai_bridge::getFrameName(tfPrefix, "imu_frame"), imuMode);
+    auto imuConv = std::make_shared<depthai_bridge::ImuConverter>(depthai_bridge::getFrameName(tfPrefix, "imu_frame"), imuMode);
 
     auto calibrationHandler = device->readCalibration();
     auto tfPub =

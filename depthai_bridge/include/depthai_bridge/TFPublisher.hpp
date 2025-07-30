@@ -21,17 +21,17 @@ class TFPublisher {
                          const std::string& camName,
                          const std::string& camModel,
                          const std::string& baseFrame = "oak",
-                         const std::string& parentFrame="oak-d-base-frame",
-                         const std::string& camPosX="0.0",
-                         const std::string& camPosY="0.0",
-                         const std::string& camPosZ="0.0",
-                         const std::string& camRoll="0.0",
-                         const std::string& camPitch="0.0",
-                         const std::string& camYaw="0.0",
-                         const std::string& imuFromDescr="false",
-                         const std::string& customURDFLocation="",
-                         const std::string& customXacroArgs="",
-                         const bool rsCompatibilityMode=false);
+                         const std::string& parentFrame = "oak-d-base-frame",
+                         const std::string& camPosX = "0.0",
+                         const std::string& camPosY = "0.0",
+                         const std::string& camPosZ = "0.0",
+                         const std::string& camRoll = "0.0",
+                         const std::string& camPitch = "0.0",
+                         const std::string& camYaw = "0.0",
+                         const std::string& imuFromDescr = "false",
+                         const std::string& customURDFLocation = "",
+                         const std::string& customXacroArgs = "",
+                         const bool rsCompatibilityMode = false);
     /**
      * @brief Obtain URDF description by running Xacro with provided arguments.
      */

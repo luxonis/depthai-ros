@@ -40,7 +40,7 @@ class NNParamHandler : public BaseParamHandler {
     ~NNParamHandler();
     nn::NNFamily getNNFamily();
     template <typename T>
-    void declareParams(std::shared_ptr<T> nn ){
+    void declareParams(std::shared_ptr<T> nn) {
         declareAndLogParam<bool>("i_desqueeze_output", false);
         declareAndLogParam<bool>("i_enable_passthrough", false);
         declareAndLogParam<bool>("i_enable_passthrough_depth", false);

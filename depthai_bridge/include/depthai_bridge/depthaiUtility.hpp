@@ -170,7 +170,6 @@ inline std::string getOpticalFrameName(const std::string& prefix, const std::str
     return getFrameName(prefix, frameName) + suffix;
 }
 
-
 inline std::string getSocketName(dai::CameraBoardSocket socketNum, const std::string& deviceName = "", bool rsCompat = false, bool useSocketNames = false) {
     std::string name = "";
     try {

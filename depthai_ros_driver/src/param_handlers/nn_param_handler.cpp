@@ -1,6 +1,5 @@
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
 
-
 #include "depthai/common/CameraBoardSocket.hpp"
 #include "depthai/pipeline/node/DetectionNetwork.hpp"
 #include "depthai/pipeline/node/NeuralNetwork.hpp"
@@ -29,19 +28,16 @@ nn::NNFamily NNParamHandler::getNNFamily() {
     return utils::getValFromMap(nnFamily, nnFamilyMap);
 }
 
-void NNParamHandler::setNNParams(std::shared_ptr<dai::node::NeuralNetwork> /*nn*/) {
-}
+void NNParamHandler::setNNParams(std::shared_ptr<dai::node::NeuralNetwork> /*nn*/) {}
 
 void NNParamHandler::setNNParams(std::shared_ptr<dai::node::DetectionNetwork> nn) {
     nn->setConfidenceThreshold(declareAndLogParam<float>("i_nn_confidence_threshold", 0.5));
 }
 
 void NNParamHandler::setNNParams(std::shared_ptr<dai::node::SpatialDetectionNetwork> nn) {
-
     nn->setConfidenceThreshold(declareAndLogParam<float>("i_nn_confidence_threshold", 0.5));
     setSpatialParams(nn);
 }
 
-
 }  // namespace param_handlers
-}  // namespace depthai_rosdeclareAndLogParam<std::string>("i_nn_family", "detection");_driver
+}  // namespace depthai_ros_driver

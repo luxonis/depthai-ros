@@ -58,7 +58,7 @@ class BasePipeline {
                                                                              const std::string& nnType) = 0;
 
    protected:
-    BasePipeline() {};
+    BasePipeline(){};
     std::unordered_map<std::string, NNType> nnTypeMap = {
         {"", NNType::None},
         {"NONE", NNType::None},

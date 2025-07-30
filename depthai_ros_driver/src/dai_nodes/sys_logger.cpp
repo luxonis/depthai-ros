@@ -1,7 +1,7 @@
 #include "depthai_ros_driver/dai_nodes/sys_logger.hpp"
 
-#include "depthai/pipeline/MessageQueue.hpp"
 #include "depthai/device/Device.hpp"
+#include "depthai/pipeline/MessageQueue.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/datatype/SystemInformation.hpp"
 #include "depthai/pipeline/node/SystemLogger.hpp"
@@ -9,7 +9,8 @@
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
-SysLogger::SysLogger(const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline, std::string deviceName, bool rsCompat)
+SysLogger::SysLogger(
+    const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline, std::string deviceName, bool rsCompat)
     : BaseNode(daiNodeName, node, pipeline, deviceName, rsCompat) {
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
@@ -23,8 +24,7 @@ void SysLogger::setNames() {
     loggerQName = getName() + "_queue";
 }
 
-void SysLogger::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
-}
+void SysLogger::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {}
 
 void SysLogger::setupQueues(std::shared_ptr<dai::Device> device) {
     loggerQ = sysNode->out.createOutputQueue(8, false);

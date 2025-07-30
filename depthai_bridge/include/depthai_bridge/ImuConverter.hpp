@@ -8,8 +8,8 @@
 #include <unordered_map>
 
 #include "depthai/pipeline/datatype/IMUData.hpp"
-#include "depthai_bridge/depthaiUtility.hpp"
 #include "depthai_bridge/BaseConverter.hpp"
+#include "depthai_bridge/depthaiUtility.hpp"
 #include "depthai_ros_msgs/msg/imu_with_magnetic_field.hpp"
 #include "rclcpp/time.hpp"
 #include "sensor_msgs/msg/imu.hpp"
@@ -35,7 +35,6 @@ class ImuConverter : public BaseConverter {
                           bool getBaseDeviceTimestamp = false);
     ~ImuConverter();
 
-
     void toRosMsg(std::shared_ptr<dai::IMUData> inData, std::deque<ImuMsgs::Imu>& outImuMsgs);
     void toRosDaiMsg(std::shared_ptr<dai::IMUData> inData, std::deque<depthai_ros_msgs::msg::ImuWithMagneticField>& outImuMsgs);
 
@@ -54,13 +53,12 @@ class ImuConverter : public BaseConverter {
     }
 
    private:
-std::deque<dai::IMUReportAccelerometer> accelHist;
-std::deque<dai::IMUReportGyroscope> gyroHist;
-std::deque<dai::IMUReportRotationVectorWAcc> rotationHist;
-std::deque<dai::IMUReportMagneticField> magnHist;
+    std::deque<dai::IMUReportAccelerometer> accelHist;
+    std::deque<dai::IMUReportGyroscope> gyroHist;
+    std::deque<dai::IMUReportRotationVectorWAcc> rotationHist;
+    std::deque<dai::IMUReportMagneticField> magnHist;
     template <typename T>
     void FillImuData_LinearInterpolation(std::vector<dai::IMUPacket>& imuPackets, std::deque<T>& imuMsgs) {
-
         for(int i = 0; i < imuPackets.size(); ++i) {
             if(accelHist.size() == 0) {
                 accelHist.push_back(imuPackets[i].acceleroMeter);

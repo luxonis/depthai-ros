@@ -82,7 +82,6 @@ void ToF::closeQueues() {
     }
 }
 
-
 void ToF::link(dai::Node::Input in, int /*linkType*/) {
     tofNode->depth.link(in);
 }

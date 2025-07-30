@@ -5,9 +5,9 @@
 #include <string>
 
 #include "depthai/pipeline/datatype/ImgDetections.hpp"
+#include "depthai_bridge/BaseConverter.hpp"
 #include "rclcpp/time.hpp"
 #include "vision_msgs/msg/detection2_d_array.hpp"
-#include "depthai_bridge/BaseConverter.hpp"
 
 namespace depthai_bridge {
 

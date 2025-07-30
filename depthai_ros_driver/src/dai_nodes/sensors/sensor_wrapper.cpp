@@ -110,11 +110,11 @@ void SensorWrapper::link(dai::Node::Input in, int linkType) {
     }
 }
 
-std::shared_ptr<dai::node::Camera> SensorWrapper::getUnderlyingNode(){
+std::shared_ptr<dai::node::Camera> SensorWrapper::getUnderlyingNode() {
     return sensorNode->getUnderlyingNode();
 }
 
-dai::Node::Output* SensorWrapper::getDefaultOut(){
+dai::Node::Output* SensorWrapper::getDefaultOut() {
     return sensorNode->getDefaultOut();
 }
 

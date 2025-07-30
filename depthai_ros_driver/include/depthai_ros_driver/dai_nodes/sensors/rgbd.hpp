@@ -15,7 +15,7 @@ class RGBD;
 }  // namespace node
 }  // namespace dai
 
-namespace depthai_bridge{
+namespace depthai_bridge {
 class PointCloudConverter;
 };
 
@@ -37,21 +37,20 @@ class Stereo;
 class ToF;
 class RGBD : public BaseNode {
    public:
-
     explicit RGBD(const std::string& daiNodeName,
-                     std::shared_ptr<rclcpp::Node> node,
-                     std::shared_ptr<dai::Pipeline> pipeline,
-                     std::shared_ptr<dai::Device> device,
-                     bool rsCompat,
-                     SensorWrapper& camNode,
-                     Stereo& stereoNode);
+                  std::shared_ptr<rclcpp::Node> node,
+                  std::shared_ptr<dai::Pipeline> pipeline,
+                  std::shared_ptr<dai::Device> device,
+                  bool rsCompat,
+                  SensorWrapper& camNode,
+                  Stereo& stereoNode);
     explicit RGBD(const std::string& daiNodeName,
-                     std::shared_ptr<rclcpp::Node> node,
-                     std::shared_ptr<dai::Pipeline> pipeline,
-                     std::shared_ptr<dai::Device> device,
-                     bool rsCompat,
-                     SensorWrapper& camNode,
-                     ToF& tofNode);
+                  std::shared_ptr<rclcpp::Node> node,
+                  std::shared_ptr<dai::Pipeline> pipeline,
+                  std::shared_ptr<dai::Device> device,
+                  bool rsCompat,
+                  SensorWrapper& camNode,
+                  ToF& tofNode);
     ~RGBD();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
@@ -70,8 +69,6 @@ class RGBD : public BaseNode {
     std::shared_ptr<dai::node::ImageAlign> align;
     std::unique_ptr<param_handlers::RGBDParamHandler> ph;
     std::shared_ptr<dai::MessageQueue> pclQ;
-
-
 };
 
 }  // namespace dai_nodes

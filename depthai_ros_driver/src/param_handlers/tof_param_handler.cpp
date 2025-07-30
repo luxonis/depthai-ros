@@ -15,8 +15,8 @@ ToFParamHandler::ToFParamHandler(std::shared_ptr<rclcpp::Node> node, const std::
                        {"KERNEL_5x5", dai::MedianFilter::KERNEL_5x5},
                        {"KERNEL_7x7", dai::MedianFilter::KERNEL_7x7}};
     presetModeMap = {{"TOF_LOW_RANGE", dai::ImageFiltersPresetMode::TOF_LOW_RANGE},
-                    {"TOF_MID_RANGE", dai::ImageFiltersPresetMode::TOF_MID_RANGE},
-                    {"TOF_HIGH_RANGE", dai::ImageFiltersPresetMode::TOF_HIGH_RANGE}};
+                     {"TOF_MID_RANGE", dai::ImageFiltersPresetMode::TOF_MID_RANGE},
+                     {"TOF_HIGH_RANGE", dai::ImageFiltersPresetMode::TOF_HIGH_RANGE}};
 }
 ToFParamHandler::~ToFParamHandler() = default;
 void ToFParamHandler::declareParams(std::shared_ptr<dai::node::ToF> tof, dai::CameraBoardSocket socket) {
@@ -42,7 +42,6 @@ void ToFParamHandler::declareParams(std::shared_ptr<dai::node::ToF> tof, dai::Ca
     auto sock = static_cast<dai::CameraBoardSocket>(declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket)));
     dai::ImageFiltersPresetMode presetMode = utils::getValFromMap(declareAndLogParam<std::string>("i_preset_mode", "TOF_MID_RANGE"), presetModeMap);
     tof->build(sock, presetMode, fps);
-
 }
 
 }  // namespace param_handlers

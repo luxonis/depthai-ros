@@ -14,7 +14,7 @@ BaseConverter::BaseConverter(std::string frameName, bool getBaseDeviceTimestamp)
       steadyBaseTime(std::chrono::steady_clock::now()),
       rosBaseTime(rclcpp::Clock().now()),
       updateRosBaseTimeOnToRosMsg(false),
-      totalNsChange(0){}
+      totalNsChange(0) {}
 
 BaseConverter::~BaseConverter() = default;
 

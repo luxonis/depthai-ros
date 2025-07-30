@@ -1,8 +1,10 @@
 #include <gtest/gtest.h>
-#include "depthai_bridge/TrackedFeaturesConverter.hpp"
-#include "depthai_ros_msgs/msg/tracked_features.hpp"
-#include "depthai_ros_msgs/msg/tracked_feature.hpp"
+
 #include <deque>
+
+#include "depthai_bridge/TrackedFeaturesConverter.hpp"
+#include "depthai_ros_msgs/msg/tracked_feature.hpp"
+#include "depthai_ros_msgs/msg/tracked_features.hpp"
 
 namespace depthai_bridge {
 
@@ -33,4 +35,4 @@ TEST(TrackedFeaturesConverterTest, ToRosMsgTest) {
     EXPECT_FLOAT_EQ(ft.harris_score, 5.0f);
     EXPECT_FLOAT_EQ(ft.tracking_error, 6.0f);
 }
-} // namespace depthai_bridge
+}  // namespace depthai_bridge
