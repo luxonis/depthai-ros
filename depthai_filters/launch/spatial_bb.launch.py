@@ -17,10 +17,10 @@ def launch_setup(context, *args, **kwargs):
     return [
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                os.path.join(depthai_prefix, 'launch', 'rgbd_pcl.launch.py')),
+                os.path.join(depthai_prefix, 'launch', 'driver.launch.py')),
             launch_arguments={"name": name,
                               "params_file": params_file,
-                              "rectify_rgb": "true"}.items()),
+                              }.items()),
 
         LoadComposableNodes(
             target_container=name+"_container",
