@@ -43,13 +43,13 @@ PipelineGenerator::~PipelineGenerator() = default;
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                                     std::shared_ptr<dai::Device> device,
                                                                                     std::shared_ptr<dai::Pipeline> pipeline,
-                                                                                    const std::string& pipelineType,
-                                                                                    const std::string& nnType,
                                                                                     bool rsCompat) {
     auto deviceName = device->getDeviceName();
     RCLCPP_INFO(node->get_logger(), "Creating pipeline for device: %s", deviceName.c_str());
-    ph = std::make_unique<param_handlers::PipelineGenParamHandler>(node, "pipeline_gen", deviceName, rsCompat);
+    ph = std::make_shared<param_handlers::PipelineGenParamHandler>(node, "pipeline_gen", deviceName, rsCompat);
     ph->declareParams();
+    auto pipelineType = ph->getParam<std::string>("i_pipeline_type");
+    auto nnType = ph->getParam<std::string>("i_nn_type");
     RCLCPP_INFO(node->get_logger(), "Pipeline type: %s", pipelineType.c_str());
     std::string pluginType = pipelineType;
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
@@ -65,7 +65,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
 
     try {
         std::shared_ptr<BasePipeline> pipelinePlugin = pipelineLoader.createSharedInstance(pluginType);
-        daiNodes = pipelinePlugin->createPipeline(node, device, pipeline, deviceName, rsCompat, nnType);
+        daiNodes = pipelinePlugin->createPipeline(node, device, pipeline, ph, deviceName, rsCompat, nnType);
     } catch(pluginlib::PluginlibException& ex) {
         RCLCPP_ERROR(node->get_logger(), "The plugin failed to load for some reason. Error: %s\n", ex.what());
         throw std::runtime_error("Plugin loading failed.");

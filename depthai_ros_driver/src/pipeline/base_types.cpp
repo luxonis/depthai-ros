@@ -24,6 +24,7 @@ namespace pipeline_gen {
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGB::createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                       std::shared_ptr<dai::Device> device,
                                                                       std::shared_ptr<dai::Pipeline> pipeline,
+                                                                      std::shared_ptr<param_handlers::PipelineGenParamHandler> ph,
                                                                       const std::string& deviceName,
                                                                       bool rsCompat,
                                                                       const std::string& nnType) {
@@ -54,6 +55,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGB::createPipeline(std::share
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBD::createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                        std::shared_ptr<dai::Device> device,
                                                                        std::shared_ptr<dai::Pipeline> pipeline,
+                                                                       std::shared_ptr<param_handlers::PipelineGenParamHandler> ph,
                                                                        const std::string& deviceName,
                                                                        bool rsCompat,
                                                                        const std::string& nnType) {
@@ -65,7 +67,6 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBD::createPipeline(std::shar
     auto rgb =
         std::make_unique<dai_nodes::SensorWrapper>(getNodeName(node, NodeNameEnum::RGB), node, pipeline, deviceName, rsCompat, dai::CameraBoardSocket::CAM_A);
     auto stereo = std::make_unique<dai_nodes::Stereo>(getNodeName(node, NodeNameEnum::Stereo), node, pipeline, device, rsCompat);
-    auto rgbd = std::make_unique<dai_nodes::RGBD>("rgbd", node, pipeline, device, rsCompat, *rgb, *stereo);
 
     switch(nType) {
         case NNType::None:
@@ -83,14 +84,18 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBD::createPipeline(std::shar
         default:
             break;
     }
+    if(ph->getParam<bool>("i_enable_rgbd")) {
+        auto rgbd = std::make_unique<dai_nodes::RGBD>("rgbd", node, pipeline, device, rsCompat, *rgb, *stereo);
+        daiNodes.push_back(std::move(rgbd));
+    }
     daiNodes.push_back(std::move(rgb));
     daiNodes.push_back(std::move(stereo));
-    daiNodes.push_back(std::move(rgbd));
     return daiNodes;
 }
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBStereo::createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                             std::shared_ptr<dai::Device> device,
                                                                             std::shared_ptr<dai::Pipeline> pipeline,
+                                                                            std::shared_ptr<param_handlers::PipelineGenParamHandler> ph,
                                                                             const std::string& deviceName,
                                                                             bool rsCompat,
                                                                             const std::string& nnType) {
@@ -127,6 +132,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBStereo::createPipeline(std:
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> Stereo::createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                          std::shared_ptr<dai::Device> device,
                                                                          std::shared_ptr<dai::Pipeline> pipeline,
+                                                                         std::shared_ptr<param_handlers::PipelineGenParamHandler> ph,
                                                                          const std::string& deviceName,
                                                                          bool rsCompat,
                                                                          const std::string& /*nnType*/) {
@@ -143,6 +149,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> Stereo::createPipeline(std::sh
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> Depth::createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                         std::shared_ptr<dai::Device> device,
                                                                         std::shared_ptr<dai::Pipeline> pipeline,
+                                                                        std::shared_ptr<param_handlers::PipelineGenParamHandler> ph,
                                                                         const std::string& deviceName,
                                                                         bool rsCompat,
                                                                         const std::string& /*nnType*/) {
@@ -155,6 +162,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> Depth::createPipeline(std::sha
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> CamArray::createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                            std::shared_ptr<dai::Device> device,
                                                                            std::shared_ptr<dai::Pipeline> pipeline,
+                                                                           std::shared_ptr<param_handlers::PipelineGenParamHandler> ph,
                                                                            const std::string& deviceName,
                                                                            bool rsCompat,
                                                                            const std::string& /*nnType*/) {
@@ -172,6 +180,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> CamArray::createPipeline(std::
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> DepthToF::createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                            std::shared_ptr<dai::Device> device,
                                                                            std::shared_ptr<dai::Pipeline> pipeline,
+                                                                           std::shared_ptr<param_handlers::PipelineGenParamHandler> ph,
                                                                            const std::string& deviceName,
                                                                            bool rsCompat,
                                                                            const std::string& /*nnType*/) {
@@ -185,6 +194,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> DepthToF::createPipeline(std::
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> StereoToF::createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                             std::shared_ptr<dai::Device> device,
                                                                             std::shared_ptr<dai::Pipeline> pipeline,
+                                                                            std::shared_ptr<param_handlers::PipelineGenParamHandler> ph,
                                                                             const std::string& deviceName,
                                                                             bool rsCompat,
                                                                             const std::string& /*nnType*/) {
@@ -202,6 +212,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> StereoToF::createPipeline(std:
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> ToF::createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                       std::shared_ptr<dai::Device> /*device*/,
                                                                       std::shared_ptr<dai::Pipeline> pipeline,
+                                                                      std::shared_ptr<param_handlers::PipelineGenParamHandler> ph,
                                                                       const std::string& deviceName,
                                                                       bool rsCompat,
                                                                       const std::string& /*nnType*/) {
@@ -213,6 +224,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> ToF::createPipeline(std::share
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBToF::createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                          std::shared_ptr<dai::Device> device,
                                                                          std::shared_ptr<dai::Pipeline> pipeline,
+                                                                         std::shared_ptr<param_handlers::PipelineGenParamHandler> ph,
                                                                          const std::string& deviceName,
                                                                          bool rsCompat,
                                                                          const std::string& nnType) {
@@ -220,9 +232,8 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBToF::createPipeline(std::sh
     auto nType = utils::getValFromMap(nTypeUpCase, nnTypeMap);
 
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
-    auto rgb = std::make_unique<dai_nodes::SensorWrapper>("right", node, pipeline, deviceName, rsCompat, dai::CameraBoardSocket::CAM_C);
+    auto rgb = std::make_unique<dai_nodes::SensorWrapper>("left", node, pipeline, deviceName, rsCompat, dai::CameraBoardSocket::CAM_B);
     auto tof = std::make_unique<dai_nodes::ToF>("tof", node, pipeline, deviceName, rsCompat);
-    rgb->link(tof->getInput());
     switch(nType) {
         case NNType::None:
             break;
@@ -237,6 +248,10 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBToF::createPipeline(std::sh
         default:
             break;
     }
+    if(ph->getParam<bool>("i_enable_rgbd")) {
+        auto rgbd = std::make_unique<dai_nodes::RGBD>("rgbd", node, pipeline, device, rsCompat, *rgb, *tof);
+        daiNodes.push_back(std::move(rgbd));
+    }
     daiNodes.push_back(std::move(rgb));
     daiNodes.push_back(std::move(tof));
     return daiNodes;
@@ -244,6 +259,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBToF::createPipeline(std::sh
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> Thermal::createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                           std::shared_ptr<dai::Device> device,
                                                                           std::shared_ptr<dai::Pipeline> pipeline,
+                                                                          std::shared_ptr<param_handlers::PipelineGenParamHandler> ph,
                                                                           const std::string& deviceName,
                                                                           bool rsCompat,
                                                                           const std::string& nnType) {

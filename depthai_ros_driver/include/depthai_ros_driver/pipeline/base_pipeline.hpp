@@ -12,6 +12,7 @@
 #include "depthai_ros_driver/dai_nodes/sensors/camera.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/stereo.hpp"
+#include "depthai_ros_driver/param_handlers/pipeline_gen_param_handler.hpp"
 
 namespace dai {
 class Pipeline;
@@ -51,6 +52,7 @@ class BasePipeline {
     virtual std::vector<std::unique_ptr<dai_nodes::BaseNode>> createPipeline(std::shared_ptr<rclcpp::Node> node,
                                                                              std::shared_ptr<dai::Device> device,
                                                                              std::shared_ptr<dai::Pipeline> pipeline,
+                                                                             std::shared_ptr<param_handlers::PipelineGenParamHandler> ph,
                                                                              const std::string& deviceName,
                                                                              bool rsCompat,
                                                                              const std::string& nnType) = 0;

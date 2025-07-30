@@ -182,8 +182,6 @@ void Driver::createPipeline() {
     daiNodes = generator->createPipeline(shared_from_this(),
                                          device,
                                          pipeline,
-                                         ph->getParam<std::string>("i_pipeline_type"),
-                                         ph->getParam<std::string>("i_nn_type"),
                                          ph->getParam<bool>("i_rs_compat"));
     if(ph->getParam<bool>("i_pipeline_dump")) {
         savePipeline();
