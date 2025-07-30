@@ -11,6 +11,7 @@ on:
       - foxy
       - iron
       - jazzy
+      - kilted
     tags:
       - 'v*'
   pull_request:
@@ -21,8 +22,9 @@ on:
       - foxy
       - iron
       - jazzy
+      - kilted
 env:
-  ROS_DISTRO: jazzy
+  ROS_DISTRO: kilted
 
 jobs:
   clang-format-lint:
