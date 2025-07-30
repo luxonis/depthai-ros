@@ -72,8 +72,7 @@ void TFPublisher::publishDescription() {
     bool ready = paramClient->service_is_ready();
 
     if(!ready) {
-        RCLCPP_WARN(
-            logger, "Parameter server for [ %s ] is not ready, please check if the node is running", std::string(camName + "_state_publisher").c_str());
+        RCLCPP_WARN(logger, "Parameter server for [ %s ] is not ready, please check if the node is running", std::string(camName + "_state_publisher").c_str());
     }
     auto result = paramClient->set_parameters({robotDescr});
     RCLCPP_INFO(logger, "Published URDF");
@@ -95,12 +94,13 @@ void TFPublisher::publishCamTransforms(nlohmann::json camData, std::shared_ptr<r
             ts.transform.translation = transFromExtr(trans);
         }
 
-        std::string name = getSocketName(static_cast<dai::CameraBoardSocket>(cam[0]), camModel);
+        std::string name = getSocketName(static_cast<dai::CameraBoardSocket>(cam[0]), camModel, rsCompatibilityMode);
         ts.child_frame_id = baseFrame + std::string("_") + name + std::string("_camera_frame");
         // check if the camera is at the end of the chain
         if(extrinsics["toCameraSocket"] != -1) {
             ts.header.frame_id = getFrameName(
-                baseFrame, getSocketName(static_cast<dai::CameraBoardSocket>(extrinsics["toCameraSocket"].get<int>()), camModel) + "_camera_frame");
+                baseFrame,
+                getSocketName(static_cast<dai::CameraBoardSocket>(extrinsics["toCameraSocket"].get<int>()), camModel, rsCompatibilityMode) + "_camera_frame");
         } else {
             ts.header.frame_id = baseFrame;
             ts.transform.rotation.w = 1.0;
@@ -109,7 +109,7 @@ void TFPublisher::publishCamTransforms(nlohmann::json camData, std::shared_ptr<r
             ts.transform.rotation.z = 0.0;
         }
         // rotate optical fransform
-        opticalTS.child_frame_id = getOpticalFrameName(baseFrame, name);
+        opticalTS.child_frame_id = getOpticalFrameName(baseFrame, name, rsCompatibilityMode);
         opticalTS.header.frame_id = ts.child_frame_id;
         opticalTS.transform.rotation.w = 0.5;
         opticalTS.transform.rotation.x = -0.5;
@@ -125,8 +125,9 @@ void TFPublisher::publishImuTransform(nlohmann::json json, std::shared_ptr<rclcp
     auto imuExtr = json["imuExtrinsics"];
     ts.child_frame_id = baseFrame + std::string("_imu_frame");
     if(imuExtr["toCameraSocket"] != -1) {
-        ts.header.frame_id =
-            getFrameName(baseFrame, getSocketName(static_cast<dai::CameraBoardSocket>(imuExtr["toCameraSocket"].get<int>()), camModel) + "_camera_frame");
+        ts.header.frame_id = getFrameName(
+            baseFrame,
+            getSocketName(static_cast<dai::CameraBoardSocket>(imuExtr["toCameraSocket"].get<int>()), camModel, rsCompatibilityMode) + "_camera_frame");
         auto extrMat = calHandler.getImuToCameraExtrinsics(static_cast<dai::CameraBoardSocket>(imuExtr["toCameraSocket"].get<int>()));
         // pass parts of 4x4 matrix to transfFromExtr
         std::vector<float> translation = {extrMat[0][3], extrMat[1][3], extrMat[2][3]};
@@ -225,23 +226,25 @@ std::string TFPublisher::prepareXacroArgs() {
 }
 
 void TFPublisher::convertModelName() {
-    if(camModel.find("OAK-D-PRO-POE") != std::string::npos || camModel.find("OAK-D-PRO-W-POE") != std::string::npos
-       || camModel.find("OAK-D-S2-POE") != std::string::npos) {
-        camModel = "OAK-D-POE";
-    } else if(camModel.find("OAK-D-LITE") != std::string::npos) {
-        camModel = "OAK-D-PRO";
-    } else if(camModel.find("OAK-D-S2") != std::string::npos) {
-        camModel = "OAK-D-PRO";
-    } else if(camModel.find("OAK-D-PRO-W") != std::string::npos) {
-        camModel = "OAK-D-PRO";
-    } else if(camModel.find("OAK-D-PRO") != std::string::npos) {
-        camModel = "OAK-D-PRO";
-    } else if(camModel.find("OAK-D-POE")) {
-        camModel = "OAK-D-POE";
-    } else if(camModel.find("OAK-D") != std::string::npos) {
-        camModel = "OAK-D";
-    } else {
-        RCLCPP_WARN(logger, "Unable to match model name: %s to available model family.", camModel.c_str());
+    std::map<std::string, std::string> modelMappings = {
+        {"OAK-D-SR-POE", "OAK-D-SR-POE"},
+        {"OAK-D-PRO-W-POE", "OAK-D-POE"},
+        {"OAK-D-PRO-POE", "OAK-D-POE"},
+        {"OAK-D-S2-POE", "OAK-D-POE"},
+        {"OAK-D-POE", "OAK-D-POE"},
+        {"OAK-D-LITE", "OAK-D-PRO"},
+        {"OAK-D-S2", "OAK-D-PRO"},
+        {"OAK-D-PRO-W", "OAK-D-PRO"},
+        {"OAK-D-PRO", "OAK-D-PRO"},
+        {"OAK-D", "OAK-D"},
+        {"OAK-T", "OAK-T"}
+    };
+
+    for (const auto& [key, value] : modelMappings) {
+        if (camModel==key) {
+            camModel = value;
+            return;
+        }
     }
 }
 

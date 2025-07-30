@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <stdexcept>
 
 #include "depthai/common/CameraBoardSocket.hpp"
 #include "rclcpp/clock.hpp"
@@ -102,7 +103,7 @@ inline void updateBaseTime(std::chrono::time_point<std::chrono::steady_clock> st
                                                              << " ns. New time: " << std::to_string(rclBaseTime.nanoseconds()) << " ns.");
     }
 }
-enum class DeviceNames { OAK_1, OAK_D, OAK_D_PRO, OAK_D_POE, OAK_THERMAL, OAK_SR, OAK_SR_POE };
+enum class DeviceNames { OAK_1, OAK_D, OAK_D_PRO, OAK_D_POE, OAK_THERMAL, OAK_SR, OAK_D_SR_POE };
 
 const std::unordered_map<DeviceNames, std::string> deviceNameMap = {
     {DeviceNames::OAK_1, "OAK-1"},
@@ -111,7 +112,7 @@ const std::unordered_map<DeviceNames, std::string> deviceNameMap = {
     {DeviceNames::OAK_D_POE, "OAK-D-POE"},
     {DeviceNames::OAK_THERMAL, "OAK-T"},
     {DeviceNames::OAK_SR, "OAK-SR"},
-    {DeviceNames::OAK_SR_POE, "OAK-SR-POE"},
+    {DeviceNames::OAK_D_SR_POE, "OAK-D-SR-POE"},
 };
 
 const std::unordered_map<dai::CameraBoardSocket, std::string> defaultSocketMap = {
@@ -132,7 +133,7 @@ const std::unordered_map<dai::CameraBoardSocket, std::string> letterSocketMap = 
     {dai::CameraBoardSocket::CAM_E, "cam_e"},
 };
 
-const std::unordered_map<dai::CameraBoardSocket, std::string> srPoeSocketMap = {
+const std::unordered_map<dai::CameraBoardSocket, std::string> srDPoeSocketMap = {
     {dai::CameraBoardSocket::AUTO, "tof"},
     {dai::CameraBoardSocket::CAM_A, "tof"},
     {dai::CameraBoardSocket::CAM_B, "left"},
@@ -169,42 +170,29 @@ inline std::string getOpticalFrameName(const std::string& prefix, const std::str
     return getFrameName(prefix, frameName) + suffix;
 }
 
-inline void convertModelName(std::string& camModel) {
-    if(camModel.find("OAK-D-PRO-POE") != std::string::npos || camModel.find("OAK-D-PRO-W-POE") != std::string::npos
-       || camModel.find("OAK-D-S2-POE") != std::string::npos) {
-        camModel = "OAK-D-POE";
-    } else if(camModel.find("OAK-D-LITE") != std::string::npos) {
-        camModel = "OAK-D-PRO";
-    } else if(camModel.find("OAK-D-S2") != std::string::npos) {
-        camModel = "OAK-D-PRO";
-    } else if(camModel.find("OAK-D-PRO-W") != std::string::npos) {
-        camModel = "OAK-D-PRO";
-    } else if(camModel.find("OAK-D-PRO") != std::string::npos) {
-        camModel = "OAK-D-PRO";
-    } else if(camModel.find("OAK-D-POE") != std::string::npos) {
-        camModel = "OAK-D-POE";
-    } else if(camModel.find("OAK-D") != std::string::npos) {
-        camModel = "OAK-D";
-    } else {
-        DEPTHAI_ROS_WARN_STREAM_ONCE("depthai_bridge", "Unable to match model name: " << camModel << " to available model family.");
-    }
-}
 
 inline std::string getSocketName(dai::CameraBoardSocket socketNum, const std::string& deviceName = "", bool rsCompat = false, bool useSocketNames = false) {
-    std::string name = defaultSocketMap.at(socketNum);
-    if(rsCompat) {
-        name = rsSocketNameMap.at(socketNum);
-    }
-    if(deviceName.empty()) {
-        if(useSocketNames) {
-            name = letterSocketMap.at(socketNum);
+    std::string name = "";
+    try {
+        name = defaultSocketMap.at(socketNum);
+        if(rsCompat) {
+            name = rsSocketNameMap.at(socketNum);
         }
-    } else {
-        if(deviceName == deviceNameMap.at(DeviceNames::OAK_SR_POE)) {
-            name = srPoeSocketMap.at(socketNum);
-        } else if(deviceName == deviceNameMap.at(DeviceNames::OAK_THERMAL)) {
-            name = thermalSocketMap.at(socketNum);
+        if(deviceName.empty()) {
+            if(useSocketNames) {
+                name = letterSocketMap.at(socketNum);
+            }
+        } else {
+            if(deviceName == deviceNameMap.at(DeviceNames::OAK_D_SR_POE)) {
+                name = srDPoeSocketMap.at(socketNum);
+            } else if(deviceName == deviceNameMap.at(DeviceNames::OAK_THERMAL)) {
+                DEPTHAI_ROS_INFO_STREAM("depthai_bridge", "Thermal detected");
+                name = thermalSocketMap.at(socketNum);
+            }
         }
+    } catch(std::out_of_range) {
+        DEPTHAI_ROS_ERROR_STREAM("depthai_bridge", "Couldn't find socket name for device: " << deviceName << ". Socket ID: " << static_cast<int>(socketNum));
+        throw std::runtime_error("Socket name not found");
     }
     return name;
 }
