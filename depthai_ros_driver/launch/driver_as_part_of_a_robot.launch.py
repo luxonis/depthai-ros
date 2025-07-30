@@ -34,10 +34,10 @@ def launch_setup(context, *args, **kwargs):
     cam_roll = LaunchConfiguration("cam_roll", default="0.0")
     cam_pitch = LaunchConfiguration("cam_pitch", default="0.0")
     cam_yaw = LaunchConfiguration("cam_yaw", default="0.0")
-    use_composition = LaunchConfiguration("rsp_use_composition", default="true")
+    use_composition = LaunchConfiguration("rsp_use_composition", default="false")
     imu_from_descr = LaunchConfiguration("imu_from_descr", default="false")
     publish_tf_from_calibration = LaunchConfiguration(
-        "publish_tf_from_calibration", default="false"
+        "publish_tf_from_calibration", default="true"
     )
     override_cam_model = LaunchConfiguration("override_cam_model", default="false")
 
@@ -138,7 +138,7 @@ def generate_launch_description():
             default_value=os.path.join(depthai_prefix, "config", "rgbd.yaml"),
         ),
         DeclareLaunchArgument("rectify_rgb", default_value="False"),
-        DeclareLaunchArgument("rsp_use_composition", default_value="true"),
+        DeclareLaunchArgument("rsp_use_composition", default_value="false"),
         DeclareLaunchArgument(
             "publish_tf_from_calibration",
             default_value="false",

@@ -19,7 +19,7 @@ def launch_setup(context, *args, **kwargs):
     return [
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                os.path.join(depthai_prefix, "launch", "camera.launch.py")
+                os.path.join(depthai_prefix, "launch", "driver.launch.py")
             ),
             launch_arguments={
                 "name": name,

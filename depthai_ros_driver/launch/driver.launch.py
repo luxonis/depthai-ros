@@ -73,13 +73,7 @@ def launch_setup(context, *args, **kwargs):
     parameter_overrides = {}
     color_sens_name = "rgb"
     stereo_sens_name = "stereo"
-    points_topic_name = f"{name}/points"
-    if pointcloud_enable.perform(context) == "true":
-        parameter_overrides = {
-            "pipeline_gen": {"i_enable_sync": True},
-            "rgb": {"i_synced": True},
-            "stereo": {"i_synced": True},
-        }
+    points_topic_name = f"{name}/rgbd/points"
     depth_topic_suffix = "image_raw"
     if rs_compat.perform(context) == "true":
         depth_topic_suffix = "image_rect_raw"
@@ -111,7 +105,7 @@ def launch_setup(context, *args, **kwargs):
         if parent_frame == "oak-d-base-frame":
             parent_frame = f"{name}_link"
         parameter_overrides = {
-            "camera": {
+            "driver": {
                 "i_rs_compat": True,
             },
             "pipeline_gen": {
@@ -127,9 +121,12 @@ def launch_setup(context, *args, **kwargs):
             "depth": {
                 "i_publish_topic": is_launch_config_true(context, "enable_depth"),
                 "i_synced": True,
+                "i_subpixel": False,
                 "i_width": int(depth_profile[0]),
                 "i_height": int(depth_profile[1]),
                 "i_fps": float(depth_profile[2]),
+                "i_left_rect_publish_topic": True,
+                "i_right_rect_publish_topic": True,
             },
             "infra1": {
                 "i_width": int(infra_profile[0]),
@@ -142,10 +139,11 @@ def launch_setup(context, *args, **kwargs):
                 "i_fps": float(infra_profile[2]),
             },
         }
-        parameter_overrides["depth"] = {
-            "i_left_rect_publish_topic": True,
-            "i_right_rect_publish_topic": True,
-        }
+    if pointcloud_enable.perform(context) == "true":
+        for key in parameter_overrides:
+            if key == "pipeline_gen":
+                parameter_overrides[key]["i_enable_rgbd"] = True
+        
 
     tf_params = {}
     if publish_tf_from_calibration.perform(context) == "true":
@@ -153,7 +151,7 @@ def launch_setup(context, *args, **kwargs):
         if override_cam_model.perform(context) == "true":
             cam_model = camera_model.perform(context)
         tf_params = {
-            "camera": {
+            "driver": {
                 "i_publish_tf_from_calibration": True,
                 "i_tf_tf_prefix": name,
                 "i_tf_camera_model": cam_model,
@@ -180,6 +178,27 @@ def launch_setup(context, *args, **kwargs):
             output="log",
             arguments=["-d", LaunchConfiguration("rviz_config")],
         ),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                os.path.join(urdf_launch_dir, "urdf_launch.py")
+            ),
+            launch_arguments={
+                "namespace": namespace,
+                "tf_prefix": name,
+                "camera_model": camera_model,
+                "base_frame": name,
+                "parent_frame": parent_frame,
+                "cam_pos_x": cam_pos_x,
+                "cam_pos_y": cam_pos_y,
+                "cam_pos_z": cam_pos_z,
+                "cam_roll": cam_roll,
+                "cam_pitch": cam_pitch,
+                "cam_yaw": cam_yaw,
+                "use_composition": use_composition,
+                "use_base_descr": publish_tf_from_calibration,
+                "rs_compat": rs_compat,
+            }.items(),
+        ),
         ComposableNodeContainer(
             name=f"{name}_container",
             namespace=namespace,
@@ -196,6 +215,11 @@ def launch_setup(context, *args, **kwargs):
                         tf_params,
                         parameter_overrides,
                     ],
+                    remappings=[
+                        (
+                            f"{name}/rgbd/points", points_topic_name
+                        )
+                    ]
                 )
             ],
             arguments=["--ros-args", "--log-level", log_level],
@@ -221,7 +245,7 @@ def generate_launch_description():
         DeclareLaunchArgument("cam_yaw", default_value="0.0"),
         DeclareLaunchArgument(
             "params_file",
-            default_value=os.path.join(depthai_prefix, "config", "camera.yaml"),
+            default_value=os.path.join(depthai_prefix, "config", "driver.yaml"),
         ),
         DeclareLaunchArgument("use_rviz", default_value="false"),
         DeclareLaunchArgument(
@@ -231,7 +255,7 @@ def generate_launch_description():
         DeclareLaunchArgument("rsp_use_composition", default_value="true"),
         DeclareLaunchArgument(
             "publish_tf_from_calibration",
-            default_value="false",
+            default_value="true",
             description="Enables TF publishing from camera calibration file.",
         ),
         DeclareLaunchArgument(
@@ -258,9 +282,9 @@ def generate_launch_description():
         DeclareLaunchArgument("enable_depth", default_value="true"),
         DeclareLaunchArgument("enable_infra1", default_value="false"),
         DeclareLaunchArgument("enable_infra2", default_value="false"),
-        DeclareLaunchArgument("depth_module.depth_profile", default_value="1280,720,30"),
-        DeclareLaunchArgument("rgb_camera.color_profile", default_value="1280,720,30"),
-        DeclareLaunchArgument("depth_module.infra_profile", default_value="1280,720,30"),
+        DeclareLaunchArgument("depth_module.depth_profile", default_value="640,400,30"),
+        DeclareLaunchArgument("rgb_camera.color_profile", default_value="640,400,30"),
+        DeclareLaunchArgument("depth_module.infra_profile", default_value="640,400,30"),
     ]
 
     return LaunchDescription(
