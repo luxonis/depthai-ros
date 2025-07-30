@@ -1,6 +1,7 @@
 /oak:
   ros__parameters:
-    camera:
+    pipeline_gen:
       i_nn_type: none
+      i_enable_rgbd: true
     stereo:
-      i_subpixel: true
+      i_depth_preset: DEFAULT

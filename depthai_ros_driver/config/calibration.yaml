@@ -1,6 +1,6 @@
 /oak:
   ros__parameters:
-    camera:
+    pipeline_gen:
       i_nn_type: none
       i_pipeline_type: RGBStereo
     right:

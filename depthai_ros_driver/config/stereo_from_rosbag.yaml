@@ -1,9 +1,10 @@
 /oak:
   ros__parameters:
-    camera:
+    driver:
+      i_external_calibration_path: '/tmp/calibration.json'
+    pipeline_gen:
       i_nn_type: none
       i_pipeline_type: rgbd
-      i_external_calibration_path: '/tmp/calibration.json'
     left:
       i_board_socket_id: 1
       i_simulate_from_topic: true
