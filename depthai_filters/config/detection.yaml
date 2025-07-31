@@ -1,6 +1,6 @@
 /oak:
   ros__parameters:
-    driver:
+    pipeline_gen:
       i_nn_type: rgb
     nn:
       i_enable_passthrough: true

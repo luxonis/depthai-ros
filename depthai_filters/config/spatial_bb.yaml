@@ -1,7 +1,8 @@
 /oak:
   ros__parameters:
-    driver:
+    pipeline_gen:
       i_nn_type: spatial
+      i_enable_rgbd: true
     stereo:
       i_subpixel: true
     nn:
