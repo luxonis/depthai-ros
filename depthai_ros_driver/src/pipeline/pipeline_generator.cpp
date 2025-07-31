@@ -79,10 +79,14 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
             daiNodes.push_back(std::move(imu));
         }
     }
-    // if(ph->getParam<bool>("i_enable_diagnostics")) {
-    //     auto sysLogger = std::make_unique<dai_nodes::SysLogger>("sys_logger", node, pipeline, deviceName, rsCompat);
-    //     daiNodes.push_back(std::move(sysLogger));
-    // }
+    if(ph->getParam<bool>("i_enable_diagnostics")) {
+        if(device->getPlatform()==dai::Platform::RVC2){
+        auto sysLogger = std::make_unique<dai_nodes::SysLogger>("sys_logger", node, pipeline, deviceName, rsCompat);
+        daiNodes.push_back(std::move(sysLogger));
+        } else {
+            RCLCPP_WARN(node->get_logger(), "Diagnostics not yet available on RVC4");
+        }
+    }
     if(ph->getParam<bool>("i_enable_sync")) {
         auto sync = std::make_unique<dai_nodes::Sync>("sync", node, pipeline, deviceName, rsCompat);
         for(auto& daiNode : daiNodes) {
