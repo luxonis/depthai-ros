@@ -242,6 +242,7 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
         setupRightRectQueue(device);
     }
     if(ph->getParam<bool>("i_publish_synced_rect_pair")) {
+        RCLCPP_WARN(getROSNode()->get_logger(), "This mechanism is deprecated, please use sync from pipeline_gen");
         int timerPeriod = 1000.0 / ph->getOtherNodeParam<double>(leftSensInfo.name, "i_fps");
         RCLCPP_INFO(getROSNode()->get_logger(), "Setting up stereo pair sync timer with period %d ms based on left sensor FPS.", timerPeriod);
         leftRectQ = leftRectPub->getQueue();

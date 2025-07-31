@@ -22,7 +22,6 @@ Camera::Camera(const std::string& daiNodeName,
     RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     camNode = pipeline->create<dai::node::Camera>()->build(socket);
-    ;
     ph = std::make_unique<param_handlers::SensorParamHandler>(node, daiNodeName, deviceName, rsCompat, socket);
     ph->declareParams(camNode, publish);
     setInOut(pipeline);
@@ -83,7 +82,7 @@ void Camera::setupQueues(std::shared_ptr<dai::Device> device) {
         pubConfig.lazyPub = ph->getParam<bool>(ParamNames::ENABLE_LAZY_PUBLISHER);
         pubConfig.socket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>(ParamNames::BOARD_SOCKET_ID));
         pubConfig.calibrationFile = ph->getParam<std::string>(ParamNames::CALIBRATION_FILE);
-        pubConfig.rectified = false;
+        pubConfig.rectified = ph->getParam<bool>(ParamNames::UNDISTORTED);
         pubConfig.width = ph->getParam<int>(ParamNames::WIDTH);
         pubConfig.height = ph->getParam<int>(ParamNames::HEIGHT);
         pubConfig.maxQSize = ph->getParam<int>(ParamNames::MAX_Q_SIZE);

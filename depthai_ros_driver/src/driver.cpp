@@ -64,6 +64,9 @@ void Driver::onConfigure() {
 
     diagSub = this->create_subscription<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10, std::bind(&Driver::diagCB, this, std::placeholders::_1));
     pipeline->start();
+    RCLCPP_WARN(get_logger(),
+                "Driver is still at beta stage! Expect further stability & usability improvements towards end of August 2025.\n In meantime, please report "
+                "issues to GH: https://github.com/luxonis/depthai-ros/issues/719");
     RCLCPP_INFO(get_logger(), "Driver ready!");
 }
 
