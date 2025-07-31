@@ -114,7 +114,7 @@ add_library(
   ${NN_LIB_NAME} SHARED
   src/dai_nodes/nn/nn_wrapper.cpp
   src/dai_nodes/nn/spatial_nn_wrapper.cpp
-  # src/dai_nodes/nn/segmentation.cpp
+  src/dai_nodes/nn/segmentation.cpp
 )
 
 target_link_libraries(${NN_LIB_NAME}

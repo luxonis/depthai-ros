@@ -3,7 +3,7 @@
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/detection.hpp"
-// #include "depthai_ros_driver/dai_nodes/nn/segmentation.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/segmentation.hpp"
 #include "depthai_ros_driver/param_handlers/nn_param_handler.hpp"
 #include "rclcpp/node.hpp"
 
@@ -25,14 +25,14 @@ NNWrapper::NNWrapper(const std::string& daiNodeName,
             nnNode = std::make_unique<dai_nodes::nn::Detection>(getName(), getROSNode(), pipeline, deviceName, rsCompat, camNode, socket);
             break;
         }
+        case param_handlers::nn::NNFamily::Segmentation: {
+            RCLCPP_WARN(node->get_logger(), "Warning: Segmentation is not supported yet on RVC4");
+            nnNode = std::make_unique<dai_nodes::nn::Segmentation>(getName(), getROSNode(), pipeline, deviceName, rsCompat, camNode, socket);
+            break;
+        }
         default:
             RCLCPP_ERROR(node->get_logger(), "NN family %d not supported", static_cast<int>(family));
             break;
-            // disabled for now
-            // case param_handlers::nn::NNFamily::Segmentation: {
-            //     nnNode = std::make_unique<dai_nodes::nn::Segmentation>(getName(), getROSNode(), pipeline, deviceName, rsCompat, socket);
-            //     break;
-            // }
     }
 
     RCLCPP_DEBUG(node->get_logger(), "Base node %s created", daiNodeName.c_str());

@@ -15,6 +15,7 @@ namespace dai {
 class Pipeline;
 class Device;
 class ADatatype;
+class NNModelDescription;
 namespace node {
 class NeuralNetwork;
 class ImageManip;
@@ -36,6 +37,7 @@ namespace param_handlers {
 class NNParamHandler;
 }
 namespace dai_nodes {
+class SensorWrapper;
 namespace nn {
 class Segmentation : public BaseNode {
    public:
@@ -44,7 +46,8 @@ class Segmentation : public BaseNode {
                  std::shared_ptr<dai::Pipeline> pipeline,
                  const std::string& deviceName,
                  bool rsCompat,
-                 const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A);
+                 dai_nodes::SensorWrapper& camNode,
+                 const dai::CameraBoardSocket& socket);
     ~Segmentation();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
@@ -55,7 +58,7 @@ class Segmentation : public BaseNode {
     void closeQueues() override;
 
    private:
-    cv::Mat decodeDeeplab(cv::Mat mat);
+    cv::Mat decodeDeeplab(cv::Mat mat, int classNum);
     void segmentationCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
     std::vector<std::string> labelNames;
     std::shared_ptr<depthai_bridge::ImageConverter> imageConverter;
@@ -66,6 +69,7 @@ class Segmentation : public BaseNode {
     std::shared_ptr<dai::node::ImageManip> imageManip;
     std::unique_ptr<param_handlers::NNParamHandler> ph;
     std::shared_ptr<dai::MessageQueue> nnQ, ptQ;
+    std::shared_ptr<dai::NNModelDescription> description;
     std::string nnQName, ptQName;
 };
 
