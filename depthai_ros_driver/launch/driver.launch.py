@@ -139,18 +139,15 @@ def launch_setup(context, *args, **kwargs):
                 "i_fps": float(infra_profile[2]),
             },
         }
-    if pointcloud_enable.perform(context) == "true":
-        for key in parameter_overrides:
-            if key == "pipeline_gen":
-                parameter_overrides[key]["i_enable_rgbd"] = True
-        
+        if pointcloud_enable.perform(context) == "true":
+            parameter_overrides["pipeline_gen"]["i_enable_rgbd"] = True
 
-    tf_params = {}
+    params = {}
     if publish_tf_from_calibration.perform(context) == "true":
         cam_model = ""
         if override_cam_model.perform(context) == "true":
             cam_model = camera_model.perform(context)
-        tf_params = {
+        params = {
             "driver": {
                 "i_publish_tf_from_calibration": True,
                 "i_tf_tf_prefix": name,
@@ -166,6 +163,8 @@ def launch_setup(context, *args, **kwargs):
                 "i_tf_imu_from_descr": imu_from_descr.perform(context),
             }
         }
+    if pointcloud_enable.perform(context) == "true":
+        params["pipeline_gen"] = {"i_enable_rgbd" : True}
 
     launch_prefix = setup_launch_prefix(context)
 
@@ -212,7 +211,7 @@ def launch_setup(context, *args, **kwargs):
                     namespace=namespace,
                     parameters=[
                         params_file,
-                        tf_params,
+                        params,
                         parameter_overrides,
                     ],
                     remappings=[
