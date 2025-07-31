@@ -5,8 +5,6 @@
 #include "depthai_bridge/ImageConverter.hpp"
 // #include "depthai_ros_driver/dai_nodes/nn/nn_wrapper.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/feature_tracker.hpp"
-// #include "depthai_ros_driver/dai_nodes/sensors/mono.hpp"
-// #include "depthai_ros_driver/dai_nodes/sensors/rgb.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/camera.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/thermal.hpp"
