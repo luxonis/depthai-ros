@@ -38,7 +38,7 @@ void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const s
     declareAndLogParam<bool>("i_get_base_device_timestamp", false);
     declareAndLogParam<int>("i_max_q_size", 8);
     auto messageType = declareAndLogParam<std::string>("i_message_type", "IMU");
-    declareAndLogParam<std::string>("i_sync_method", "LINEAR_INTERPOLATE_ACCEL");
+    declareAndLogParam<std::string>("i_sync_method", "COPY");
     declareAndLogParam<bool>("i_update_ros_base_time_on_ros_msg", false);
     declareAndLogParam<float>("i_acc_cov", 0.0);
     declareAndLogParam<float>("i_gyro_cov", 0.0);
@@ -47,7 +47,7 @@ void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const s
     if(declareAndLogParam<bool>("i_enable_acc", true)) {
         const std::string accelerometerModeName = utils::getUpperCaseStr(declareAndLogParam<std::string>("i_acc_mode", "ACCELEROMETER_RAW"));
         const dai::IMUSensor accelerometerMode = utils::getValFromMap(accelerometerModeName, accelerometerModeMap);
-        const int accelerometerFreq = declareAndLogParam<int>("i_acc_freq", 400);
+        const int accelerometerFreq = declareAndLogParam<int>("i_acc_freq", 480);
 
         imu->enableIMUSensor(accelerometerMode, accelerometerFreq);
     }
@@ -87,7 +87,7 @@ void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const s
             declareAndLogParam<bool>("i_enable_rotation", false, true);
         }
     }
-    imu->setBatchReportThreshold(declareAndLogParam<int>("i_batch_report_threshold", 10));
+    imu->setBatchReportThreshold(declareAndLogParam<int>("i_batch_report_threshold", 5));
     imu->setMaxBatchReports(declareAndLogParam<int>("i_max_batch_reports", 10));
 }
 

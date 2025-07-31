@@ -21,7 +21,11 @@ ImuConverter::ImuConverter(const std::string& frameName,
       magnetic_field_cov(magnetic_field_cov),
       enable_rotation(enable_rotation),
       enable_magn(enable_magn),
-      sequenceNum(0) {}
+      sequenceNum(0) {
+    if(syncMode != ImuSyncMethod::COPY) {
+        DEPTHAI_ROS_WARN_STREAM_ONCE("depthai_bridge", "For RVC4 devices we currently support COPY method");
+    }
+}
 
 ImuConverter::~ImuConverter() = default;
 
