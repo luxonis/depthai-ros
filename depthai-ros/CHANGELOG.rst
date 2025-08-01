@@ -2,6 +2,11 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.0.1 (2025-08-01)
+------------------
+* Add deprecated camera.launch.py
+* Minor fixes in CI
+
 3.0.0 (2025-07-31)
 ------------------
 * Updating to DepthAI V3
@@ -194,5 +199,4 @@ Changelog for package depthai-ros
 * Release 2.5.0
 * add ament package:
 * created Bridge and Coverters to handle images, IMU and camera Info
-
 

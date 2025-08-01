@@ -111,7 +111,6 @@ jobs:
             BUILD_SEQUENTIAL=1
           platforms: |
             amd64
-            arm64
           no-cache: true
 
       - name: Build and Push

@@ -371,12 +371,11 @@ sensor_msgs::msg::CameraInfo ImageConverter::generateCameraInfo(std::shared_ptr<
         cameraInfo.d[i] = distortionCoeffs[i];
     }
 
-    // Set the projection matrix (assuming no rotation or translation)
+    // Set the projection matrix
     for(int i = 0; i < 3; ++i) {
         for(int j = 0; j < 3; ++j) {
             cameraInfo.p[i * 4 + j] = intrinsicMatrix[i][j];
         }
-        cameraInfo.p[i * 4 + 3] = 0.0;
     }
 
     // Set the rectification matrix (identity matrix)
