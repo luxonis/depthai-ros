@@ -147,6 +147,7 @@ class ImageConverter : public BaseConverter {
     int camHeight = -1;
     int camWidth = -1;
     std::string ffmpegEncoding = "libx264";
+    ImageMsgs::CameraInfo camInfo;
 };
 
 }  // namespace depthai_bridge
