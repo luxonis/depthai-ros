@@ -9,6 +9,7 @@
 #include "depthai_bridge/PointCloudConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/stereo.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/tof.hpp"
+#include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
 #include "depthai_ros_driver/param_handlers/rgbd_param_handler.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/node.hpp"
@@ -22,37 +23,43 @@ RGBD::RGBD(const std::string& daiNodeName,
            std::shared_ptr<dai::Device> device,
            bool rsCompat,
            SensorWrapper& camNode,
-           Stereo& stereoNode)
+           std::shared_ptr<dai::node::StereoDepth> stereo,
+           bool aligned)
     : BaseNode(daiNodeName, node, pipeline, device->getDeviceName(), rsCompat) {
+    using namespace param_handlers;
     RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     rgbdNode = pipeline->create<dai::node::RGBD>()->build();
-    ph = std::make_unique<param_handlers::RGBDParamHandler>(node, daiNodeName, device->getDeviceName(), rsCompat);
-    ph->declareParams(rgbdNode);
+    rgbdNode->useCPUMT(4);
+    ph = std::make_unique<RGBDParamHandler>(node, daiNodeName, device->getDeviceName(), rsCompat);
+    ph->declareParams(rgbdNode, camNode.getSocketID());
     auto color = camNode.getUnderlyingNode();
-    auto stereo = stereoNode.getUnderlyingNode();
     auto platform = device->getPlatform();
+    rgbdNode->runSyncOnHost(true);
+    auto fps = ph->getOtherNodeParam<float>(camNode.getName(), ParamNames::FPS);
+
     if(platform == dai::Platform::RVC4) {
-        auto* out = color->requestOutput(
-            std::pair<int, int>(ph->getOtherNodeParam<int>(camNode.getName(), "i_width"), ph->getOtherNodeParam<int>(camNode.getName(), "i_height")),
-            dai::ImgFrame::Type::RGB888i,
-            dai::ImgResizeMode::CROP,
-            ph->getOtherNodeParam<float>(camNode.getName(), "i_fps"),
-            true);
+        auto* out = color->requestOutput(std::pair<int, int>(ph->getOtherNodeParam<int>(camNode.getName(), ParamNames::WIDTH),
+                                                             ph->getOtherNodeParam<int>(camNode.getName(), ParamNames::HEIGHT)),
+                                         dai::ImgFrame::Type::RGB888i,
+                                         dai::ImgResizeMode::CROP,
+                                         fps,
+                                         true);
         out->link(rgbdNode->inColor);
         align = pipeline->create<dai::node::ImageAlign>();
         stereo->depth.link(align->input);
         out->link(align->inputAlignTo);
         align->outputAligned.link(rgbdNode->inDepth);
     } else {
-        auto* out = color->requestOutput(
-            std::pair<int, int>(ph->getOtherNodeParam<int>(camNode.getName(), "i_width"), ph->getOtherNodeParam<int>(camNode.getName(), "i_height")),
-            dai::ImgFrame::Type::RGB888i,
-            dai::ImgResizeMode::CROP,
-            ph->getOtherNodeParam<float>(camNode.getName(), "i_fps"),
-            true);
+        auto* out = color->requestOutput(std::pair<int, int>(ph->getOtherNodeParam<int>(camNode.getName(), ParamNames::WIDTH),
+                                                             ph->getOtherNodeParam<int>(camNode.getName(), ParamNames::HEIGHT)),
+                                         dai::ImgFrame::Type::RGB888i,
+                                         dai::ImgResizeMode::CROP,
+                                         fps,
+                                         true);
         out->link(rgbdNode->inColor);
         out->link(stereo->inputAlignTo);
+        stereo->inputAlignTo.setBlocking(false);
         stereo->depth.link(rgbdNode->inDepth);
     }
 
@@ -64,24 +71,27 @@ RGBD::RGBD(const std::string& daiNodeName,
            std::shared_ptr<dai::Device> device,
            bool rsCompat,
            SensorWrapper& camNode,
-           ToF& tofNode)
+           ToF& tofNode,
+           bool aligned)
     : BaseNode(daiNodeName, node, pipeline, device->getDeviceName(), rsCompat) {
+    using namespace param_handlers;
     RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     rgbdNode = pipeline->create<dai::node::RGBD>()->build();
-    ph = std::make_unique<param_handlers::RGBDParamHandler>(node, daiNodeName, device->getDeviceName(), rsCompat);
-    ph->declareParams(rgbdNode);
+    ph = std::make_unique<RGBDParamHandler>(node, daiNodeName, device->getDeviceName(), rsCompat);
+    ph->declareParams(rgbdNode, camNode.getSocketID());
     auto color = camNode.getUnderlyingNode();
     auto tof = tofNode.getUnderlyingNode();
-    auto platform = device->getPlatform();
-    auto* out = color->requestOutput(
-        std::pair<int, int>(ph->getOtherNodeParam<int>(camNode.getName(), "i_width"), ph->getOtherNodeParam<int>(camNode.getName(), "i_height")),
-        dai::ImgFrame::Type::RGB888i,
-        dai::ImgResizeMode::CROP,
-        ph->getOtherNodeParam<float>(camNode.getName(), "i_fps"),
-        true);
+    auto fps = ph->getOtherNodeParam<float>(camNode.getName(), ParamNames::FPS);
+    auto* out = color->requestOutput(std::pair<int, int>(ph->getOtherNodeParam<int>(camNode.getName(), ParamNames::WIDTH),
+                                                         ph->getOtherNodeParam<int>(camNode.getName(), ParamNames::HEIGHT)),
+                                     dai::ImgFrame::Type::RGB888i,
+                                     dai::ImgResizeMode::CROP,
+                                     fps,
+                                     true);
     out->link(rgbdNode->inColor);
     align = pipeline->create<dai::node::ImageAlign>();
+    align->setRunOnHost(true);
     tof->depth.link(align->input);
     out->link(align->inputAlignTo);
     align->outputAligned.link(rgbdNode->inDepth);
@@ -95,12 +105,13 @@ void RGBD::setNames() {}
 void RGBD::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {}
 
 void RGBD::setupQueues(std::shared_ptr<dai::Device> device) {
-    pclQ = rgbdNode->pcl.createOutputQueue(ph->getParam<int>("i_max_q_size"), false);
-    auto tfPrefix = getOpticalFrameName(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
+    using ParamNames = param_handlers::ParamNames;
+    pclQ = rgbdNode->pcl.createOutputQueue(ph->getParam<int>(ParamNames::MAX_Q_SIZE), false);
+    auto tfPrefix = getOpticalFrameName(getSocketName(ph->getSocketID()));
     rclcpp::PublisherOptions options;
     options.qos_overriding_options = rclcpp::QosOverridingOptions();
-    pclConv = std::make_unique<depthai_bridge::PointCloudConverter>(tfPrefix, ph->getParam<bool>("i_get_base_device_timestamp"));
-    pclConv->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
+    pclConv = std::make_unique<depthai_bridge::PointCloudConverter>(tfPrefix, ph->getParam<bool>(ParamNames::GET_BASE_DEVICE_TIMESTAMP));
+    pclConv->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>(ParamNames::UPDATE_ROS_BASE_TIME_ON_ROS_MSG));
     pclConv->setDepthUnit(dai::StereoDepthConfig::AlgorithmControl::DepthUnit::METER);
 
     pclPub = getROSNode()->create_publisher<sensor_msgs::msg::PointCloud2>("~/" + getName() + "/points", 10, options);

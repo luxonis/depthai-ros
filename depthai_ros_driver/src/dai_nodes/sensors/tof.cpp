@@ -1,5 +1,7 @@
 #include "depthai_ros_driver/dai_nodes/sensors/tof.hpp"
 
+#include <depthai/common/CameraBoardSocket.hpp>
+
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/ImageAlign.hpp"
@@ -84,6 +86,10 @@ void ToF::closeQueues() {
 
 void ToF::link(dai::Node::Input in, int /*linkType*/) {
     tofNode->depth.link(in);
+}
+
+dai::CameraBoardSocket ToF::getSocketID() {
+    return ph->getSocketID();
 }
 
 std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> ToF::getPublishers() {

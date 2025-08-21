@@ -33,7 +33,7 @@ void ThermalParamHandler::declareParams(std::shared_ptr<dai::node::Thermal> ther
     declareAndLogParam<bool>(ParamNames::REVERSE_STEREO_SOCKET_ORDER, false);
     declareAndLogParam<bool>(ParamNames::SYNCED, false);
     declareAndLogParam<bool>(ParamNames::PUBLISH_COMPRESSED, false);
-    declareAndLogParam<bool>("i_publish_raw", true);
+    declareAndLogParam<bool>(ParamNames::PUBLISH_RAW, true);
     auto thermalConfig = std::make_shared<dai::ThermalConfig>();
     // TODO: add runtime parameters for config
 }

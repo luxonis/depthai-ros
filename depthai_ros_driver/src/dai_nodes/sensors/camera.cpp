@@ -43,12 +43,13 @@ void Camera::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
     auto height = ph->getParam<int>(ParamNames::HEIGHT);
     auto fps = ph->getParam<float>(ParamNames::FPS);
     dai::ImgFrame::Type type = dai::ImgFrame::Type::NV12;
-    auto boardSocket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>(ParamNames::BOARD_SOCKET_ID));
-    defaultOut = camNode->requestOutput(std::pair<int, int>(width, height),
-                                        {},
-                                        utils::getValFromMap(ph->getParam<std::string>(ParamNames::RESIZE_MODE), sensor_helpers::resizeModeMap),
-                                        fps,
-                                        ph->getParam<bool>(ParamNames::UNDISTORTED));
+    if(ph->getParam<bool>("i_enable_default_output")) {
+        defaultOut = camNode->requestOutput(std::pair<int, int>(width, height),
+                                            {},
+                                            utils::getValFromMap(ph->getParam<std::string>(ParamNames::RESIZE_MODE), sensor_helpers::resizeModeMap),
+                                            fps,
+                                            ph->getParam<bool>(ParamNames::UNDISTORTED));
+    }
     if(ph->getParam<bool>(ParamNames::PUBLISH_TOPIC)) {
         utils::VideoEncoderConfig encConfig;
         bool lowBandwidth = ph->getParam<bool>(ParamNames::LOW_BANDWIDTH);
@@ -98,8 +99,12 @@ void Camera::closeQueues() {
     }
 }
 
-void Camera::link(dai::Node::Input in, int linkType) {
-    defaultOut->link(in);
+void Camera::link(dai::Node::Input in, int /* linkType */) {
+    if(ph->getParam<bool>("i_enable_default_output")) {
+        defaultOut->link(in);
+    } else {
+        throw std::runtime_error("Default output is disabled! Please reenable it via \"i_enable_default_out\" parameter");
+    }
 }
 
 dai::Node::Output* Camera::getDefaultOut() {

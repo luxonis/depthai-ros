@@ -15,8 +15,8 @@ class MessageQueue;
 class ADatatype;
 class ImgFrame;
 namespace node {
+class ImageAlign;
 class StereoDepth;
-class VideoEncoder;
 }  // namespace node
 }  // namespace dai
 
@@ -32,12 +32,13 @@ class StereoParamHandler;
 
 namespace dai_nodes {
 namespace link_types {
-enum class StereoLinkType { stereo, left, right };
+enum class StereoLinkType { stereo, left, right, align };
 };
 
 namespace sensor_helpers {
 class ImagePubliser;
 }
+class RGBD;
 class Stereo : public BaseNode {
    public:
     explicit Stereo(const std::string& daiNodeName,
@@ -48,7 +49,6 @@ class Stereo : public BaseNode {
                     dai::CameraBoardSocket leftSocket = dai::CameraBoardSocket::CAM_B,
                     dai::CameraBoardSocket rightSocket = dai::CameraBoardSocket::CAM_C);
     ~Stereo();
-    void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> dvice) override;
     void link(dai::Node::Input in, int linkType = 1) override;
     dai::Node::Input getInput(int linkType = 0) override;
@@ -57,29 +57,28 @@ class Stereo : public BaseNode {
     void closeQueues() override;
     std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
     std::shared_ptr<dai::node::StereoDepth> getUnderlyingNode();
+    bool isAligned();
+    dai::CameraBoardSocket getSocketID();
 
    private:
     void setupStereoQueue(std::shared_ptr<dai::Device> device);
     void setupLeftRectQueue(std::shared_ptr<dai::Device> device);
     void setupRightRectQueue(std::shared_ptr<dai::Device> device);
     void setupRectQueue(std::shared_ptr<dai::Device> device, dai::CameraFeatures& sensorInfo, std::shared_ptr<sensor_helpers::ImagePublisher> pub, bool isLeft);
-    /*
-     * This callback is used to synchronize left and right rectified frames
-     * It is called every 10ms and it publishes the frames if they are synchronized
-     * If they are not synchronized, it prints a warning message
-     */
-    void syncTimerCB();
     std::shared_ptr<sensor_helpers::ImagePublisher> stereoPub, leftRectPub, rightRectPub;
     std::shared_ptr<dai::node::StereoDepth> stereoCamNode;
-    std::shared_ptr<dai::node::VideoEncoder> stereoEnc, leftRectEnc, rightRectEnc;
+    std::shared_ptr<dai::node::ImageAlign> alignNode;
+    dai::Platform platform;
+    std::unique_ptr<RGBD> rgbdNodeLeft, rgbdNodeRight;
     std::unique_ptr<SensorWrapper> left;
     std::unique_ptr<SensorWrapper> right;
-    std::unique_ptr<BaseNode> featureTrackerLeftR, featureTrackerRightR, nnNode;
+    std::unique_ptr<BaseNode> featureTrackerLeftR, featureTrackerRightR, nnNodeLeft, nnNodeRight;
     std::unique_ptr<param_handlers::StereoParamHandler> ph;
     std::shared_ptr<dai::MessageQueue> leftRectQ, rightRectQ;
     std::string stereoQName, leftRectQName, rightRectQName;
     dai::CameraFeatures leftSensInfo, rightSensInfo;
-    rclcpp::TimerBase::SharedPtr syncTimer;
+    bool aligned;
+
 };
 
 }  // namespace dai_nodes

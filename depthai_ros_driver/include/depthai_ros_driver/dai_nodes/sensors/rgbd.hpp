@@ -33,7 +33,6 @@ namespace link_types {
 enum class RGBDLinkType { rgb, depth };
 };
 class SensorWrapper;
-class Stereo;
 class ToF;
 class RGBD : public BaseNode {
    public:
@@ -43,14 +42,16 @@ class RGBD : public BaseNode {
                   std::shared_ptr<dai::Device> device,
                   bool rsCompat,
                   SensorWrapper& camNode,
-                  Stereo& stereoNode);
+                  std::shared_ptr<dai::node::StereoDepth> stereo,
+                  bool aligned = false);
     explicit RGBD(const std::string& daiNodeName,
                   std::shared_ptr<rclcpp::Node> node,
                   std::shared_ptr<dai::Pipeline> pipeline,
                   std::shared_ptr<dai::Device> device,
                   bool rsCompat,
                   SensorWrapper& camNode,
-                  ToF& tofNode);
+                  ToF& tofNode,
+                  bool aligned = false);
     ~RGBD();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;

@@ -35,7 +35,7 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
         setInOut(pipeline);
     }
 
-    socketID = ph->getParam<int>("i_board_socket_id");
+    socketID = ph->getSocketID();
     if(ph->getParam<bool>("i_disable_node") && ph->getParam<bool>("i_simulate_from_topic")) {
         RCLCPP_INFO(getROSNode()->get_logger(), "Disabling node %s, pipeline data taken from topic.", getName().c_str());
     } else {
@@ -59,7 +59,7 @@ SensorWrapper::~SensorWrapper() = default;
 void SensorWrapper::subCB(const sensor_msgs::msg::Image& img) {
     dai::ImgFrame data;
     converter->toDaiMsg(img, data);
-    data.setInstanceNum(socketID);
+    data.setInstanceNum(static_cast<int>(socketID));
     // inQ->send(data);
 }
 void SensorWrapper::setNames() {
@@ -116,6 +116,9 @@ dai::Node::Output* SensorWrapper::getDefaultOut() {
     return sensorNode->getDefaultOut();
 }
 
+dai::CameraBoardSocket SensorWrapper::getSocketID() {
+    return socketID;
+}
 std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> SensorWrapper::getPublishers() {
     if(ph->getParam<bool>("i_disable_node")) {
         return std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>>();

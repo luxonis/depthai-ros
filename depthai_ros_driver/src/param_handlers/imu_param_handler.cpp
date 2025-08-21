@@ -35,8 +35,8 @@ ImuParamHandler::ImuParamHandler(std::shared_ptr<rclcpp::Node> node, const std::
 }
 ImuParamHandler::~ImuParamHandler() = default;
 void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const std::string& imuType) {
-    declareAndLogParam<bool>("i_get_base_device_timestamp", false);
-    declareAndLogParam<int>("i_max_q_size", 8);
+    declareAndLogParam<bool>(ParamNames::GET_BASE_DEVICE_TIMESTAMP, false);
+    declareAndLogParam<int>(ParamNames::MAX_Q_SIZE, 8);
     auto messageType = declareAndLogParam<std::string>("i_message_type", "IMU");
     declareAndLogParam<std::string>("i_sync_method", "COPY");
     declareAndLogParam<bool>("i_update_ros_base_time_on_ros_msg", false);

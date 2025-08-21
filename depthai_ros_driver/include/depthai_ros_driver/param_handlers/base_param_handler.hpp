@@ -7,6 +7,7 @@
 namespace depthai_ros_driver {
 namespace param_handlers {
 struct ParamNames {
+    static constexpr const char* ALIGNED = "i_aligned";
     static constexpr const char* LOW_BANDWIDTH = "i_low_bandwidth";
     static constexpr const char* LOW_BANDWIDTH_PROFILE = "i_low_bandwidth_profile";
     static constexpr const char* LOW_BANDWIDTH_FRAME_FREQ = "i_low_bandwidth_frame_freq";
@@ -25,6 +26,7 @@ struct ParamNames {
     static constexpr const char* REVERSE_STEREO_SOCKET_ORDER = "i_reverse_stereo_socket_order";
     static constexpr const char* SYNCED = "i_synced";
     static constexpr const char* PUBLISH_COMPRESSED = "i_publish_compressed";
+    static constexpr const char* PUBLISH_RAW = "i_publish_raw";
     static constexpr const char* WIDTH = "i_width";
     static constexpr const char* HEIGHT = "i_height";
     static constexpr const char* FPS = "i_fps";
@@ -83,6 +85,9 @@ class BaseParamHandler {
     }
     std::string getName() {
         return baseName;
+    }
+    dai::CameraBoardSocket getSocketID() {
+        return static_cast<dai::CameraBoardSocket>(getParam<int>(ParamNames::BOARD_SOCKET_ID));
     }
     template <typename T>
     T getParam(const std::string& paramName) {
@@ -150,7 +155,7 @@ class BaseParamHandler {
         }
     }
     template <typename T>
-    T declareAndLogParam(const std::string& paramName, T value, rcl_interfaces::msg::ParameterDescriptor int_range, bool override = false) {
+    T declareAndLogParam(const std::string& paramName, T value, rcl_interfaces::msg::ParameterDescriptor descriptor, bool override = false) {
         std::string fullName = baseName + "." + paramName;
         if(baseNode->has_parameter(fullName)) {
             if(override) {
@@ -159,7 +164,25 @@ class BaseParamHandler {
             }
             return getParam<T>(fullName);
         } else {
-            auto val = baseNode->declare_parameter<T>(fullName, value, int_range);
+            auto val = baseNode->declare_parameter<T>(fullName, value, descriptor);
+            logParam(fullName, val);
+            return val;
+        }
+    }
+    template <typename T>
+    T declareAndLogParam(const std::string& paramName,
+                         const std::vector<T>& value,
+                         rcl_interfaces::msg::ParameterDescriptor descriptor,
+                         bool override = false) {
+        std::string fullName = baseName + "." + paramName;
+        if(baseNode->has_parameter(fullName)) {
+            if(override) {
+                auto param = rclcpp::Parameter(fullName, value);
+                baseNode->set_parameter(param);
+            }
+            return getParam<T>(paramName);
+        } else {
+            auto val = baseNode->declare_parameter<T>(fullName, value, descriptor);
             logParam(fullName, val);
             return val;
         }

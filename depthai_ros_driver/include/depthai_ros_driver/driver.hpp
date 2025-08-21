@@ -15,6 +15,7 @@
 namespace dai {
 class Pipeline;
 class Device;
+enum class Platform;
 }  // namespace dai
 
 namespace depthai_ros_driver {
@@ -90,6 +91,7 @@ class Driver : public rclcpp::Node {
     std::shared_ptr<dai::Device> device;
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
     std::string deviceName;
+    dai::Platform platform;
     std::atomic<bool> camRunning = false;
     bool initialized = false;
     std::unique_ptr<depthai_bridge::TFPublisher> tfPub;

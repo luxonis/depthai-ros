@@ -14,7 +14,6 @@ void PipelineGenParamHandler::declareParams() {
     declareAndLogParam<std::string>("i_nn_type", "spatial");
     declareAndLogParam<bool>("i_enable_imu", true);
     declareAndLogParam<bool>("i_enable_diagnostics", false);
-    declareAndLogParam<bool>("i_enable_sync", true);
     declareAndLogParam<bool>("i_enable_rgbd", false);
 }
 }  // namespace param_handlers

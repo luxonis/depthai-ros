@@ -1,5 +1,6 @@
 #pragma once
 
+#include <depthai/common/CameraBoardSocket.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -22,7 +23,7 @@ class RGBDParamHandler : public BaseParamHandler {
    public:
     explicit RGBDParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name, const std::string& deviceName, bool rsCompat);
     ~RGBDParamHandler();
-    void declareParams(std::shared_ptr<dai::node::RGBD> rgbd);
+    void declareParams(std::shared_ptr<dai::node::RGBD> rgbd, dai::CameraBoardSocket socket);
 };
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver

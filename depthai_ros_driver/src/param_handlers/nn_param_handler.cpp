@@ -18,8 +18,8 @@ NNParamHandler::NNParamHandler(
         {"segmentation", nn::NNFamily::Segmentation},
         {"detection", nn::NNFamily::Detection},
     };
-    declareAndLogParam<int>("i_board_socket_id", static_cast<int>(socket));
-    declareAndLogParam<int>("i_max_q_size", 8);
+    declareAndLogParam<int>(ParamNames::BOARD_SOCKET_ID, static_cast<int>(socket));
+    declareAndLogParam<int>(ParamNames::MAX_Q_SIZE, 8);
 }
 NNParamHandler::~NNParamHandler() = default;
 nn::NNFamily NNParamHandler::getNNFamily() {

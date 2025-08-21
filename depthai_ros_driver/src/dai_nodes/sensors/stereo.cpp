@@ -9,6 +9,7 @@
 // #include "depthai_ros_driver/dai_nodes/nn/spatial_nn_wrapper.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/feature_tracker.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/rgbd.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
 #include "depthai_ros_driver/param_handlers/stereo_param_handler.hpp"
@@ -58,7 +59,7 @@ Stereo::Stereo(const std::string& daiNodeName,
     left->link(stereoCamNode->left);
     right->link(stereoCamNode->right);
 
-    if(ph->getParam<bool>("i_enable_spatial_nn")) {
+    if(ph->getParam<bool>("i_enable_left_spatial_nn")) {
         // if(ph->getParam<std::string>("i_spatial_nn_source") == "left") {
         //     nnNode = std::make_unique<SpatialNNWrapper>(getName() + "_spatial_nn", getROSNode(), pipeline, leftSensInfo.socket);
         //     left->link(nnNode->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::input)),
@@ -70,7 +71,36 @@ Stereo::Stereo(const std::string& daiNodeName,
         // }
         // stereoCamNode->depth.link(nnNode->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::inputDepth)));
     }
+    if(ph->getParam<bool>("i_enable_left_rgbd")) {
+        RCLCPP_INFO(getLogger(), "ENABLING RGBD");
+        rgbdNodeLeft =
+            std::make_unique<dai_nodes::RGBD>(getName() + "_" + left->getName() + "_rgbd", node, pipeline, device, rsCompat, *left, getUnderlyingNode());
+    }
+    if(ph->getParam<bool>("i_enable_right_rgbd")) {
+        rgbdNodeRight =
+            std::make_unique<dai_nodes::RGBD>(getName() + "_" + right->getName() + "_rgbd", node, pipeline, device, rsCompat, *right, getUnderlyingNode());
+    }
 
+    // Check alignment, if board socket is one of the pairs, align.
+    // if not it should be aligned externally by calling align method in pipeline creation
+    auto socketID = ph->getSocketID();
+    platform = device->getPlatform();
+    aligned = ph->getParam<bool>("i_align");
+    if(aligned) {
+        if(platform == dai::Platform::RVC4) {
+            alignNode = pipeline->create<dai::node::ImageAlign>();
+            stereoCamNode->depth.link(alignNode->input);
+        }
+        if(socketID == leftSensInfo.socket) {
+            auto in = getInput(static_cast<int>(link_types::StereoLinkType::align));
+            left->getDefaultOut()->link(in);
+        } else if(socketID == rightSensInfo.socket) {
+            auto in = getInput(static_cast<int>(link_types::StereoLinkType::align));
+            right->getDefaultOut()->link(in);
+        } else {
+            RCLCPP_DEBUG(getLogger(), "Socked aligned to a different ID: %d, make sure you call align method in pipeline creation", static_cast<int>(socketID));
+        }
+    }
     RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
 }
 Stereo::~Stereo() = default;
@@ -82,6 +112,10 @@ void Stereo::setNames() {
 
 std::shared_ptr<dai::node::StereoDepth> Stereo::getUnderlyingNode() {
     return stereoCamNode;
+}
+
+bool Stereo::isAligned() {
+    return aligned;
 }
 
 void Stereo::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
@@ -98,11 +132,15 @@ void Stereo::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
         if(outputDisparity || lowBandwidth) {
             stereoPub = setupOutput(pipeline, stereoQName, &stereoCamNode->disparity, ph->getParam<bool>("i_synced"), encConf);
         } else {
-            stereoPub = setupOutput(pipeline, stereoQName, &stereoCamNode->depth, ph->getParam<bool>("i_synced"), encConf);
+            if(aligned && platform == dai::Platform::RVC4) {
+                stereoPub = setupOutput(pipeline, stereoQName, &alignNode->outputAligned, ph->getParam<bool>("i_synced"), encConf);
+            } else {
+                stereoPub = setupOutput(pipeline, stereoQName, &stereoCamNode->depth, ph->getParam<bool>("i_synced"), encConf);
+            }
         }
     }
 
-    if(ph->getParam<bool>("i_left_rect_publish_topic") || ph->getParam<bool>("i_publish_synced_rect_pair")) {
+    if(ph->getParam<bool>("i_left_rect_publish_topic")) {
         utils::VideoEncoderConfig encConf;
         encConf.profile = static_cast<dai::VideoEncoderProperties::Profile>(ph->getParam<int>("i_left_rect_low_bandwidth_profile"));
         encConf.bitrate = ph->getParam<int>("i_left_rect_low_bandwidth_bitrate");
@@ -113,7 +151,7 @@ void Stereo::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
         leftRectPub = setupOutput(pipeline, leftRectQName, &stereoCamNode->rectifiedLeft, ph->getParam<bool>("i_left_rect_synced"), encConf);
     }
 
-    if(ph->getParam<bool>("i_right_rect_publish_topic") || ph->getParam<bool>("i_publish_synced_rect_pair")) {
+    if(ph->getParam<bool>("i_right_rect_publish_topic")) {
         utils::VideoEncoderConfig encConf;
         encConf.profile = static_cast<dai::VideoEncoderProperties::Profile>(ph->getParam<int>("i_right_rect_low_bandwidth_profile"));
         encConf.bitrate = ph->getParam<int>("i_right_rect_low_bandwidth_bitrate");
@@ -180,7 +218,7 @@ void Stereo::setupRightRectQueue(std::shared_ptr<dai::Device> device) {
 
 void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     std::string tfPrefix;
-    if(ph->getParam<bool>("i_align_depth")) {
+    if(ph->getParam<bool>("i_align")) {
         tfPrefix = getOpticalFrameName(ph->getParam<std::string>("i_socket_name"));
     } else {
         tfPrefix = getOpticalFrameName(getSocketName(rightSensInfo.socket).c_str());
@@ -218,16 +256,6 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
 
     stereoPub->setup(device, convConfig, pubConf);
 }
-void Stereo::syncTimerCB() {
-    auto left = leftRectQ->get<dai::ImgFrame>();
-    auto right = rightRectQ->get<dai::ImgFrame>();
-    if(left->getSequenceNum() != right->getSequenceNum()) {
-        RCLCPP_WARN(getROSNode()->get_logger(), "Left and right rectified frames are not synchronized!");
-    } else {
-        leftRectPub->publish(left);
-        rightRectPub->publish(right);
-    }
-}
 
 void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
     left->setupQueues(device);
@@ -235,19 +263,17 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_publish_topic")) {
         setupStereoQueue(device);
     }
-    if(ph->getParam<bool>("i_left_rect_publish_topic") || ph->getParam<bool>("i_publish_synced_rect_pair")) {
+    if(ph->getParam<bool>("i_enable_left_rgbd")) {
+        rgbdNodeLeft->setupQueues(device);
+    }
+    if(ph->getParam<bool>("i_enable_right_rgbd")) {
+        rgbdNodeRight->setupQueues(device);
+    }
+    if(ph->getParam<bool>("i_left_rect_publish_topic")) {
         setupLeftRectQueue(device);
     }
-    if(ph->getParam<bool>("i_right_rect_publish_topic") || ph->getParam<bool>("i_publish_synced_rect_pair")) {
+    if(ph->getParam<bool>("i_right_rect_publish_topic")) {
         setupRightRectQueue(device);
-    }
-    if(ph->getParam<bool>("i_publish_synced_rect_pair")) {
-        RCLCPP_WARN(getROSNode()->get_logger(), "This mechanism is deprecated, please use sync from pipeline_gen");
-        int timerPeriod = 1000.0 / ph->getOtherNodeParam<double>(leftSensInfo.name, "i_fps");
-        RCLCPP_INFO(getROSNode()->get_logger(), "Setting up stereo pair sync timer with period %d ms based on left sensor FPS.", timerPeriod);
-        leftRectQ = leftRectPub->getQueue();
-        rightRectQ = rightRectPub->getQueue();
-        syncTimer = getROSNode()->create_wall_timer(std::chrono::milliseconds(timerPeriod), std::bind(&Stereo::syncTimerCB, this));
     }
     if(ph->getParam<bool>("i_left_rect_enable_feature_tracker")) {
         featureTrackerLeftR->setupQueues(device);
@@ -255,8 +281,11 @@ void Stereo::setupQueues(std::shared_ptr<dai::Device> device) {
     if(ph->getParam<bool>("i_right_rect_enable_feature_tracker")) {
         featureTrackerRightR->setupQueues(device);
     }
-    if(ph->getParam<bool>("i_enable_spatial_nn")) {
-        nnNode->setupQueues(device);
+    if(ph->getParam<bool>("i_enable_left_spatial_nn")) {
+        nnNodeLeft->setupQueues(device);
+    }
+    if(ph->getParam<bool>("i_enable_right_spatial_nn")) {
+        nnNodeRight->setupQueues(device);
     }
 }
 void Stereo::closeQueues() {
@@ -265,15 +294,16 @@ void Stereo::closeQueues() {
     if(ph->getParam<bool>("i_publish_topic")) {
         stereoPub->closeQueue();
     }
+    if(ph->getParam<bool>("i_enable_left_rgbd")) {
+        rgbdNodeLeft->closeQueues();
+    }
+    if(ph->getParam<bool>("i_enable_right_rgbd")) {
+        rgbdNodeRight->closeQueues();
+    }
     if(ph->getParam<bool>("i_left_rect_publish_topic")) {
         leftRectPub->closeQueue();
     }
     if(ph->getParam<bool>("i_right_rect_publish_topic")) {
-        rightRectPub->closeQueue();
-    }
-    if(ph->getParam<bool>("i_publish_synced_rect_pair")) {
-        syncTimer->cancel();
-        leftRectPub->closeQueue();
         rightRectPub->closeQueue();
     }
     if(ph->getParam<bool>("i_left_rect_enable_feature_tracker")) {
@@ -282,14 +312,21 @@ void Stereo::closeQueues() {
     if(ph->getParam<bool>("i_right_rect_enable_feature_tracker")) {
         featureTrackerRightR->closeQueues();
     }
-    if(ph->getParam<bool>("i_enable_spatial_nn")) {
-        nnNode->closeQueues();
+    if(ph->getParam<bool>("i_enable_left_spatial_nn")) {
+        nnNodeLeft->closeQueues();
+    }
+    if(ph->getParam<bool>("i_enable_right_spatial_nn")) {
+        nnNodeRight->closeQueues();
     }
 }
 
 void Stereo::link(dai::Node::Input in, int linkType) {
     if(linkType == static_cast<int>(link_types::StereoLinkType::stereo)) {
-        stereoCamNode->depth.link(in);
+        if(aligned) {
+            alignNode->outputAligned.link(in);
+        } else {
+            stereoCamNode->depth.link(in);
+        }
     } else if(linkType == static_cast<int>(link_types::StereoLinkType::left)) {
         stereoCamNode->rectifiedLeft.link(in);
     } else if(linkType == static_cast<int>(link_types::StereoLinkType::right)) {
@@ -320,19 +357,24 @@ std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> Stereo::getPublishe
     }
     return pubs;
 }
+dai::CameraBoardSocket Stereo::getSocketID() {
+    return ph->getSocketID();
+}
 
 dai::Node::Input Stereo::getInput(int linkType) {
     if(linkType == static_cast<int>(link_types::StereoLinkType::left)) {
         return stereoCamNode->left;
     } else if(linkType == static_cast<int>(link_types::StereoLinkType::right)) {
         return stereoCamNode->right;
-    } else {
-        throw std::runtime_error("Wrong link type specified!");
+    } else if(linkType == static_cast<int>(link_types::StereoLinkType::align)) {
+        if(platform == dai::Platform::RVC2) {
+            return stereoCamNode->inputAlignTo;
+        } else if(platform == dai::Platform::RVC4) {
+            return alignNode->inputAlignTo;
+        } else {
+            throw std::runtime_error("Wrong link type specified!");
+        }
     }
-}
-
-void Stereo::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    ph->setRuntimeParams(params);
 }
 
 }  // namespace dai_nodes

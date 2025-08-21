@@ -67,6 +67,10 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBD::createPipeline(std::shar
     auto rgb =
         std::make_unique<dai_nodes::SensorWrapper>(getNodeName(node, NodeNameEnum::RGB), node, pipeline, deviceName, rsCompat, dai::CameraBoardSocket::CAM_A);
     auto stereo = std::make_unique<dai_nodes::Stereo>(getNodeName(node, NodeNameEnum::Stereo), node, pipeline, device, rsCompat);
+    if(stereo->isAligned() && stereo->getSocketID() == rgb->getSocketID()) {
+        auto in = stereo->getInput(static_cast<int>(dai_nodes::link_types::StereoLinkType::align));
+        rgb->getDefaultOut()->link(in);
+    }
 
     switch(nType) {
         case NNType::None:
@@ -85,7 +89,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBD::createPipeline(std::shar
             break;
     }
     if(ph->getParam<bool>("i_enable_rgbd")) {
-        auto rgbd = std::make_unique<dai_nodes::RGBD>("rgbd", node, pipeline, device, rsCompat, *rgb, *stereo);
+        auto rgbd = std::make_unique<dai_nodes::RGBD>("rgbd", node, pipeline, device, rsCompat, *rgb, stereo->getUnderlyingNode());
         daiNodes.push_back(std::move(rgbd));
     }
     daiNodes.push_back(std::move(rgb));
@@ -187,6 +191,10 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> DepthToF::createPipeline(std::
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
     auto tof = std::make_unique<dai_nodes::ToF>("tof", node, pipeline, deviceName, rsCompat);
     auto stereo = std::make_unique<dai_nodes::Stereo>("stereo", node, pipeline, device, rsCompat);
+    if(stereo->isAligned() && stereo->getSocketID() == tof->getSocketID()) {
+        auto in = stereo->getInput(static_cast<int>(dai_nodes::link_types::StereoLinkType::align));
+        tof->link(in);
+    }
     daiNodes.push_back(std::move(tof));
     daiNodes.push_back(std::move(stereo));
     return daiNodes;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <depthai/common/CameraBoardSocket.hpp>
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 
@@ -46,6 +47,7 @@ class ToF : public BaseNode {
     std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
     void closeQueues() override;
     std::shared_ptr<dai::node::ToF> getUnderlyingNode();
+    dai::CameraBoardSocket getSocketID();
 
    private:
     std::shared_ptr<sensor_helpers::ImagePublisher> tofPub;
