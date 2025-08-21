@@ -84,18 +84,26 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
             auto sysLogger = std::make_unique<dai_nodes::SysLogger>("sys_logger", node, pipeline, deviceName, rsCompat);
             daiNodes.push_back(std::move(sysLogger));
         } else {
-            RCLCPP_WARN(node->get_logger(), "Diagnostics not yet available on RVC4");
+            RCLCPP_WARN(node->get_logger(), "Diagnostics not yet available on RVC4.");
         }
     }
-    if(ph->getParam<bool>("i_enable_sync")) {
-        auto sync = std::make_unique<dai_nodes::Sync>("sync", node, pipeline, deviceName, rsCompat);
-        for(auto& daiNode : daiNodes) {
-            auto pubs = daiNode->getPublishers();
-            RCLCPP_DEBUG(node->get_logger(), "Number of synced publishers found for %s: %zu", daiNode->getName().c_str(), pubs.size());
-            if(!pubs.empty()) {
-                sync->addPublishers(pubs);
+    bool enableSync = false;
+    std::unique_ptr<dai_nodes::Sync> sync;
+    for(const auto& daiNode : daiNodes) {
+        auto pubs = daiNode->getPublishers();
+        for(auto& pub : pubs) {
+            if(!enableSync && pub->isSynced()) {
+                enableSync = true;
+                RCLCPP_DEBUG(node->get_logger(), "Found synced publisher, creating Sync node.");
+                sync = std::make_unique<dai_nodes::Sync>("sync", node, pipeline, deviceName, rsCompat);
             }
         }
+        RCLCPP_DEBUG(node->get_logger(), "Number of synced publishers found for %s: %zu", daiNode->getName().c_str(), pubs.size());
+        if(!pubs.empty() && enableSync) {
+            sync->addPublishers(pubs);
+        }
+    }
+    if(enableSync) {
         daiNodes.push_back(std::move(sync));
     }
     RCLCPP_INFO(node->get_logger(), "Finished setting up pipeline.");
@@ -109,13 +117,11 @@ std::string PipelineGenerator::validatePipeline(std::shared_ptr<rclcpp::Node> no
     }
     if(sensorNum == 1) {
         if(pType != PipelineType::RGB) {
-            RCLCPP_ERROR(node->get_logger(), "Invalid pipeline chosen for camera as it has only one sensor. Switching to RGB.");
-            return "RGB";
+            RCLCPP_ERROR(node->get_logger(), "Invalid pipeline chosen for camera as it has only one sensor. This can result in undefined behavior.");
         }
     } else if(sensorNum == 2) {
         if(pType != PipelineType::Stereo && pType != PipelineType::Depth && pType != PipelineType::CamArray && pType != PipelineType::Thermal) {
-            RCLCPP_ERROR(node->get_logger(), "Invalid pipeline chosen for camera as it has only stereo pair. Switching to Depth.");
-            return "DEPTH";
+            RCLCPP_ERROR(node->get_logger(), "Invalid pipeline chosen for camera as it has only stereo pair. This can result in undefined behavoir.");
         }
     }
     return typeStr;

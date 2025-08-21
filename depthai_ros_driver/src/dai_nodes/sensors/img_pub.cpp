@@ -136,6 +136,9 @@ void ImagePublisher::link(dai::Node::Input in) {
 std::shared_ptr<dai::MessageQueue> ImagePublisher::getQueue() {
     return dataQ;
 }
+bool ImagePublisher::isSynced(){
+    return synced;
+}
 void ImagePublisher::addQueueCB() {
     cbID = dataQ->addCallback([this](const std::shared_ptr<dai::ADatatype>& data) { publish(data); });
 }
