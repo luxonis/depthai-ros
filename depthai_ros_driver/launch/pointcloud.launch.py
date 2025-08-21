@@ -42,12 +42,10 @@ def launch_setup(context, *args, **kwargs):
             composable_node_descriptions=[
                 ComposableNode(
                     package="depth_image_proc",
-                    plugin="depth_image_proc::PointCloudXyziNode",
+                    plugin="depth_image_proc::PointCloudXyzNode",
                     name="point_cloud_xyzi",
                     remappings=[
-                        ("depth/image_rect", name + "/stereo/image_raw"),
-                        ("intensity/image_rect", name + "/right/image_rect"),
-                        ("intensity/camera_info", name + "/stereo/camera_info"),
+                        ("image_rect", name + "/stereo/image_raw"),
                         ("points", name + "/points"),
                     ],
                 ),

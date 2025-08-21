@@ -3,9 +3,12 @@
     driver:
       i_enable_ir: false
     pipeline_gen:
-      i_enable_imu: true
+      i_enable_imu: false
       i_nn_type: none
       i_pipeline_type: rgbtof
+      i_enable_rgbd: true
     left:
-      i_fps: 15.0
-      i_height: 480
+      i_enable_default_output: false
+      i_publish_topic: false
+    tof:
+      i_fps: 30.0

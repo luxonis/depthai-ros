@@ -3,5 +3,13 @@
     pipeline_gen:
       i_nn_type: none
       i_enable_rgbd: true
+      i_enable_imu: false
     stereo:
       i_depth_preset: DEFAULT
+      i_publish_topic: false
+      # rgbd aligns topic by itself, comment if aligned stream is also needed
+      i_aligned: false
+    rgb:
+      # since rgbd node creates output by default we don't need the default one. Remove parameters to publish topic
+      i_publish_topic: false
+      i_disable_default_output: true

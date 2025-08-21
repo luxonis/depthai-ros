@@ -31,7 +31,7 @@ def launch_setup(context, *args, **kwargs):
     ]
 
     remappings = [
-        ("rgb/image", name + "/rgb/image_rect"),
+        ("rgb/image", name + "/rgb/image_raw"),
         ("rgb/camera_info", name + "/rgb/camera_info"),
         ("depth/image", name + "/stereo/image_raw"),
     ]
