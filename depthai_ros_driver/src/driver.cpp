@@ -10,7 +10,7 @@
 
 namespace depthai_ros_driver {
 
-Driver::Driver(const rclcpp::NodeOptions& options) : rclcpp::Node("camera", options) {
+Driver::Driver(const rclcpp::NodeOptions& options) : rclcpp::Node("driver", options) {
     //  Since we cannot use shared_from this before the object is initialized, we need to use a timer to start the device.
     startTimer = this->create_wall_timer(std::chrono::seconds(1), [this]() {
         start();
@@ -27,7 +27,7 @@ void Driver::onConfigure() {
     setIR();
     paramCBHandle = this->add_on_set_parameters_callback(std::bind(&Driver::parameterCB, this, std::placeholders::_1));
     // If model name not set get one from the device
-    std::string camModel = ph->getParam<std::string>("i_tf_camera_model");
+    std::string camModel = ph->getParam<std::string>("i_tf_device_model");
     if(camModel.empty()) {
         camModel = device->getDeviceName();
     }
@@ -36,7 +36,7 @@ void Driver::onConfigure() {
         tfPub = std::make_unique<depthai_bridge::TFPublisher>(shared_from_this(),
                                                               device->readCalibration(),
                                                               device->getConnectedCameraFeatures(),
-                                                              ph->getParam<std::string>("i_tf_camera_name"),
+                                                              ph->getParam<std::string>("i_tf_device_name"),
                                                               camModel,
                                                               ph->getParam<std::string>("i_tf_base_frame"),
                                                               ph->getParam<std::string>("i_tf_parent_frame"),
@@ -54,9 +54,9 @@ void Driver::onConfigure() {
     srvGroup = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
 
     startSrv = this->create_service<Trigger>(
-        "~/start_camera", std::bind(&Driver::startCB, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS(), srvGroup);
+        "~/start_driver", std::bind(&Driver::startCB, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS(), srvGroup);
     stopSrv = this->create_service<Trigger>(
-        "~/stop_camera", std::bind(&Driver::stopCB, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS(), srvGroup);
+        "~/stop_driver", std::bind(&Driver::stopCB, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS(), srvGroup);
     savePipelineSrv = this->create_service<Trigger>(
         "~/save_pipeline", std::bind(&Driver::savePipelineCB, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS(), srvGroup);
     saveCalibSrv = this->create_service<Trigger>(
@@ -84,7 +84,7 @@ void Driver::diagCB(const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg) 
 }
 
 void Driver::start() {
-    RCLCPP_INFO(this->get_logger(), "Starting camera.");
+    RCLCPP_INFO(this->get_logger(), "Starting driver.");
     if(!camRunning) {
         onConfigure();
     } else {
@@ -93,7 +93,9 @@ void Driver::start() {
 }
 
 void Driver::stop() {
-    RCLCPP_INFO(get_logger(), "Stopping camera.");
+    if(rclcpp::ok()) {
+        RCLCPP_INFO(get_logger(), "Stopping driver.");
+    }
     if(camRunning) {
         for(const auto& node : daiNodes) {
             node->closeQueues();
@@ -102,20 +104,22 @@ void Driver::stop() {
         device.reset();
         pipeline.reset();
         camRunning = false;
-        RCLCPP_INFO(get_logger(), "Driver stopped!");
+        if(rclcpp::ok()) {
+            RCLCPP_INFO(get_logger(), "Driver stopped!");
+        }
     } else {
         RCLCPP_INFO(get_logger(), "Driver already stopped!");
     }
 }
 
 void Driver::restart() {
-    RCLCPP_ERROR(get_logger(), "Restarting camera");
+    RCLCPP_ERROR(get_logger(), "Restarting driver");
     stop();
     start();
     if(camRunning) {
         return;
     } else {
-        RCLCPP_ERROR(get_logger(), "Restarting camera failed.");
+        RCLCPP_ERROR(get_logger(), "Restarting driver failed.");
     }
 }
 
@@ -162,6 +166,7 @@ void Driver::stopCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response
 }
 void Driver::getDeviceType() {
     startDevice();
+    platform = device->getPlatform();
     pipeline = std::make_shared<dai::Pipeline>(device);
     deviceName = device->getDeviceName();
     RCLCPP_INFO(get_logger(), "Device type: %s", deviceName.c_str());
@@ -169,12 +174,14 @@ void Driver::getDeviceType() {
         RCLCPP_DEBUG(get_logger(), "Socket %d - %s", static_cast<int>(sensor.first), sensor.second.c_str());
     }
     // not working on OAK4 right now
-    // auto ir_drivers = device->getIrDrivers();
-    // if(ir_drivers.empty()) {
-    //     RCLCPP_DEBUG(get_logger(), "Device has no IR drivers");
-    // } else {
-    //     RCLCPP_DEBUG(get_logger(), "IR Drivers present");
-    // }
+    if(platform == dai::Platform::RVC2) {
+        auto ir_drivers = device->getIrDrivers();
+        if(ir_drivers.empty()) {
+            RCLCPP_DEBUG(get_logger(), "Device has no IR drivers");
+        } else {
+            RCLCPP_DEBUG(get_logger(), "IR Drivers present");
+        }
+    }
 }
 
 void Driver::createPipeline() {
@@ -216,7 +223,7 @@ void Driver::startDevice() {
                     // autodiscovery might not work so try connecting via IP directly if set
                     if(!ip.empty()) {
                         dai::DeviceInfo info(ip);
-                        RCLCPP_INFO(this->get_logger(), "No devices detected by autodiscovery, trying to connect to camera via IP: %s", ip.c_str());
+                        RCLCPP_INFO(this->get_logger(), "No devices detected by autodiscovery, trying to connect to device via IP: %s", ip.c_str());
                         availableDevices.push_back(info);
                     } else {
                         throw std::runtime_error("No devices detected!");
@@ -225,7 +232,7 @@ void Driver::startDevice() {
                 dai::UsbSpeed speed = ph->getUSBSpeed();
                 for(const auto& info : availableDevices) {
                     if(!deviceId.empty() && info.getDeviceId() == deviceId) {
-                        RCLCPP_INFO(get_logger(), "Connecting to the camera using ID: %s", deviceId.c_str());
+                        RCLCPP_INFO(get_logger(), "Connecting to the device using ID: %s", deviceId.c_str());
                         if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
                             device = std::make_shared<dai::Device>(info, speed);
                             camRunning = true;
@@ -233,7 +240,7 @@ void Driver::startDevice() {
                             throw std::runtime_error("Device is already booted in different process.");
                         }
                     } else if(!ip.empty() && info.name == ip) {
-                        RCLCPP_INFO(get_logger(), "Connecting to the camera using ip: %s", ip.c_str());
+                        RCLCPP_INFO(get_logger(), "Connecting to the device using ip: %s", ip.c_str());
                         if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
                             device = std::make_shared<dai::Device>(info);
                             camRunning = true;
@@ -241,7 +248,7 @@ void Driver::startDevice() {
                             throw std::runtime_error("Device is already booted in different process...");
                         }
                     } else if(!usb_id.empty() && info.name == usb_id) {
-                        RCLCPP_INFO(get_logger(), "Connecting to the camera using USB ID: %s", usb_id.c_str());
+                        RCLCPP_INFO(get_logger(), "Connecting to the device using USB ID: %s", usb_id.c_str());
                         if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
                             device = std::make_shared<dai::Device>(info, speed);
                             camRunning = true;
@@ -269,13 +276,17 @@ void Driver::startDevice() {
         RCLCPP_INFO(get_logger(), "USB SPEED: %s", speed.c_str());
     } else {
         RCLCPP_INFO(get_logger(),
-                    "PoE camera detected. Consider enabling low bandwidth for specific image topics (see "
-                    "Readme->DepthAI ROS Driver->Specific camera configurations).");
+                    "PoE device detected. Consider enabling low bandwidth for specific image topics (see "
+                    "Readme->DepthAI ROS Driver->Specific device configurations).");
     }
 }
 
 void Driver::setIR() {
-    if(ph->getParam<bool>("i_enable_ir") /*  && !device->getIrDrivers().empty() */) {
+    bool hasIR = true;
+    if(platform == dai::Platform::RVC2) {
+        hasIR = !device->getIrDrivers().empty();
+    }
+    if(ph->getParam<bool>("i_enable_ir") && hasIR) {
         // Normalize laserdot brightness to 0-1 range, max value can be 1200mA
         float laserdotBrightness = float(ph->getParam<int>("i_laser_dot_brightness"));
         if(laserdotBrightness > 1.0) {
@@ -293,7 +304,11 @@ void Driver::setIR() {
 
 rcl_interfaces::msg::SetParametersResult Driver::parameterCB(const std::vector<rclcpp::Parameter>& params) {
     for(const auto& p : params) {
-        if(ph->getParam<bool>("i_enable_ir") /* && !device->getIrDrivers().empty() */) {
+        bool hasIR = true;
+        if(platform == dai::Platform::RVC2) {
+            hasIR = !device->getIrDrivers().empty();
+        }
+        if(ph->getParam<bool>("i_enable_ir") && hasIR) {
             if(p.get_name() == ph->getFullParamName("i_laser_dot_brightness")) {
                 float laserdotBrightness = float(p.get_value<int>());
                 if(laserdotBrightness > 1.0) {
