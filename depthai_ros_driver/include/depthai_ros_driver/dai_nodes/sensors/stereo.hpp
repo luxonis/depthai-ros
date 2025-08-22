@@ -78,7 +78,6 @@ class Stereo : public BaseNode {
     std::string stereoQName, leftRectQName, rightRectQName;
     dai::CameraFeatures leftSensInfo, rightSensInfo;
     bool aligned;
-
 };
 
 }  // namespace dai_nodes

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <depthai/common/CameraBoardSocket.hpp>
+
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 

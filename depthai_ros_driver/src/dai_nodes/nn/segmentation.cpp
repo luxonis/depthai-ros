@@ -68,10 +68,7 @@ void Segmentation::setupQueues(std::shared_ptr<dai::Device> device) {
         imageConverter = std::make_unique<depthai_bridge::ImageConverter>(tfPrefix, false);
         infoManager = std::make_shared<camera_info_manager::CameraInfoManager>(
             getROSNode()->create_sub_node(std::string(getROSNode()->get_name()) + "/" + getName()).get(), "/" + getName());
-        infoManager->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(),
-                                                                imageConverter,
-                                                                device->readCalibration(),
-                                                                ph->getSocketID()));
+        infoManager->setCameraInfo(sensor_helpers::getCalibInfo(getROSNode()->get_logger(), imageConverter, device->readCalibration(), ph->getSocketID()));
 
         ptPub = image_transport::create_camera_publisher(getROSNode().get(), "~/" + getName() + "/passthrough/image_raw");
         ptQ->addCallback(std::bind(sensor_helpers::basicCameraPub, std::placeholders::_1, std::placeholders::_2, *imageConverter, ptPub, infoManager));
