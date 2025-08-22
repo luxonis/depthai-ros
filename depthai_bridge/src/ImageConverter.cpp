@@ -377,7 +377,7 @@ sensor_msgs::msg::CameraInfo ImageConverter::generateCameraInfo(std::shared_ptr<
             cameraInfo.p[i * 4 + j] = intrinsicMatrix[i][j];
         }
         // We take extrinsic projection params from initial calibration estimate here
-        // cameraInfo.p[i * 4 + 3] = camInfo.p[i * 4 + 3];
+        cameraInfo.p[i * 4 + 3] = camInfo.p[i * 4 + 3];
     }
 
     // Set the rectification matrix (identity matrix)
@@ -502,7 +502,7 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(dai::CalibrationHa
     }
     cameraData.distortion_model = "rational_polynomial";
 
-    // camInfo = cameraData;
+    camInfo = cameraData;
     return cameraData;
 }
 }  // namespace depthai_bridge

@@ -30,12 +30,15 @@ RGBD::RGBD(const std::string& daiNodeName,
     RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     rgbdNode = pipeline->create<dai::node::RGBD>()->build();
-    rgbdNode->useCPUMT(4);
     ph = std::make_unique<RGBDParamHandler>(node, daiNodeName, device->getDeviceName(), rsCompat);
     ph->declareParams(rgbdNode, camNode.getSocketID());
+    int threadNum = ph->getParam<int>("i_num_threads");
+    if(threadNum > 1) {
+        rgbdNode->useCPUMT(threadNum);
+    }
     auto color = camNode.getUnderlyingNode();
     auto platform = device->getPlatform();
-    rgbdNode->runSyncOnHost(true);
+    rgbdNode->runSyncOnHost(ph->getParam<bool>("i_run_sync_on_host"));
     auto fps = ph->getOtherNodeParam<float>(camNode.getName(), ParamNames::FPS);
 
     if(platform == dai::Platform::RVC4) {
@@ -49,6 +52,8 @@ RGBD::RGBD(const std::string& daiNodeName,
         align = pipeline->create<dai::node::ImageAlign>();
         stereo->depth.link(align->input);
         out->link(align->inputAlignTo);
+        align->inputAlignTo.setBlocking(false);
+        align->input.setBlocking(false);
         align->outputAligned.link(rgbdNode->inDepth);
     } else {
         auto* out = color->requestOutput(std::pair<int, int>(ph->getOtherNodeParam<int>(camNode.getName(), ParamNames::WIDTH),
@@ -80,6 +85,10 @@ RGBD::RGBD(const std::string& daiNodeName,
     rgbdNode = pipeline->create<dai::node::RGBD>()->build();
     ph = std::make_unique<RGBDParamHandler>(node, daiNodeName, device->getDeviceName(), rsCompat);
     ph->declareParams(rgbdNode, camNode.getSocketID());
+    int threadNum = ph->getParam<int>("i_num_threads");
+    if(threadNum > 1) {
+        rgbdNode->useCPUMT(threadNum);
+    }
     auto color = camNode.getUnderlyingNode();
     auto tof = tofNode.getUnderlyingNode();
     auto fps = ph->getOtherNodeParam<float>(camNode.getName(), ParamNames::FPS);
@@ -91,9 +100,11 @@ RGBD::RGBD(const std::string& daiNodeName,
                                      true);
     out->link(rgbdNode->inColor);
     align = pipeline->create<dai::node::ImageAlign>();
-    align->setRunOnHost(true);
+    rgbdNode->runSyncOnHost(ph->getParam<bool>("i_run_sync_on_host"));
     tof->depth.link(align->input);
     out->link(align->inputAlignTo);
+    align->inputAlignTo.setBlocking(false);
+    align->input.setBlocking(false);
     align->outputAligned.link(rgbdNode->inDepth);
 
     RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());

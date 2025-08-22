@@ -98,7 +98,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
                 sync = std::make_unique<dai_nodes::Sync>("sync", node, pipeline, deviceName, rsCompat);
             }
         }
-        RCLCPP_DEBUG(node->get_logger(), "Number of synced publishers found for %s: %zu", daiNode->getName().c_str(), pubs.size());
+        RCLCPP_DEBUG(node->get_logger(), "Number of publishers found for %s: %zu", daiNode->getName().c_str(), pubs.size());
         if(!pubs.empty() && enableSync) {
             sync->addPublishers(pubs);
         }

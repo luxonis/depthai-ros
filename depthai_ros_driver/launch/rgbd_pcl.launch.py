@@ -32,7 +32,6 @@ def launch_setup(context, *args, **kwargs):
                 "cam_pitch": LaunchConfiguration("cam_pitch"),
                 "cam_yaw": LaunchConfiguration("cam_yaw"),
                 "use_rviz": LaunchConfiguration("use_rviz"),
-                # "pointcloud.enable": "true",
                 "rs_compat": LaunchConfiguration("rs_compat"),
             }.items(),
         ),
