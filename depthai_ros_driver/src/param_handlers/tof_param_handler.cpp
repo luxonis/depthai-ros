@@ -39,6 +39,7 @@ void ToFParamHandler::declareParams(std::shared_ptr<dai::node::ToF> tof, dai::Ca
     declareAndLogParam<int>(ParamNames::WIDTH, 640);
     declareAndLogParam<int>(ParamNames::HEIGHT, 400);
     declareAndLogParam<bool>(ParamNames::ALIGNED, false);
+    declareAndLogParam<bool>("i_run_align_on_host", true);
     auto fps = declareAndLogParam<float>(ParamNames::FPS, 30.0);
 
     auto sock = static_cast<dai::CameraBoardSocket>(declareAndLogParam<int>(ParamNames::BOARD_SOCKET_ID, static_cast<int>(socket)));

@@ -105,12 +105,13 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<bool>("i_enable_left_rgbd", false);
     declareAndLogParam<bool>("i_enable_right_rgbd", false);
     declareAndLogParam<bool>(ParamNames::SYNCED, false);
+    declareAndLogParam<bool>("i_run_align_on_host", true);
 
     stereo->setLeftRightCheck(declareAndLogParam<bool>("i_lr_check", true));
     int width = 640;
     int height = 400;
     std::string socketName;
-    if(declareAndLogParam<bool>("i_align", true)) {
+    if(declareAndLogParam<bool>(ParamNames::ALIGNED, true)) {
         socketName = getSocketName(alignSocket);
         declareAndLogParam<std::string>("i_socket_name", socketName);
     }

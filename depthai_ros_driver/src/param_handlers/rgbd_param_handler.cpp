@@ -19,6 +19,7 @@ void RGBDParamHandler::declareParams(std::shared_ptr<dai::node::RGBD> rgbd, dai:
     declareAndLogParam<bool>(ParamNames::UPDATE_ROS_BASE_TIME_ON_ROS_MSG, false);
     declareAndLogParam<int>("i_num_threads", 1);
     declareAndLogParam<bool>("i_run_sync_on_host", true);
+    declareAndLogParam<bool>("i_run_align_on_host", true);
 }
 
 }  // namespace param_handlers

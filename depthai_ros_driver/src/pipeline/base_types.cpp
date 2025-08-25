@@ -1,5 +1,7 @@
 #include "depthai_ros_driver/pipeline/base_types.hpp"
 
+#include <depthai/common/CameraBoardSocket.hpp>
+
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai_bridge/depthaiUtility.hpp"
@@ -89,7 +91,11 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBD::createPipeline(std::shar
             break;
     }
     if(ph->getParam<bool>("i_enable_rgbd")) {
-        auto rgbd = std::make_unique<dai_nodes::RGBD>("rgbd", node, pipeline, device, rsCompat, *rgb, stereo->getUnderlyingNode());
+        auto rgbd = std::make_unique<dai_nodes::RGBD>("rgbd", node, pipeline, device, rsCompat, *rgb, stereo->getUnderlyingNode(), stereo->isAligned());
+        if(stereo->isAligned()) {
+            auto in = rgbd->getInput(static_cast<int>(dai_nodes::link_types::RGBDLinkType::depth));
+            stereo->link(in, static_cast<int>(dai_nodes::link_types::StereoLinkType::stereo));
+        }
         daiNodes.push_back(std::move(rgbd));
     }
     daiNodes.push_back(std::move(rgb));
@@ -191,10 +197,26 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> DepthToF::createPipeline(std::
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
     auto tof = std::make_unique<dai_nodes::ToF>("tof", node, pipeline, deviceName, rsCompat);
     auto stereo = std::make_unique<dai_nodes::Stereo>("stereo", node, pipeline, device, rsCompat);
-    if(stereo->isAligned() && stereo->getSocketID() == tof->getSocketID()) {
-        auto in = stereo->getInput(static_cast<int>(dai_nodes::link_types::StereoLinkType::align));
-        tof->link(in);
+    if(stereo->isAligned() && tof->isAligned() && stereo->getSocketID() == tof->getSocketID()) {
+        throw std::runtime_error("Both ToF and Stereo are aligned, please set only one of them for proper pipeline creation.");
     }
+    if(stereo->isAligned() && stereo->getSocketID() == tof->getSocketID()) {
+        // auto in = stereo->getInput(static_cast<int>(dai_nodes::link_types::StereoLinkType::align));
+        // tof->link(in);
+    } else if(tof->isAligned() && tof->getSocketID() == stereo->getSocketID()) {
+        auto in = tof->getInput();
+        stereo->link(in, static_cast<int>(dai_nodes::link_types::StereoLinkType::stereo));
+    }
+    if(ph->getParam<bool>("i_enable_rgbd")) {
+        auto sens = stereo->getLeftSensor();
+        auto rgbd = std::make_unique<dai_nodes::RGBD>("rgbd", node, pipeline, device, rsCompat, *sens, *tof, tof->isAligned());
+        if(tof->isAligned()) {
+            auto in = rgbd->getInput(static_cast<int>(dai_nodes::link_types::RGBDLinkType::depth));
+            tof->link(in);
+        }
+        daiNodes.push_back(std::move(rgbd));
+    }
+
     daiNodes.push_back(std::move(tof));
     daiNodes.push_back(std::move(stereo));
     return daiNodes;
@@ -210,7 +232,13 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> StereoToF::createPipeline(std:
     auto tof = std::make_unique<dai_nodes::ToF>("tof", node, pipeline, deviceName, rsCompat);
     auto left = std::make_unique<dai_nodes::SensorWrapper>("left", node, pipeline, deviceName, rsCompat, dai::CameraBoardSocket::CAM_B);
     auto right = std::make_unique<dai_nodes::SensorWrapper>("right", node, pipeline, deviceName, rsCompat, dai::CameraBoardSocket::CAM_C);
-    right->link(tof->getInput());
+    if(tof->isAligned() && tof->getSocketID() == right->getSocketID()) {
+        auto in = tof->getInput();
+        right->getDefaultOut()->link(in);
+    } else if(tof->isAligned() && tof->getSocketID() == left->getSocketID()) {
+        auto in = tof->getInput();
+        left->getDefaultOut()->link(in);
+    }
     daiNodes.push_back(std::move(left));
     daiNodes.push_back(std::move(right));
     daiNodes.push_back(std::move(tof));
@@ -256,8 +284,16 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBToF::createPipeline(std::sh
         default:
             break;
     }
+    if(tof->isAligned() && tof->getSocketID() == rgb->getSocketID()) {
+        auto in = tof->getInput();
+        rgb->getDefaultOut()->link(in);
+    }
     if(ph->getParam<bool>("i_enable_rgbd")) {
-        auto rgbd = std::make_unique<dai_nodes::RGBD>("rgbd", node, pipeline, device, rsCompat, *rgb, *tof);
+        auto rgbd = std::make_unique<dai_nodes::RGBD>("rgbd", node, pipeline, device, rsCompat, *rgb, *tof, tof->isAligned());
+        if(tof->isAligned()) {
+            auto in = rgbd->getInput(static_cast<int>(dai_nodes::link_types::RGBDLinkType::depth));
+            tof->link(in);
+        }
         daiNodes.push_back(std::move(rgbd));
     }
     daiNodes.push_back(std::move(rgb));

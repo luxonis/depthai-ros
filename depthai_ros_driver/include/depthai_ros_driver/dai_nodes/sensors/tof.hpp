@@ -13,7 +13,6 @@ class ADatatype;
 namespace node {
 class ToF;
 class ImageAlign;
-class XLinkIn;
 }  // namespace node
 }  // namespace dai
 
@@ -45,17 +44,21 @@ class ToF : public BaseNode {
     void link(dai::Node::Input in, int linkType = 0) override;
     void setNames() override;
     void setInOut(std::shared_ptr<dai::Pipeline> pipeline) override;
+    dai::Node::Input getInput(int linkType=0) override;
     std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
     void closeQueues() override;
     std::shared_ptr<dai::node::ToF> getUnderlyingNode();
     dai::CameraBoardSocket getSocketID();
+    bool isAligned();
 
    private:
     std::shared_ptr<sensor_helpers::ImagePublisher> tofPub;
     std::shared_ptr<dai::node::ToF> tofNode;
+    std::shared_ptr<dai::node::ImageAlign> alignNode;
     std::unique_ptr<param_handlers::ToFParamHandler> ph;
     dai::CameraBoardSocket boardSocket;
     std::string tofQName;
+    bool aligned;
 };
 
 }  // namespace dai_nodes
