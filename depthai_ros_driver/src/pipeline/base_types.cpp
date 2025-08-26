@@ -70,8 +70,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBD::createPipeline(std::shar
         std::make_unique<dai_nodes::SensorWrapper>(getNodeName(node, NodeNameEnum::RGB), node, pipeline, deviceName, rsCompat, dai::CameraBoardSocket::CAM_A);
     auto stereo = std::make_unique<dai_nodes::Stereo>(getNodeName(node, NodeNameEnum::Stereo), node, pipeline, device, rsCompat);
     if(stereo->isAligned() && stereo->getSocketID() == rgb->getSocketID()) {
-        auto in = stereo->getInput(static_cast<int>(dai_nodes::link_types::StereoLinkType::align));
-        rgb->getDefaultOut()->link(in);
+        rgb->getDefaultOut()->link(stereo->getInput(static_cast<int>(dai_nodes::link_types::StereoLinkType::align)));
     }
 
     switch(nType) {
@@ -92,9 +91,9 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBD::createPipeline(std::shar
     }
     if(ph->getParam<bool>("i_enable_rgbd")) {
         auto rgbd = std::make_unique<dai_nodes::RGBD>("rgbd", node, pipeline, device, rsCompat, *rgb, stereo->getUnderlyingNode(), stereo->isAligned());
-        if(stereo->isAligned()) {
-            auto in = rgbd->getInput(static_cast<int>(dai_nodes::link_types::RGBDLinkType::depth));
-            stereo->link(in, static_cast<int>(dai_nodes::link_types::StereoLinkType::stereo));
+        if(device->getPlatform() == dai::Platform::RVC4) {
+            stereo->link(rgbd->getInput(static_cast<int>(dai_nodes::link_types::RGBDLinkType::depth)),
+                         static_cast<int>(dai_nodes::link_types::StereoLinkType::stereo));
         }
         daiNodes.push_back(std::move(rgbd));
     }

@@ -50,11 +50,11 @@ void NNWrapper::closeQueues() {
     nnNode->closeQueues();
 }
 
-void NNWrapper::link(dai::Node::Input in, int linkType) {
+void NNWrapper::link(dai::Node::Input& in, int linkType) {
     nnNode->link(in, linkType);
 }
 
-dai::Node::Input NNWrapper::getInput(int linkType) {
+dai::Node::Input& NNWrapper::getInput(int linkType) {
     return nnNode->getInput(linkType);
 }
 

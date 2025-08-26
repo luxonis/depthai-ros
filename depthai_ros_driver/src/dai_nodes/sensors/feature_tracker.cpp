@@ -63,11 +63,11 @@ void FeatureTracker::featureQCB(const std::string& /*name*/, const std::shared_p
     }
 }
 
-void FeatureTracker::link(dai::Node::Input in, int /*linkType*/) {
+void FeatureTracker::link(dai::Node::Input& in, int /*linkType*/) {
     featureNode->outputFeatures.link(in);
 }
 
-dai::Node::Input FeatureTracker::getInput(int /*linkType*/) {
+dai::Node::Input& FeatureTracker::getInput(int /*linkType*/) {
     return featureNode->inputImage;
 }
 

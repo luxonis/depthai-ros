@@ -109,7 +109,7 @@ void Thermal::closeQueues() {
     }
 }
 
-void Thermal::link(dai::Node::Input in, int /*linkType*/) {
+void Thermal::link(dai::Node::Input& in, int /*linkType*/) {
     camNode->temperature.link(in);
 }
 

@@ -44,9 +44,9 @@ class BaseNode {
              bool rsCompatibility);
     virtual ~BaseNode();
     virtual void updateParams(const std::vector<rclcpp::Parameter>& params);
-    virtual void link(dai::Node::Input in, int linkType = 0);
-    virtual dai::Node::Input getInput(int linkType = 0);
-    virtual dai::Node::Input getInputByName(const std::string& name = "");
+    virtual void link(dai::Node::Input& in, int linkType = 0);
+    virtual dai::Node::Input& getInput(int linkType = 0);
+    virtual dai::Node::Input& getInputByName(const std::string& name = "");
     virtual std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers();
     virtual void setupQueues(std::shared_ptr<dai::Device> device) = 0;
     /**

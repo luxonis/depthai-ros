@@ -45,7 +45,7 @@ void Camera::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
     dai::ImgFrame::Type type = dai::ImgFrame::Type::NV12;
     if(ph->getParam<bool>("i_enable_default_output")) {
         defaultOut = camNode->requestOutput(std::pair<int, int>(width, height),
-                                            {},
+                                            type,
                                             utils::getValFromMap(ph->getParam<std::string>(ParamNames::RESIZE_MODE), sensor_helpers::resizeModeMap),
                                             fps,
                                             ph->getParam<bool>(ParamNames::UNDISTORTED));
@@ -99,7 +99,7 @@ void Camera::closeQueues() {
     }
 }
 
-void Camera::link(dai::Node::Input in, int /* linkType */) {
+void Camera::link(dai::Node::Input& in, int /* linkType */) {
     if(ph->getParam<bool>("i_enable_default_output")) {
         defaultOut->link(in);
     } else {

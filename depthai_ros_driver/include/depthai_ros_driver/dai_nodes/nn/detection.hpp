@@ -95,7 +95,7 @@ class Detection : public BaseNode {
      * @param[in]  in        The input of the DetectionNetwork node
      * @param[in]  linkType  The link type (not used)
      */
-    void link(dai::Node::Input in, int /*linkType*/) override {
+    void link(dai::Node::Input& in, int /*linkType*/) override {
         detectionNode->out.link(in);
     };
     /**
@@ -105,7 +105,7 @@ class Detection : public BaseNode {
      *
      * @return     The input of the DetectionNetwork node.
      */
-    dai::Node::Input getInput(int /*linkType*/) override {
+    dai::Node::Input& getInput(int /*linkType*/) override {
         if(ph->getParam<bool>("i_disable_resize")) {
             return detectionNode->input;
         }

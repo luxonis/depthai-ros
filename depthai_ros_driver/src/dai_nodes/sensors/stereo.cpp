@@ -56,7 +56,6 @@ Stereo::Stereo(const std::string& daiNodeName,
         std::make_shared<SensorWrapper>(getSocketName(rightSensInfo.socket), node, pipeline, device->getDeviceName(), rsCompat, rightSensInfo.socket, false);
     stereoCamNode = pipeline->create<dai::node::StereoDepth>();
     ph->declareParams(stereoCamNode);
-    setInOut(pipeline);
     left->link(stereoCamNode->left);
     right->link(stereoCamNode->right);
 
@@ -91,17 +90,18 @@ Stereo::Stereo(const std::string& daiNodeName,
             alignNode = pipeline->create<dai::node::ImageAlign>();
             alignNode->setRunOnHost(ph->getParam<bool>("i_run_align_on_host"));
             stereoCamNode->depth.link(alignNode->input);
+            alignNode->input.setBlocking(false);
+            alignNode->inputAlignTo.setBlocking(false);
         }
-        auto in = getInput(static_cast<int>(link_types::StereoLinkType::align));
         if(socketID == leftSensInfo.socket) {
-
-            left->getDefaultOut()->link(in);
+            left->getDefaultOut()->link(getInput(static_cast<int>(link_types::StereoLinkType::align)));
         } else if(socketID == rightSensInfo.socket) {
-            right->getDefaultOut()->link(in);
+            right->getDefaultOut()->link(getInput(static_cast<int>(link_types::StereoLinkType::align)));
         } else {
             RCLCPP_WARN(getLogger(), "Socket aligned to a different ID: %d, make sure you call align method in pipeline creation", static_cast<int>(socketID));
         }
     }
+    setInOut(pipeline);
     RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
 }
 Stereo::~Stereo() = default;
@@ -134,7 +134,6 @@ void Stereo::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
             stereoPub = setupOutput(pipeline, stereoQName, &stereoCamNode->disparity, ph->getParam<bool>("i_synced"), encConf);
         } else {
             if(aligned && platform == dai::Platform::RVC4) {
-                RCLCPP_INFO(getLogger(), "Otuput");
                 stereoPub = setupOutput(pipeline, stereoQName, &alignNode->outputAligned, ph->getParam<bool>("i_synced"), encConf);
             } else {
                 stereoPub = setupOutput(pipeline, stereoQName, &stereoCamNode->depth, ph->getParam<bool>("i_synced"), encConf);
@@ -319,7 +318,7 @@ void Stereo::closeQueues() {
     }
 }
 
-void Stereo::link(dai::Node::Input in, int linkType) {
+void Stereo::link(dai::Node::Input& in, int linkType) {
     if(linkType == static_cast<int>(link_types::StereoLinkType::stereo)) {
         if(aligned && platform == dai::Platform::RVC4) {
             alignNode->outputAligned.link(in);
@@ -331,7 +330,6 @@ void Stereo::link(dai::Node::Input in, int linkType) {
     } else if(linkType == static_cast<int>(link_types::StereoLinkType::right)) {
         stereoCamNode->rectifiedRight.link(in);
     } else {
-        RCLCPP_ERROR(getLogger(), "Wrong link type: %d", linkType);
         throw std::runtime_error("Wrong link type specified!");
     }
 }
@@ -361,7 +359,7 @@ dai::CameraBoardSocket Stereo::getSocketID() {
     return ph->getSocketID();
 }
 
-dai::Node::Input Stereo::getInput(int linkType) {
+dai::Node::Input& Stereo::getInput(int linkType) {
     if(linkType == static_cast<int>(link_types::StereoLinkType::left)) {
         return stereoCamNode->left;
     } else if(linkType == static_cast<int>(link_types::StereoLinkType::right)) {
@@ -373,7 +371,6 @@ dai::Node::Input Stereo::getInput(int linkType) {
             return alignNode->inputAlignTo;
         }
     } else {
-        RCLCPP_ERROR(getLogger(), "Wrong link type: %d", linkType);
         throw std::runtime_error("Wrong link type specified!");
     }
 }

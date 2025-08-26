@@ -111,10 +111,8 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     int width = 640;
     int height = 400;
     std::string socketName;
-    if(declareAndLogParam<bool>(ParamNames::ALIGNED, true)) {
-        socketName = getSocketName(alignSocket);
-        declareAndLogParam<std::string>("i_socket_name", socketName);
-    }
+    socketName = getSocketName(alignSocket);
+    declareAndLogParam<std::string>("i_socket_name", socketName);
 
     if(declareAndLogParam<bool>("i_set_input_size", false)) {
         stereo->setInputResolution(declareAndLogParam<int>("i_input_width", width), declareAndLogParam<int>("i_input_height", height));

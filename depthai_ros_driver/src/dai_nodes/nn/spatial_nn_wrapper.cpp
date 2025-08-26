@@ -44,11 +44,11 @@ void SpatialNNWrapper::closeQueues() {
     nnNode->closeQueues();
 }
 
-void SpatialNNWrapper::link(dai::Node::Input in, int linkType) {
+void SpatialNNWrapper::link(dai::Node::Input& in, int linkType) {
     nnNode->link(in, linkType);
 }
 
-dai::Node::Input SpatialNNWrapper::getInput(int linkType) {
+dai::Node::Input& SpatialNNWrapper::getInput(int linkType) {
     return nnNode->getInput(linkType);
 }
 

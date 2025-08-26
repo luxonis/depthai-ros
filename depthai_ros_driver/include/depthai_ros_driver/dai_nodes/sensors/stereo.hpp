@@ -50,8 +50,8 @@ class Stereo : public BaseNode {
                     dai::CameraBoardSocket rightSocket = dai::CameraBoardSocket::CAM_C);
     ~Stereo();
     void setupQueues(std::shared_ptr<dai::Device> dvice) override;
-    void link(dai::Node::Input in, int linkType = 1) override;
-    dai::Node::Input getInput(int linkType = 0) override;
+    void link(dai::Node::Input& in, int linkType = 1) override;
+    dai::Node::Input& getInput(int linkType = 0) override;
     void setNames() override;
     void setInOut(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;

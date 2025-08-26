@@ -94,7 +94,7 @@ void ToF::closeQueues() {
     }
 }
 
-void ToF::link(dai::Node::Input in, int /*linkType*/) {
+void ToF::link(dai::Node::Input& in, int /*linkType*/) {
     if(aligned) {
         alignNode->outputAligned.link(in);
     } else {
@@ -102,7 +102,7 @@ void ToF::link(dai::Node::Input in, int /*linkType*/) {
     }
 }
 
-dai::Node::Input ToF::getInput(int linkType) {
+dai::Node::Input& ToF::getInput(int linkType) {
     if(!aligned){
         throw std::runtime_error("ToF node is not aligned! Please make sure to enable i_aligned parameter");
     } else{

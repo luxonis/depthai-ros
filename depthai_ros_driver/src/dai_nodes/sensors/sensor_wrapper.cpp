@@ -100,7 +100,7 @@ void SensorWrapper::closeQueues() {
     }
 }
 
-void SensorWrapper::link(dai::Node::Input in, int linkType) {
+void SensorWrapper::link(dai::Node::Input& in, int linkType) {
     if(ph->getParam<bool>("i_simulate_from_topic")) {
         // xIn->out.link(in);
     } else {

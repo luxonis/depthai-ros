@@ -37,8 +37,8 @@ class Sync : public BaseNode {
                   bool rsCompat);
     ~Sync();
     void setupQueues(std::shared_ptr<dai::Device> device) override;
-    void link(dai::Node::Input in, int linkType = 0) override;
-    dai::Node::Input getInputByName(const std::string& name = "") override;
+    void link(dai::Node::Input& in, int linkType = 0) override;
+    dai::Node::Input& getInputByName(const std::string& name = "") override;
     void setNames() override;
     void setInOut(std::shared_ptr<dai::Pipeline> pipeline) override;
     void closeQueues() override;

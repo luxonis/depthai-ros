@@ -47,8 +47,8 @@ RGBD::RGBD(const std::string& daiNodeName,
                                      dai::ImgResizeMode::CROP,
                                      fps,
                                      true);
+    out->link(rgbdNode->inColor);
     if(platform == dai::Platform::RVC4) {
-        out->link(rgbdNode->inColor);
         if(!aligned) {
             align = pipeline->create<dai::node::ImageAlign>();
             align->setRunOnHost(ph->getParam<bool>("i_run_align_on_host"));
@@ -58,10 +58,9 @@ RGBD::RGBD(const std::string& daiNodeName,
             align->input.setBlocking(false);
             align->outputAligned.link(rgbdNode->inDepth);
         } else {
-            RCLCPP_WARN(getLogger(), "Depth has been prealigned! Please remember to link manually in pipeline creation.");
+            RCLCPP_DEBUG(getLogger(), "Stereo depth output is reported to be aligned. Please connect its output externally");
         }
     } else {
-        out->link(rgbdNode->inColor);
         if(!aligned) {
             out->link(stereo->inputAlignTo);
             stereo->inputAlignTo.setBlocking(false);
@@ -150,11 +149,11 @@ void RGBD::pclCB(const std::string& /*name*/, const std::shared_ptr<dai::ADataty
     }
 }
 
-void RGBD::link(dai::Node::Input in, int /*linkType*/) {
+void RGBD::link(dai::Node::Input& in, int /*linkType*/) {
     rgbdNode->pcl.link(in);
 }
 
-dai::Node::Input RGBD::getInput(int linkType) {
+dai::Node::Input& RGBD::getInput(int linkType) {
     if(linkType == static_cast<int>(link_types::RGBDLinkType::rgb)) {
         return rgbdNode->inColor;
     } else if(linkType == static_cast<int>(link_types::RGBDLinkType::depth)) {

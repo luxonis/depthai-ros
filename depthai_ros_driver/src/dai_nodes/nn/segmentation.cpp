@@ -124,11 +124,11 @@ cv::Mat Segmentation::decodeDeeplab(cv::Mat mat, int classNum) {
     }
     return colors;
 }
-void Segmentation::link(dai::Node::Input in, int /*linkType*/) {
+void Segmentation::link(dai::Node::Input& in, int /*linkType*/) {
     segNode->out.link(in);
 }
 
-dai::Node::Input Segmentation::getInput(int /*linkType*/) {
+dai::Node::Input& Segmentation::getInput(int /*linkType*/) {
     if(ph->getParam<bool>("i_disable_resize")) {
         return segNode->input;
     }

@@ -116,7 +116,7 @@ void Imu::imuMagQCB(const std::string& /*name*/, const std::shared_ptr<dai::ADat
         deq.pop_front();
     }
 }
-void Imu::link(dai::Node::Input in, int /*linkType*/) {
+void Imu::link(dai::Node::Input& in, int /*linkType*/) {
     imuNode->out.link(in);
 }
 
