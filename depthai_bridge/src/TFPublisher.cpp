@@ -227,9 +227,9 @@ std::string TFPublisher::prepareXacroArgs() {
 
 void TFPublisher::convertModelName() {
     std::map<std::string, std::string> modelMappings = {{"OAK-D-SR-POE", "OAK-D-SR-POE"},
-                                                        {"OAK-D-PRO-W-POE", "OAK-D-POE"},
-                                                        {"OAK-D-PRO-POE", "OAK-D-POE"},
-                                                        {"OAK-D-S2-POE", "OAK-D-POE"},
+                                                        {"OAK-D-PRO-W-POE", "OAK-D-S2-POE"},
+                                                        {"OAK-D-PRO-POE", "OAK-D-S2-POE"},
+                                                        {"OAK-D-S2-POE", "OAK-D-S2-POE"},
                                                         {"OAK-D-POE", "OAK-D-POE"},
                                                         {"OAK-D-LITE", "OAK-D-PRO"},
                                                         {"OAK-D-S2", "OAK-D-PRO"},
