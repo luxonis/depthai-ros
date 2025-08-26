@@ -3,5 +3,15 @@
     pipeline_gen:
       i_nn_type: none
       i_enable_rgbd: true
+      i_pipeline_type: rgbd
     stereo:
       i_depth_preset: DEFAULT
+    # uncomment for better performance in RVC2 PoE devices
+    #   i_publish_topic: false
+    # rgb:
+    #   i_fps: 15.0
+    #   i_publish_topic: false
+    # left:
+    #   i_fps: 15.0
+    # right:
+    #   i_fps: 15.0

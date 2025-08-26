@@ -5,3 +5,4 @@
       i_nn_type: none
     stereo:
       i_depth_preset: DEFAULT
+      i_aligned: false
