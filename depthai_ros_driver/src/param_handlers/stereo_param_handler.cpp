@@ -106,6 +106,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<bool>("i_enable_right_rgbd", false);
     declareAndLogParam<bool>(ParamNames::SYNCED, false);
     declareAndLogParam<bool>("i_run_align_on_host", true);
+    declareAndLogParam<bool>(ParamNames::ALIGNED, true);
 
     stereo->setLeftRightCheck(declareAndLogParam<bool>("i_lr_check", true));
     int width = 640;

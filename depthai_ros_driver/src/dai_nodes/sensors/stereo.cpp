@@ -6,7 +6,7 @@
 #include "depthai/pipeline/datatype/ImgFrame.hpp"
 #include "depthai/pipeline/node/StereoDepth.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/nn_helpers.hpp"
-// #include "depthai_ros_driver/dai_nodes/nn/spatial_nn_wrapper.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/spatial_nn_wrapper.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/feature_tracker.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/rgbd.hpp"
@@ -61,16 +61,12 @@ Stereo::Stereo(const std::string& daiNodeName,
 
     aligned = ph->getParam<bool>(param_handlers::ParamNames::ALIGNED);
     if(ph->getParam<bool>("i_enable_left_spatial_nn")) {
-        // if(ph->getParam<std::string>("i_spatial_nn_source") == "left") {
-        //     nnNode = std::make_unique<SpatialNNWrapper>(getName() + "_spatial_nn", getROSNode(), pipeline, leftSensInfo.socket);
-        //     left->link(nnNode->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::input)),
-        //                static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
-        // } else {
-        //     nnNode = std::make_unique<SpatialNNWrapper>(getName() + "_spatial_nn", getROSNode(), pipeline, rightSensInfo.socket);
-        //     right->link(nnNode->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::input)),
-        //                 static_cast<int>(dai_nodes::link_types::RGBLinkType::preview));
-        // }
-        // stereoCamNode->depth.link(nnNode->getInput(static_cast<int>(dai_nodes::nn_helpers::link_types::SpatialNNLinkType::inputDepth)));
+        nnNodeLeft = std::make_unique<SpatialNNWrapper>(
+            getName() + "_" + left->getName() + "_spatial_nn", getROSNode(), pipeline, device->getDeviceName(), rsCompat, *left, *this);
+    }
+    if(ph->getParam<bool>("i_enable_right_spatial_nn")) {
+        nnNodeRight = std::make_unique<SpatialNNWrapper>(
+            getName() + "_" + right->getName() + "_spatial_nn", getROSNode(), pipeline, device->getDeviceName(), rsCompat, *right, *this);
     }
     if(ph->getParam<bool>("i_enable_left_rgbd")) {
         rgbdNodeLeft = std::make_unique<dai_nodes::RGBD>(
