@@ -3,7 +3,7 @@
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
-// #include "depthai_ros_driver/dai_nodes/nn/nn_wrapper.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/nn_wrapper.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/camera.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/feature_tracker.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
@@ -37,7 +37,8 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
 
     socketID = ph->getSocketID();
     if(ph->getParam<bool>("i_disable_node") && ph->getParam<bool>("i_simulate_from_topic")) {
-        RCLCPP_INFO(getROSNode()->get_logger(), "Disabling node %s, pipeline data taken from topic.", getName().c_str());
+        RCLCPP_WARN(getLogger(), "Simulating data from topic is currently not available");
+        // RCLCPP_INFO(getROSNode()->get_logger(), "Disabling node %s, pipeline data taken from topic.", getName().c_str());
     } else {
         if(ph->getParam<bool>("i_disable_node")) {
             RCLCPP_WARN(getROSNode()->get_logger(), "For node to be disabled, %s.i_simulate_from_topic must be set to true.", getName().c_str());
@@ -49,8 +50,7 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
         sensorNode->link(featureTrackerNode->getInput());
     }
     if(ph->getParam<bool>("i_enable_nn")) {
-        // nnNode = std::make_unique<NNWrapper>(daiNodeName + std::string("_nn"), node, pipeline, static_cast<dai::CameraBoardSocket>(socketID));
-        // sensorNode->link(nnNode->getInput(), static_cast<int>(link_types::RGBLinkType::preview));
+        nnNode = std::make_unique<NNWrapper>(daiNodeName + std::string("_nn"), node, pipeline, deviceName, rsCompat, *this);
     }
     RCLCPP_DEBUG(node->get_logger(), "Base node %s created", daiNodeName.c_str());
 }
