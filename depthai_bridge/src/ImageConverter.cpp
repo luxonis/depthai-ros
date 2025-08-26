@@ -133,30 +133,15 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
     if(planarEncodingEnumMap.find(inData->getType()) != planarEncodingEnumMap.end()) {
         cv::Mat mat, output;
         cv::Size size = cv::Size(inData->getWidth(), inData->getHeight());
-        int type = 0;
-        switch(inData->getType()) {
-            case dai::ImgFrame::Type::BGR888p:
-            case dai::ImgFrame::Type::RGB888p:
-                size = cv::Size(inData->getWidth(), inData->getHeight());
-                type = CV_8UC3;
-                break;
-            case dai::ImgFrame::Type::YUV420p:
-            case dai::ImgFrame::Type::NV12:
-                size = cv::Size(inData->getWidth(), inData->getHeight() * 3 / 2);
-                type = CV_8UC1;
-                break;
 
-            default:
-                throw std::runtime_error("Invalid dataType inputs..");
-                break;
-        }
-        mat = cv::Mat(size, type, inData->getData().data());
+        int type = 0;
         switch(inData->getType()) {
             case dai::ImgFrame::Type::RGB888p: {
                 cv::Mat m1 = cv::Mat(size, CV_8UC1, inData->getData().data() + size.area() * 2);
                 cv::Mat m2 = cv::Mat(size, CV_8UC1, inData->getData().data() + size.area() * 1);
                 cv::Mat m3 = cv::Mat(size, CV_8UC1, inData->getData().data() + size.area() * 0);
                 cv::Mat channels[3] = {m1, m2, m3};
+                type = CV_8UC3;
                 cv::merge(channels, 3, output);
             } break;
 
@@ -165,10 +150,12 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
                 cv::Mat m2 = cv::Mat(size, CV_8UC1, inData->getData().data() + size.area() * 1);
                 cv::Mat m3 = cv::Mat(size, CV_8UC1, inData->getData().data() + size.area() * 2);
                 cv::Mat channels[3] = {m1, m2, m3};
+                type = CV_8UC3;
                 cv::merge(channels, 3, output);
             } break;
 
             case dai::ImgFrame::Type::YUV420p:
+                type = CV_8UC1;
 
                 size = cv::Size(inData->getWidth(), inData->getHeight() * 3 / 2);
                 mat = cv::Mat(size, type, inData->getData().data());
@@ -176,6 +163,7 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
                 break;
 
             case dai::ImgFrame::Type::NV12: {
+                type = CV_8UC1;
                 int step = inData->getStride();
                 cv::Mat frameY(size, type, inData->getData().data(), step);
                 cv::Mat frameUV(size / 2, type, inData->getData().data() + inData->getPlaneStride(), step);
@@ -184,7 +172,7 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
             } break;
 
             default:
-                output = mat.clone();
+                output = cv::Mat(size, type, inData->getData().data());
                 break;
         }
         cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, output).toImageMsg(outImageMsg);
