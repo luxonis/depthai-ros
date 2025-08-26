@@ -197,7 +197,9 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> DepthToF::createPipeline(std::
     auto tof = std::make_unique<dai_nodes::ToF>("tof", node, pipeline, deviceName, rsCompat);
     auto stereo = std::make_unique<dai_nodes::Stereo>("stereo", node, pipeline, device, rsCompat);
     if(stereo->isAligned() && tof->isAligned() && stereo->getSocketID() == tof->getSocketID()) {
-        throw std::runtime_error("Both ToF and Stereo alignment are enabled. Please disable alignment for one of them using the 'i_aligned' parameter for proper pipeline creation.");
+        throw std::runtime_error(
+            "Both ToF and Stereo alignment are enabled. Please disable alignment for one of them using the 'i_aligned' parameter for proper pipeline "
+            "creation.");
     }
     if(stereo->isAligned() && stereo->getSocketID() == tof->getSocketID()) {
         // auto in = stereo->getInput(static_cast<int>(dai_nodes::link_types::StereoLinkType::align));
