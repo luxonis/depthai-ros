@@ -121,7 +121,7 @@ std::string PipelineGenerator::validatePipeline(std::shared_ptr<rclcpp::Node> no
         }
     } else if(sensorNum == 2) {
         if(pType != PipelineType::Stereo && pType != PipelineType::Depth && pType != PipelineType::CamArray && pType != PipelineType::Thermal) {
-            RCLCPP_ERROR(node->get_logger(), "Invalid pipeline chosen for camera as it has only stereo pair. This can result in undefined behavoir.");
+            RCLCPP_ERROR(node->get_logger(), "Invalid pipeline chosen for camera as it has only stereo pair. This can result in undefined behavior.");
         }
     }
     return typeStr;
