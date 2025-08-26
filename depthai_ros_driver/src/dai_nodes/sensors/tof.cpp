@@ -103,9 +103,9 @@ void ToF::link(dai::Node::Input& in, int /*linkType*/) {
 }
 
 dai::Node::Input& ToF::getInput(int linkType) {
-    if(!aligned){
+    if(!aligned) {
         throw std::runtime_error("ToF node is not aligned! Please make sure to enable i_aligned parameter");
-    } else{
+    } else {
         return alignNode->inputAlignTo;
     }
 }
