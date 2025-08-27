@@ -56,7 +56,7 @@ def generate_launch_description():
             default_value=os.path.join(depthai_prefix, "config", "rgbd.yaml"),
         ),
         DeclareLaunchArgument("use_rviz", default_value="False"),
-        DeclareLaunchArgument("rectify_rgb", default_value="False"),
+        DeclareLaunchArgument("rectify_rgb", default_value="True"),
         DeclareLaunchArgument("rs_compat", default_value="False"),
     ]
 
