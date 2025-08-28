@@ -71,12 +71,8 @@ def launch_setup(context, *args, **kwargs):
 
     # If RealSense compatibility is enabled, we need to override some parameters, topics and node names
     parameter_overrides = {}
-    color_sens_name = "rgb"
-    stereo_sens_name = "stereo"
     points_topic_name = f"{name}/rgbd/points"
-    depth_topic_suffix = "image_raw"
     if rs_compat.perform(context) == "true":
-        depth_topic_suffix = "image_rect_raw"
         depth_profile = LaunchConfiguration("depth_module.depth_profile").perform(
             context
         )
@@ -95,8 +91,6 @@ def launch_setup(context, *args, **kwargs):
         color_profile = color_profile.split(delimiter)
         infra_profile = infra_profile.split(delimiter)
 
-        color_sens_name = "color"
-        stereo_sens_name = "depth"
         if name == "oak":
             name = "camera"
         points_topic_name = f"{name}/depth/color/points"

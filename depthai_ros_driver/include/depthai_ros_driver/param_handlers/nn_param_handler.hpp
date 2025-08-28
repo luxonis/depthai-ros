@@ -41,7 +41,6 @@ class NNParamHandler : public BaseParamHandler {
     nn::NNFamily getNNFamily();
     template <typename T>
     void declareParams(std::shared_ptr<T> nn) {
-        declareAndLogParam<bool>("i_desqueeze_output", false);
         declareAndLogParam<bool>("i_enable_passthrough", false);
         declareAndLogParam<bool>("i_enable_passthrough_depth", false);
         declareAndLogParam<bool>("i_get_base_device_timestamp", false);

@@ -287,18 +287,10 @@ void Driver::setIR() {
         hasIR = !device->getIrDrivers().empty();
     }
     if(ph->getParam<bool>("i_enable_ir") && hasIR) {
-        // Normalize laserdot brightness to 0-1 range, max value can be 1200mA
-        float laserdotBrightness = float(ph->getParam<int>("i_laser_dot_brightness"));
-        if(laserdotBrightness > 1.0) {
-            laserdotBrightness = laserdotBrightness / 1200.0;
-        }
-        // Normalize floodlight brightness to 0-1 range, max value can be 1500mA
-        float floodlightBrightness = float(ph->getParam<int>("i_floodlight_brightness"));
-        if(floodlightBrightness > 1.0) {
-            floodlightBrightness = floodlightBrightness / 1500.0;
-        }
-        device->setIrLaserDotProjectorIntensity(laserdotBrightness);
-        device->setIrFloodLightIntensity(floodlightBrightness);
+        float laserdotIntensity = ph->getParam<float>("r_laser_dot_intensity");
+        float floodlightIntensity = ph->getParam<float>("r_floodlight_intensity");
+        device->setIrLaserDotProjectorIntensity(laserdotIntensity);
+        device->setIrFloodLightIntensity(floodlightIntensity);
     }
 }
 
@@ -309,18 +301,12 @@ rcl_interfaces::msg::SetParametersResult Driver::parameterCB(const std::vector<r
             hasIR = !device->getIrDrivers().empty();
         }
         if(ph->getParam<bool>("i_enable_ir") && hasIR) {
-            if(p.get_name() == ph->getFullParamName("i_laser_dot_brightness")) {
-                float laserdotBrightness = float(p.get_value<int>());
-                if(laserdotBrightness > 1.0) {
-                    laserdotBrightness = laserdotBrightness / 1200.0;
-                }
-                device->setIrLaserDotProjectorIntensity(laserdotBrightness);
-            } else if(p.get_name() == ph->getFullParamName("i_floodlight_brightness")) {
-                float floodlightBrightness = float(p.get_value<int>());
-                if(floodlightBrightness > 1.0) {
-                    floodlightBrightness = floodlightBrightness / 1500.0;
-                }
-                device->setIrFloodLightIntensity(floodlightBrightness);
+            if(p.get_name() == ph->getFullParamName("r_laser_dot_intensity")) {
+                float laserdotIntensity = p.get_value<float>();
+                device->setIrLaserDotProjectorIntensity(laserdotIntensity);
+            } else if(p.get_name() == ph->getFullParamName("r_floodlight_intensity")) {
+                float floodlightIntensity = p.get_value<float>();
+                device->setIrFloodLightIntensity(floodlightIntensity);
             }
         }
     }
