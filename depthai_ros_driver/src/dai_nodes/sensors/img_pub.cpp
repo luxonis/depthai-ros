@@ -150,8 +150,10 @@ std::shared_ptr<Image> ImagePublisher::convertData(const std::shared_ptr<dai::AD
     auto daiImg = std::dynamic_pointer_cast<dai::ImgFrame>(data);
     auto info = converter->generateCameraInfo(daiImg);
     if(pubConfig.rectified) {
-        std::fill(info.d.begin(), info.d.end(), 0.0);
         info.r[0] = info.r[4] = info.r[8] = 1.0;
+    }
+    if(pubConfig.undistorted){
+        std::fill(info.d.begin(), info.d.end(), 0.0);
     }
     auto img = std::make_shared<Image>();
     if(pubConfig.publishCompressed) {

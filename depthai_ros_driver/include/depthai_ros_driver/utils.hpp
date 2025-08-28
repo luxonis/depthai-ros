@@ -68,6 +68,7 @@ struct ImgPublisherConfig {
     std::string compressedTopicSuffix = "/image_raw/compressed";
     std::string infoMgrSuffix = "";
     bool rectified = false;
+    bool undistorted = false;
     int width = 0;
     int height = 0;
     int maxQSize = 8;

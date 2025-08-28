@@ -83,7 +83,7 @@ void Camera::setupQueues(std::shared_ptr<dai::Device> device) {
         pubConfig.lazyPub = ph->getParam<bool>(ParamNames::ENABLE_LAZY_PUBLISHER);
         pubConfig.socket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>(ParamNames::BOARD_SOCKET_ID));
         pubConfig.calibrationFile = ph->getParam<std::string>(ParamNames::CALIBRATION_FILE);
-        pubConfig.rectified = ph->getParam<bool>(ParamNames::UNDISTORTED);
+        pubConfig.undistorted = ph->getParam<bool>(ParamNames::UNDISTORTED);
         pubConfig.width = ph->getParam<int>(ParamNames::WIDTH);
         pubConfig.height = ph->getParam<int>(ParamNames::HEIGHT);
         pubConfig.maxQSize = ph->getParam<int>(ParamNames::MAX_Q_SIZE);
