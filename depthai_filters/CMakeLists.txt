@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.8)
 project(
   depthai_filters
-  VERSION 3.0.3
+  VERSION 3.0.4
   LANGUAGES CXX C)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
