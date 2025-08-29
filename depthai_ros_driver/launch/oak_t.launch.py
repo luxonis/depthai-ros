@@ -49,6 +49,10 @@ def generate_launch_description():
         DeclareLaunchArgument("cam_yaw", default_value="0.0"),
         DeclareLaunchArgument("params_file", default_value=os.path.join(depthai_prefix, 'config', 'oak_t.yaml')),
         DeclareLaunchArgument("use_rviz", default_value="False"),
+        DeclareLaunchArgument(
+            "rviz_config",
+            default_value=os.path.join(depthai_prefix, "config", "rviz", "rgbd.rviz"),
+        ),
     ]
 
     return LaunchDescription(

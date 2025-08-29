@@ -7,3 +7,4 @@
       i_publish_topic: true
     stereo:
       i_extended_disp: true
+      i_enable_left_rgbd: true
