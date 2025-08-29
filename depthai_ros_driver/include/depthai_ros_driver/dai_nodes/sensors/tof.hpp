@@ -48,6 +48,7 @@ class ToF : public BaseNode {
     void closeQueues() override;
     std::shared_ptr<dai::node::ToF> getUnderlyingNode();
     dai::CameraBoardSocket getSocketID();
+    dai::CameraBoardSocket getAlignedSocketID();
     bool isAligned();
 
    private:
@@ -56,6 +57,7 @@ class ToF : public BaseNode {
     std::shared_ptr<dai::node::ImageAlign> alignNode;
     std::unique_ptr<param_handlers::ToFParamHandler> ph;
     dai::CameraBoardSocket boardSocket;
+    dai::CameraBoardSocket alignedSocket;
     std::string tofQName;
     bool aligned;
 };

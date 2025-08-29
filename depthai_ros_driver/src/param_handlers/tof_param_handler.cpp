@@ -41,6 +41,7 @@ void ToFParamHandler::declareParams(std::shared_ptr<dai::node::ToF> tof, dai::Ca
     declareAndLogParam<bool>(ParamNames::ALIGNED, false);
     declareAndLogParam<bool>("i_run_align_on_host", true);
     auto fps = declareAndLogParam<float>(ParamNames::FPS, 30.0);
+    declareAndLogParam<int>("i_aligned_socket_id", 1);
 
     auto sock = static_cast<dai::CameraBoardSocket>(declareAndLogParam<int>(ParamNames::BOARD_SOCKET_ID, static_cast<int>(socket)));
     dai::ImageFiltersPresetMode presetMode = utils::getValFromMap(declareAndLogParam<std::string>("i_preset_mode", "TOF_MID_RANGE"), presetModeMap);

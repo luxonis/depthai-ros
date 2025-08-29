@@ -33,6 +33,8 @@ ToF::ToF(const std::string& daiNodeName,
     if(aligned) {
         alignNode = pipeline->create<dai::node::ImageAlign>();
         alignNode->setRunOnHost(ph->getParam<bool>("i_run_align_on_host"));
+        alignNode->input.setBlocking(false);
+        alignNode->inputAlignTo.setBlocking(false);
         RCLCPP_DEBUG(getLogger(), "ToF is aligned, make sure to connect inputs/outputs in pipeline creation");
     }
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
@@ -112,6 +114,10 @@ dai::Node::Input& ToF::getInput(int linkType) {
 
 dai::CameraBoardSocket ToF::getSocketID() {
     return ph->getSocketID();
+}
+dai::CameraBoardSocket ToF::getAlignedSocketID() {
+    alignedSocket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_aligned_socket_id"));
+    return alignedSocket;
 }
 
 bool ToF::isAligned() {
