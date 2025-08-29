@@ -135,9 +135,6 @@ dai::Node::Input& Segmentation::getInput(int /*linkType*/) {
     return imageManip->inputImage;
 }
 
-void Segmentation::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    ph->setRuntimeParams(params);
-}
 }  // namespace nn
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

@@ -38,7 +38,6 @@ class SpatialNNWrapper : public BaseNode {
                               Stereo& stereoNode,
                               const dai::CameraBoardSocket& socket = dai::CameraBoardSocket::CAM_A);
     ~SpatialNNWrapper();
-    void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(dai::Node::Input& in, int linkType = 0) override;
     dai::Node::Input& getInput(int linkType = 0) override;

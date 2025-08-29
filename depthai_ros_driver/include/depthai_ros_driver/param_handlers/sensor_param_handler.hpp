@@ -30,7 +30,7 @@ class SensorParamHandler : public BaseParamHandler {
     ~SensorParamHandler();
     void declareCommonParams(dai::CameraBoardSocket socket);
     void declareParams(std::shared_ptr<dai::node::Camera> cam, bool publish);
-    std::shared_ptr<dai::CameraControl> setRuntimeParams(const std::vector<rclcpp::Parameter>& params) override;
+    std::shared_ptr<dai::CameraControl> setRuntimeParams(const std::vector<rclcpp::Parameter>& params);
 
    private:
     dai::CameraBoardSocket socketID;

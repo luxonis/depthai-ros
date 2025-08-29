@@ -136,10 +136,6 @@ class Detection : public BaseNode {
         }
     };
 
-    void updateParams(const std::vector<rclcpp::Parameter>& params) override {
-        ph->setRuntimeParams(params);
-    };
-
    private:
     /**
      * @brief      Callback for the DetectionNetwork node. Converts the ImgDetections to Detection2DArray and publishes it.

@@ -85,9 +85,6 @@ class BaseParamHandler {
     BaseParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name, const std::string& deviceName, bool rsCompat)
         : baseName(name), deviceName(deviceName), rsCompat(rsCompat), baseNode(node){};
     virtual ~BaseParamHandler() = default;
-    virtual std::shared_ptr<dai::CameraControl> setRuntimeParams(const std::vector<rclcpp::Parameter>& /* params */) {
-        return std::make_shared<dai::CameraControl>();
-    }
     std::string getName() {
         return baseName;
     }

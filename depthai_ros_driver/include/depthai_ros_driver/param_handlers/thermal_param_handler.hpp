@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 
+#include "depthai/pipeline/datatype/ThermalConfig.hpp"
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
 
 namespace dai {
@@ -23,6 +24,10 @@ class ThermalParamHandler : public BaseParamHandler {
     explicit ThermalParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name, const std::string& deviceName, bool rsCompat);
     ~ThermalParamHandler();
     void declareParams(std::shared_ptr<dai::node::Thermal> thermal);
+    std::shared_ptr<dai::ThermalConfig> setRuntimeParams(const std::vector<rclcpp::Parameter>& params);
+
+   private:
+    std::unordered_map<std::string, dai::ThermalConfig::ThermalImageOrientation> thermalOrientMap;
 };
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver

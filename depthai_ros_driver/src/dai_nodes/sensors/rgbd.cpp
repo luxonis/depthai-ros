@@ -164,9 +164,5 @@ dai::Node::Input& RGBD::getInput(int linkType) {
     }
 }
 
-void RGBD::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    ph->setRuntimeParams(params);
-}
-
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

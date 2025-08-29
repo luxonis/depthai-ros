@@ -71,9 +71,5 @@ dai::Node::Input& FeatureTracker::getInput(int /*linkType*/) {
     return featureNode->inputImage;
 }
 
-void FeatureTracker::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    ph->setRuntimeParams(params);
-}
-
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

@@ -58,10 +58,6 @@ dai::Node::Input& NNWrapper::getInput(int linkType) {
     return nnNode->getInput(linkType);
 }
 
-void NNWrapper::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    ph->setRuntimeParams(params);
-    nnNode->updateParams(params);
-}
 
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

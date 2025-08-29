@@ -47,9 +47,6 @@ class SpatialDetection : public BaseNode {
         setInOut(pipeline);
     }
     ~SpatialDetection() = default;
-    void updateParams(const std::vector<rclcpp::Parameter>& params) override {
-        ph->setRuntimeParams(params);
-    };
     void setupQueues(std::shared_ptr<dai::Device> device) override {
         nnQ = spatialNode->out.createOutputQueue(ph->getParam<int>("i_max_q_size"), false);
         std::string socketName = getSocketName(ph->getSocketID());

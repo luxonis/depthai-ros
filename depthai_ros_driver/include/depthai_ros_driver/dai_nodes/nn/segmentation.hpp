@@ -49,7 +49,6 @@ class Segmentation : public BaseNode {
                  dai_nodes::SensorWrapper& camNode,
                  const dai::CameraBoardSocket& socket);
     ~Segmentation();
-    void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;
     void link(dai::Node::Input& in, int linkType = 0) override;
     dai::Node::Input& getInput(int linkType = 0) override;

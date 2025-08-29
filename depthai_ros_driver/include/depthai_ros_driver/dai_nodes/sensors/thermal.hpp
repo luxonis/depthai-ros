@@ -45,9 +45,10 @@ class Thermal : public BaseNode {
 
    private:
     std::shared_ptr<sensor_helpers::ImagePublisher> thermalPub, thermalRawPub;
-    std::shared_ptr<dai::node::Thermal> camNode;
+    std::shared_ptr<dai::node::Thermal> thermalNode;
     std::unique_ptr<param_handlers::ThermalParamHandler> ph;
     dai::CameraBoardSocket boardSocket;
+    std::shared_ptr<dai::InputQueue> confQ;
     std::string thermalQName, rawQName;
 };
 

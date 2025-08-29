@@ -120,9 +120,5 @@ void Imu::link(dai::Node::Input& in, int /*linkType*/) {
     imuNode->out.link(in);
 }
 
-void Imu::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    ph->setRuntimeParams(params);
-}
-
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

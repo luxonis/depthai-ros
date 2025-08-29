@@ -127,9 +127,6 @@ std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> ToF::getPublishers(
     return pubs;
 }
 
-void ToF::updateParams(const std::vector<rclcpp::Parameter>& params) {
-    ph->setRuntimeParams(params);
-}
 
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

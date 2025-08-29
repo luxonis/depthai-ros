@@ -185,7 +185,6 @@ inline std::string getSocketName(dai::CameraBoardSocket socketNum, const std::st
             if(deviceName == deviceNameMap.at(DeviceNames::OAK_D_SR_POE)) {
                 name = srDPoeSocketMap.at(socketNum);
             } else if(deviceName == deviceNameMap.at(DeviceNames::OAK_THERMAL)) {
-                DEPTHAI_ROS_INFO_STREAM("depthai_bridge", "Thermal detected");
                 name = thermalSocketMap.at(socketNum);
             }
         }
