@@ -67,18 +67,18 @@ struct ParamNames {
     static constexpr const char* ENABLE_NN = "i_enable_nn";
 };
 inline rcl_interfaces::msg::ParameterDescriptor getRangedIntDescriptor(uint16_t min, uint16_t max) {
-        rcl_interfaces::msg::ParameterDescriptor desc;
-        desc.integer_range.resize(1);
-        desc.integer_range.at(0).from_value = min;
-        desc.integer_range.at(0).to_value = max;
-        return desc;
+    rcl_interfaces::msg::ParameterDescriptor desc;
+    desc.integer_range.resize(1);
+    desc.integer_range.at(0).from_value = min;
+    desc.integer_range.at(0).to_value = max;
+    return desc;
 }
 inline rcl_interfaces::msg::ParameterDescriptor getRangedFloatDescriptor(float min, float max) {
-        rcl_interfaces::msg::ParameterDescriptor desc;
-        desc.floating_point_range.resize(1);
-        desc.floating_point_range.at(0).from_value = min;
-        desc.floating_point_range.at(0).to_value = max;
-        return desc;
+    rcl_interfaces::msg::ParameterDescriptor desc;
+    desc.floating_point_range.resize(1);
+    desc.floating_point_range.at(0).from_value = min;
+    desc.floating_point_range.at(0).to_value = max;
+    return desc;
 }
 class BaseParamHandler {
    public:

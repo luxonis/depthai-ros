@@ -52,7 +52,7 @@ void ThermalParamHandler::declareParams(std::shared_ptr<dai::node::Thermal> ther
 }
 std::shared_ptr<dai::ThermalConfig> ThermalParamHandler::setRuntimeParams(const std::vector<rclcpp::Parameter>& params) {
     auto conf = std::make_shared<dai::ThermalConfig>();
-        for(const auto& p: params) {
+    for(const auto& p : params) {
         if(p.get_name() == getFullParamName("r_auto_ffc")) {
             conf->ffcParams.autoFFC = p.get_value<bool>();
         } else if(p.get_name() == getFullParamName("r_close_manual_shutter")) {
@@ -66,7 +66,6 @@ std::shared_ptr<dai::ThermalConfig> ThermalParamHandler::setRuntimeParams(const 
         }
     }
     return conf;
-
 }
 
 }  // namespace param_handlers

@@ -58,6 +58,5 @@ dai::Node::Input& NNWrapper::getInput(int linkType) {
     return nnNode->getInput(linkType);
 }
 
-
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

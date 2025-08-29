@@ -127,6 +127,5 @@ std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> ToF::getPublishers(
     return pubs;
 }
 
-
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver
