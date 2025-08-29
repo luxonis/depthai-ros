@@ -35,6 +35,7 @@ def launch_setup(context, *args, **kwargs):
     cam_pitch = LaunchConfiguration("cam_pitch", default="0.0")
     cam_yaw = LaunchConfiguration("cam_yaw", default="0.0")
     use_composition = LaunchConfiguration("rsp_use_composition", default="false")
+    camera_model = LaunchConfiguration("camera_model", default="OAK-D")
     imu_from_descr = LaunchConfiguration("imu_from_descr", default="false")
     publish_tf_from_calibration = LaunchConfiguration(
         "publish_tf_from_calibration", default="true"
@@ -72,51 +73,13 @@ def launch_setup(context, *args, **kwargs):
             composable_node_descriptions=[
                 ComposableNode(
                     package="depthai_ros_driver",
-                    plugin="depthai_ros_driver::Camera",
+                    plugin="depthai_ros_driver::Driver",
                     name=name,
                     parameters=[params_file, tf_params],
                 )
             ],
             arguments=["--ros-args", "--log-level", log_level],
             output="both",
-        ),
-        LoadComposableNodes(
-            condition=IfCondition(LaunchConfiguration("rectify_rgb")),
-            target_container=name + "_container",
-            composable_node_descriptions=[
-                ComposableNode(
-                    package="image_proc",
-                    plugin="image_proc::RectifyNode",
-                    name=name + "_rectify_color_node",
-                    remappings=[
-                        ("image", name + "/rgb/image_raw"),
-                        ("camera_info", name + "/rgb/camera_info"),
-                        ("image_rect", name + "/rgb/image_rect"),
-                        ("image_rect/compressed", name + "/rgb/image_rect/compressed"),
-                        (
-                            "image_rect/compressedDepth",
-                            name + "/rgb/image_rect/compressedDepth",
-                        ),
-                        ("image_rect/theora", name + "/rgb/image_rect/theora"),
-                    ],
-                )
-            ],
-        ),
-        LoadComposableNodes(
-            target_container=name + "_container",
-            composable_node_descriptions=[
-                ComposableNode(
-                    package="depth_image_proc",
-                    plugin="depth_image_proc::PointCloudXyzrgbNode",
-                    name=name + "_point_cloud_xyzrgb_node",
-                    remappings=[
-                        ("depth_registered/image_rect", name + "/stereo/image_raw"),
-                        ("rgb/image_rect_color", rgb_topic_name),
-                        ("rgb/camera_info", name + "/rgb/camera_info"),
-                        ("points", name + "/points"),
-                    ],
-                ),
-            ],
         ),
     ]
 
