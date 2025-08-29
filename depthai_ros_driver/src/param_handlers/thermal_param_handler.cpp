@@ -45,7 +45,7 @@ void ThermalParamHandler::declareParams(std::shared_ptr<dai::node::Thermal> ther
     auto thermalConfig = std::make_shared<dai::ThermalConfig>();
     thermalConfig->ffcParams.autoFFC = declareAndLogParam<bool>("r_auto_ffc", false);
     thermalConfig->ffcParams.closeManualShutter = declareAndLogParam<bool>("r_close_manual_shutter", false);
-    thermalConfig->imageParams.brightnessLevel = declareAndLogParam<int>("r_brightness_level", 0, getRangedIntDescriptor(0, 3));
+    thermalConfig->imageParams.brightnessLevel = declareAndLogParam<int>("r_brightness_level", 0, getRangedIntDescriptor(0, 255));
     thermalConfig->imageParams.orientation = utils::getValFromMap(declareAndLogParam<std::string>("i_orientation", "NORMAL"), thermalOrientMap);
     thermalConfig->imageParams.timeNoiseFilterLevel = declareAndLogParam<int>("r_time_noise_filter_level", 0, getRangedIntDescriptor(0, 3));
     declareAndLogParam<int>(ParamNames::FPS, 30);
