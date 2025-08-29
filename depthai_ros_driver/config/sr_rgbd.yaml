@@ -7,4 +7,5 @@
       i_publish_topic: true
     stereo:
       i_extended_disp: true
+      i_board_socket_id: 1
       i_enable_left_rgbd: true
