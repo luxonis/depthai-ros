@@ -51,18 +51,15 @@ void ImuConverter::fillImuMsg(ImuMsgs::Imu& msg, dai::IMUReportRotationVectorWAc
             {0.0, 0.0, -1.0}
         }};
 
-        // Extract the quaternion components
         double qx = report.i;
         double qy = report.j;
         double qz = report.k;
         double qw = report.real;
 
-        // Apply the rotation matrix to the quaternion components
         double rotatedQx = rotationMatrix[0][0] * qx + rotationMatrix[0][1] * qy + rotationMatrix[0][2] * qz;
         double rotatedQy = rotationMatrix[1][0] * qx + rotationMatrix[1][1] * qy + rotationMatrix[1][2] * qz;
         double rotatedQz = rotationMatrix[2][0] * qx + rotationMatrix[2][1] * qy + rotationMatrix[2][2] * qz;
 
-        // Update the quaternion components in the message
         msg.orientation.x = rotatedQx;
         msg.orientation.y = rotatedQy;
         msg.orientation.z = rotatedQz;
