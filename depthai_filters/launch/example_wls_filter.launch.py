@@ -48,6 +48,8 @@ def launch_setup(context, *args, **kwargs):
 
 
 def generate_launch_description():
+    print("This functionality is still under development!")
+    return LaunchDescription()
     depthai_filters_prefix = get_package_share_directory("depthai_filters")
 
     declared_arguments = [

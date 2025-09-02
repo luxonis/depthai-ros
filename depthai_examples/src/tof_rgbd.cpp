@@ -30,6 +30,7 @@ int main(int argc, char** argv) {
     auto tofCamera = pipeline.create<dai::node::ToF>()->build();
     auto rgbd = pipeline.create<dai::node::RGBD>()->build();
     auto align = pipeline.create<dai::node::ImageAlign>();
+    align->setRunOnHost(true);
 
     // Create output queue
     auto rgbOut = rgbCamera->requestOutput({width, height}, dai::ImgFrame::Type::RGB888i, dai::ImgResizeMode::CROP, std::nullopt, true);
