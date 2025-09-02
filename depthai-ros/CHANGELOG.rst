@@ -1,6 +1,11 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3.0.5 (2025-09-02)
+------------------
+* Update IMU rotation vector
+* Update ToF example
+
 3.0.4 (2025-08-29)
 ------------------
 * Update IR param names
