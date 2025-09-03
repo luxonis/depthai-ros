@@ -27,7 +27,7 @@ def launch_setup(context, *args, **kwargs):
     if LaunchConfiguration("rectify_rgb").perform(context) == "true":
         rgb_topic_name = name + "/rgb/image_rect"
 
-    parent_frame = LaunchConfiguration("parent_frame", default="oak-d-base-frame")
+    parent_frame = LaunchConfiguration("parent_frame", default="oak_parent_frame")
     cam_pos_x = LaunchConfiguration("cam_pos_x", default="0.0")
     cam_pos_y = LaunchConfiguration("cam_pos_y", default="0.0")
     cam_pos_z = LaunchConfiguration("cam_pos_z", default="0.0")
@@ -89,7 +89,7 @@ def generate_launch_description():
     declared_arguments = [
         DeclareLaunchArgument("name", default_value="oak"),
         DeclareLaunchArgument("camera_model", default_value="OAK-D"),
-        DeclareLaunchArgument("parent_frame", default_value="oak-d-base-frame"),
+        DeclareLaunchArgument("parent_frame", default_value="oak_parent_frame"),
         DeclareLaunchArgument("cam_pos_x", default_value="0.0"),
         DeclareLaunchArgument("cam_pos_y", default_value="0.0"),
         DeclareLaunchArgument("cam_pos_z", default_value="0.0"),

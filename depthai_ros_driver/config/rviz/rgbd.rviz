@@ -58,7 +58,7 @@ Visualization Manager:
         All Enabled: true
         oak:
           Value: true
-        oak-d-base-frame:
+        oak_parent_frame:
           Value: true
         oak_imu_frame:
           Value: true
@@ -82,7 +82,7 @@ Visualization Manager:
       Show Axes: true
       Show Names: false
       Tree:
-        oak-d-base-frame:
+        oak_parent_frame:
           oak:
             oak_model_origin:
               {}
