@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-project(depthai_bridge VERSION 3.0.4 LANGUAGES CXX C)
+project(depthai_bridge VERSION 3.0.5 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,6 +14,7 @@ find_package(depthai_ros_msgs REQUIRED)
 find_package(depthai CONFIG REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(stereo_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -31,6 +32,7 @@ set(dependencies
   depthai_ros_msgs
   image_transport
   rclcpp
+  nav_msgs
   sensor_msgs
   stereo_msgs
   std_msgs
@@ -54,6 +56,7 @@ file(GLOB LIB_SRC
     "src/ImageConverter.cpp"
     "src/ImgDetectionConverter.cpp"
     "src/ImuConverter.cpp"
+    "src/OdomConverter.cpp"
     "src/PointCloudConverter.cpp"
     "src/SpatialDetectionConverter.cpp"
     "src/TFPublisher.cpp"
@@ -68,6 +71,7 @@ target_link_libraries(depthai_bridge PUBLIC
       ${composition_interfaces_TARGETS}
       ${depthai_ros_msgs_TARGETS}
       ${ffmpeg_image_transport_msgs_TARGETS}
+      ${nav_msgs_TARGETS}
       ${sensor_msgs_TARGETS}
       ${std_msgs_TARGETS}
       ${stereo_msgs_TARGETS}

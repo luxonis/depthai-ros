@@ -3,7 +3,6 @@
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/imu.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sync.hpp"
 #include "depthai_ros_driver/dai_nodes/sys_logger.hpp"
 #include "depthai_ros_driver/param_handlers/pipeline_gen_param_handler.hpp"
@@ -71,14 +70,6 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> PipelineGenerator::createPipel
         throw std::runtime_error("Plugin loading failed.");
     }
 
-    if(ph->getParam<bool>("i_enable_imu")) {
-        if(device->getConnectedIMU() == "NONE" || device->getConnectedIMU().empty()) {
-            RCLCPP_WARN(node->get_logger(), "IMU enabled but not available!");
-        } else {
-            auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device, rsCompat);
-            daiNodes.push_back(std::move(imu));
-        }
-    }
     if(ph->getParam<bool>("i_enable_diagnostics")) {
         if(device->getPlatform() == dai::Platform::RVC2) {
             auto sysLogger = std::make_unique<dai_nodes::SysLogger>("sys_logger", node, pipeline, deviceName, rsCompat);

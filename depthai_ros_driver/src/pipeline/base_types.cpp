@@ -16,6 +16,7 @@
 #include "depthai_ros_driver/dai_nodes/sensors/stereo.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/thermal.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/tof.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/vio.hpp"
 #include "depthai_ros_driver/pipeline/base_pipeline.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/node.hpp"
@@ -52,6 +53,14 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGB::createPipeline(std::share
             break;
     }
     daiNodes.push_back(std::move(rgb));
+    if(ph->getParam<bool>("i_enable_imu")) {
+        if(device->getConnectedIMU() == "NONE" || device->getConnectedIMU().empty()) {
+            RCLCPP_WARN(node->get_logger(), "IMU enabled but not available!");
+        } else {
+            auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device, rsCompat);
+            daiNodes.push_back(std::move(imu));
+        }
+    }
     return daiNodes;
 }
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBD::createPipeline(std::shared_ptr<rclcpp::Node> node,
@@ -97,6 +106,18 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBD::createPipeline(std::shar
         }
         daiNodes.push_back(std::move(rgbd));
     }
+    if(ph->getParam<bool>("i_enable_vio")) {
+        if(ph->getParam<bool>("i_enable_imu")) {
+            if(device->getConnectedIMU() == "NONE" || device->getConnectedIMU().empty()) {
+                RCLCPP_WARN(node->get_logger(), "IMU enabled but not available!");
+            } else {
+                auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device, rsCompat);
+                auto vio = std::make_unique<dai_nodes::Vio>("vio", node, pipeline, device, rsCompat, *stereo, *imu);
+                daiNodes.push_back(std::move(imu));
+                daiNodes.push_back(std::move(vio));
+            }
+        }
+    }
     daiNodes.push_back(std::move(rgb));
     daiNodes.push_back(std::move(stereo));
     return daiNodes;
@@ -136,6 +157,14 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBStereo::createPipeline(std:
     daiNodes.push_back(std::move(rgb));
     daiNodes.push_back(std::move(left));
     daiNodes.push_back(std::move(right));
+    if(ph->getParam<bool>("i_enable_imu")) {
+        if(device->getConnectedIMU() == "NONE" || device->getConnectedIMU().empty()) {
+            RCLCPP_WARN(node->get_logger(), "IMU enabled but not available!");
+        } else {
+            auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device, rsCompat);
+            daiNodes.push_back(std::move(imu));
+        }
+    }
     return daiNodes;
 }
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> Stereo::createPipeline(std::shared_ptr<rclcpp::Node> node,
@@ -153,6 +182,14 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> Stereo::createPipeline(std::sh
         std::make_unique<dai_nodes::SensorWrapper>(getNodeName(node, NodeNameEnum::Right), node, pipeline, deviceName, rsCompat, dai::CameraBoardSocket::CAM_C);
     daiNodes.push_back(std::move(left));
     daiNodes.push_back(std::move(right));
+    if(ph->getParam<bool>("i_enable_imu")) {
+        if(device->getConnectedIMU() == "NONE" || device->getConnectedIMU().empty()) {
+            RCLCPP_WARN(node->get_logger(), "IMU enabled but not available!");
+        } else {
+            auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device, rsCompat);
+            daiNodes.push_back(std::move(imu));
+        }
+    }
     return daiNodes;
 }
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> Depth::createPipeline(std::shared_ptr<rclcpp::Node> node,
@@ -166,6 +203,14 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> Depth::createPipeline(std::sha
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
     auto stereo = std::make_unique<dai_nodes::Stereo>(getNodeName(node, NodeNameEnum::Stereo), node, pipeline, device, rsCompat);
     daiNodes.push_back(std::move(stereo));
+    if(ph->getParam<bool>("i_enable_imu")) {
+        if(device->getConnectedIMU() == "NONE" || device->getConnectedIMU().empty()) {
+            RCLCPP_WARN(node->get_logger(), "IMU enabled but not available!");
+        } else {
+            auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device, rsCompat);
+            daiNodes.push_back(std::move(imu));
+        }
+    }
     return daiNodes;
 }
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> CamArray::createPipeline(std::shared_ptr<rclcpp::Node> node,
@@ -183,6 +228,14 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> CamArray::createPipeline(std::
         auto daiNode = std::make_unique<dai_nodes::SensorWrapper>(name, node, pipeline, deviceName, rsCompat, feature.socket);
         daiNodes.push_back(std::move(daiNode));
     };
+    if(ph->getParam<bool>("i_enable_imu")) {
+        if(device->getConnectedIMU() == "NONE" || device->getConnectedIMU().empty()) {
+            RCLCPP_WARN(node->get_logger(), "IMU enabled but not available!");
+        } else {
+            auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device, rsCompat);
+            daiNodes.push_back(std::move(imu));
+        }
+    }
     return daiNodes;
 }
 
@@ -217,6 +270,14 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> DepthToF::createPipeline(std::
 
     daiNodes.push_back(std::move(tof));
     daiNodes.push_back(std::move(stereo));
+    if(ph->getParam<bool>("i_enable_imu")) {
+        if(device->getConnectedIMU() == "NONE" || device->getConnectedIMU().empty()) {
+            RCLCPP_WARN(node->get_logger(), "IMU enabled but not available!");
+        } else {
+            auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device, rsCompat);
+            daiNodes.push_back(std::move(imu));
+        }
+    }
     return daiNodes;
 }
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> StereoToF::createPipeline(std::shared_ptr<rclcpp::Node> node,
@@ -238,11 +299,19 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> StereoToF::createPipeline(std:
     daiNodes.push_back(std::move(left));
     daiNodes.push_back(std::move(right));
     daiNodes.push_back(std::move(tof));
+    if(ph->getParam<bool>("i_enable_imu")) {
+        if(device->getConnectedIMU() == "NONE" || device->getConnectedIMU().empty()) {
+            RCLCPP_WARN(node->get_logger(), "IMU enabled but not available!");
+        } else {
+            auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device, rsCompat);
+            daiNodes.push_back(std::move(imu));
+        }
+    }
     return daiNodes;
 }
 
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> ToF::createPipeline(std::shared_ptr<rclcpp::Node> node,
-                                                                      std::shared_ptr<dai::Device> /*device*/,
+                                                                      std::shared_ptr<dai::Device> device,
                                                                       std::shared_ptr<dai::Pipeline> pipeline,
                                                                       std::shared_ptr<param_handlers::PipelineGenParamHandler> ph,
                                                                       const std::string& deviceName,
@@ -251,6 +320,14 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> ToF::createPipeline(std::share
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
     auto tof = std::make_unique<dai_nodes::ToF>("tof", node, pipeline, deviceName, rsCompat);
     daiNodes.push_back(std::move(tof));
+    if(ph->getParam<bool>("i_enable_imu")) {
+        if(device->getConnectedIMU() == "NONE" || device->getConnectedIMU().empty()) {
+            RCLCPP_WARN(node->get_logger(), "IMU enabled but not available!");
+        } else {
+            auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device, rsCompat);
+            daiNodes.push_back(std::move(imu));
+        }
+    }
     return daiNodes;
 }
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBToF::createPipeline(std::shared_ptr<rclcpp::Node> node,
@@ -292,6 +369,14 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBToF::createPipeline(std::sh
     }
     daiNodes.push_back(std::move(rgb));
     daiNodes.push_back(std::move(tof));
+    if(ph->getParam<bool>("i_enable_imu")) {
+        if(device->getConnectedIMU() == "NONE" || device->getConnectedIMU().empty()) {
+            RCLCPP_WARN(node->get_logger(), "IMU enabled but not available!");
+        } else {
+            auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device, rsCompat);
+            daiNodes.push_back(std::move(imu));
+        }
+    }
     return daiNodes;
 }
 std::vector<std::unique_ptr<dai_nodes::BaseNode>> Thermal::createPipeline(std::shared_ptr<rclcpp::Node> node,
@@ -323,6 +408,14 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> Thermal::createPipeline(std::s
     auto thermal = std::make_unique<dai_nodes::Thermal>("thermal", node, pipeline, deviceName, rsCompat);
     daiNodes.push_back(std::move(rgb));
     daiNodes.push_back(std::move(thermal));
+    if(ph->getParam<bool>("i_enable_imu")) {
+        if(device->getConnectedIMU() == "NONE" || device->getConnectedIMU().empty()) {
+            RCLCPP_WARN(node->get_logger(), "IMU enabled but not available!");
+        } else {
+            auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device, rsCompat);
+            daiNodes.push_back(std::move(imu));
+        }
+    }
     return daiNodes;
 }
 }  // namespace pipeline_gen

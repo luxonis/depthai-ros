@@ -40,8 +40,11 @@ ${camera_info_manager_TARGETS}
 depthai::core
 ${depthai_bridge_TARGETS}
 rclcpp::rclcpp
+${geometry_msgs_TARGETS}
+${nav_msgs_TARGETS}
 ${std_msgs_TARGETS}
 ${sensor_msgs_TARGETS}
+tf2_ros::tf2_ros
 image_transport::image_transport
 )
 
@@ -77,6 +80,7 @@ add_library(
   src/param_handlers/sensor_param_handler.cpp
   src/param_handlers/feature_tracker_param_handler.cpp
   src/param_handlers/rgbd_param_handler.cpp
+  src/param_handlers/vio_param_handler.cpp
   src/param_handlers/stereo_param_handler.cpp
   src/param_handlers/thermal_param_handler.cpp
   src/param_handlers/tof_param_handler.cpp
@@ -99,6 +103,7 @@ add_library(
   src/dai_nodes/sensors/stereo.cpp
   src/dai_nodes/sensors/thermal.cpp
   src/dai_nodes/sensors/rgbd.cpp
+  src/dai_nodes/sensors/vio.cpp
   src/dai_nodes/sensors/tof.cpp
   src/dai_nodes/sensors/sync.cpp
 )
