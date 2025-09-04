@@ -31,7 +31,7 @@ TEST(ImuConverterTest, ToRosMsg) {
     rotReport.i = 7.0;
     rotReport.j = 8.0;
     rotReport.k = 9.0;
-    rotReport.real = 1.0;
+    rotReport.real = 10.0;
     inData->packets[0].rotationVector = rotReport;
 
     std::deque<ImuMsgs::Imu> outImuMsgs;
@@ -44,10 +44,10 @@ TEST(ImuConverterTest, ToRosMsg) {
     EXPECT_DOUBLE_EQ(outImuMsgs[0].angular_velocity.x, 4.0);
     EXPECT_DOUBLE_EQ(outImuMsgs[0].angular_velocity.y, 5.0);
     EXPECT_DOUBLE_EQ(outImuMsgs[0].angular_velocity.z, 6.0);
-    EXPECT_DOUBLE_EQ(outImuMsgs[0].orientation.x, 8.0);
-    EXPECT_DOUBLE_EQ(outImuMsgs[0].orientation.y, 7.0);
-    EXPECT_DOUBLE_EQ(outImuMsgs[0].orientation.z, -9.0);
-    EXPECT_DOUBLE_EQ(outImuMsgs[0].orientation.w, 1.0);
+    EXPECT_DOUBLE_EQ(outImuMsgs[0].orientation.x, 7.0);
+    EXPECT_DOUBLE_EQ(outImuMsgs[0].orientation.y, 8.0);
+    EXPECT_DOUBLE_EQ(outImuMsgs[0].orientation.z, 9.0);
+    EXPECT_DOUBLE_EQ(outImuMsgs[0].orientation.w, 10.0);
 }
 
 TEST(ImuConverterTest, ToRosDaiMsg) {
@@ -73,7 +73,7 @@ TEST(ImuConverterTest, ToRosDaiMsg) {
     rotReport.i = 7.0;
     rotReport.j = 8.0;
     rotReport.k = 9.0;
-    rotReport.real = 1.0;
+    rotReport.real = 10.0;
     inData->packets[0].rotationVector = rotReport;
     dai::IMUReportMagneticField magReport;
     magReport.accuracy = dai::IMUReportMagneticField::Accuracy::HIGH;
@@ -91,10 +91,10 @@ TEST(ImuConverterTest, ToRosDaiMsg) {
     EXPECT_DOUBLE_EQ(outImuMsgs[0].imu.angular_velocity.x, 4.0);
     EXPECT_DOUBLE_EQ(outImuMsgs[0].imu.angular_velocity.y, 5.0);
     EXPECT_DOUBLE_EQ(outImuMsgs[0].imu.angular_velocity.z, 6.0);
-    EXPECT_DOUBLE_EQ(outImuMsgs[0].imu.orientation.x, 8.0);
-    EXPECT_DOUBLE_EQ(outImuMsgs[0].imu.orientation.y, 7.0);
-    EXPECT_DOUBLE_EQ(outImuMsgs[0].imu.orientation.z, -9.0);
-    EXPECT_DOUBLE_EQ(outImuMsgs[0].imu.orientation.w, 1.0);
+    EXPECT_DOUBLE_EQ(outImuMsgs[0].imu.orientation.x, 7.0);
+    EXPECT_DOUBLE_EQ(outImuMsgs[0].imu.orientation.y, 8.0);
+    EXPECT_DOUBLE_EQ(outImuMsgs[0].imu.orientation.z, 9.0);
+    EXPECT_DOUBLE_EQ(outImuMsgs[0].imu.orientation.w, 10.0);
     EXPECT_DOUBLE_EQ(outImuMsgs[0].field.magnetic_field.x, 11.0);
     EXPECT_DOUBLE_EQ(outImuMsgs[0].field.magnetic_field.y, 12.0);
     EXPECT_DOUBLE_EQ(outImuMsgs[0].field.magnetic_field.z, 13.0);
