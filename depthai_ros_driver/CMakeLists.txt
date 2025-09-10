@@ -132,6 +132,7 @@ add_library(
   ${PROJECT_NAME} SHARED
   src/driver.cpp
   src/pipeline/pipeline_generator.cpp
+  src/pipeline/base_pipeline.cpp
   src/pipeline/base_types.cpp
 )
 
