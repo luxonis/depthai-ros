@@ -15,14 +15,14 @@ void VioParamHandler::declareParams(std::shared_ptr<dai::node::BasaltVIO> rgbd) 
     declareAndLogParam<int>(ParamNames::MAX_Q_SIZE, 2);
     declareAndLogParam<bool>(ParamNames::GET_BASE_DEVICE_TIMESTAMP, false);
     declareAndLogParam<bool>(ParamNames::UPDATE_ROS_BASE_TIME_ON_ROS_MSG, false);
-    declareAndLogParam<int>("i_imu_update_rate", 200);
+    declareAndLogParam<int>("i_imu_update_rate", 400);
     declareAndLogParam<int>(ParamNames::WIDTH, 640);
     declareAndLogParam<int>(ParamNames::HEIGHT, 400);
     declareAndLogParam<double>(ParamNames::FPS, 60.0);
     declareAndLogParam<std::string>("i_vio_config_path", "");
     declareAndLogParam<bool>("i_publish_tf", true);
     declareAndLogParam<std::string>("i_frame_id", "odom");
-    declareAndLogParam<std::string>("i_child_frame_id", "oak-d-base-frame");
+    declareAndLogParam<std::string>("i_child_frame_id", "oak_parent_frame");
 }
 
 }  // namespace param_handlers

@@ -37,10 +37,20 @@ Vio::Vio(const std::string& daiNodeName,
     vioNode = pipeline->create<dai::node::BasaltVIO>();
     ph = std::make_unique<VioParamHandler>(node, daiNodeName, device->getDeviceName(), rsCompat);
     ph->declareParams(vioNode);
+    frameId = ph->getParam<std::string>("i_frame_id");
+    childFrameId = ph->getParam<std::string>("i_child_frame_id");
+    auto width = ph->getParam<int>(ParamNames::WIDTH);
+    auto height = ph->getParam<int>(ParamNames::HEIGHT);
+    auto fps = ph->getParam<double>(ParamNames::FPS);
     imu.link(vioNode->imu);
-    left.link(vioNode->left);
-    right.link(vioNode->right);
+
+    left.getUnderlyingNode()->requestOutput(std::make_pair(width, height), std::nullopt, dai::ImgResizeMode::CROP, fps)->link(vioNode->left);
+    right.getUnderlyingNode()->requestOutput(std::make_pair(width, height), std::nullopt, dai::ImgResizeMode::CROP, fps)->link(vioNode->right);
     vioNode->setImuUpdateRate(ph->getParam<int>("i_imu_update_rate"));
+    publishTf = ph->getParam<bool>("i_publish_tf");
+    if(publishTf) {
+        tfBr = std::make_shared<tf2_ros::TransformBroadcaster>(node);
+    }
 
     RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
 }
@@ -86,13 +96,13 @@ void Vio::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {}
 void Vio::setupQueues(std::shared_ptr<dai::Device> device) {
     using ParamNames = param_handlers::ParamNames;
     transQ = vioNode->transform.createOutputQueue(ph->getParam<int>(ParamNames::MAX_Q_SIZE), false);
-    auto tfPrefix = getOpticalFrameName(getSocketName(ph->getSocketID()));
+    auto tfPrefix = frameId;
     rclcpp::PublisherOptions options;
     options.qos_overriding_options = rclcpp::QosOverridingOptions();
     odomConv = std::make_unique<depthai_bridge::OdomConverter>(tfPrefix, ph->getParam<bool>(ParamNames::GET_BASE_DEVICE_TIMESTAMP));
     odomConv->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>(ParamNames::UPDATE_ROS_BASE_TIME_ON_ROS_MSG));
 
-    odomPub = getROSNode()->create_publisher<nav_msgs::msg::Odometry>("~/" + getName() + "/points", ph->getParam<int>(ParamNames::MAX_Q_SIZE), options);
+    odomPub = getROSNode()->create_publisher<nav_msgs::msg::Odometry>("~/" + getName() + "/odometry", ph->getParam<int>(ParamNames::MAX_Q_SIZE), options);
     transQ->addCallback(std::bind(&Vio::transCB, this, std::placeholders::_1, std::placeholders::_2));
 }
 
@@ -111,8 +121,8 @@ void Vio::transCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatat
         if(publishTf) {
             geometry_msgs::msg::TransformStamped transformMsg;
             transformMsg.header.stamp = currMsg.header.stamp;
-            transformMsg.header.frame_id = "odom";
-            transformMsg.child_frame_id = "oak-d-base-frame";
+            transformMsg.header.frame_id = frameId;
+            transformMsg.child_frame_id = childFrameId;
             transformMsg.transform.translation.x = currMsg.pose.pose.position.x;
             transformMsg.transform.translation.y = currMsg.pose.pose.position.y;
             transformMsg.transform.translation.z = currMsg.pose.pose.position.z;

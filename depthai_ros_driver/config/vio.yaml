@@ -1,0 +1,12 @@
+/oak:
+  ros__parameters:
+    pipeline_gen:
+      i_nn_type: none
+      i_pipeline_type: stereo
+      i_enable_vio: true
+    left:
+      enable_default_output: false
+    right:
+      enable_default_output: false
+    vio:
+      i_fps: 60.0
