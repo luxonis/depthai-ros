@@ -45,25 +45,11 @@ void ImuConverter::fillImuMsg(ImuMsgs::Imu& msg, dai::IMUReportGyroscope report)
 
 void ImuConverter::fillImuMsg(ImuMsgs::Imu& msg, dai::IMUReportRotationVectorWAcc report) {
     if(enable_rotation) {
-        std::array<std::array<double, 3>, 3> rotationMatrix = {{
-            {0.0, 1.0, 0.0},
-            {1.0, 0.0, 0.0},
-            {0.0, 0.0, -1.0}
-        }};
 
-        double qx = report.i;
-        double qy = report.j;
-        double qz = report.k;
-        double qw = report.real;
-
-        double rotatedQx = rotationMatrix[0][0] * qx + rotationMatrix[0][1] * qy + rotationMatrix[0][2] * qz;
-        double rotatedQy = rotationMatrix[1][0] * qx + rotationMatrix[1][1] * qy + rotationMatrix[1][2] * qz;
-        double rotatedQz = rotationMatrix[2][0] * qx + rotationMatrix[2][1] * qy + rotationMatrix[2][2] * qz;
-
-        msg.orientation.x = rotatedQx;
-        msg.orientation.y = rotatedQy;
-        msg.orientation.z = rotatedQz;
-        msg.orientation.w = qw;
+        msg.orientation.x = report.i;
+        msg.orientation.y = report.j;
+        msg.orientation.z = report.k;
+        msg.orientation.w = report.real;
         msg.orientation_covariance = {rotation_cov, 0.0, 0.0, 0.0, rotation_cov, 0.0, 0.0, 0.0, rotation_cov};
     } else {
         msg.orientation.x = 0.0;
