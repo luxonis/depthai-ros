@@ -40,7 +40,7 @@ void DriverParamHandler::declareParams() {
     declareAndLogParam<std::string>("i_tf_device_name", getROSNode()->get_name());
     declareAndLogParam<std::string>("i_tf_device_model", "");
     declareAndLogParam<std::string>("i_tf_base_frame", "oak");
-    declareAndLogParam<std::string>("i_tf_parent_frame", "oak-d-base-frame");
+    declareAndLogParam<std::string>("i_tf_parent_frame", "oak_parent_frame");
     declareAndLogParam<std::string>("i_tf_cam_pos_x", "0.0");
     declareAndLogParam<std::string>("i_tf_cam_pos_y", "0.0");
     declareAndLogParam<std::string>("i_tf_cam_pos_z", "0.0");

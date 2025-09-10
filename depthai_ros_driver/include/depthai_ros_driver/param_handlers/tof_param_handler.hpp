@@ -27,7 +27,7 @@ class ToFParamHandler : public BaseParamHandler {
     explicit ToFParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name, const std::string& deviceName, bool rsCompat);
     ~ToFParamHandler();
     void declareParams(std::shared_ptr<dai::node::ToF> tof, dai::CameraBoardSocket socket);
-    std::unordered_map<std::string, dai::MedianFilter> medianFilterMap;
+    std::unordered_map<std::string, dai::MedianFilterParams> medianFilterMap;
     std::unordered_map<std::string, dai::ImageFiltersPresetMode> presetModeMap;
 };
 }  // namespace param_handlers

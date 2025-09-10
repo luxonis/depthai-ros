@@ -21,7 +21,7 @@ class TFPublisher {
                          const std::string& camName,
                          const std::string& camModel,
                          const std::string& baseFrame = "oak",
-                         const std::string& parentFrame = "oak-d-base-frame",
+                         const std::string& parentFrame = "oak_parent_frame",
                          const std::string& camPosX = "0.0",
                          const std::string& camPosY = "0.0",
                          const std::string& camPosZ = "0.0",

@@ -44,8 +44,7 @@ def launch_setup(context, *args, **kwargs):
                     package="depth_image_proc",
                     plugin="depth_image_proc::PointCloudXyzNode",
                     name="point_cloud_xyz",
-                    remappings=[
-                        ("image_rect", name + "/stereo/image_raw"),
+                    remappings=[ ("image_rect", name + "/stereo/image_raw"),
                         ("points", name + "/points"),
                     ],
                 ),
@@ -58,7 +57,7 @@ def generate_launch_description():
     depthai_prefix = get_package_share_directory("depthai_ros_driver")
     declared_arguments = [
         DeclareLaunchArgument("name", default_value="oak"),
-        DeclareLaunchArgument("parent_frame", default_value="oak-d-base-frame"),
+        DeclareLaunchArgument("parent_frame", default_value="oak_parent_frame"),
         DeclareLaunchArgument("cam_pos_x", default_value="0.0"),
         DeclareLaunchArgument("cam_pos_y", default_value="0.0"),
         DeclareLaunchArgument("cam_pos_z", default_value="0.0"),

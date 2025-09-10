@@ -1,7 +1,6 @@
 #include "depthai_ros_driver/param_handlers/rgbd_param_handler.hpp"
 
-#include <depthai/common/CameraBoardSocket.hpp>
-
+#include "depthai/common/CameraBoardSocket.hpp"
 #include "depthai/pipeline/node/host/RGBD.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/node.hpp"

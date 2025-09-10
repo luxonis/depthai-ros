@@ -47,7 +47,7 @@ def launch_setup(context, *args, **kwargs):
     )
 
     parent_frame = LaunchConfiguration(
-        "parent_frame", default="oak-d-base-frame"
+        "parent_frame", default="oak_parent_frame"
     ).perform(context)
     cam_pos_x = LaunchConfiguration("cam_pos_x", default="0.0")
     cam_pos_y = LaunchConfiguration("cam_pos_y", default="0.0")
@@ -65,7 +65,6 @@ def launch_setup(context, *args, **kwargs):
     camera_model = LaunchConfiguration("camera_model", default="OAK-D")
     rs_compat = LaunchConfiguration("rs_compat", default="false")
     pointcloud_enable = LaunchConfiguration("pointcloud.enable", default="false")
-    rectify_rgb = LaunchConfiguration("rectify_rgb", default="true")
     namespace = LaunchConfiguration("namespace", default="").perform(context)
     name = LaunchConfiguration("name").perform(context)
 
@@ -96,7 +95,7 @@ def launch_setup(context, *args, **kwargs):
         points_topic_name = f"{name}/depth/color/points"
         if namespace == "":
             namespace = "camera"
-        if parent_frame == "oak-d-base-frame":
+        if parent_frame == "oak_parent_frame":
             parent_frame = f"{name}_link"
         parameter_overrides = {
             "driver": {
@@ -228,7 +227,7 @@ def generate_launch_description():
     declared_arguments = [
         DeclareLaunchArgument("name", default_value="oak"),
         DeclareLaunchArgument("namespace", default_value=""),
-        DeclareLaunchArgument("parent_frame", default_value="oak-d-base-frame"),
+        DeclareLaunchArgument("parent_frame", default_value="oak_parent_frame"),
         DeclareLaunchArgument("camera_model", default_value="OAK-D-PRO"),
         DeclareLaunchArgument("cam_pos_x", default_value="0.0"),
         DeclareLaunchArgument("cam_pos_y", default_value="0.0"),

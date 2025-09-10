@@ -11,10 +11,10 @@ namespace depthai_ros_driver {
 namespace param_handlers {
 ToFParamHandler::ToFParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name, const std::string& deviceName, bool rsCompat)
     : BaseParamHandler(node, name, deviceName, rsCompat) {
-    medianFilterMap = {{"MEDIAN_OFF", dai::MedianFilter::MEDIAN_OFF},
-                       {"KERNEL_3x3", dai::MedianFilter::KERNEL_3x3},
-                       {"KERNEL_5x5", dai::MedianFilter::KERNEL_5x5},
-                       {"KERNEL_7x7", dai::MedianFilter::KERNEL_7x7}};
+    medianFilterMap = {{"MEDIAN_OFF", dai::MedianFilterParams::MEDIAN_OFF},
+                       {"KERNEL_3x3", dai::MedianFilterParams::KERNEL_3x3},
+                       {"KERNEL_5x5", dai::MedianFilterParams::KERNEL_5x5},
+                       {"KERNEL_7x7", dai::MedianFilterParams::KERNEL_7x7}};
     presetModeMap = {{"TOF_LOW_RANGE", dai::ImageFiltersPresetMode::TOF_LOW_RANGE},
                      {"TOF_MID_RANGE", dai::ImageFiltersPresetMode::TOF_MID_RANGE},
                      {"TOF_HIGH_RANGE", dai::ImageFiltersPresetMode::TOF_HIGH_RANGE}};
