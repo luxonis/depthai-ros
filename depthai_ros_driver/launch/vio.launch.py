@@ -57,7 +57,7 @@ def generate_launch_description():
         DeclareLaunchArgument("use_rviz", default_value="False"),
         DeclareLaunchArgument(
             "rviz_config",
-            default_value=os.path.join(depthai_prefix, "config", "rviz", "rgbd.rviz"),
+            default_value=os.path.join(depthai_prefix, "config", "rviz", "vio.rviz"),
         ),
         DeclareLaunchArgument("rs_compat", default_value="False"),
     ]
