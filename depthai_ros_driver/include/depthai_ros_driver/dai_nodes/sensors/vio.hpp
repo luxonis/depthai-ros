@@ -14,7 +14,7 @@ class BasaltVIO;
 }  // namespace dai
 
 namespace depthai_bridge {
-class OdomConverter;
+class TransformDataConverter;
 };
 
 namespace rclcpp {
@@ -63,7 +63,7 @@ class Vio : public BaseNode {
     std::shared_ptr<dai::node::BasaltVIO> getUnderlyingNode();
 
    private:
-    std::unique_ptr<depthai_bridge::OdomConverter> odomConv;
+    std::unique_ptr<depthai_bridge::TransformDataConverter> odomConv;
     void transCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odomPub;
     std::shared_ptr<dai::node::BasaltVIO> vioNode;

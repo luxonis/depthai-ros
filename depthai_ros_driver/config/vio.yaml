@@ -10,3 +10,9 @@
       enable_default_output: false
     vio:
       i_fps: 60.0
+    imu:
+      # i_acc_freq: 200
+      # i_gyro_freq: 200
+      i_batch_report_threshold: 1
+      i_max_batch_reports: 10
+      i_enable_rotation: false

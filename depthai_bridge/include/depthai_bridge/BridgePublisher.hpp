@@ -1,12 +1,16 @@
 #pragma once
 #include <deque>
+#include <tf2_ros/transform_broadcaster.hpp>
 #include <thread>
 #include <type_traits>
 #include <typeinfo>
 
 #include "camera_info_manager/camera_info_manager.hpp"
 #include "depthai/pipeline/MessageQueue.hpp"
+#include "depthai_bridge/depthaiUtility.hpp"
 #include "ffmpeg_image_transport_msgs/msg/ffmpeg_packet.hpp"
+#include "geometry_msgs/msg/transform_stamped.hpp"
+#include "nav_msgs/msg/odometry.hpp"
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/node.hpp"
 #include "rclcpp/qos.hpp"
@@ -102,6 +106,11 @@ class BridgePublisher {
 
     void addPublisherCallback();
 
+    void enableTransformPub() {
+        pubTransform = true;
+        tfBroadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(node);
+    }
+
     void publishHelper(std::shared_ptr<DaiMsg> inData);
 
     void startPublisherThread();
@@ -115,6 +124,7 @@ class BridgePublisher {
      */
     void daiCallback(const std::string& name, std::shared_ptr<dai::ADatatype> data);
 
+    void publishTransform(const geometry_msgs::msg::TransformStamped& transform);
     static const std::string LOG_TAG;
     std::shared_ptr<dai::MessageQueue> daiMessageQueue;
     ConvertFunc converter;
@@ -125,6 +135,8 @@ class BridgePublisher {
     image_transport::ImageTransport it;
     ImageMsgs::CameraInfo cameraInfoData;
     CustomPublisher rosPublisher;
+    std::shared_ptr<tf2_ros::TransformBroadcaster> tfBroadcaster;
+    bool pubTransform = false;
 
     std::thread readingThread;
     std::string rosTopic, camInfoFrameId, cameraName, cameraParamUri;
@@ -251,6 +263,13 @@ void BridgePublisher<RosMsg, DaiMsg>::addPublisherCallback() {
     isCallbackAdded = true;
 }
 
+// Add this method to the BridgePublisher class
+template <class RosMsg, class DaiMsg>
+void BridgePublisher<RosMsg, DaiMsg>::publishTransform(const geometry_msgs::msg::TransformStamped& transform) {
+    if(tfBroadcaster) {
+        tfBroadcaster->sendTransform(transform);
+    }
+}
 template <class RosMsg, class DaiMsg>
 void BridgePublisher<RosMsg, DaiMsg>::publishHelper(std::shared_ptr<DaiMsg> inDataPtr) {
     std::deque<RosMsg> opMsgs;
@@ -274,7 +293,20 @@ void BridgePublisher<RosMsg, DaiMsg>::publishHelper(std::shared_ptr<DaiMsg> inDa
                     localCameraInfo.header.stamp = currMsg.header.stamp;
                     localCameraInfo.header.frame_id = currMsg.header.frame_id;
                     std::dynamic_pointer_cast<image_transport::CameraPublisher>(rosPublisher)->publish(currMsg, localCameraInfo);
-                } else {
+                }else if constexpr(std::is_same_v<RosMsg, nav_msgs::msg::Odometry>){
+                    if(pubTransform){
+                        geometry_msgs::msg::TransformStamped transform;
+                        transform.header.stamp = node->get_clock()->now();
+                        transform.header.frame_id = currMsg.header.frame_id;
+                        transform.child_frame_id = currMsg.child_frame_id;
+                        transform.transform.translation.x = currMsg.pose.pose.position.x;
+                        transform.transform.translation.y = currMsg.pose.pose.position.y;
+                        transform.transform.translation.z = currMsg.pose.pose.position.z;
+                        transform.transform.rotation = currMsg.pose.pose.orientation;
+                        publishTransform(transform);
+                    }
+                    rosPublisher->publish(currMsg);
+                }else {
                     rosPublisher->publish(currMsg);
                 }
             }

@@ -1,18 +1,18 @@
-#include "depthai_bridge/OdomConverter.hpp"
-#include "nav_msgs/msg/odometry.hpp"
+#include "depthai_bridge/TransformDataConverter.hpp"
 
+#include "nav_msgs/msg/odometry.hpp"
 
 namespace depthai_bridge {
 
-OdomConverter::OdomConverter(std::string frameName, bool getBaseDeviceTimestamp)
-    : BaseConverter(std::move(frameName), getBaseDeviceTimestamp) {}
+TransformDataConverter::TransformDataConverter(std::string frameName, std::string childFrameName, bool getBaseDeviceTimestamp)
+    : BaseConverter(std::move(frameName), getBaseDeviceTimestamp), childFrameName(childFrameName) {}
 
-OdomConverter::~OdomConverter() = default;
-void OdomConverter::toRosMsg(std::shared_ptr<dai::TransformData> inOdom, std::deque<nav_msgs::msg::Odometry>& odomMsgs) {
+TransformDataConverter::~TransformDataConverter() = default;
+void TransformDataConverter::toRosMsg(std::shared_ptr<dai::TransformData> inOdom, std::deque<nav_msgs::msg::Odometry>& odomMsgs) {
     nav_msgs::msg::Odometry odomMsg;
     odomMsg.header = getRosHeader(inOdom);
     odomMsg.header.frame_id = frameName;
-    odomMsg.child_frame_id = "odom";
+    odomMsg.child_frame_id = childFrameName;
     auto trans = inOdom->getTranslation();
     auto quat = inOdom->getQuaternion();
     odomMsg.pose.pose.position.x = trans.x;
@@ -23,8 +23,7 @@ void OdomConverter::toRosMsg(std::shared_ptr<dai::TransformData> inOdom, std::de
     odomMsg.pose.pose.orientation.z = quat.qz;
     odomMsg.pose.pose.orientation.w = quat.qw;
     odomMsgs.push_back(odomMsg);
-    // 
-
+    //
 }
 
 }  // namespace depthai_bridge
