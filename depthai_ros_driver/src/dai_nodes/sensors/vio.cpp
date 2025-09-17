@@ -1,13 +1,8 @@
 #include "depthai_ros_driver/dai_nodes/sensors/vio.hpp"
 
-#include <depthai/capabilities/ImgFrameCapability.hpp>
-#include <rclcpp/clock.hpp>
-
 #include "depthai/device/Device.hpp"
-#include "depthai/pipeline/MessageQueue.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/datatype/TransformData.hpp"
-#include "depthai/pipeline/node/Camera.hpp"
 #include "depthai_bridge/TransformDataConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/imu.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"

@@ -81,6 +81,7 @@ add_library(
   src/param_handlers/feature_tracker_param_handler.cpp
   src/param_handlers/rgbd_param_handler.cpp
   src/param_handlers/vio_param_handler.cpp
+  src/param_handlers/slam_param_handler.cpp
   src/param_handlers/stereo_param_handler.cpp
   src/param_handlers/thermal_param_handler.cpp
   src/param_handlers/tof_param_handler.cpp
@@ -104,6 +105,7 @@ add_library(
   src/dai_nodes/sensors/thermal.cpp
   src/dai_nodes/sensors/rgbd.cpp
   src/dai_nodes/sensors/vio.cpp
+  src/dai_nodes/sensors/slam.cpp
   src/dai_nodes/sensors/tof.cpp
   src/dai_nodes/sensors/sync.cpp
 )

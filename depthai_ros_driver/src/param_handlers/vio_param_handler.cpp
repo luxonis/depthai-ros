@@ -10,7 +10,7 @@ namespace param_handlers {
 VioParamHandler::VioParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name, const std::string& deviceName, bool rsCompat)
     : BaseParamHandler(node, name, deviceName, rsCompat) {}
 VioParamHandler::~VioParamHandler() = default;
-void VioParamHandler::declareParams(std::shared_ptr<dai::node::BasaltVIO> rgbd) {
+void VioParamHandler::declareParams(std::shared_ptr<dai::node::BasaltVIO> vio) {
     declareAndLogParam<bool>(ParamNames::PUBLISH_TOPIC, true);
     declareAndLogParam<int>(ParamNames::MAX_Q_SIZE, 2);
     declareAndLogParam<bool>(ParamNames::GET_BASE_DEVICE_TIMESTAMP, false);

@@ -8,7 +8,7 @@
 
 namespace dai {
 namespace node {
-class BasaltVIO;
+class RTABMapSLAM;
 }
 }  // namespace dai
 
@@ -18,11 +18,11 @@ class Node;
 
 namespace depthai_ros_driver {
 namespace param_handlers {
-class VioParamHandler : public BaseParamHandler {
+class SlamParamHandler : public BaseParamHandler {
    public:
-    explicit VioParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name, const std::string& deviceName, bool rsCompat);
-    ~VioParamHandler();
-    void declareParams(std::shared_ptr<dai::node::BasaltVIO> vio);
+    explicit SlamParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name, const std::string& deviceName, bool rsCompat);
+    ~SlamParamHandler();
+    void declareParams(std::shared_ptr<dai::node::RTABMapSLAM> slam);
 };
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver

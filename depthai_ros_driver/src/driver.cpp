@@ -167,6 +167,8 @@ void Driver::stopCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response
 void Driver::getDeviceType() {
     startDevice();
     platform = device->getPlatform();
+    auto boardID = device->readCalibration2().getEepromData().boardName;
+    RCLCPP_INFO(get_logger(), "Board ID: %s", boardID.c_str());
     pipeline = std::make_shared<dai::Pipeline>(device);
     deviceName = device->getDeviceName();
     RCLCPP_INFO(get_logger(), "Device type: %s", deviceName.c_str());

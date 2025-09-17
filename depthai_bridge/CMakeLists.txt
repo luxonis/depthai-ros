@@ -53,6 +53,7 @@ include_directories(
 file(GLOB LIB_SRC
     "src/BaseConverter.cpp"
     "src/DisparityConverter.cpp"
+    "src/GridMapConverter.cpp"
     "src/ImageConverter.cpp"
     "src/ImgDetectionConverter.cpp"
     "src/ImuConverter.cpp"

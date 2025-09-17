@@ -206,9 +206,9 @@ std::string TFPublisher::prepareXacroArgs() {
     if(!customURDFLocation.empty() || !modelNameAvailable()) {
         RCLCPP_ERROR(
             logger,
-            "Model name %s not found in depthai_descriptions package. If camera model is autodetected, please notify developers. Using default model: OAK-D",
+            "Model name %s not found in depthai_descriptions package. If camera model is autodetected, please notify developers. Using default model: OAK-D-S2",
             camModel.c_str());
-        camModel = "OAK-D";
+        camModel = "OAK-D-S2";
     }
 
     std::string xacroArgs = "camera_name:=" + camName;
@@ -235,6 +235,7 @@ void TFPublisher::convertModelName() {
                                                         {"OAK-D-S2", "OAK-D-PRO"},
                                                         {"OAK-D-PRO-W", "OAK-D-PRO"},
                                                         {"OAK-D-PRO", "OAK-D-PRO"},
+                                                        {"OAK-D-W", "OAK-D-S2"},
                                                         {"OAK-D", "OAK-D"},
                                                         {"OAK-T", "OAK-T"}};
 
