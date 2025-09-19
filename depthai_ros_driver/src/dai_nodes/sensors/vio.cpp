@@ -37,6 +37,7 @@ Vio::Vio(const std::string& daiNodeName,
     auto width = ph->getParam<int>(ParamNames::WIDTH);
     auto height = ph->getParam<int>(ParamNames::HEIGHT);
     auto fps = ph->getParam<double>(ParamNames::FPS);
+    socket = ph->getSocketID();
     imu.link(vioNode->imu);
 
     left.getUnderlyingNode()->requestOutput(std::make_pair(width, height), std::nullopt, dai::ImgResizeMode::CROP, fps)->link(vioNode->left);
@@ -69,6 +70,7 @@ Vio::Vio(const std::string& daiNodeName,
     auto width = ph->getParam<int>(ParamNames::WIDTH);
     auto height = ph->getParam<int>(ParamNames::HEIGHT);
     auto fps = ph->getParam<double>(ParamNames::FPS);
+    socket = ph->getSocketID();
     stereo.getLeftSensor()->getUnderlyingNode()->requestOutput(std::make_pair(width, height), std::nullopt, dai::ImgResizeMode::CROP, fps)->link(vioNode->left);
     stereo.getRightSensor()
         ->getUnderlyingNode()
@@ -95,6 +97,7 @@ void Vio::setupQueues(std::shared_ptr<dai::Device> device) {
     rclcpp::PublisherOptions options;
     options.qos_overriding_options = rclcpp::QosOverridingOptions();
     odomConv = std::make_unique<depthai_bridge::TransformDataConverter>(tfPrefix, childFrameId, ph->getParam<bool>(ParamNames::GET_BASE_DEVICE_TIMESTAMP));
+    odomConv->convertFromImuFrameToSocket(socket, device->readCalibration());
     odomConv->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>(ParamNames::UPDATE_ROS_BASE_TIME_ON_ROS_MSG));
 
     odomPub = getROSNode()->create_publisher<nav_msgs::msg::Odometry>("~/" + getName() + "/odometry", ph->getParam<int>(ParamNames::MAX_Q_SIZE), options);

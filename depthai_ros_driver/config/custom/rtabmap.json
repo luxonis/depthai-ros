@@ -1,0 +1,7 @@
+{
+    "Grid/3D": "true",
+    "Grid/NoiseFilteringRadius": "0.2",
+    "RGBD/CreateOccupancyGrid": "true",
+    "Rtabmap/SaveWMState": "true",
+    "Mem/UseOdomGravity": "true"
+}

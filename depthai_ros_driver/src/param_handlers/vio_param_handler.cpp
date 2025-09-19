@@ -1,7 +1,7 @@
 #include "depthai_ros_driver/param_handlers/vio_param_handler.hpp"
 
-
 #include "depthai/basalt/BasaltVIO.hpp"
+#include "depthai/common/CameraBoardSocket.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/node.hpp"
 
@@ -15,6 +15,7 @@ void VioParamHandler::declareParams(std::shared_ptr<dai::node::BasaltVIO> vio) {
     declareAndLogParam<int>(ParamNames::MAX_Q_SIZE, 2);
     declareAndLogParam<bool>(ParamNames::GET_BASE_DEVICE_TIMESTAMP, false);
     declareAndLogParam<bool>(ParamNames::UPDATE_ROS_BASE_TIME_ON_ROS_MSG, false);
+    declareAndLogParam<int>(ParamNames::BOARD_SOCKET_ID, static_cast<int>(dai::CameraBoardSocket::CAM_B));
     declareAndLogParam<int>("i_imu_update_rate", 400);
     declareAndLogParam<int>(ParamNames::WIDTH, 640);
     declareAndLogParam<int>(ParamNames::HEIGHT, 400);

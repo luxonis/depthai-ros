@@ -33,6 +33,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/SpatialDetectionArray.msg"
   "msg/TrackDetection2D.msg"
   "msg/TrackDetection2DArray.msg"
+  "srv/SetLocalTransform.srv"
   "srv/TriggerNamed.srv"
   "srv/NormalizedImageCrop.srv"
   DEPENDENCIES builtin_interfaces geometry_msgs std_msgs vision_msgs sensor_msgs

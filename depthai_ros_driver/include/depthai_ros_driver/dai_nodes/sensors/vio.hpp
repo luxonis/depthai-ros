@@ -72,6 +72,7 @@ class Vio : public BaseNode {
     std::shared_ptr<tf2_ros::TransformBroadcaster> tfBr;
     std::string frameId, childFrameId;
     bool publishTf;
+    dai::CameraBoardSocket socket;
 };
 
 }  // namespace dai_nodes

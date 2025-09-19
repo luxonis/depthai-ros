@@ -41,9 +41,11 @@ depthai::core
 ${depthai_bridge_TARGETS}
 rclcpp::rclcpp
 ${geometry_msgs_TARGETS}
+${depthai_ros_msgs_TARGETS}
 ${nav_msgs_TARGETS}
 ${std_msgs_TARGETS}
 ${sensor_msgs_TARGETS}
+${std_srvs_TARGETS}
 tf2_ros::tf2_ros
 image_transport::image_transport
 )

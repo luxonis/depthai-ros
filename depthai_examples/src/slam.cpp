@@ -39,6 +39,7 @@ int main(int argc, char** argv) {
     params.insert({"RGBD/CreateOccupancyGrid", "true"});
     params.insert({"Grid/3D", "true"});
     params.insert({"Rtabmap/SaveWMState", "true"});
+    params.insert({"Mem/UseOdomGravity", "true"});
     slam->setParams(params);
 
     stereo->setExtendedDisparity(false);
@@ -78,6 +79,7 @@ int main(int argc, char** argv) {
     auto pclConv = std::make_shared<depthai_bridge::PointCloudConverter>("map");
 
     auto calibrationHandler = device->readCalibration();
+    odomConv->convertFromImuFrameToSocket(dai::CameraBoardSocket::CAM_B, calibrationHandler);
     auto tfPub =
         std::make_unique<depthai_bridge::TFPublisher>(node, calibrationHandler, device->getConnectedCameraFeatures(), tfPrefix, device->getDeviceName());
 
