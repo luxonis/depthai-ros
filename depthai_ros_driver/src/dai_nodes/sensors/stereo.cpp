@@ -1,5 +1,8 @@
 #include "depthai_ros_driver/dai_nodes/sensors/stereo.hpp"
 
+#include <depthai/capabilities/ImgFrameCapability.hpp>
+#include <optional>
+
 #include "depthai/device/DeviceBase.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/datatype/ADatatype.hpp"
@@ -27,6 +30,7 @@ Stereo::Stereo(const std::string& daiNodeName,
                dai::CameraBoardSocket leftSocket,
                dai::CameraBoardSocket rightSocket)
     : BaseNode(daiNodeName, node, pipeline, device->getDeviceName(), rsCompat) {
+    using ParamNames = param_handlers::ParamNames;
     RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     ph = std::make_unique<param_handlers::StereoParamHandler>(node, daiNodeName, device->getDeviceName(), rsCompat);
@@ -56,8 +60,16 @@ Stereo::Stereo(const std::string& daiNodeName,
         std::make_shared<SensorWrapper>(getSocketName(rightSensInfo.socket), node, pipeline, device->getDeviceName(), rsCompat, rightSensInfo.socket, false);
     stereoCamNode = pipeline->create<dai::node::StereoDepth>();
     ph->declareParams(stereoCamNode);
-    left->link(stereoCamNode->left);
-    right->link(stereoCamNode->right);
+    leftOut = left->getUnderlyingNode()->requestOutput(std::make_pair<int, int>(ph->getParam<int>(ParamNames::WIDTH), ph->getParam<int>(ParamNames::HEIGHT)),
+                                                       std::nullopt,
+                                                       dai::ImgResizeMode::CROP,
+                                                       ph->getParam<float>(ParamNames::FPS));
+    rightOut = right->getUnderlyingNode()->requestOutput(std::make_pair<int, int>(ph->getParam<int>(ParamNames::WIDTH), ph->getParam<int>(ParamNames::HEIGHT)),
+                                                         std::nullopt,
+                                                         dai::ImgResizeMode::CROP,
+                                                         ph->getParam<float>(ParamNames::FPS));
+    leftOut->link(stereoCamNode->left);
+    rightOut->link(stereoCamNode->right);
 
     aligned = ph->getParam<bool>(param_handlers::ParamNames::ALIGNED);
     if(ph->getParam<bool>("i_enable_left_spatial_nn")) {
@@ -90,9 +102,9 @@ Stereo::Stereo(const std::string& daiNodeName,
             alignNode->inputAlignTo.setBlocking(false);
         }
         if(socketID == leftSensInfo.socket) {
-            left->getDefaultOut()->link(getInput(static_cast<int>(link_types::StereoLinkType::align)));
+            leftOut->link(getInput(static_cast<int>(link_types::StereoLinkType::align)));
         } else if(socketID == rightSensInfo.socket) {
-            right->getDefaultOut()->link(getInput(static_cast<int>(link_types::StereoLinkType::align)));
+            rightOut->link(getInput(static_cast<int>(link_types::StereoLinkType::align)));
         } else {
             RCLCPP_WARN(getLogger(), "Socket aligned to a different ID: %d, make sure you call align method in pipeline creation", static_cast<int>(socketID));
         }
@@ -377,6 +389,13 @@ std::shared_ptr<SensorWrapper> Stereo::getLeftSensor() {
 }
 std::shared_ptr<SensorWrapper> Stereo::getRightSensor() {
     return right;
+}
+
+int Stereo::getWidth() {
+    return ph->getParam<int>(param_handlers::ParamNames::WIDTH);
+}
+int Stereo::getHeight() {
+    return ph->getParam<int>(param_handlers::ParamNames::HEIGHT);
 }
 
 }  // namespace dai_nodes

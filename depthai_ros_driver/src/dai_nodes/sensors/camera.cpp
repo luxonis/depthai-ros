@@ -43,14 +43,12 @@ void Camera::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
     auto height = ph->getParam<int>(ParamNames::HEIGHT);
     auto fps = ph->getParam<float>(ParamNames::FPS);
     dai::ImgFrame::Type type = dai::ImgFrame::Type::NV12;
-    if(ph->getParam<bool>("i_enable_default_output")) {
+    if(ph->getParam<bool>(ParamNames::PUBLISH_TOPIC)) {
         defaultOut = camNode->requestOutput(std::pair<int, int>(width, height),
                                             type,
                                             utils::getValFromMap(ph->getParam<std::string>(ParamNames::RESIZE_MODE), sensor_helpers::resizeModeMap),
                                             fps,
                                             ph->getParam<bool>(ParamNames::UNDISTORTED));
-    }
-    if(ph->getParam<bool>(ParamNames::PUBLISH_TOPIC)) {
         utils::VideoEncoderConfig encConfig;
         bool lowBandwidth = ph->getParam<bool>(ParamNames::LOW_BANDWIDTH);
         encConfig.profile = static_cast<dai::VideoEncoderProperties::Profile>(ph->getParam<int>(ParamNames::LOW_BANDWIDTH_PROFILE));
@@ -122,6 +120,12 @@ std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> Camera::getPublishe
 void Camera::updateParams(const std::vector<rclcpp::Parameter>& params) {
     auto ctrl = ph->setRuntimeParams(params);
     controlQ->send(ctrl);
+}
+int Camera::getWidth(){
+    return ph->getParam<int>(param_handlers::ParamNames::WIDTH);
+}
+int Camera::getHeight(){
+    return ph->getParam<int>(param_handlers::ParamNames::HEIGHT);
 }
 
 }  // namespace dai_nodes

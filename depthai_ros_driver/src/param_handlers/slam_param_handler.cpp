@@ -17,6 +17,7 @@ void SlamParamHandler::declareParams(std::shared_ptr<dai::node::RTABMapSLAM> sla
     declareAndLogParam<int>(ParamNames::MAX_Q_SIZE, 2);
     declareAndLogParam<bool>(ParamNames::GET_BASE_DEVICE_TIMESTAMP, false);
     declareAndLogParam<bool>(ParamNames::UPDATE_ROS_BASE_TIME_ON_ROS_MSG, false);
+    declareAndLogParam<float>("i_frequency", 1.0);
     declareAndLogParam<bool>("i_publish_tf", true);
     declareAndLogParam<bool>("i_publish_absolute_pose", true);
     declareAndLogParam<bool>("i_publish_map", true);
@@ -36,6 +37,7 @@ void SlamParamHandler::declareParams(std::shared_ptr<dai::node::RTABMapSLAM> sla
 
     declareAndLogParam<std::string>("i_map_frame", "map");
     declareAndLogParam<std::string>("i_odom_frame", "odom");
+    declareAndLogParam<std::string>("i_base_frame", "oak_parent_frame");
     declareAndLogParam<bool>("i_use_external_odometry", false);
     declareAndLogParam<std::string>("i_external_odom_frame", "odom");
     declareAndLogParam<std::string>("i_external_base_frame", "oak_parent_frame");

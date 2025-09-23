@@ -72,6 +72,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<bool>(ParamNames::ENABLE_LAZY_PUBLISHER, true);
     declareAndLogParam<bool>(ParamNames::REVERSE_STEREO_SOCKET_ORDER, false);
     declareAndLogParam<bool>(ParamNames::PUBLISH_COMPRESSED, false);
+    declareAndLogParam<float>(ParamNames::FPS, 30);
     declareAndLogParam<std::string>(ParamNames::CALIBRATION_FILE, "");
 
     declareAndLogParam<bool>("i_left_rect_publish_topic", false);
@@ -192,9 +193,9 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
                     decimatedWidth,
                     decimatedHeight);
         stereo->setOutputSize(decimatedWidth, decimatedHeight);
-        declareAndLogParam("i_width", decimatedWidth, true);
-        declareAndLogParam("i_height", decimatedHeight, true);
     }
+    declareAndLogParam("i_width", width, true);
+    declareAndLogParam("i_height", height, true);
     stereo->initialConfig = config;
 }
 }  // namespace param_handlers

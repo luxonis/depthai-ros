@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <depthai/common/CameraBoardSocket.hpp>
 #include <depthai/pipeline/node/StereoDepth.hpp>
 #include <depthai/rtabmap/RTABMapSLAM.hpp>
 
@@ -39,7 +40,6 @@ int main(int argc, char** argv) {
     params.insert({"RGBD/CreateOccupancyGrid", "true"});
     params.insert({"Grid/3D", "true"});
     params.insert({"Rtabmap/SaveWMState", "true"});
-    params.insert({"Mem/UseOdomGravity", "true"});
     slam->setParams(params);
 
     stereo->setExtendedDisparity(false);
@@ -50,8 +50,8 @@ int main(int argc, char** argv) {
     stereo->initialConfig->setLeftRightCheckThreshold(10);
     stereo->setDefaultProfilePreset(dai::node::StereoDepth::PresetMode::DEFAULT);
 
-    imu->enableIMUSensor(dai::IMUSensor::ACCELEROMETER_RAW, 480);
-    imu->enableIMUSensor(dai::IMUSensor::GYROSCOPE_RAW, 400);
+    imu->enableIMUSensor(dai::IMUSensor::ACCELEROMETER_RAW, 200);
+    imu->enableIMUSensor(dai::IMUSensor::GYROSCOPE_RAW, 200);
     imu->setBatchReportThreshold(1);
     imu->setMaxBatchReports(10);
     left->requestOutput(std::make_pair(width, height))->link(stereo->left);
@@ -74,12 +74,12 @@ int main(int argc, char** argv) {
 
     // Create a bridge publisher for Odom images
     auto slamConv = std::make_shared<depthai_bridge::TransformDataConverter>(tfPrefix, "odom");
+    slamConv->fixQuaternion();
     auto odomConv = std::make_shared<depthai_bridge::TransformDataConverter>("odom", "oak");
     auto mapConv = std::make_shared<depthai_bridge::GridMapConverter>("map");
     auto pclConv = std::make_shared<depthai_bridge::PointCloudConverter>("map");
 
     auto calibrationHandler = device->readCalibration();
-    odomConv->convertFromImuFrameToSocket(dai::CameraBoardSocket::CAM_B, calibrationHandler);
     auto tfPub =
         std::make_unique<depthai_bridge::TFPublisher>(node, calibrationHandler, device->getConnectedCameraFeatures(), tfPrefix, device->getDeviceName());
 

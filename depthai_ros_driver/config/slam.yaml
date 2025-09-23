@@ -1,22 +1,20 @@
 /oak:
   ros__parameters:
     driver:
-      i_enable_ir: false
+      i_enable_ir: true
     pipeline_gen:
       i_nn_type: none
-      i_pipeline_type: rgbd
+      i_pipeline_type: depth
       i_enable_vio: true
       i_enable_slam: true
-    right:
-      enable_default_output: false
-      i_fps: 30.0
-    vio:
-      i_fps: 30.0
-    left:
-      i_fps: 30.0
     stereo:
       i_depth_preset: DEFAULT
-    # imu:
-    #   i_batch_report_threshold: 1
-    #   i_max_batch_reports: 10
-    #   i_enable_rotation: false
+      i_publish_topic: false
+      i_board_socket_id: 1
+      i_fps: 60.0
+    imu:
+      i_enable_rotation: false
+      i_acc_freq: 200
+      i_gyro_freq: 200
+      i_batch_report_threshold: 1
+      i_max_batch_reports: 10

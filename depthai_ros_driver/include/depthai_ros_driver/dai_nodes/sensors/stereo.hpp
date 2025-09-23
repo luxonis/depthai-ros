@@ -61,6 +61,8 @@ class Stereo : public BaseNode {
     dai::CameraBoardSocket getSocketID();
     std::shared_ptr<SensorWrapper> getLeftSensor();
     std::shared_ptr<SensorWrapper> getRightSensor();
+    int getWidth();
+    int getHeight();
 
    private:
     void setupStereoQueue(std::shared_ptr<dai::Device> device);
@@ -79,6 +81,8 @@ class Stereo : public BaseNode {
     std::string stereoQName, leftRectQName, rightRectQName;
     dai::CameraFeatures leftSensInfo, rightSensInfo;
     bool aligned;
+    dai::Node::Output* leftOut;
+    dai::Node::Output* rightOut;
 };
 
 }  // namespace dai_nodes

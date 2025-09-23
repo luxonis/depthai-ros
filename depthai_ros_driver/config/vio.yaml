@@ -2,14 +2,12 @@
   ros__parameters:
     pipeline_gen:
       i_nn_type: none
-      i_pipeline_type: stereo
+      i_pipeline_type: depth
       i_enable_vio: true
-    left:
-      enable_default_output: false
-    right:
-      enable_default_output: false
     vio:
       i_fps: 60.0
+    stereo:
+      i_depth_preset: DEFAULT
     imu:
       # i_acc_freq: 200
       # i_gyro_freq: 200

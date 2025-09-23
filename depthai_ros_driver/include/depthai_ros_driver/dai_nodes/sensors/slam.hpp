@@ -1,19 +1,21 @@
 #pragma once
 
-#include <depthai/common/CameraBoardSocket.hpp>
-#include <depthai_bridge/PointCloudConverter.hpp>
+#include "depthai/common/CameraBoardSocket.hpp"
+#include "depthai_bridge/PointCloudConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
+#include "depthai_ros_msgs/srv/set_local_transform.hpp"
 #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
 #include "nav_msgs/msg/occupancy_grid.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "std_srvs/srv/trigger.hpp"
-#include "depthai_ros_msgs/srv/set_local_transform.hpp"
 
 namespace dai {
 class Pipeline;
 class Device;
 class ADatatype;
+class MessageQueue;
+class InputQueue;
 namespace node {
 class RTABMapSLAM;
 }  // namespace node
@@ -31,7 +33,8 @@ class Parameter;
 namespace tf2_ros {
 class TransformBroadcaster;
 class TransformListener;
-}
+class Buffer;
+}  // namespace tf2_ros
 
 namespace depthai_ros_driver {
 namespace param_handlers {
@@ -71,6 +74,12 @@ class Slam : public BaseNode {
     void mapCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
     void groundPclCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
     void obstaclePclCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
+    void triggerNewMapCB(const std_srvs::srv::Trigger::Request::SharedPtr /*req*/, std_srvs::srv::Trigger::Response::SharedPtr res);
+    void saveDatabaseCB(const std_srvs::srv::Trigger::Request::SharedPtr /*req*/, std_srvs::srv::Trigger::Response::SharedPtr res);
+    void setLocalTransformCB(const depthai_ros_msgs::srv::SetLocalTransform::Request::SharedPtr req,
+                             depthai_ros_msgs::srv::SetLocalTransform::Response::SharedPtr res);
+
+    void tfTimerCB();
     std::unique_ptr<depthai_bridge::TransformDataConverter> mapToOdomConv;
     std::unique_ptr<depthai_bridge::TransformDataConverter> absolutePoseConv;
     std::unique_ptr<depthai_bridge::GridMapConverter> mapConv;
@@ -80,12 +89,19 @@ class Slam : public BaseNode {
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr groundPclPub;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr obstaclePclPub;
     rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr absolutePosePub;
+    rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr triggerNewMapSrv;
+    rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr saveDatabaseSrv;
+    rclcpp::Service<depthai_ros_msgs::srv::SetLocalTransform>::SharedPtr setLocalTransformSrv;
     std::shared_ptr<dai::node::RTABMapSLAM> slamNode;
     std::unique_ptr<param_handlers::SlamParamHandler> ph;
     std::shared_ptr<dai::MessageQueue> mapToOdomQ, absolutePoseQ, mapQ, groundPclQ, obstaclePclQ;
+    std::shared_ptr<dai::InputQueue> externalOdomQ;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tfBr;
     std::shared_ptr<tf2_ros::TransformListener> tfListener;
-    std::string mapFrame, odomFrame, baseFrame;
+    std::shared_ptr<tf2_ros::Buffer> tfBuffer;
+    rclcpp::TimerBase::SharedPtr tfTimer;
+
+    std::string mapFrame, odomFrame, baseFrame, externalOdomFrame, externalBaseFrame;
 };
 
 }  // namespace dai_nodes

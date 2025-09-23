@@ -18,7 +18,6 @@ SensorParamHandler::SensorParamHandler(
 SensorParamHandler::~SensorParamHandler() = default;
 
 void SensorParamHandler::declareCommonParams(dai::CameraBoardSocket socket) {
-    declareAndLogParam<bool>("i_enable_default_output", true);
     declareAndLogParam<bool>(ParamNames::SIMULATE_FROM_TOPIC, false);
     declareAndLogParam<std::string>(ParamNames::SIMULATED_TOPIC_NAME, "");
     declareAndLogParam<bool>(ParamNames::DISABLE_NODE, false);

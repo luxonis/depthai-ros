@@ -49,6 +49,8 @@ class Camera : public BaseNode {
     std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
     std::shared_ptr<dai::node::Camera> getUnderlyingNode();
     dai::Node::Output* getDefaultOut();
+    int getWidth();
+    int getHeight();
 
    private:
     std::shared_ptr<sensor_helpers::ImagePublisher> rgbPub, previewPub;
