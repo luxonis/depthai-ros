@@ -16,7 +16,7 @@ void TransformDataConverter::toRosMsg(std::shared_ptr<dai::TransformData> inTran
     odomMsg.child_frame_id = childFrameName;
     auto trans = inTransform->getTranslation();
     auto quat = inTransform->getQuaternion();
-    if(quaternionNeedsFixing){
+    if(quaternionNeedsFixing) {
         quat = verifyQuaternion(quat);
     }
     odomMsg.pose.pose.position.x = trans.x;
@@ -36,7 +36,7 @@ void TransformDataConverter::toRosMsg(std::shared_ptr<dai::TransformData> inTran
     transformMsg.child_frame_id = childFrameName;
     auto trans = inTransform->getTranslation();
     auto quat = inTransform->getQuaternion();
-    if(quaternionNeedsFixing){
+    if(quaternionNeedsFixing) {
         quat = verifyQuaternion(quat);
     }
     transformMsg.transform.translation.x = trans.x;
@@ -55,7 +55,7 @@ void TransformDataConverter::toRosMsg(std::shared_ptr<dai::TransformData> inTran
     poseMsg.header.frame_id = frameName;
     auto trans = inTransform->getTranslation();
     auto quat = inTransform->getQuaternion();
-    if(quaternionNeedsFixing){
+    if(quaternionNeedsFixing) {
         quat = verifyQuaternion(quat);
     }
     poseMsg.pose.pose.position.x = trans.x;
@@ -68,17 +68,16 @@ void TransformDataConverter::toRosMsg(std::shared_ptr<dai::TransformData> inTran
     poseMsgs.push_back(poseMsg);
 }
 
-void TransformDataConverter::fixQuaternion(){
+void TransformDataConverter::fixQuaternion() {
     quaternionNeedsFixing = true;
 }
 
-dai::Quaterniond TransformDataConverter::verifyQuaternion(dai::Quaterniond quat){
-    if(quat.qx == 0.0 && quat.qy == 0.0 && quat.qz == 0.5 && quat.qw == 0.0){
+dai::Quaterniond TransformDataConverter::verifyQuaternion(dai::Quaterniond quat) {
+    if(quat.qx == 0.0 && quat.qy == 0.0 && quat.qz == 0.5 && quat.qw == 0.0) {
         quat.qz = 0.0;
         quat.qw = 1.0;
     }
     return quat;
 }
-
 
 }  // namespace depthai_bridge

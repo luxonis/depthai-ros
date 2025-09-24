@@ -273,8 +273,9 @@ void BridgePublisher<RosMsg, DaiMsg>::addPublisherCallback() {
 
 // Add this method to the BridgePublisher class
 template <class RosMsg, class DaiMsg>
-void BridgePublisher<RosMsg, DaiMsg>::publishTransform(std::shared_ptr<tf2_ros::TransformBroadcaster> tfPub, const geometry_msgs::msg::TransformStamped& transform) {
-        tfPub->sendTransform(transform);
+void BridgePublisher<RosMsg, DaiMsg>::publishTransform(std::shared_ptr<tf2_ros::TransformBroadcaster> tfPub,
+                                                       const geometry_msgs::msg::TransformStamped& transform) {
+    tfPub->sendTransform(transform);
 }
 template <class RosMsg, class DaiMsg>
 void BridgePublisher<RosMsg, DaiMsg>::publishHelper(std::shared_ptr<DaiMsg> inDataPtr) {
@@ -316,7 +317,7 @@ void BridgePublisher<RosMsg, DaiMsg>::publishHelper(std::shared_ptr<DaiMsg> inDa
                         transform.transform.translation.y = currMsg.pose.pose.position.y;
                         transform.transform.translation.z = currMsg.pose.pose.position.z;
                         transform.transform.rotation = currMsg.pose.pose.orientation;
-                        publishTransform(tfBroadcaster,transform);
+                        publishTransform(tfBroadcaster, transform);
                     }
                     rosPublisher->publish(currMsg);
                 } else {

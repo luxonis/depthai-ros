@@ -6,8 +6,7 @@
 
 namespace depthai_bridge {
 
-GridMapConverter::GridMapConverter(std::string frameName, bool getBaseDeviceTimestamp)
-    : BaseConverter(std::move(frameName), getBaseDeviceTimestamp){}
+GridMapConverter::GridMapConverter(std::string frameName, bool getBaseDeviceTimestamp) : BaseConverter(std::move(frameName), getBaseDeviceTimestamp) {}
 
 GridMapConverter::~GridMapConverter() = default;
 
@@ -30,8 +29,8 @@ void GridMapConverter::toRosMsg(std::shared_ptr<dai::MapData> inMap, std::deque<
     grid.data.resize(inMap->map.getData().size());
     // Flip the image along the X axis
     auto data = inMap->map.getData();
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
+    for(int y = 0; y < height; ++y) {
+        for(int x = 0; x < width; ++x) {
             grid.data[y * width + x] = data[(height - 1 - y) * width + x];
         }
     }

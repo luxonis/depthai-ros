@@ -121,10 +121,10 @@ void Camera::updateParams(const std::vector<rclcpp::Parameter>& params) {
     auto ctrl = ph->setRuntimeParams(params);
     controlQ->send(ctrl);
 }
-int Camera::getWidth(){
+int Camera::getWidth() {
     return ph->getParam<int>(param_handlers::ParamNames::WIDTH);
 }
-int Camera::getHeight(){
+int Camera::getHeight() {
     return ph->getParam<int>(param_handlers::ParamNames::HEIGHT);
 }
 

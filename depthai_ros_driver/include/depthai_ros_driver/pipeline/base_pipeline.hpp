@@ -42,7 +42,6 @@ class BasePipeline {
    protected:
     bool checkForImu(std::shared_ptr<param_handlers::PipelineGenParamHandler> ph, std::shared_ptr<dai::Device> device, rclcpp::Logger logger);
 
-
     void addRgbdNode(std::vector<std::unique_ptr<dai_nodes::BaseNode>>& daiNodes,
                      std::shared_ptr<rclcpp::Node> node,
                      std::shared_ptr<dai::Device> device,

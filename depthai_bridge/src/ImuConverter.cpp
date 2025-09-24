@@ -45,7 +45,6 @@ void ImuConverter::fillImuMsg(ImuMsgs::Imu& msg, dai::IMUReportGyroscope report)
 
 void ImuConverter::fillImuMsg(ImuMsgs::Imu& msg, dai::IMUReportRotationVectorWAcc report) {
     if(enable_rotation) {
-
         msg.orientation.x = report.i;
         msg.orientation.y = report.j;
         msg.orientation.z = report.k;

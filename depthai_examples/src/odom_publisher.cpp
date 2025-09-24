@@ -1,13 +1,13 @@
 #include <cstdio>
 
+#include "depthai/basalt/BasaltVIO.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
-#include "depthai/basalt/BasaltVIO.hpp"
-#include "depthai/pipeline/node/IMU.hpp"
 #include "depthai/pipeline/node/Camera.hpp"
+#include "depthai/pipeline/node/IMU.hpp"
 #include "depthai_bridge/BridgePublisher.hpp"
-#include "depthai_bridge/TransformDataConverter.hpp"
 #include "depthai_bridge/TFPublisher.hpp"
+#include "depthai_bridge/TransformDataConverter.hpp"
 #include "depthai_bridge/depthaiUtility.hpp"
 #include "rclcpp/node.hpp"
 
@@ -27,7 +27,6 @@ int main(int argc, char** argv) {
     auto right = pipeline.create<dai::node::Camera>()->build(dai::CameraBoardSocket::CAM_C, std::nullopt, fps);
     auto imu = pipeline.create<dai::node::IMU>();
     auto odom = pipeline.create<dai::node::BasaltVIO>();
-
 
     left->requestOutput(std::make_pair(width, height))->link(odom->left);
     right->requestOutput(std::make_pair(width, height))->link(odom->right);
@@ -52,9 +51,7 @@ int main(int argc, char** argv) {
         odomQ,
         node,
         "odom",
-        [odomConv](std::shared_ptr<dai::TransformData> msg, std::deque<nav_msgs::msg::Odometry>& rosMsgs) { 
-            odomConv->toRosMsg(msg, rosMsgs);
-        },
+        [odomConv](std::shared_ptr<dai::TransformData> msg, std::deque<nav_msgs::msg::Odometry>& rosMsgs) { odomConv->toRosMsg(msg, rosMsgs); },
         30,
         false);
 

@@ -77,7 +77,7 @@ Slam::Slam(const std::string& daiNodeName,
     setLocalTransformSrv = node->create_service<depthai_ros_msgs::srv::SetLocalTransform>(
         "~/" + getName() + "/set_local_transform", std::bind(&Slam::setLocalTransformCB, this, std::placeholders::_1, std::placeholders::_2));
     saveDatabaseSrv = node->create_service<std_srvs::srv::Trigger>("~/" + getName() + "/save_database",
-                                                                  std::bind(&Slam::saveDatabaseCB, this, std::placeholders::_1, std::placeholders::_2));
+                                                                   std::bind(&Slam::saveDatabaseCB, this, std::placeholders::_1, std::placeholders::_2));
 
     RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
 }
