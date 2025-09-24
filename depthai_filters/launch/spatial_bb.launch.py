@@ -48,6 +48,10 @@ def generate_launch_description():
     declared_arguments = [
         DeclareLaunchArgument("name", default_value="oak"),
         DeclareLaunchArgument("params_file", default_value=os.path.join(depthai_filters_prefix, 'config', 'spatial_bb.yaml')),
+        DeclareLaunchArgument(
+            "rviz_config",
+            default_value=os.path.join(depthai_filters_prefix, "config", "spatial_bb.rviz"),
+        ),
     ]
 
     return LaunchDescription(

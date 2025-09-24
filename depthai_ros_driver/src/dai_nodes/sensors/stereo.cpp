@@ -106,7 +106,7 @@ Stereo::Stereo(const std::string& daiNodeName,
         } else if(socketID == rightSensInfo.socket) {
             rightOut->link(getInput(static_cast<int>(link_types::StereoLinkType::align)));
         } else {
-            RCLCPP_WARN(getLogger(), "Socket aligned to a different ID: %d, make sure you call align method in pipeline creation", static_cast<int>(socketID));
+            RCLCPP_DEBUG(getLogger(), "Socket aligned to a different ID: %d, make sure you call align method in pipeline creation", static_cast<int>(socketID));
         }
     }
     setInOut(pipeline);

@@ -14,7 +14,6 @@ void Detection2DOverlay::onInit() {
     sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), previewSub, detSub);
     sync->registerCallback(std::bind(&Detection2DOverlay::overlayCB, this, std::placeholders::_1, std::placeholders::_2));
     overlayPub = this->create_publisher<sensor_msgs::msg::Image>("overlay", 10);
-    labelMap = this->declare_parameter<std::vector<std::string>>("label_map", labelMap);
 }
 
 void Detection2DOverlay::overlayCB(const sensor_msgs::msg::Image::ConstSharedPtr& preview,

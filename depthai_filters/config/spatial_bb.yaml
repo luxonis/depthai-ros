@@ -5,9 +5,7 @@
       i_enable_rgbd: true
     stereo:
       i_subpixel: true
+      i_fps: 60.0
     nn:
       i_enable_passthrough: true
-/spatial_bb_node:
-  ros__parameters:
-    desqueeze: true
 
