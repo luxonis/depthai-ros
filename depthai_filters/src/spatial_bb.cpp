@@ -15,7 +15,7 @@ void SpatialBB::onInit() {
     previewSub.subscribe(this, "nn/passthrough/image_raw");
     infoSub.subscribe(this, "stereo/camera_info");
     detSub.subscribe(this, "nn/spatial_detections");
-    sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), previewSub, infoSub, detSub);
+    sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(), previewSub, infoSub, detSub);
     sync->registerCallback(std::bind(&SpatialBB::overlayCB, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     markerPub = this->create_publisher<visualization_msgs::msg::MarkerArray>("spatial_bb", 10);
 }

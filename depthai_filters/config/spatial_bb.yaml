@@ -5,7 +5,8 @@
       i_enable_rgbd: true
     stereo:
       i_subpixel: true
-      i_fps: 60.0
+      i_publish_topic: false
     nn:
       i_enable_passthrough: true
+      i_enable_passthrough_depth: true
 

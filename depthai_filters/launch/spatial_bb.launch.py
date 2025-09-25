@@ -30,7 +30,7 @@ def launch_setup(context, *args, **kwargs):
                         plugin="depthai_filters::SpatialBB",
                         name="spatial_bb_node",
                         remappings=[
-                                    ('stereo/camera_info', name+'/stereo/camera_info'),
+                                    ('stereo/camera_info', name+'/nn/passthrough_depth/camera_info'),
                                     ('nn/spatial_detections', name+'/nn/spatial_detections'),
                                     ('nn/passthrough/image_raw', name+'/nn/passthrough/image_raw'),
                                     ],
