@@ -1,7 +1,7 @@
 /oak:
   ros__parameters:
     driver:
-      i_enable_ir: true
+      i_enable_ir: false
     pipeline_gen:
       i_nn_type: none
       i_pipeline_type: depth
