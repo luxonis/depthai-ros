@@ -21,6 +21,8 @@ void SensorParamHandler::declareCommonParams(dai::CameraBoardSocket socket) {
     declareAndLogParam<bool>(ParamNames::SIMULATE_FROM_TOPIC, false);
     declareAndLogParam<std::string>(ParamNames::SIMULATED_TOPIC_NAME, "");
     declareAndLogParam<bool>(ParamNames::DISABLE_NODE, false);
+    declareAndLogParam<bool>("i_publish_full_resolution", false);
+    declareAndLogParam<bool>("i_use_max_resolution_possible", false);
     socketID = static_cast<dai::CameraBoardSocket>(declareAndLogParam<int>(ParamNames::BOARD_SOCKET_ID, static_cast<int>(socket)));
     declareAndLogParam<bool>(ParamNames::ENABLE_FEATURE_TRACKER, false);
     declareAndLogParam<bool>(ParamNames::ENABLE_NN, false);
