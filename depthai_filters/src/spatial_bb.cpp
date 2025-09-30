@@ -24,7 +24,6 @@ void SpatialBB::overlayCB(const sensor_msgs::msg::Image::ConstSharedPtr& preview
                           const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info,
                           const vision_msgs::msg::Detection3DArray::ConstSharedPtr& detections) {
     cv::Mat previewMat = utils::msgToMat(this->get_logger(), preview, sensor_msgs::image_encodings::BGR8);
-    auto blue = cv::Scalar(255, 0, 0);
 
     visualization_msgs::msg::MarkerArray markerArray;
     double fx = info->k[0];
