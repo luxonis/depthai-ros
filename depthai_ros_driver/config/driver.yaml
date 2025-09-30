@@ -3,5 +3,4 @@
     driver:
       i_enable_ir: true
     pipeline_gen:
-      i_nn_type: spatial
       i_pipeline_type: RGBD

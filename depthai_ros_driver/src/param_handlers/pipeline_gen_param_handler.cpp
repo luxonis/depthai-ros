@@ -11,7 +11,7 @@ PipelineGenParamHandler::~PipelineGenParamHandler() = default;
 
 void PipelineGenParamHandler::declareParams() {
     declareAndLogParam<std::string>("i_pipeline_type", "RGBD");
-    declareAndLogParam<std::string>("i_nn_type", "spatial");
+    declareAndLogParam<std::string>("i_nn_type", "none");
     declareAndLogParam<bool>("i_enable_imu", true);
     declareAndLogParam<bool>("i_enable_diagnostics", false);
     declareAndLogParam<bool>("i_enable_rgbd", false);
