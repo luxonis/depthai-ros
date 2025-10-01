@@ -26,7 +26,7 @@ void SlamParamHandler::declareParams(std::shared_ptr<dai::node::RTABMapSLAM> sla
     if(declareAndLogParam<bool>("i_override_local_transform", false)) {
         float x = declareAndLogParam<float>("i_local_transform_x", 0.0);
         float y = declareAndLogParam<float>("i_local_transform_y", 0.0);
-        float z = declareAndLogParam<float>("i_local_transform_y", 0.0);
+        float z = declareAndLogParam<float>("i_local_transform_z", 0.0);
         float qx = declareAndLogParam<float>("i_local_transform_qx", 0.0);
         float qy = declareAndLogParam<float>("i_local_transform_qy", 0.0);
         float qz = declareAndLogParam<float>("i_local_transform_qz", 0.0);
