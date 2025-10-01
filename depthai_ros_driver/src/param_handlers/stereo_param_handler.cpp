@@ -139,7 +139,9 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
         stereo->initialConfig->setSubpixelFractionalBits(declareAndLogParam<int>("i_subpixel_fractional_bits", 3));
     } else {
         stereo->initialConfig->setSubpixel(false);
-        RCLCPP_INFO(getROSNode()->get_logger(), "Subpixel disabled due to low bandwidth mode");
+        if(lowBandwidth) {
+            RCLCPP_INFO(getROSNode()->get_logger(), "Subpixel disabled due to low bandwidth mode");
+        }
     }
     stereo->setRectifyEdgeFillColor(declareAndLogParam<int>("i_rectify_edge_fill_color", 0));
     if(declareAndLogParam<bool>("i_enable_alpha_scaling", false)) {

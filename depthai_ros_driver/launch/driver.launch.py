@@ -114,12 +114,12 @@ def launch_setup(context, *args, **kwargs):
             "depth": {
                 "i_publish_topic": is_launch_config_true(context, "enable_depth"),
                 "i_synced": True,
-                "i_subpixel": False,
+                "i_subpixel": True,
                 "i_width": int(depth_profile[0]),
                 "i_height": int(depth_profile[1]),
                 "i_fps": float(depth_profile[2]),
-                "i_left_rect_publish_topic": True,
-                "i_right_rect_publish_topic": True,
+                "i_left_rect_publish_topic": is_launch_config_true(context, "enable_infra1"),
+                "i_right_rect_publish_topic": is_launch_config_true(context, "enable_infra2"),
             },
             "infra1": {
                 "i_width": int(infra_profile[0]),
