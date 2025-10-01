@@ -25,7 +25,7 @@ void VioParamHandler::declareParams(std::shared_ptr<dai::node::BasaltVIO> vio) {
     declareAndLogParam<std::string>("i_frame_id", "odom");
     declareAndLogParam<std::string>("i_child_frame_id", "oak_parent_frame");
     std::string configPath = declareAndLogParam<std::string>("i_config_path", "");
-    if(!configPath.empty()){
+    if(!configPath.empty()) {
         vio->setConfigPath(configPath);
     }
 }
