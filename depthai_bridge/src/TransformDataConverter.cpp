@@ -6,7 +6,10 @@
 namespace depthai_bridge {
 
 TransformDataConverter::TransformDataConverter(std::string frameName, std::string childFrameName, bool getBaseDeviceTimestamp)
-    : BaseConverter(std::move(frameName), getBaseDeviceTimestamp), childFrameName(childFrameName), quaternionNeedsFixing(false) {}
+    : BaseConverter(std::move(frameName), getBaseDeviceTimestamp), childFrameName(childFrameName), quaternionNeedsFixing(false) {
+    cov = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+           0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+}
 
 TransformDataConverter::~TransformDataConverter() = default;
 void TransformDataConverter::toRosMsg(std::shared_ptr<dai::TransformData> inTransform, std::deque<nav_msgs::msg::Odometry>& odomMsgs) {
@@ -26,6 +29,7 @@ void TransformDataConverter::toRosMsg(std::shared_ptr<dai::TransformData> inTran
     odomMsg.pose.pose.orientation.y = quat.qy;
     odomMsg.pose.pose.orientation.z = quat.qz;
     odomMsg.pose.pose.orientation.w = quat.qw;
+    odomMsg.pose.covariance = cov;
     odomMsgs.push_back(odomMsg);
 }
 
@@ -65,6 +69,7 @@ void TransformDataConverter::toRosMsg(std::shared_ptr<dai::TransformData> inTran
     poseMsg.pose.pose.orientation.y = quat.qy;
     poseMsg.pose.pose.orientation.z = quat.qz;
     poseMsg.pose.pose.orientation.w = quat.qw;
+    poseMsg.pose.covariance = cov;
     poseMsgs.push_back(poseMsg);
 }
 
@@ -78,6 +83,14 @@ dai::Quaterniond TransformDataConverter::verifyQuaternion(dai::Quaterniond quat)
         quat.qw = 1.0;
     }
     return quat;
+}
+
+void TransformDataConverter::setCovariance(std::array<double, 36> covariance) {
+    cov = covariance;
+}
+
+void TransformDataConverter::setCovariance(std::vector<double> covariance) {
+    std::copy(covariance.begin(), covariance.end(), cov.begin());
 }
 
 }  // namespace depthai_bridge

@@ -28,13 +28,13 @@ ament_auto_add_library(
   src/utils.cpp)
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBRARIES})
 rclcpp_components_register_nodes(${PROJECT_NAME}
-                                 "${PROJECT_NAME}::Detection2DOverlay")
+  "${PROJECT_NAME}::Detection2DOverlay")
 rclcpp_components_register_nodes(${PROJECT_NAME}
-                                 "${PROJECT_NAME}::SegmentationOverlay")
+  "${PROJECT_NAME}::SegmentationOverlay")
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::WLSFilter")
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::SpatialBB")
 rclcpp_components_register_nodes(${PROJECT_NAME}
-                                 "${PROJECT_NAME}::FeatureTrackerOverlay")
+  "${PROJECT_NAME}::FeatureTrackerOverlay")
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::Features3D")
 rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::ThermalTemp")
 

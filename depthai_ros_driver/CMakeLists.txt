@@ -149,8 +149,8 @@ PUBLIC
   ${COMMON_LIB_NAME}
 )
 add_executable(
- driver_node
- src/driver_node.cpp)
+  driver_node
+  src/driver_node.cpp)
 target_link_libraries(driver_node
 PUBLIC
   ${PROJECT_NAME}

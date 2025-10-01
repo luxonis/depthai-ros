@@ -98,6 +98,8 @@ void Vio::setupQueues(std::shared_ptr<dai::Device> /* device */) {
     options.qos_overriding_options = rclcpp::QosOverridingOptions();
     odomConv = std::make_unique<depthai_bridge::TransformDataConverter>(tfPrefix, childFrameId, ph->getParam<bool>(ParamNames::GET_BASE_DEVICE_TIMESTAMP));
     odomConv->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>(ParamNames::UPDATE_ROS_BASE_TIME_ON_ROS_MSG));
+    odomConv->setCovariance(ph->getParam<std::vector<double>>("i_covariance"));
+
 
     odomPub = getROSNode()->create_publisher<nav_msgs::msg::Odometry>("~/" + getName() + "/odometry", ph->getParam<int>(ParamNames::MAX_Q_SIZE), options);
     transQ->addCallback(std::bind(&Vio::transCB, this, std::placeholders::_1, std::placeholders::_2));

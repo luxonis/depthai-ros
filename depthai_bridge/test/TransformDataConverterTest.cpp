@@ -12,6 +12,9 @@ TEST(TransformDataConverterTest, ToRosMsgOdometryTest) {
     auto inData = std::make_shared<dai::TransformData>(1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 1.0);
 
     TransformDataConverter converter("test_frame", "child_frame", false);
+    std::vector<double> covariance = {0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0,
+                                      0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1};
+    converter.setCovariance(covariance);
 
     std::deque<nav_msgs::msg::Odometry> odomMsgs;
     converter.toRosMsg(inData, odomMsgs);
@@ -27,6 +30,9 @@ TEST(TransformDataConverterTest, ToRosMsgOdometryTest) {
     ASSERT_FLOAT_EQ(odomMsg.pose.pose.orientation.y, 0.0);
     ASSERT_FLOAT_EQ(odomMsg.pose.pose.orientation.z, 0.0);
     ASSERT_FLOAT_EQ(odomMsg.pose.pose.orientation.w, 1.0);
+    for(int i = 0; i < 36; ++i) {
+        ASSERT_FLOAT_EQ(odomMsg.pose.covariance[i], covariance[i]);
+    }
 }
 
 TEST(TransformDataConverterTest, ToRosMsgTransformStampedTest) {
@@ -54,6 +60,9 @@ TEST(TransformDataConverterTest, ToRosMsgPoseWithCovarianceStampedTest) {
     auto inData = std::make_shared<dai::TransformData>(1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 1.0);
 
     TransformDataConverter converter("test_frame", "child_frame", false);
+    std::array<double, 36> covariance = {0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0,
+                                         0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1};
+    converter.setCovariance(covariance);
 
     std::deque<geometry_msgs::msg::PoseWithCovarianceStamped> poseMsgs;
     converter.toRosMsg(inData, poseMsgs);
@@ -68,6 +77,9 @@ TEST(TransformDataConverterTest, ToRosMsgPoseWithCovarianceStampedTest) {
     ASSERT_FLOAT_EQ(poseMsg.pose.pose.orientation.y, 0.0);
     ASSERT_FLOAT_EQ(poseMsg.pose.pose.orientation.z, 0.0);
     ASSERT_FLOAT_EQ(poseMsg.pose.pose.orientation.w, 1.0);
+    for(int i = 0; i < 36; ++i) {
+        ASSERT_FLOAT_EQ(poseMsg.pose.covariance[i], covariance[i]);
+    }
 }
 
 TEST(TransformDataConverterTest, FixQuaternionTest) {

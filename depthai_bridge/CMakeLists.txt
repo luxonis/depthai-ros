@@ -69,28 +69,29 @@ add_library(${PROJECT_NAME} SHARED ${LIB_SRC})
 
 target_link_libraries(
   depthai_bridge
-  PUBLIC ${composition_interfaces_TARGETS}
-         ${depthai_ros_msgs_TARGETS}
-         ${ffmpeg_image_transport_msgs_TARGETS}
-         ${nav_msgs_TARGETS}
-         ${sensor_msgs_TARGETS}
-         ${std_msgs_TARGETS}
-         ${stereo_msgs_TARGETS}
-         ${vision_msgs_TARGETS}
-         ament_index_cpp::ament_index_cpp
-         camera_info_manager::camera_info_manager
-         cv_bridge::cv_bridge
-         image_transport::image_transport
-         rclcpp::rclcpp
-         sensor_msgs::sensor_msgs_library
-         tf2::tf2
-         tf2_geometry_msgs::tf2_geometry_msgs
-         tf2_ros::static_transform_broadcaster_node
-         tf2_ros::tf2_ros
-         depthai::core
-         opencv_imgproc
-         opencv_highgui
-         opencv_calib3d)
+  PUBLIC
+  ${composition_interfaces_TARGETS}
+  ${depthai_ros_msgs_TARGETS}
+  ${ffmpeg_image_transport_msgs_TARGETS}
+  ${nav_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
+  ${std_msgs_TARGETS}
+  ${stereo_msgs_TARGETS}
+  ${vision_msgs_TARGETS}
+  ament_index_cpp::ament_index_cpp
+  camera_info_manager::camera_info_manager
+  cv_bridge::cv_bridge
+  image_transport::image_transport
+  rclcpp::rclcpp
+  sensor_msgs::sensor_msgs_library
+  tf2::tf2
+  tf2_geometry_msgs::tf2_geometry_msgs
+  tf2_ros::static_transform_broadcaster_node
+  tf2_ros::tf2_ros
+  depthai::core
+  opencv_imgproc
+  opencv_highgui
+  opencv_calib3d)
 
 ament_export_targets(depthai_bridgeTargets HAS_LIBRARY_TARGET)
 
@@ -111,9 +112,10 @@ if(BUILD_TESTING)
     macro(bridge_test test_name test_src)
         ament_add_gtest("${PROJECT_NAME}_${test_name}" "test/${test_src}")
         target_include_directories(
-      "${PROJECT_NAME}_${test_name}"
-      PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-             $<INSTALL_INTERFACE:include>)
+          "${PROJECT_NAME}_${test_name}"
+          PUBLIC
+          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+          $<INSTALL_INTERFACE:include>)
         target_link_libraries("${PROJECT_NAME}_${test_name}" depthai_bridge)
 
     endmacro()

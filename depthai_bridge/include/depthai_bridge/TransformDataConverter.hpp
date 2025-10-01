@@ -27,11 +27,14 @@ class TransformDataConverter : public BaseConverter {
      * @brief Needed for initial transforms obtained for SLAM, so that Rviz and other nodes do not receive invalid quaternions before correct ones come out.
      */
     void fixQuaternion();
+    void setCovariance(std::array<double, 36> covariance);
+    void setCovariance(std::vector<double> covariance);
 
    private:
     std::string childFrameName;
     dai::Quaterniond verifyQuaternion(dai::Quaterniond);
     bool quaternionNeedsFixing;
+    std::array<double, 36> cov;
 };
 
 }  // namespace depthai_bridge

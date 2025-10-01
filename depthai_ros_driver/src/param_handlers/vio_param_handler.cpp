@@ -28,6 +28,7 @@ void VioParamHandler::declareParams(std::shared_ptr<dai::node::BasaltVIO> vio) {
     if(!configPath.empty()) {
         vio->setConfigPath(configPath);
     }
+    declareAndLogParam<std::vector<double>>("i_covariance", std::vector<double>(36, 0.0));
 }
 
 }  // namespace param_handlers
