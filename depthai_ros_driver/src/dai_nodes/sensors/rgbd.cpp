@@ -85,11 +85,6 @@ RGBD::RGBD(const std::string& daiNodeName,
     rgbdNode = pipeline->create<dai::node::RGBD>()->build();
     ph = std::make_unique<RGBDParamHandler>(node, daiNodeName, device->getDeviceName(), rsCompat);
     ph->declareParams(rgbdNode, camNode.getSocketID());
-    int threadNum = ph->getParam<int>("i_num_threads");
-    if(threadNum > 1) {
-        rgbdNode->useCPUMT(threadNum);
-    }
-    rgbdNode->runSyncOnHost(ph->getParam<bool>("i_run_sync_on_host"));
     auto color = camNode.getUnderlyingNode();
     auto tof = tofNode.getUnderlyingNode();
     auto fps = ph->getOtherNodeParam<float>(camNode.getName(), ParamNames::FPS);
@@ -118,9 +113,9 @@ RGBD::~RGBD() = default;
 
 void RGBD::setNames() {}
 
-void RGBD::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {}
+void RGBD::setInOut(std::shared_ptr<dai::Pipeline> /* pipeline */) {}
 
-void RGBD::setupQueues(std::shared_ptr<dai::Device> device) {
+void RGBD::setupQueues(std::shared_ptr<dai::Device> /* device */) {
     using ParamNames = param_handlers::ParamNames;
     pclQ = rgbdNode->pcl.createOutputQueue(ph->getParam<int>(ParamNames::MAX_Q_SIZE), false);
     auto tfPrefix = getOpticalFrameName(getSocketName(ph->getSocketID()));

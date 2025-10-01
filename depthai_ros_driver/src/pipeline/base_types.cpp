@@ -144,7 +144,7 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> Depth::createPipeline(std::sha
                                                                         std::shared_ptr<dai::Device> device,
                                                                         std::shared_ptr<dai::Pipeline> pipeline,
                                                                         std::shared_ptr<param_handlers::PipelineGenParamHandler> ph,
-                                                                        const std::string& deviceName,
+                                                                        const std::string& /* deviceName */,
                                                                         bool rsCompat,
                                                                         const std::string& /*nnType*/) {
     using namespace dai_nodes::sensor_helpers;

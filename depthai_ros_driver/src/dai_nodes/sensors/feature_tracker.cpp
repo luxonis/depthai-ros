@@ -34,9 +34,9 @@ void FeatureTracker::setNames() {
     featureQName = parentName + getName() + "_queue";
 }
 
-void FeatureTracker::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {}
+void FeatureTracker::setInOut(std::shared_ptr<dai::Pipeline> /* pipeline */) {}
 
-void FeatureTracker::setupQueues(std::shared_ptr<dai::Device> device) {
+void FeatureTracker::setupQueues(std::shared_ptr<dai::Device> /* device */) {
     featureQ = featureNode->outputFeatures.createOutputQueue(ph->getParam<int>("i_max_q_size"), false);
     auto tfPrefix = getFrameName(parentName);
     rclcpp::PublisherOptions options;

@@ -88,9 +88,9 @@ Vio::~Vio() = default;
 
 void Vio::setNames() {}
 
-void Vio::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {}
+void Vio::setInOut(std::shared_ptr<dai::Pipeline> /* pipeline */) {}
 
-void Vio::setupQueues(std::shared_ptr<dai::Device> device) {
+void Vio::setupQueues(std::shared_ptr<dai::Device> /* device */) {
     using ParamNames = param_handlers::ParamNames;
     transQ = vioNode->transform.createOutputQueue(ph->getParam<int>(ParamNames::MAX_Q_SIZE), false);
     auto tfPrefix = frameId;

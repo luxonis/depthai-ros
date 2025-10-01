@@ -16,8 +16,11 @@ void RGBDParamHandler::declareParams(std::shared_ptr<dai::node::RGBD> rgbd, dai:
     declareAndLogParam<int>(ParamNames::MAX_Q_SIZE, 2);
     declareAndLogParam<bool>(ParamNames::GET_BASE_DEVICE_TIMESTAMP, false);
     declareAndLogParam<bool>(ParamNames::UPDATE_ROS_BASE_TIME_ON_ROS_MSG, false);
-    declareAndLogParam<int>("i_num_threads", 1);
-    declareAndLogParam<bool>("i_run_sync_on_host", true);
+    int threadNum = declareAndLogParam<int>("i_num_threads", 1);
+    if(threadNum > 1) {
+        rgbd->useCPUMT(threadNum);
+    }
+    rgbd->runSyncOnHost(declareAndLogParam<bool>("i_run_sync_on_host", true));
     declareAndLogParam<bool>("i_run_align_on_host", true);
 }
 

@@ -1,7 +1,10 @@
-cmake_minimum_required(VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
+cmake_minimum_required(VERSION 3.10.2) # CMake version in Ubuntu 18.04 LTS
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-project(depthai_bridge VERSION 3.0.5 LANGUAGES CXX C)
+project(
+  depthai_bridge
+  VERSION 3.0.5
+  LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -26,98 +29,91 @@ find_package(composition_interfaces REQUIRED)
 find_package(ffmpeg_image_transport_msgs REQUIRED)
 
 set(dependencies
-  ament_index_cpp
-  camera_info_manager
-  cv_bridge
-  depthai_ros_msgs
-  image_transport
-  rclcpp
-  nav_msgs
-  sensor_msgs
-  stereo_msgs
-  std_msgs
-  vision_msgs
-  tf2_ros
-  tf2_geometry_msgs
-  tf2
-  composition_interfaces
-  ffmpeg_image_transport_msgs
-)
+    ament_index_cpp
+    camera_info_manager
+    cv_bridge
+    depthai_ros_msgs
+    image_transport
+    rclcpp
+    nav_msgs
+    sensor_msgs
+    stereo_msgs
+    std_msgs
+    vision_msgs
+    tf2_ros
+    tf2_geometry_msgs
+    tf2
+    composition_interfaces
+    ffmpeg_image_transport_msgs)
 
-include_directories(
-    include
-    ${BUILD_TOOL_INCLUDE_DIRS}
+include_directories(include ${BUILD_TOOL_INCLUDE_DIRS})
 
-)
-
-file(GLOB LIB_SRC
-    "src/BaseConverter.cpp"
-    "src/DisparityConverter.cpp"
-    "src/GridMapConverter.cpp"
-    "src/ImageConverter.cpp"
-    "src/ImgDetectionConverter.cpp"
-    "src/ImuConverter.cpp"
-    "src/TransformDataConverter.cpp"
-    "src/PointCloudConverter.cpp"
-    "src/SpatialDetectionConverter.cpp"
-    "src/TFPublisher.cpp"
-    "src/TrackedFeaturesConverter.cpp"
-    "src/TrackDetectionConverter.cpp"
-    "src/TrackSpatialDetectionConverter.cpp"
-)
+file(
+  GLOB
+  LIB_SRC
+  "src/BaseConverter.cpp"
+  "src/DisparityConverter.cpp"
+  "src/GridMapConverter.cpp"
+  "src/ImageConverter.cpp"
+  "src/ImgDetectionConverter.cpp"
+  "src/ImuConverter.cpp"
+  "src/TransformDataConverter.cpp"
+  "src/PointCloudConverter.cpp"
+  "src/SpatialDetectionConverter.cpp"
+  "src/TFPublisher.cpp"
+  "src/TrackedFeaturesConverter.cpp"
+  "src/TrackDetectionConverter.cpp"
+  "src/TrackSpatialDetectionConverter.cpp")
 
 add_library(${PROJECT_NAME} SHARED ${LIB_SRC})
 
-target_link_libraries(depthai_bridge PUBLIC
-      ${composition_interfaces_TARGETS}
-      ${depthai_ros_msgs_TARGETS}
-      ${ffmpeg_image_transport_msgs_TARGETS}
-      ${nav_msgs_TARGETS}
-      ${sensor_msgs_TARGETS}
-      ${std_msgs_TARGETS}
-      ${stereo_msgs_TARGETS}
-      ${vision_msgs_TARGETS}
-      ament_index_cpp::ament_index_cpp
-      camera_info_manager::camera_info_manager
-      cv_bridge::cv_bridge
-      image_transport::image_transport
-      rclcpp::rclcpp
-      sensor_msgs::sensor_msgs_library
-      tf2::tf2
-      tf2_geometry_msgs::tf2_geometry_msgs
-      tf2_ros::static_transform_broadcaster_node
-      tf2_ros::tf2_ros
-      depthai::core
-      opencv_imgproc
-      opencv_highgui
-      opencv_calib3d)
-
+target_link_libraries(
+  depthai_bridge
+  PUBLIC ${composition_interfaces_TARGETS}
+         ${depthai_ros_msgs_TARGETS}
+         ${ffmpeg_image_transport_msgs_TARGETS}
+         ${nav_msgs_TARGETS}
+         ${sensor_msgs_TARGETS}
+         ${std_msgs_TARGETS}
+         ${stereo_msgs_TARGETS}
+         ${vision_msgs_TARGETS}
+         ament_index_cpp::ament_index_cpp
+         camera_info_manager::camera_info_manager
+         cv_bridge::cv_bridge
+         image_transport::image_transport
+         rclcpp::rclcpp
+         sensor_msgs::sensor_msgs_library
+         tf2::tf2
+         tf2_geometry_msgs::tf2_geometry_msgs
+         tf2_ros::static_transform_broadcaster_node
+         tf2_ros::tf2_ros
+         depthai::core
+         opencv_imgproc
+         opencv_highgui
+         opencv_calib3d)
 
 ament_export_targets(depthai_bridgeTargets HAS_LIBRARY_TARGET)
 
-install(DIRECTORY include/
-        DESTINATION include/
-)
+install(DIRECTORY include/ DESTINATION include/)
 
-install(TARGETS depthai_bridge
-      EXPORT depthai_bridgeTargets
-              ARCHIVE DESTINATION lib
-              LIBRARY DESTINATION lib
-              RUNTIME DESTINATION bin
-              INCLUDES DESTINATION include
-
-)
-install(EXPORT depthai_bridgeTargets
-      DESTINATION share/${PROJECT_NAME}/cmake)
+install(
+  TARGETS depthai_bridge
+  EXPORT depthai_bridgeTargets
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES
+  DESTINATION include)
+install(EXPORT depthai_bridgeTargets DESTINATION share/${PROJECT_NAME}/cmake)
 
 if(BUILD_TESTING)
     find_package(ament_cmake_gtest REQUIRED)
     macro(bridge_test test_name test_src)
         ament_add_gtest("${PROJECT_NAME}_${test_name}" "test/${test_src}")
-        target_include_directories("${PROJECT_NAME}_${test_name}" PUBLIC
-          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-          $<INSTALL_INTERFACE:include>
-        )
+        target_include_directories(
+      "${PROJECT_NAME}_${test_name}"
+      PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+             $<INSTALL_INTERFACE:include>)
         target_link_libraries("${PROJECT_NAME}_${test_name}" depthai_bridge)
 
     endmacro()
@@ -126,19 +122,21 @@ if(BUILD_TESTING)
     bridge_test(img_det_converter_test ImgDetectionConverterTest.cpp)
     bridge_test(imu_converter_test ImuConverterTest.cpp)
     bridge_test(pointcloud_converter_test PointCloudConverterTest.cpp)
-    bridge_test(spatial_detection_converter_test SpatialDetectionConverterTest.cpp)
+    bridge_test(spatial_detection_converter_test
+              SpatialDetectionConverterTest.cpp)
     bridge_test(track_detection_converter_test TrackDetectionConverterTest.cpp)
-    bridge_test(track_spatial_detection_converter_test TrackSpatialDetectionConverterTest.cpp)
+    bridge_test(track_spatial_detection_converter_test
+              TrackSpatialDetectionConverterTest.cpp)
     bridge_test(tracked_features_converter_test TrackedFeaturesConverterTest.cpp)
+    bridge_test(transform_data_converter_test TransformDataConverterTest.cpp)
+    bridge_test(grid_map_converter_test GridMapConverterTest.cpp)
 
-    #   # for calib.json
+    # # for calib.json
     install(DIRECTORY resources DESTINATION share/${PROJECT_NAME})
 endif()
-
 
 ament_export_include_directories(include)
 ament_export_libraries(depthai_bridge)
 ament_export_dependencies(${dependencies})
 
 ament_package()
-

@@ -25,14 +25,9 @@ Sync::~Sync() = default;
 void Sync::setNames() {
     syncOutputName = getName() + "_out";
 }
-void Sync::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
-    // xoutFrame = pipeline->create<dai::node::XLinkOut>();
-    // xoutFrame->setStreamName(syncOutputName);
-    // xoutFrame->input.setBlocking(false);
-    // syncNode->out.link(xoutFrame->input);
-}
+void Sync::setInOut(std::shared_ptr<dai::Pipeline> /* pipeline */) {}
 
-void Sync::setupQueues(std::shared_ptr<dai::Device> device) {
+void Sync::setupQueues(std::shared_ptr<dai::Device> /* device */) {
     outQueue = syncNode->out.createOutputQueue(8, false);
     outQueue->addCallback([this](const std::shared_ptr<dai::ADatatype>& in) {
         auto group = std::dynamic_pointer_cast<dai::MessageGroup>(in);

@@ -30,9 +30,9 @@ void Imu::setNames() {
     imuQName = getName() + "_imu";
 }
 
-void Imu::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {}
+void Imu::setInOut(std::shared_ptr<dai::Pipeline> /* pipeline */) {}
 
-void Imu::setupQueues(std::shared_ptr<dai::Device> device) {
+void Imu::setupQueues(std::shared_ptr<dai::Device> /* device */) {
     imuQ = imuNode->out.createOutputQueue(ph->getParam<int>("i_max_q_size"), false);
     auto tfPrefix = std::string(getROSNode()->get_name()) + "_" + getName();
     auto imuMode = ph->getSyncMethod();

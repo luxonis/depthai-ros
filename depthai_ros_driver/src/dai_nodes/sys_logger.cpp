@@ -24,7 +24,7 @@ void SysLogger::setNames() {
     loggerQName = getName() + "_queue";
 }
 
-void SysLogger::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {}
+void SysLogger::setInOut(std::shared_ptr<dai::Pipeline> /* pipeline */) {}
 
 void SysLogger::setupQueues(std::shared_ptr<dai::Device> device) {
     loggerQ = sysNode->out.createOutputQueue(8, false);
