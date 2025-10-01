@@ -1,6 +1,21 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3.0.6 (2025-10-01)
+------------------
+* Added TransformData and GridMap converters
+* Updated BridgePublisher to also publish transforms
+* SLAM and VIO support
+* Added slam and odometry publishing examples
+* Added VIO and VSLAM nodes to depthai_ros_driver
+* Removed i_enable_default_output from camera parameters
+* Stereo node has a separate FPS parameter
+* Disabled default NN in depthai_ros_driver
+* Publishing of full resolution available for camera sensors in depthai_ros_driver
+* Fixed issues in Stereo linking in depthai_ros_driver
+* Added more Rviz configs
+* Fixed Spatial BB example in depthai_filters
+
 3.0.5 (2025-09-02)
 ------------------
 * Update IMU rotation vector
