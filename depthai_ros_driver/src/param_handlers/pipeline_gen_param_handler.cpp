@@ -16,7 +16,7 @@ void PipelineGenParamHandler::declareParams() {
     declareAndLogParam<bool>("i_enable_diagnostics", false);
     declareAndLogParam<bool>("i_enable_rgbd", false);
     declareAndLogParam<bool>("i_enable_vio", false);
-    declareAndLogParam<bool>("i_enable_slam", false);
+    // declareAndLogParam<bool>("i_enable_slam", false);
 }
 }  // namespace param_handlers
 }  // namespace depthai_ros_driver

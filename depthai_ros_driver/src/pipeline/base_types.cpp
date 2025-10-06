@@ -11,7 +11,7 @@
 #include "depthai_ros_driver/dai_nodes/sensors/rgbd.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/slam.hpp"
+// #include "depthai_ros_driver/dai_nodes/sensors/slam.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/stereo.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/thermal.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/tof.hpp"
@@ -64,19 +64,19 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBD::createPipeline(std::shar
         auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device, rsCompat);
         if(ph->getParam<bool>("i_enable_vio")) {
             auto vio = std::make_unique<dai_nodes::Vio>("vio", node, pipeline, device, rsCompat, *stereo, *imu);
-            if(ph->getParam<bool>("i_enable_slam")) {
-                std::unique_ptr<dai_nodes::Slam> slam;
-                if(stereo->getSocketID() == stereo->getLeftSensor()->getSocketID()) {
-                    slam = std::make_unique<dai_nodes::Slam>("slam", node, pipeline, device, rsCompat, *stereo->getLeftSensor(), *vio, *stereo);
-                } else if(stereo->getSocketID() == stereo->getRightSensor()->getSocketID()) {
-                    slam = std::make_unique<dai_nodes::Slam>("slam", node, pipeline, device, rsCompat, *stereo->getRightSensor(), *vio, *stereo);
-                } else if(stereo->getSocketID() == rgb->getSocketID()) {
-                    slam = std::make_unique<dai_nodes::Slam>("slam", node, pipeline, device, rsCompat, *rgb, *vio, *stereo);
-                } else {
-                    throw std::runtime_error("Stereo socket is not left, right or rgb. Cannot create SLAM node.");
-                }
-                daiNodes.push_back(std::move(slam));
-            }
+            // if(ph->getParam<bool>("i_enable_slam")) {
+            //     std::unique_ptr<dai_nodes::Slam> slam;
+            //     if(stereo->getSocketID() == stereo->getLeftSensor()->getSocketID()) {
+            //         slam = std::make_unique<dai_nodes::Slam>("slam", node, pipeline, device, rsCompat, *stereo->getLeftSensor(), *vio, *stereo);
+            //     } else if(stereo->getSocketID() == stereo->getRightSensor()->getSocketID()) {
+            //         slam = std::make_unique<dai_nodes::Slam>("slam", node, pipeline, device, rsCompat, *stereo->getRightSensor(), *vio, *stereo);
+            //     } else if(stereo->getSocketID() == rgb->getSocketID()) {
+            //         slam = std::make_unique<dai_nodes::Slam>("slam", node, pipeline, device, rsCompat, *rgb, *vio, *stereo);
+            //     } else {
+            //         throw std::runtime_error("Stereo socket is not left, right or rgb. Cannot create SLAM node.");
+            //     }
+            //     daiNodes.push_back(std::move(slam));
+            // }
             daiNodes.push_back(std::move(vio));
         }
         daiNodes.push_back(std::move(imu));
@@ -154,18 +154,18 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> Depth::createPipeline(std::sha
         auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device, rsCompat);
         if(ph->getParam<bool>("i_enable_vio")) {
             auto vio = std::make_unique<dai_nodes::Vio>("vio", node, pipeline, device, rsCompat, *stereo, *imu);
-            if(ph->getParam<bool>("i_enable_slam")) {
-                std::unique_ptr<dai_nodes::Slam> slam;
-                if(stereo->getSocketID() == stereo->getLeftSensor()->getSocketID()) {
-                    slam = std::make_unique<dai_nodes::Slam>("slam", node, pipeline, device, rsCompat, *stereo->getLeftSensor(), *vio, *stereo);
-                } else if(stereo->getSocketID() == stereo->getRightSensor()->getSocketID()) {
-                    slam = std::make_unique<dai_nodes::Slam>("slam", node, pipeline, device, rsCompat, *stereo->getRightSensor(), *vio, *stereo);
-                } else {
-                    throw std::runtime_error("Stereo socket is not left or right. Cannot create SLAM node.");
-                }
-
-                daiNodes.push_back(std::move(slam));
-            }
+            // if(ph->getParam<bool>("i_enable_slam")) {
+            //     std::unique_ptr<dai_nodes::Slam> slam;
+            //     if(stereo->getSocketID() == stereo->getLeftSensor()->getSocketID()) {
+            //         slam = std::make_unique<dai_nodes::Slam>("slam", node, pipeline, device, rsCompat, *stereo->getLeftSensor(), *vio, *stereo);
+            //     } else if(stereo->getSocketID() == stereo->getRightSensor()->getSocketID()) {
+            //         slam = std::make_unique<dai_nodes::Slam>("slam", node, pipeline, device, rsCompat, *stereo->getRightSensor(), *vio, *stereo);
+            //     } else {
+            //         throw std::runtime_error("Stereo socket is not left or right. Cannot create SLAM node.");
+            //     }
+            //
+            //     daiNodes.push_back(std::move(slam));
+            // }
             daiNodes.push_back(std::move(vio));
         }
         daiNodes.push_back(std::move(imu));

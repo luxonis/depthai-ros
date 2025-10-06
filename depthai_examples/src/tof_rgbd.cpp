@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     int height = 480;
     std::string tfPrefix = "oak";
     rclcpp::init(argc, argv);
-    auto node = rclcpp::Node::make_shared("tof_publisher");
+    auto node = rclcpp::Node::make_shared(tfPrefix);
 
     auto device = std::make_shared<dai::Device>();
     dai::Pipeline pipeline(device);
@@ -58,9 +58,7 @@ int main(int argc, char** argv) {
         node,
         "pcl/data",
         std::bind(&depthai_bridge::PointCloudConverter::toRosMsg, pclConverter, std::placeholders::_1, std::placeholders::_2),
-        1,
-        "",
-        "pcl");
+        30);
 
     pclPub->addPublisherCallback();
 

@@ -14,7 +14,8 @@
 
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
-    auto node = rclcpp::Node::make_shared("feature_tracker");
+    std::string tfPrefix = "oak";
+    auto node = rclcpp::Node::make_shared(tfPrefix);
 
     auto device = std::make_shared<dai::Device>();
     dai::Pipeline pipeline(device);
@@ -65,12 +66,11 @@ int main(int argc, char** argv) {
 
     auto outputFeaturesLeftQueue = featureTrackerLeft->outputFeatures.createOutputQueue(8, false);
     auto outputFeaturesRightQueue = featureTrackerRight->outputFeatures.createOutputQueue(8, false);
-    std::string tfPrefix = "oak";
     auto leftConverter = std::make_shared<depthai_bridge::TrackedFeaturesConverter>(
-        depthai_bridge::getOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_A, device->getDeviceName())), true);
+        depthai_bridge::getOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_B, device->getDeviceName())), true);
 
     auto rightConverter = std::make_shared<depthai_bridge::TrackedFeaturesConverter>(
-        depthai_bridge::getOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_A, device->getDeviceName())), true);
+        depthai_bridge::getOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_C, device->getDeviceName())), true);
 
     pipeline.start();
     auto calibrationHandler = device->readCalibration();
@@ -81,9 +81,7 @@ int main(int argc, char** argv) {
         node,
         "features_left",
         std::bind(&depthai_bridge::TrackedFeaturesConverter::toRosMsg, leftConverter, std::placeholders::_1, std::placeholders::_2),
-        30,
-        "",
-        "features_left");
+        30);
 
     featuresPubL->addPublisherCallback();
 
@@ -92,9 +90,7 @@ int main(int argc, char** argv) {
         node,
         "features_right",
         std::bind(&depthai_bridge::TrackedFeaturesConverter::toRosMsg, rightConverter, std::placeholders::_1, std::placeholders::_2),
-        30,
-        "",
-        "features_right");
+        30);
 
     featuresPubR->addPublisherCallback();
     while(rclcpp::ok() && pipeline.isRunning()) {

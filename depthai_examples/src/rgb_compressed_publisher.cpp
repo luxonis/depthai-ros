@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
     int height = 720;
     std::string tfPrefix = "oak";
     rclcpp::init(argc, argv);
-    auto node = rclcpp::Node::make_shared("rgb_compressed_publisher");
+    auto node = rclcpp::Node::make_shared(tfPrefix);
 
     dai::VideoEncoderProperties::Profile encProfile = static_cast<dai::VideoEncoderProperties::Profile>(
         node->declare_parameter<int>("profile", static_cast<int>(dai::VideoEncoderProperties::Profile::MJPEG)));

@@ -70,6 +70,7 @@ class TFPublisher {
     bool modelNameAvailable();
     std::unique_ptr<rclcpp::AsyncParametersClient> paramClient;
     std::shared_ptr<tf2_ros::StaticTransformBroadcaster> tfPub;
+    std::string nodeName;
     std::string camName;
     std::string camModel;
     std::string baseFrame;

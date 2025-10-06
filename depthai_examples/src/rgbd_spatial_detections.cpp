@@ -115,11 +115,11 @@ OutputQueues createPipeline(dai::Pipeline& pipeline, PipelineOpts opts) {
 
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
-    auto node = rclcpp::Node::make_shared("rgbd_spatial_detections");
+    std::string tfPrefix = "oak";
+    auto node = rclcpp::Node::make_shared(tfPrefix);
 
     std::string mxId = node->declare_parameter<std::string>("mxId", "");
     std::string ip = node->declare_parameter<std::string>("ip", "");
-    std::string tfPrefix = node->declare_parameter<std::string>("tfPrefix", "oak");
     std::string nnName = node->declare_parameter<std::string>("nnName", "yolov6-nano");
     int imuModeParam = node->declare_parameter<int>("imuMode", 0);
     bool lrcheck = node->declare_parameter<bool>("lrcheck", true);
@@ -197,9 +197,7 @@ int main(int argc, char** argv) {
         node,
         "imu",
         [imuConverter](std::shared_ptr<dai::IMUData> msg, std::deque<sensor_msgs::msg::Imu>& rosMsgs) { imuConverter->toRosMsg(msg, rosMsgs); },
-        30,
-        "",
-        "");
+        30);
 
     imuPublish->addPublisherCallback();
 
@@ -220,9 +218,7 @@ int main(int argc, char** argv) {
             node,
             "stereo/points",
             std::bind(&depthai_bridge::PointCloudConverter::toRosMsg, pclConv, std::placeholders::_1, std::placeholders::_2),
-            30,
-            "",
-            "pcl");
+            30);
         pclPublish->addPublisherCallback();
 
         auto rgbCameraInfo = rgbConverter->calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_A, rgbWidth, rgbHeight);

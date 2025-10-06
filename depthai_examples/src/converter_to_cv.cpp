@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
     auto inputConverter = std::make_shared<depthai_bridge::ImageConverter>("rgb_frame", true);
 
-    auto node = rclcpp::Node::make_shared("rgb_subscriber_node");
+    auto node = rclcpp::Node::make_shared("oak");
 
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub =
         node->create_subscription<sensor_msgs::msg::Image>("rgb_image", 5, [&](const sensor_msgs::msg::Image::SharedPtr rgbImageMsg) {

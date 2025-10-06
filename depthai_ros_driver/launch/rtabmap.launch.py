@@ -26,7 +26,9 @@ def launch_setup(context, *args, **kwargs):
             "subscribe_depth": True,
             "subscribe_odom_info": False,
             "approx_sync": True,
-            "Rtabmap/DetectionRate": "3.5",
+            # RTAB-Map's parameters should be strings:
+            'Mem/NotLinkedNodesKept':'false',
+            "Rtabmap/DetectionRate": "1.0",
         }
     ]
 
@@ -44,17 +46,12 @@ def launch_setup(context, *args, **kwargs):
             ),
             launch_arguments={"name": name, "params_file": params_file}.items(),
         ),
-        LoadComposableNodes(
-            target_container=name + "_container",
-            composable_node_descriptions=[
-                ComposableNode(
+        Node(
                     package="rtabmap_slam",
-                    plugin="rtabmap_slam::CoreWrapper",
+                    executable="rtabmap",
                     name="rtabmap",
                     parameters=parameters,
                     remappings=remappings,
-                ),
-            ],
         ),
         Node(
             package="rtabmap_viz",
@@ -72,7 +69,7 @@ def generate_launch_description():
         DeclareLaunchArgument("name", default_value="oak"),
         DeclareLaunchArgument(
             "params_file",
-            default_value=os.path.join(depthai_prefix, "config", "vio.yaml"),
+            default_value=os.path.join(depthai_prefix, "config", "rtabmap.yaml"),
         ),
     ]
 

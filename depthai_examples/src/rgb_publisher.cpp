@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
     int height = 720;
     std::string tfPrefix = "oak";
     rclcpp::init(argc, argv);
-    auto node = rclcpp::Node::make_shared("rgb_publisher");
+    auto node = rclcpp::Node::make_shared(tfPrefix);
 
     auto device = std::make_shared<dai::Device>();
     dai::Pipeline pipeline(device);

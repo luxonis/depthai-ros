@@ -14,7 +14,7 @@
 int main(int argc, char** argv) {
     std::string tfPrefix = "oak";
     rclcpp::init(argc, argv);
-    auto node = rclcpp::Node::make_shared("imu_publisher");
+    auto node = rclcpp::Node::make_shared(tfPrefix);
 
     auto device = std::make_shared<dai::Device>();
     dai::Pipeline pipeline(device);
@@ -46,9 +46,7 @@ int main(int argc, char** argv) {
         node,
         "imu/data",
         [imuConv](std::shared_ptr<dai::IMUData> msg, std::deque<sensor_msgs::msg::Imu>& rosMsgs) { imuConv->toRosMsg(msg, rosMsgs); },
-        30,
-        "",
-        "");
+        30);
 
     imuPub->addPublisherCallback();
 

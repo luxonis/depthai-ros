@@ -1,16 +1,18 @@
 /oak:
   ros__parameters:
     driver:
-      i_enable_ir: false
+      i_enable_ir: true
     pipeline_gen:
       i_nn_type: none
       i_pipeline_type: rgbd
       i_enable_vio: true
     vio:
-      i_fps: 60.0
+      i_fps: 30.0
     stereo:
+      i_synced: true
       i_depth_preset: DEFAULT
-      i_fps: 60.0
+    rgb:
+      i_synced: true
     imu:
       i_batch_report_threshold: 1
       i_max_batch_reports: 10

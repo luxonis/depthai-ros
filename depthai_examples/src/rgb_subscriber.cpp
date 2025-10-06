@@ -80,7 +80,8 @@ class ImgSubscriber : public dai::NodeCRTP<dai::node::ThreadedHostNode, ImgSubsc
 
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
-    auto node = rclcpp::Node::make_shared("ros_to_dai");
+    std::string tfPrefix = "oak";
+    auto node = rclcpp::Node::make_shared(tfPrefix);
 
     dai::Pipeline pipeline;
 
@@ -89,7 +90,6 @@ int main(int argc, char** argv) {
     auto display = pipeline.create<HostDisplay>();
     rosSubscriberNode->output.link(display->inputs["frame"]);
     // Create a bridge publisher for RGB images
-    std::string tfPrefix = "oak";
     auto rgbConverter = std::make_shared<depthai_bridge::ImageConverter>(tfPrefix + "_rgb_camera_optical_frame", true);
     rosSubscriberNode->conv = rgbConverter;
 

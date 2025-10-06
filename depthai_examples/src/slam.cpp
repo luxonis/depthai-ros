@@ -19,9 +19,9 @@
 #include "sensor_msgs/msg/point_cloud2.hpp"
 
 int main(int argc, char** argv) {
-    std::string tfPrefix = "map";
+    std::string tfPrefix = "oak";
     rclcpp::init(argc, argv);
-    auto node = rclcpp::Node::make_shared("odom_publisher");
+    auto node = rclcpp::Node::make_shared(tfPrefix);
     auto tfBr = std::make_shared<tf2_ros::TransformBroadcaster>(node);
 
     auto device = std::make_shared<dai::Device>();
@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
     pipeline.start();
 
     // Create a bridge publisher for Odom images
-    auto slamConv = std::make_shared<depthai_bridge::TransformDataConverter>(tfPrefix, "odom");
+    auto slamConv = std::make_shared<depthai_bridge::TransformDataConverter>("map", "odom");
     slamConv->fixQuaternion();
     auto odomConv = std::make_shared<depthai_bridge::TransformDataConverter>("odom", "oak");
     auto mapConv = std::make_shared<depthai_bridge::GridMapConverter>("map");

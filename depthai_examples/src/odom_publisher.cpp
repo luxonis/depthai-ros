@@ -14,7 +14,7 @@
 int main(int argc, char** argv) {
     std::string tfPrefix = "odom";
     rclcpp::init(argc, argv);
-    auto node = rclcpp::Node::make_shared("odom_publisher");
+    auto node = rclcpp::Node::make_shared(tfPrefix);
     auto tfBr = std::make_shared<tf2_ros::TransformBroadcaster>(node);
 
     auto device = std::make_shared<dai::Device>();

@@ -12,7 +12,8 @@
 
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
-    auto node = rclcpp::Node::make_shared("feature_tracker");
+    std::string tfPrefix = "oak";
+    auto node = rclcpp::Node::make_shared(tfPrefix);
 
     auto device = std::make_shared<dai::Device>();
     dai::Pipeline pipeline(device);
@@ -20,7 +21,6 @@ int main(int argc, char** argv) {
     auto stereo = pipeline.create<dai::node::StereoDepth>()->build(true);
 
     auto dispQ = stereo->disparity.createOutputQueue(8, false);
-    std::string tfPrefix = "oak";
 
     auto dispConv = std::make_shared<depthai_bridge::DisparityConverter>(
         depthai_bridge::getOpticalFrameName(tfPrefix, depthai_bridge::getSocketName(dai::CameraBoardSocket::CAM_C, device->getDeviceName())),

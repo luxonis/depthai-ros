@@ -65,7 +65,7 @@ add_example(thermal_publisher src/thermal_publisher.cpp)
 add_example(tof_publisher src/tof_publisher.cpp)
 add_example(tof_rgbd src/tof_rgbd.cpp)
 add_example(odom_publisher src/odom_publisher.cpp)
-add_example(slam src/slam.cpp)
+# add_example(slam src/slam.cpp)
 
 install(
   TARGETS rgbd_spatial_detections
@@ -82,7 +82,7 @@ install(
           tof_rgbd
           thermal_publisher
           odom_publisher
-          slam
+          # slam
   DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
