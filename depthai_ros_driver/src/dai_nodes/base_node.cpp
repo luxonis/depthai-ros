@@ -49,7 +49,6 @@ bool BaseNode::rsCompatibilityMode() {
 }
 
 std::string BaseNode::getFrameName(const std::string& frameName) {
-
     return depthai_bridge::getFrameName(getROSNode()->get_name(), frameName);
 }
 

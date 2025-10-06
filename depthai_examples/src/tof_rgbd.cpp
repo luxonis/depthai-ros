@@ -54,11 +54,7 @@ int main(int argc, char** argv) {
         std::make_unique<depthai_bridge::TFPublisher>(node, calibrationHandler, device->getConnectedCameraFeatures(), tfPrefix, device->getDeviceName());
 
     auto pclPub = std::make_unique<depthai_bridge::BridgePublisher<sensor_msgs::msg::PointCloud2, dai::PointCloudData>>(
-        pclQ,
-        node,
-        "pcl/data",
-        std::bind(&depthai_bridge::PointCloudConverter::toRosMsg, pclConverter, std::placeholders::_1, std::placeholders::_2),
-        30);
+        pclQ, node, "pcl/data", std::bind(&depthai_bridge::PointCloudConverter::toRosMsg, pclConverter, std::placeholders::_1, std::placeholders::_2), 30);
 
     pclPub->addPublisherCallback();
 
