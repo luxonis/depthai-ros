@@ -60,14 +60,15 @@ void SlamParamHandler::declareParams(std::shared_ptr<dai::node::RTABMapSLAM> sla
     slam->setAlphaScaling(alphaScaling);
 
     std::map<std::string, std::string> params;
-    std::string configPath = declareAndLogParam<std::string>("i_config_path", "rtabmap.json");
-    if(configPath.find("rtabmap.json") != std::string::npos) {
+    std::string configPath = declareAndLogParam<std::string>("i_config_path", "depthai_ros_driver_default_rtabmap.json");
+    if(configPath.find("depthai_ros_driver_default_rtabmap.json") != std::string::npos) {
+
         configPath = ament_index_cpp::get_package_share_directory("depthai_ros_driver") + "/config/custom/" + configPath;
     }
     auto finalPath = declareAndLogParam<std::string>("config_path", configPath, true);
 
-    if(!configPath.empty()) {
-        RCLCPP_INFO(getROSNode()->get_logger(), "Loading RTABMap config from %s", finalPath.c_str());
+    if(!finalPath.empty()) {
+        RCLCPP_DEBUG(getROSNode()->get_logger(), "Loading RTABMap config from %s", finalPath.c_str());
         std::ifstream f(configPath);
         json data = json::parse(f);
         params = data.get<std::map<std::string, std::string>>();

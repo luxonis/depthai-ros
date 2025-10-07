@@ -1,6 +1,14 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+3.0.7 (2025-10-07)
+------------------
+* Disabled VSLAM until deb generation issues for depthai-core are resolved
+* Added new parameters for VIO
+* Updated TF frame naming in TFPublisher (node name is prepended instead of base frame)
+* Updated examples
+
 3.0.6 (2025-10-01)
 ------------------
 * Added TransformData and GridMap converters
