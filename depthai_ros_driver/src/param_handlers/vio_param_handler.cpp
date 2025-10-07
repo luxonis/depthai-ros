@@ -46,7 +46,6 @@ void VioParamHandler::declareParams(std::shared_ptr<dai::node::BasaltVIO> vio) {
         vio->setImuExtrinsics(transform);
     }
     if(declareAndLogParam<bool>("i_set_acc_bias", false)) {
-        // initialize acc vec with size 9
         std::vector<double> accBias = declareAndLogParam<std::vector<double>>("i_acc_bias", std::vector<double>(9, 0.0));
         vio->setAccelBias(accBias);
     }
@@ -73,7 +72,7 @@ void VioParamHandler::declareParams(std::shared_ptr<dai::node::BasaltVIO> vio) {
     auto finalPath = declareAndLogParam<std::string>("config_path", configPath, true);
 
     if(!finalPath.empty()) {
-        RCLCPP_INFO(getROSNode()->get_logger(), "Loading VIO config from %s", finalPath.c_str());
+        RCLCPP_DEBUG(getROSNode()->get_logger(), "Loading VIO config from %s", finalPath.c_str());
         vio->setConfigPath(configPath);
     }
     declareAndLogParam<std::vector<double>>("i_covariance", std::vector<double>(36, 0.0));
