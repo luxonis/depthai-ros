@@ -92,10 +92,11 @@ void ImagePublisher::createImageConverter(std::shared_ptr<dai::Device> device) {
             try {
                 auto calHandler = device->readCalibration();
                 double baseline = calHandler.getBaselineDistance(pubConfig.leftSocket, pubConfig.rightSocket, false);
+                double focalLength = calHandler.getCameraIntrinsics(pubConfig.leftSocket).at(0).at(0);
                 if(convConfig.reverseSocketOrder) {
                     baseline = calHandler.getBaselineDistance(pubConfig.rightSocket, pubConfig.leftSocket, false);
                 }
-                converter->convertDispToDepth(baseline);
+                converter->convertDispToDepth(baseline, focalLength);
             } catch(const std::exception& e) {
                 RCLCPP_DEBUG(node->get_logger(), "Failed to convert disparity to depth: %s", e.what());
             }
@@ -113,10 +114,11 @@ void ImagePublisher::createImageConverter(std::shared_ptr<dai::Device> device) {
     if(convConfig.isStereo && !convConfig.outputDisparity) {
         auto calHandler = device->readCalibration();
         double baseline = calHandler.getBaselineDistance(pubConfig.leftSocket, pubConfig.rightSocket, false);
+        double focalLength = calHandler.getCameraIntrinsics(pubConfig.leftSocket).at(0).at(0);
         if(convConfig.reverseSocketOrder) {
             baseline = calHandler.getBaselineDistance(pubConfig.rightSocket, pubConfig.leftSocket, false);
         }
-        converter->convertDispToDepth(baseline);
+        converter->convertDispToDepth(baseline, focalLength);
     }
     converter->setFFMPEGEncoding(convConfig.ffmpegEncoder);
 }
