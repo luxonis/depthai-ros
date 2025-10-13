@@ -111,6 +111,7 @@ jobs:
             BUILD_SEQUENTIAL=1
           platforms: |
             amd64
+            arm64
           no-cache: true
 
       - name: Build and Push
@@ -122,6 +123,7 @@ jobs:
             USE_RVIZ=1
           platforms: |
             amd64
+            arm64
           push: ${{ env.PUSH }}
           no-cache: true
           tags: | 
