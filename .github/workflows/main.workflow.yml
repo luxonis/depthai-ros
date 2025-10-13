@@ -124,7 +124,7 @@ jobs:
             luxonis/depthai-ros:${{ steps.vars.outputs.short_ref }}
             luxonis/depthai-ros:${{ env.ROS_DISTRO }}-latest
   docker-build-arm:
-    name: Build and Upload to Docker Hub
+    name: Build and Upload to Docker Hub (ARM)
     runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
