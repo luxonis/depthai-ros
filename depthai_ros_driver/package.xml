@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>depthai_ros_driver</name>
-  <version>3.0.8</version>
+  <version>3.0.9</version>
   <description>Depthai ROS Monolithic node.</description>
   <maintainer email="adam.serafin@luxonis.com">Adam Serafin</maintainer>
 
@@ -10,6 +10,7 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>ament_cmake_auto</depend>
+  <depend>backward_ros</depend>
   <depend>camera_calibration</depend>
   <depend>camera_info_manager</depend>
   <depend>rclcpp</depend>

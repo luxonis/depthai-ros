@@ -3,7 +3,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 project(
   depthai_bridge
-  VERSION 3.0.8
+  VERSION 3.0.9
   LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
