@@ -42,6 +42,7 @@ ToF::ToF(const std::string& daiNodeName,
 ToF::~ToF() = default;
 void ToF::setNames() {
     tofQName = getName() + "_tof";
+    intensityQName = getName() + "_intensity";
 }
 std::shared_ptr<dai::node::ToF> ToF::getUnderlyingNode() {
     return tofNode;
@@ -58,6 +59,18 @@ void ToF::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
         encConfig.enabled = ph->getParam<bool>(ParamNames::LOW_BANDWIDTH);
 
         tofPub = setupOutput(pipeline, tofQName, &tofNode->depth, ph->getParam<bool>(ParamNames::SYNCED), encConfig);
+    }
+
+    if(ph->getParam<bool>("i_publish_intensity_topic")) {
+        // Use the same encoder settings as ToF output
+        utils::VideoEncoderConfig intensityEncConfig;
+        intensityEncConfig.profile = static_cast<dai::VideoEncoderProperties::Profile>(ph->getParam<int>(ParamNames::LOW_BANDWIDTH_PROFILE));
+        intensityEncConfig.bitrate = ph->getParam<int>(ParamNames::LOW_BANDWIDTH_BITRATE);
+        intensityEncConfig.frameFreq = ph->getParam<int>(ParamNames::LOW_BANDWIDTH_FRAME_FREQ);
+        intensityEncConfig.quality = ph->getParam<int>(ParamNames::LOW_BANDWIDTH_QUALITY);
+        intensityEncConfig.enabled = ph->getParam<bool>(ParamNames::LOW_BANDWIDTH);
+
+        intensityPub = setupOutput(pipeline, intensityQName, &tofNode->intensity, ph->getParam<bool>(ParamNames::SYNCED), intensityEncConfig);
     }
 }
 
@@ -89,10 +102,41 @@ void ToF::setupQueues(std::shared_ptr<dai::Device> device) {
 
         tofPub->setup(device, convConfig, pubConfig);
     }
+
+    if(ph->getParam<bool>("i_publish_intensity_topic")) {
+        auto tfPrefix = getOpticalFrameName(getSocketName(boardSocket));
+
+        utils::ImgConverterConfig intensityConvConfig;
+        intensityConvConfig.tfPrefix = tfPrefix;
+        intensityConvConfig.getBaseDeviceTimestamp = ph->getParam<bool>(ParamNames::GET_BASE_DEVICE_TIMESTAMP);
+        intensityConvConfig.updateROSBaseTimeOnRosMsg = ph->getParam<bool>(ParamNames::UPDATE_ROS_BASE_TIME_ON_ROS_MSG);
+        intensityConvConfig.lowBandwidth = ph->getParam<bool>(ParamNames::LOW_BANDWIDTH);
+        intensityConvConfig.encoding = dai::ImgFrame::Type::RAW8;
+        intensityConvConfig.addExposureOffset = ph->getParam<bool>(ParamNames::ADD_EXPOSURE_OFFSET);
+        intensityConvConfig.expOffset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>(ParamNames::EXPOSURE_OFFSET));
+        intensityConvConfig.reverseSocketOrder = ph->getParam<bool>(ParamNames::REVERSE_STEREO_SOCKET_ORDER);
+
+        utils::ImgPublisherConfig intensityPubConfig;
+        intensityPubConfig.daiNodeName = getName();
+        intensityPubConfig.topicName = "~/" + getName() + "/intensity";
+        intensityPubConfig.lazyPub = ph->getParam<bool>(ParamNames::ENABLE_LAZY_PUBLISHER);
+        intensityPubConfig.socket = ph->getSocketID();
+        intensityPubConfig.calibrationFile = ph->getParam<std::string>(ParamNames::CALIBRATION_FILE);
+        intensityPubConfig.rectified = false;
+        intensityPubConfig.width = ph->getParam<int>(ParamNames::WIDTH);
+        intensityPubConfig.height = ph->getParam<int>(ParamNames::HEIGHT);
+        intensityPubConfig.maxQSize = ph->getParam<int>(ParamNames::MAX_Q_SIZE);
+
+        intensityPub->setup(device, intensityConvConfig, intensityPubConfig);
+    }
 }
 void ToF::closeQueues() {
     if(ph->getParam<bool>(param_handlers::ParamNames::PUBLISH_TOPIC)) {
         tofPub->closeQueue();
+    }
+
+    if(ph->getParam<bool>("i_publish_intensity_topic")) {
+        intensityPub->closeQueue();
     }
 }
 
@@ -128,6 +172,9 @@ std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> ToF::getPublishers(
     std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> pubs;
     using param_handlers::ParamNames;
     if(ph->getParam<bool>(ParamNames::PUBLISH_TOPIC) && ph->getParam<bool>(ParamNames::SYNCED)) {
+        pubs.push_back(tofPub);
+    }
+    if(ph->getParam<bool>("i_publish_intensity_topic") && ph->getParam<bool>(ParamNames::SYNCED)) {
         pubs.push_back(tofPub);
     }
     return pubs;
