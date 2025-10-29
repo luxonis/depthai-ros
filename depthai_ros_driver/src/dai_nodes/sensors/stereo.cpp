@@ -161,6 +161,7 @@ void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
     pubConfig.socket = sensorInfo.socket;
     pubConfig.infoMgrSuffix = "rect";
     pubConfig.publishCompressed = ph->getParam<bool>(isLeft ? "i_left_rect_publish_compressed" : "i_right_rect_publish_compressed");
+    pubConfig.flipImage = ph->getParam<bool>("i_flip_published_image");
 
     pub->setup(device, convConfig, pubConfig);
 }
@@ -210,6 +211,7 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     pubConf.lazyPub = ph->getParam<bool>("i_enable_lazy_publisher");
     pubConf.maxQSize = ph->getParam<int>("i_max_q_size");
     pubConf.publishCompressed = ph->getParam<bool>("i_publish_compressed");
+    pubConf.flipImage = ph->getParam<bool>("i_flip_published_image");
 
     stereoPub->setup(device, convConfig, pubConf);
 }
