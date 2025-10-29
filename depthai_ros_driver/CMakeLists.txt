@@ -20,6 +20,9 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
+find_package(OpenCV REQUIRED COMPONENTS core imgcodecs imgproc)
+find_package(cv_bridge REQUIRED)
+
 set(COMMON_DEPS
 camera_info_manager
 cv_bridge
@@ -81,6 +84,10 @@ add_library(
 )
 
 ament_target_dependencies(${COMMON_LIB_NAME} ${COMMON_DEPS})
+
+# Link OpenCV to the common lib so cv headers/libs are available
+target_link_libraries(${COMMON_LIB_NAME} ${OpenCV_LIBS})
+target_link_libraries(${COMMON_LIB_NAME} cv_bridge::cv_bridge)
 
 set(SENSOR_LIB_NAME ${PROJECT_NAME}_sensor_nodes)
 add_library(
