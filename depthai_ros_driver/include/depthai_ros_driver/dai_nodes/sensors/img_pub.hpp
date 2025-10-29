@@ -89,8 +89,6 @@ class ImagePublisher {
     std::shared_ptr<dai::node::VideoEncoder> createEncoder(std::shared_ptr<dai::Pipeline> pipeline, const utils::VideoEncoderConfig& encoderConfig);
 
    private:
-    bool detectSubscription(const rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr& pub,
-                            const rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr& infoPub);
     std::shared_ptr<rclcpp::Node> node;
     utils::VideoEncoderConfig encConfig;
     utils::ImgPublisherConfig pubConfig;
@@ -100,7 +98,6 @@ class ImagePublisher {
     std::shared_ptr<dai::node::XLinkOut> xout;
     std::shared_ptr<dai::node::VideoEncoder> encoder;
     std::function<void(dai::Node::Input in)> linkCB;
-    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr imgPub;
     rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr infoPub;
     rclcpp::Publisher<ffmpeg_image_transport_msgs::msg::FFMPEGPacket>::SharedPtr ffmpegPub;
     rclcpp::Publisher<sensor_msgs::msg::CompressedImage>::SharedPtr compressedImgPub;

@@ -70,10 +70,6 @@ void ImagePublisher::setup(std::shared_ptr<dai::Device> device, const utils::Img
         }
         infoPub =
             node->create_publisher<sensor_msgs::msg::CameraInfo>(pubConfig.topicName + pubConfig.infoSuffix + "/camera_info", rclcpp::QoS(10), pubOptions);
-    } else if(ipcEnabled) {
-        imgPub = node->create_publisher<sensor_msgs::msg::Image>(pubConfig.topicName + pubConfig.topicSuffix, rclcpp::QoS(10), pubOptions);
-        infoPub =
-            node->create_publisher<sensor_msgs::msg::CameraInfo>(pubConfig.topicName + pubConfig.infoSuffix + "/camera_info", rclcpp::QoS(10), pubOptions);
     } else {
         imgPubIT = image_transport::create_camera_publisher(node.get(), pubConfig.topicName + pubConfig.topicSuffix);
     }
@@ -201,11 +197,8 @@ void ImagePublisher::publish(std::shared_ptr<Image> img) {
         }
         infoPub->publish(std::move(img->info));
     } else {
-        if(ipcEnabled && (!pubConfig.lazyPub || detectSubscription(imgPub, infoPub))) {
-            imgPub->publish(std::move(img->image));
-            infoPub->publish(std::move(img->info));
-        } else {
-            if(!pubConfig.lazyPub || imgPubIT.getNumSubscribers() > 0) imgPubIT.publish(*img->image, *img->info);
+        if(!pubConfig.lazyPub || imgPubIT.getNumSubscribers() > 0) {
+            imgPubIT.publish(*img->image, *img->info);
         }
     }
 }
@@ -228,12 +221,6 @@ void ImagePublisher::publish(const std::shared_ptr<dai::ADatatype>& data) {
         auto img = convertData(data);
         publish(img);
     }
-}
-
-bool ImagePublisher::detectSubscription(const rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr& pub,
-                                        const rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr& infoPub) {
-    return (pub->get_subscription_count() > 0 || pub->get_intra_process_subscription_count() > 0 || infoPub->get_subscription_count() > 0
-            || infoPub->get_intra_process_subscription_count() > 0);
 }
 }  // namespace sensor_helpers
 }  // namespace dai_nodes
