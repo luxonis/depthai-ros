@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
     <name>depthai_bridge</name>
-    <version>3.0.9</version>
+    <version>3.0.10</version>
     <description>The depthai_bridge package</description>
 
     <maintainer email="adam.serafin@luxonis.com">Adam Serafin</maintainer>

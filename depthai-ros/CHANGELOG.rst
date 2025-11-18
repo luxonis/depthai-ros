@@ -2,6 +2,12 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.0.10 (2025-11-16)
+-------------------
+* Add functional tests
+* Update launch files
+* Fix external pipelines
+
 3.0.9 (2025-10-15)
 ------------------
 * Fix backward_ros dependency
