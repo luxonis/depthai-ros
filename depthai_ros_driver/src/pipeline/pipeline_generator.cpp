@@ -1,5 +1,7 @@
 #include "depthai_ros_driver/pipeline/pipeline_generator.hpp"
 
+#include <stdexcept>
+
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
@@ -62,11 +64,11 @@ void PipelineGenerator::createPipeline(std::shared_ptr<rclcpp::Node> node,
     }
 
     try {
-        // other types of instancing (shared/unique ptr) seem to cause memory issues when shutting down the driver
-        auto pipelinePlugin = pipelineLoader->createUnmanagedInstance(pluginType);
+        auto pipelinePlugin = pipelineLoader->createSharedInstance(pluginType);
         daiNodes = pipelinePlugin->createPipeline(node, device, pipeline, ph, deviceName, rsCompat, nnType);
-        pipelineLoader->unloadLibraryForClass(pluginType);
-        delete pipelinePlugin;
+        if(daiNodes.empty()) {
+            throw std::runtime_error("No nodes created in this pipeline");
+        }
     } catch(pluginlib::PluginlibException& ex) {
         RCLCPP_ERROR(node->get_logger(), "The plugin failed to load for some reason. Error: %s\n", ex.what());
         throw std::runtime_error("Plugin loading failed.");

@@ -22,6 +22,10 @@ def is_launch_config_true(context, name):
 def setup_launch_prefix(context, *args, **kwargs):
     use_gdb = LaunchConfiguration("use_gdb", default="false")
     use_valgrind = LaunchConfiguration("use_valgrind", default="false")
+    valgrind_args = LaunchConfiguration(
+        "valgrind_args",
+        default="--leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=memcheck.log",
+    )
     use_perf = LaunchConfiguration("use_perf", default="false")
 
     launch_prefix = ""
@@ -29,7 +33,8 @@ def setup_launch_prefix(context, *args, **kwargs):
     if use_gdb.perform(context) == "true":
         launch_prefix += "xterm -e gdb -ex run --args"
     if use_valgrind.perform(context) == "true":
-        launch_prefix += "valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=memcheck.log"
+        launch_prefix += f"valgrind {valgrind_args.perform(context)}"
+        print(launch_prefix)
     if use_perf.perform(context) == "true":
         launch_prefix += (
             "perf record -g --call-graph dwarf --output=perf.out.node_name.data --"
@@ -59,7 +64,7 @@ def launch_setup(context, *args, **kwargs):
     use_composition = LaunchConfiguration("rsp_use_composition", default="true")
     imu_from_descr = LaunchConfiguration("imu_from_descr", default="false")
     publish_tf_from_calibration = LaunchConfiguration(
-        "publish_tf_from_calibration", default="false"
+        "publish_tf_from_calibration", default="true"
     )
     override_cam_model = LaunchConfiguration("override_cam_model", default="false")
     params_file = LaunchConfiguration("params_file")
@@ -161,6 +166,8 @@ def launch_setup(context, *args, **kwargs):
                 "i_tf_imu_from_descr": imu_from_descr.perform(context),
             }
         }
+    else:
+        params = {"driver": {"i_publish_tf_from_calibration": False}}
     if pointcloud_enable.perform(context) == "true":
         params["pipeline_gen"] = {"i_enable_rgbd": True}
 
@@ -263,6 +270,10 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument("use_gdb", default_value="false"),
         DeclareLaunchArgument("use_valgrind", default_value="false"),
+        DeclareLaunchArgument(
+            "valgrind_args",
+            default_value="--leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=memcheck.log",
+        ),
         DeclareLaunchArgument("use_perf", default_value="false"),
         DeclareLaunchArgument(
             "rs_compat",
