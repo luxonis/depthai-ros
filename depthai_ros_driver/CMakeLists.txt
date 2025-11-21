@@ -85,10 +85,6 @@ add_library(
 
 ament_target_dependencies(${COMMON_LIB_NAME} ${COMMON_DEPS})
 
-# Link OpenCV to the common lib so cv headers/libs are available
-target_link_libraries(${COMMON_LIB_NAME} ${OpenCV_LIBS})
-target_link_libraries(${COMMON_LIB_NAME} cv_bridge::cv_bridge)
-
 set(SENSOR_LIB_NAME ${PROJECT_NAME}_sensor_nodes)
 add_library(
   ${SENSOR_LIB_NAME} SHARED
