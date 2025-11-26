@@ -20,9 +20,6 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-find_package(OpenCV REQUIRED COMPONENTS core imgcodecs imgproc)
-find_package(cv_bridge REQUIRED)
-
 set(COMMON_DEPS
 camera_info_manager
 cv_bridge
