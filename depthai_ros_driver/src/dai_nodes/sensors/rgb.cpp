@@ -92,6 +92,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         pubConfig.height = ph->getParam<int>("i_height");
         pubConfig.maxQSize = ph->getParam<int>("i_max_q_size");
         pubConfig.publishCompressed = ph->getParam<bool>("i_publish_compressed");
+        pubConfig.flipImage = ph->getParam<bool>("i_flip_published_image");
 
         rgbPub->setup(device, convConfig, pubConfig);
     }
@@ -113,6 +114,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         pubConfig.height = ph->getParam<int>("i_preview_height");
         pubConfig.maxQSize = ph->getParam<int>("i_max_q_size");
         pubConfig.topicSuffix = "/preview/image_raw";
+        pubConfig.flipImage = ph->getParam<bool>("i_flip_published_image");
 
         previewPub->setup(device, convConfig, pubConfig);
     };
