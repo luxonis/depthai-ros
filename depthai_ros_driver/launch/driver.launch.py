@@ -67,7 +67,7 @@ def launch_setup(context, *args, **kwargs):
         "publish_tf_from_calibration", default="true"
     )
     override_cam_model = LaunchConfiguration("override_cam_model", default="false")
-    params_file = ParameterFile(LaunchConfiguration("params_file"), allow_substs="true")
+    params_file = ParameterFile(LaunchConfiguration("params_file"), allow_substs=True)
     camera_model = LaunchConfiguration("camera_model", default="OAK-D")
     rs_compat = LaunchConfiguration("rs_compat", default="false")
     pointcloud_enable = LaunchConfiguration("pointcloud.enable", default="false")
