@@ -52,7 +52,7 @@ jobs:
     name: ament_${{ matrix.linter }}
     runs-on: ubuntu-24.04
     container:
-      image: ubuntu:noble
+      image: ubuntu:jammy
     strategy:
       fail-fast: false 
       matrix:
