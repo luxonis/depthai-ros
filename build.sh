@@ -49,14 +49,18 @@ then
         --$install_type \
         --executor sequential \
         --cmake-args -DCMAKE_BUILD_TYPE=$build_type \
-        --cmake-args -DBUILD_TESTING=OFF \
-        --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-        --cmake-args -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-        --cmake-args -DBUILD_SHARED_LIBS=ON
+         -DBUILD_TESTING=OFF \
+         -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+         -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+         -DBUILD_SHARED_LIBS=ON \
+
 else
     echo "Parallel build" && \
     colcon build \
     --$install_type \
     --cmake-args -DCMAKE_BUILD_TYPE=$build_type \
-    --cmake-args -DBUILD_TESTING=OFF --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --cmake-args -DCMAKE_POSITION_INDEPENDENT_CODE=ON --cmake-args -DBUILD_SHARED_LIBS=ON
+    -DBUILD_TESTING=OFF \
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+    -DBUILD_SHARED_LIBS=ON
 fi
