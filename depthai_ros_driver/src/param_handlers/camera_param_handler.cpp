@@ -43,8 +43,8 @@ void CameraParamHandler::declareParams() {
     declareAndLogParam<bool>("i_publish_tf_from_calibration", false);
     declareAndLogParam<std::string>("i_tf_camera_name", getROSNode()->get_name());
     declareAndLogParam<std::string>("i_tf_camera_model", "");
-    declareAndLogParam<std::string>("i_tf_base_frame", "oak");
-    declareAndLogParam<std::string>("i_tf_parent_frame", "oak-d-base-frame");
+    declareAndLogParam<std::string>("i_tf_base_frame", getROSNode()->get_name());
+    declareAndLogParam<std::string>("i_tf_parent_frame", "oak-d-parent-frame");
     declareAndLogParam<std::string>("i_tf_cam_pos_x", "0.0");
     declareAndLogParam<std::string>("i_tf_cam_pos_y", "0.0");
     declareAndLogParam<std::string>("i_tf_cam_pos_z", "0.0");

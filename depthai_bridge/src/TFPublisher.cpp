@@ -52,6 +52,7 @@ TFPublisher::TFPublisher(std::shared_ptr<rclcpp::Node> node,
       customURDFLocation(customURDFLocation),
       customXacroArgs(customXacroArgs),
       rsCompatibilityMode(rsCompatibilityMode),
+      nodeName(node->get_name()),
       logger(node->get_logger()) {
     tfPub = std::make_shared<tf2_ros::StaticTransformBroadcaster>(node);
 
@@ -93,16 +94,16 @@ void TFPublisher::publishCamTransforms(nlohmann::json camData, std::shared_ptr<r
         ts.child_frame_id = baseFrame + std::string("_") + name + std::string("_camera_frame");
         // check if the camera is at the end of the chain
         if(extrinsics["toCameraSocket"] != -1) {
-            ts.header.frame_id = baseFrame + std::string("_") + getCamSocketName(extrinsics["toCameraSocket"].get<int>()) + std::string("_camera_frame");
+            ts.header.frame_id = nodeName + std::string("_") + getCamSocketName(extrinsics["toCameraSocket"].get<int>()) + std::string("_camera_frame");
         } else {
-            ts.header.frame_id = baseFrame;
+            ts.header.frame_id = nodeName + "_" + baseFrame;
             ts.transform.rotation.w = 1.0;
             ts.transform.rotation.x = 0.0;
             ts.transform.rotation.y = 0.0;
             ts.transform.rotation.z = 0.0;
         }
         // rotate optical fransform
-        opticalTS.child_frame_id = baseFrame + std::string("_") + name + std::string("_camera_optical_frame");
+        opticalTS.child_frame_id = nodeName + std::string("_") + name + std::string("_camera_optical_frame");
         opticalTS.header.frame_id = ts.child_frame_id;
         opticalTS.transform.rotation.w = 0.5;
         opticalTS.transform.rotation.x = -0.5;
@@ -116,9 +117,9 @@ void TFPublisher::publishImuTransform(nlohmann::json json, std::shared_ptr<rclcp
     geometry_msgs::msg::TransformStamped ts;
     ts.header.stamp = node->get_clock()->now();
     auto imuExtr = json["imuExtrinsics"];
-    ts.child_frame_id = baseFrame + std::string("_imu_frame");
+    ts.child_frame_id = nodeName + std::string("_imu_frame");
     if(imuExtr["toCameraSocket"] != -1) {
-        ts.header.frame_id = baseFrame + std::string("_") + getCamSocketName(imuExtr["toCameraSocket"].get<int>()) + std::string("_camera_frame");
+        ts.header.frame_id = nodeName + std::string("_") + getCamSocketName(imuExtr["toCameraSocket"].get<int>()) + std::string("_camera_frame");
         auto extrMat = calHandler.getImuToCameraExtrinsics(static_cast<dai::CameraBoardSocket>(imuExtr["toCameraSocket"].get<int>()));
         // pass parts of 4x4 matrix to transfFromExtr
         std::vector<float> translation = {extrMat[0][3], extrMat[1][3], extrMat[2][3]};
@@ -128,7 +129,7 @@ void TFPublisher::publishImuTransform(nlohmann::json json, std::shared_ptr<rclcp
             {extrMat[0][0], extrMat[0][1], extrMat[0][2]}, {extrMat[1][0], extrMat[1][1], extrMat[1][2]}, {extrMat[2][0], extrMat[2][1], extrMat[2][2]}};
         ts.transform.rotation = quatFromRotM(rotMat);
     } else {
-        ts.header.frame_id = baseFrame;
+        ts.header.frame_id = nodeName + "_" + baseFrame;
         RCLCPP_WARN(logger, "IMU extrinsics are not set. Publishing IMU frame with zero translation and rotation.");
         ts.transform.rotation.w = 1.0;
         ts.transform.rotation.x = 0.0;
@@ -218,27 +219,28 @@ std::string TFPublisher::prepareXacroArgs() {
     xacroArgs += " cam_pitch:=" + camPitch;
     xacroArgs += " cam_yaw:=" + camYaw;
     xacroArgs += " has_imu:=" + imuFromDescr;
+    RCLCPP_INFO(logger, "Xacro args: %s", xacroArgs.c_str());
     return xacroArgs;
 }
 
 void TFPublisher::convertModelName() {
-    if(camModel.find("OAK-D-PRO-POE") != std::string::npos || camModel.find("OAK-D-PRO-W-POE") != std::string::npos
-       || camModel.find("OAK-D-S2-POE") != std::string::npos) {
-        camModel = "OAK-D-POE";
-    } else if(camModel.find("OAK-D-LITE") != std::string::npos) {
-        camModel = "OAK-D-PRO";
-    } else if(camModel.find("OAK-D-S2") != std::string::npos) {
-        camModel = "OAK-D-PRO";
-    } else if(camModel.find("OAK-D-PRO-W") != std::string::npos) {
-        camModel = "OAK-D-PRO";
-    } else if(camModel.find("OAK-D-PRO") != std::string::npos) {
-        camModel = "OAK-D-PRO";
-    } else if(camModel.find("OAK-D-POE")) {
-        camModel = "OAK-D-POE";
-    } else if(camModel.find("OAK-D") != std::string::npos) {
-        camModel = "OAK-D";
-    } else {
-        RCLCPP_WARN(logger, "Unable to match model name: %s to available model family.", camModel.c_str());
+    std::map<std::string, std::string> modelMappings = {{"OAK-D-SR-POE", "OAK-D-SR-POE"},
+                                                        {"OAK-D-PRO-W-POE", "OAK-D-S2-POE"},
+                                                        {"OAK-D-PRO-POE", "OAK-D-S2-POE"},
+                                                        {"OAK-D-S2-POE", "OAK-D-S2-POE"},
+                                                        {"OAK-D-POE", "OAK-D-POE"},
+                                                        {"OAK-D-LITE", "OAK-D-PRO"},
+                                                        {"OAK-D-S2", "OAK-D-PRO"},
+                                                        {"OAK-D-PRO-W", "OAK-D-PRO"},
+                                                        {"OAK-D-PRO", "OAK-D-PRO"},
+                                                        {"OAK-D", "OAK-D"},
+                                                        {"OAK-T", "OAK-T"}};
+
+    for(const auto& [key, value] : modelMappings) {
+        if(camModel == key) {
+            camModel = value;
+            return;
+        }
     }
 }
 
