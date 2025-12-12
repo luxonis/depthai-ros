@@ -12,7 +12,7 @@
 #include "image_transport/image_transport.hpp"
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/imgproc.hpp"
-#include "cv_bridge/cv_bridge.hpp"
+#include "cv_bridge/cv_bridge.h"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
