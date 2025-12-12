@@ -29,7 +29,7 @@ jobs:
     name: ament_clang_format
     runs-on: ubuntu-24.04
     container:
-      image: ubuntu:noble
+      image: ubuntu:jammy
     strategy:
       fail-fast: false
     steps:
