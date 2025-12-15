@@ -96,7 +96,7 @@ void TFPublisher::publishCamTransforms(nlohmann::json camData, std::shared_ptr<r
         if(extrinsics["toCameraSocket"] != -1) {
             ts.header.frame_id = nodeName + std::string("_") + getCamSocketName(extrinsics["toCameraSocket"].get<int>()) + std::string("_camera_frame");
         } else {
-            ts.header.frame_id = nodeName + "_" + baseFrame;
+            ts.header.frame_id = baseFrame;
             ts.transform.rotation.w = 1.0;
             ts.transform.rotation.x = 0.0;
             ts.transform.rotation.y = 0.0;
