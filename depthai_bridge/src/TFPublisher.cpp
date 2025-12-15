@@ -91,7 +91,7 @@ void TFPublisher::publishCamTransforms(nlohmann::json camData, std::shared_ptr<r
         }
 
         std::string name = getCamSocketName(cam[0]);
-        ts.child_frame_id = baseFrame + std::string("_") + name + std::string("_camera_frame");
+        ts.child_frame_id = nodeName + std::string("_") + name + std::string("_camera_frame");
         // check if the camera is at the end of the chain
         if(extrinsics["toCameraSocket"] != -1) {
             ts.header.frame_id = nodeName + std::string("_") + getCamSocketName(extrinsics["toCameraSocket"].get<int>()) + std::string("_camera_frame");
