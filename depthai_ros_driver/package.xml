@@ -18,6 +18,7 @@
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
   <depend>cv_bridge</depend>
+  <depend>libopencv-dev</depend>
   <depend>image_transport</depend>
   <depend>image_transport_plugins</depend>
   <depend>image_pipeline</depend>

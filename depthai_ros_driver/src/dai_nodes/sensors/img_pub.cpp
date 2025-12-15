@@ -10,6 +10,9 @@
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "image_transport/image_transport.hpp"
+#include "opencv2/imgcodecs.hpp"
+#include "opencv2/imgproc.hpp"
+#include "cv_bridge/cv_bridge.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -68,10 +71,6 @@ void ImagePublisher::setup(std::shared_ptr<dai::Device> device, const utils::Img
             ffmpegPub = node->create_publisher<ffmpeg_image_transport_msgs::msg::FFMPEGPacket>(
                 pubConfig.topicName + pubConfig.compressedTopicSuffix, rclcpp::QoS(10), pubOptions);
         }
-        infoPub =
-            node->create_publisher<sensor_msgs::msg::CameraInfo>(pubConfig.topicName + pubConfig.infoSuffix + "/camera_info", rclcpp::QoS(10), pubOptions);
-    } else if(ipcEnabled) {
-        imgPub = node->create_publisher<sensor_msgs::msg::Image>(pubConfig.topicName + pubConfig.topicSuffix, rclcpp::QoS(10), pubOptions);
         infoPub =
             node->create_publisher<sensor_msgs::msg::CameraInfo>(pubConfig.topicName + pubConfig.infoSuffix + "/camera_info", rclcpp::QoS(10), pubOptions);
     } else {
@@ -193,6 +192,26 @@ std::shared_ptr<Image> ImagePublisher::convertData(const std::shared_ptr<dai::AD
     return img;
 }
 void ImagePublisher::publish(std::shared_ptr<Image> img) {
+    // Rotate only uncompressed images - compressed image rotation is too costly
+    if(pubConfig.flipImage && !pubConfig.publishCompressed) {
+        try {
+            if(img->image) {
+                auto imgPtr = std::make_shared<sensor_msgs::msg::Image>(*img->image);
+                cv_bridge::CvImagePtr cvPtr = cv_bridge::toCvCopy(imgPtr, imgPtr->encoding);
+                cv::Mat rotated;
+                cv::flip(cvPtr->image, rotated, -1);
+                cv_bridge::CvImage outCv;
+                outCv.header = imgPtr->header;
+                outCv.encoding = imgPtr->encoding;
+                outCv.image = rotated;
+                sensor_msgs::msg::Image newMsg;
+                outCv.toImageMsg(newMsg);
+                img->image = std::make_unique<sensor_msgs::msg::Image>(newMsg);
+            }
+        } catch(const std::exception& e) {
+            RCLCPP_WARN(node->get_logger(), "Failed to rotate image before publish: %s", e.what());
+        }
+    }
     if(pubConfig.publishCompressed) {
         if(encConfig.profile == dai::VideoEncoderProperties::Profile::MJPEG) {
             compressedImgPub->publish(std::move(img->compressedImg));
@@ -201,11 +220,8 @@ void ImagePublisher::publish(std::shared_ptr<Image> img) {
         }
         infoPub->publish(std::move(img->info));
     } else {
-        if(ipcEnabled && (!pubConfig.lazyPub || detectSubscription(imgPub, infoPub))) {
-            imgPub->publish(std::move(img->image));
-            infoPub->publish(std::move(img->info));
-        } else {
-            if(!pubConfig.lazyPub || imgPubIT.getNumSubscribers() > 0) imgPubIT.publish(*img->image, *img->info);
+        if(!pubConfig.lazyPub || imgPubIT.getNumSubscribers() > 0) {
+            imgPubIT.publish(*img->image, *img->info);
         }
     }
 }
@@ -228,12 +244,6 @@ void ImagePublisher::publish(const std::shared_ptr<dai::ADatatype>& data) {
         auto img = convertData(data);
         publish(img);
     }
-}
-
-bool ImagePublisher::detectSubscription(const rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr& pub,
-                                        const rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr& infoPub) {
-    return (pub->get_subscription_count() > 0 || pub->get_intra_process_subscription_count() > 0 || infoPub->get_subscription_count() > 0
-            || infoPub->get_intra_process_subscription_count() > 0);
 }
 }  // namespace sensor_helpers
 }  // namespace dai_nodes

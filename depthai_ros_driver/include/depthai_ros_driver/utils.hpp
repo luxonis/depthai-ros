@@ -76,6 +76,7 @@ struct ImgPublisherConfig {
     int maxQSize = 8;
     bool qBlocking = false;
     bool publishCompressed = false;
+    bool flipImage = false;
 };
 std::shared_ptr<dai::node::XLinkOut> setupXout(std::shared_ptr<dai::Pipeline> pipeline, const std::string& name);
 }  // namespace utils

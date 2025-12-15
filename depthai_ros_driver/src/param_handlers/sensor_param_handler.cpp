@@ -48,6 +48,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, d
     cam->setBoardSocket(socketID);
     cam->setFps(declareAndLogParam<double>("i_fps", 30.0));
     declareAndLogParam<bool>("i_publish_topic", publish);
+    declareAndLogParam<bool>("i_flip_published_image", false);
 
     int width = declareAndLogParam<int>("i_width", features.width);
     int height = declareAndLogParam<int>("i_height", features.height);
@@ -75,6 +76,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::MonoCamera> mo
     monoCam->setResolution(utils::getValFromMap(resString, dai_nodes::sensor_helpers::monoResolutionMap));
     declareAndLogParam<int>("i_width", monoCam->getResolutionWidth());
     declareAndLogParam<int>("i_height", monoCam->getResolutionHeight());
+    declareAndLogParam<bool>("i_flip_published_image", false);
     size_t iso = declareAndLogParam("r_iso", 800, getRangedIntDescriptor(100, 1600));
     size_t exposure = declareAndLogParam("r_exposure", 1000, getRangedIntDescriptor(1, 33000));
 
@@ -123,6 +125,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     colorCam->setBoardSocket(socketID);
     declareAndLogParam<bool>("i_output_isp", true);
     declareAndLogParam<bool>("i_enable_preview", false);
+    declareAndLogParam<bool>("i_flip_published_image", false);
     colorCam->setFps(declareAndLogParam<double>("i_fps", 30.0));
     int preview_size = declareAndLogParam<int>("i_preview_size", 300);
     int preview_width = declareAndLogParam<int>("i_preview_width", preview_size);

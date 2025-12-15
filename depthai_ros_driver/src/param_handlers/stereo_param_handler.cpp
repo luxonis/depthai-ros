@@ -73,6 +73,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     declareAndLogParam<bool>("i_reverse_stereo_socket_order", false);
     declareAndLogParam<bool>("i_publish_compressed", false);
     declareAndLogParam<std::string>("i_calibration_file", "");
+    declareAndLogParam<bool>("i_flip_published_image", false);
 
     declareAndLogParam<bool>("i_publish_synced_rect_pair", false);
     declareAndLogParam<bool>("i_left_rect_publish_topic", false);
