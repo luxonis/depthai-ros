@@ -98,7 +98,7 @@ void Thermal::setupQueues(std::shared_ptr<dai::Device> device) {
         pubConfig.height = ph->getParam<int>("i_height");
         pubConfig.maxQSize = ph->getParam<int>("i_max_q_size");
         pubConfig.flipImage = ph->getParam<bool>("i_flip_published_image");
-        
+
         thermalRawPub->setup(device, convConfig, pubConfig);
     }
 }

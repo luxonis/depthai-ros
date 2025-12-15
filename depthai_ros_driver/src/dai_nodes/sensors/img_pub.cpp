@@ -1,6 +1,7 @@
 #include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 
 #include "camera_info_manager/camera_info_manager.hpp"
+#include "cv_bridge/cv_bridge.hpp"
 #include "depthai-shared/properties/VideoEncoderProperties.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
@@ -12,7 +13,6 @@
 #include "image_transport/image_transport.hpp"
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/imgproc.hpp"
-#include "cv_bridge/cv_bridge.hpp"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
