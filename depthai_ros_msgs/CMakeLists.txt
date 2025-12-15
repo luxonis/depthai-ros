@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
 
-project(depthai_ros_msgs VERSION 2.11.2)
+project(depthai_ros_msgs VERSION 2.12.0)
 
 if(POLICY CMP0057)
     cmake_policy(SET CMP0057 NEW)
@@ -17,8 +17,14 @@ find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(vision_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
-# set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
 find_package(rosidl_default_generators REQUIRED)
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+  find_library(
+    builtin_interfaces__rosidl_generator_c_LIB NAMES builtin_interfaces__rosidl_generator_c
+    PATHS "/opt/ros/$ENV{ROS_DISTRO}/lib"
+    NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH REQUIRED
+  )
+endif()
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/AutoFocusCtrl.msg"
@@ -27,8 +33,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ImuWithMagneticField.msg"
   "msg/TrackedFeature.msg"
   "msg/TrackedFeatures.msg"
-  # "msg/ImageMarker.msg"
-  # "msg/ImageMarkerArray.msg"
   "msg/SpatialDetection.msg"
   "msg/SpatialDetectionArray.msg"
   "msg/TrackDetection2D.msg"

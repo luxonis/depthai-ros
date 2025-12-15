@@ -32,7 +32,7 @@ jobs:
       fail-fast: false
     steps:
     - uses: actions/checkout@v3.3.0
-    - uses: ros-tooling/setup-ros@0.7.8
+    - uses: ros-tooling/setup-ros@0.7.15
       with:
         required-ros-distributions: ${{ env.ROS_DISTRO }}
     - uses: ros-tooling/action-ros2-lint@0.1.3
@@ -55,7 +55,7 @@ jobs:
         linter: [xmllint, pep257, lint_cmake]
     steps:
     - uses: actions/checkout@v3.3.0
-    - uses: ros-tooling/setup-ros@0.7.8
+    - uses: ros-tooling/setup-ros@0.7.15
       with:
         required-ros-distributions: ${{ env.ROS_DISTRO }}
     - uses: ros-tooling/action-ros2-lint@0.1.3

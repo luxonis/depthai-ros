@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(depthai_filters VERSION 2.11.2 LANGUAGES CXX C)
+project(depthai_filters VERSION 2.12.0 LANGUAGES CXX C)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)

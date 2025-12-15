@@ -1,6 +1,14 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+2.12.0 (2025-12-12)
+-------------------
+* Fix timeshift bug
+* Update launch file
+* Add rotatet img publishing
+* Update base frame naming
+
 2.11.2 (2025-03-17)
 -------------------
 * Add autoexposure region settings

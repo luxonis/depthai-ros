@@ -92,7 +92,9 @@ void Camera::start() {
 }
 
 void Camera::stop() {
-    RCLCPP_INFO(get_logger(), "Stopping camera.");
+    if(rclcpp::ok()) {
+        RCLCPP_INFO(get_logger(), "Stopping camera.");
+    }
     if(camRunning) {
         for(const auto& node : daiNodes) {
             node->closeQueues();
@@ -101,9 +103,13 @@ void Camera::stop() {
         device.reset();
         pipeline.reset();
         camRunning = false;
-        RCLCPP_INFO(get_logger(), "Camera stopped!");
+        if(rclcpp::ok()) {
+            RCLCPP_INFO(get_logger(), "Camera stopped!");
+        }
     } else {
-        RCLCPP_INFO(get_logger(), "Camera already stopped!");
+        if(rclcpp::ok()) {
+            RCLCPP_INFO(get_logger(), "Camera already stopped!");
+        }
     }
 }
 
