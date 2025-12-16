@@ -11,7 +11,7 @@ from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import ComposableNodeContainer, LoadComposableNodes, Node
-from launch_ros.descriptions import ComposableNode
+from launch_ros.descriptions import ComposableNode, ParameterFile
 
 
 def is_launch_config_true(context, name):
@@ -61,7 +61,7 @@ def launch_setup(context, *args, **kwargs):
         "publish_tf_from_calibration", default="false"
     )
     override_cam_model = LaunchConfiguration("override_cam_model", default="false")
-    params_file = LaunchConfiguration("params_file")
+    params_file = ParameterFile(LaunchConfiguration("params_file"), allow_substs=True)
     camera_model = LaunchConfiguration("camera_model", default="OAK-D")
     rs_compat = LaunchConfiguration("rs_compat", default="false")
     pointcloud_enable = LaunchConfiguration("pointcloud.enable", default="false")
