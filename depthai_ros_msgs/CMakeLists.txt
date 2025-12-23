@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
 
-project(depthai_ros_msgs VERSION 2.12.0)
+project(depthai_ros_msgs VERSION 2.12.1)
 
 if(POLICY CMP0057)
     cmake_policy(SET CMP0057 NEW)
@@ -8,6 +8,13 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+  find_library(
+    builtin_interfaces__rosidl_generator_c_LIB NAMES builtin_interfaces__rosidl_generator_c
+    PATHS "/opt/ros/$ENV{ROS_DISTRO}/lib"
+    NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH REQUIRED
+  )
+endif()
 # Not adding -DUSING_ROS since xml_parsing.cpp hasn't been ported to ROS2
 message(STATUS "------------------------------------------")
 message(STATUS "Depthai ROS MSGS/INTERFACES is being built using AMENT.")
@@ -19,13 +26,6 @@ find_package(vision_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
-  find_library(
-    builtin_interfaces__rosidl_generator_c_LIB NAMES builtin_interfaces__rosidl_generator_c
-    PATHS "/opt/ros/$ENV{ROS_DISTRO}/lib"
-    NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH REQUIRED
-  )
-endif()
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/AutoFocusCtrl.msg"
   "msg/HandLandmark.msg"

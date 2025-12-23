@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>depthai_ros_msgs</name>
-  <version>2.12.0</version>
+  <version>2.12.1</version>
   <description>Package to keep interface independent of the driver</description>
 
   <maintainer email="adam.serafin@luxonis.com">Adam Serafin</maintainer>
@@ -10,6 +10,7 @@
   <license>MIT</license>
   
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <build_depend>ros_environment</build_depend>
   
   <depend>builtin_interfaces</depend>
   <depend>rclcpp</depend>
