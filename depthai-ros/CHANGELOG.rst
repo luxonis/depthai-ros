@@ -2,6 +2,10 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.12.1 (2025-12-23)
+-------------------
+* Messages fix
+
 2.12.0 (2025-12-12)
 -------------------
 * Fix timeshift bug
