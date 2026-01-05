@@ -8,14 +8,14 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" AND DEPTHAI_ROS_MSGS_FIND_INTERFACES)
+message(STATUS "FINDING MESSAGES ON ARM")
   find_library(
     builtin_interfaces__rosidl_generator_c_LIB NAMES builtin_interfaces__rosidl_generator_c
     PATHS "/opt/ros/$ENV{ROS_DISTRO}/lib"
     NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH REQUIRED
   )
 endif()
-# Not adding -DUSING_ROS since xml_parsing.cpp hasn't been ported to ROS2
 message(STATUS "------------------------------------------")
 message(STATUS "Depthai ROS MSGS/INTERFACES is being built using AMENT.")
 message(STATUS "------------------------------------------")
