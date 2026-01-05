@@ -9,7 +9,6 @@ endif()
 find_package(ament_cmake REQUIRED)
 
 if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" AND DEPTHAI_ROS_MSGS_FIND_INTERFACES)
-message(STATUS "FINDING MESSAGES ON ARM")
   find_library(
     builtin_interfaces__rosidl_generator_c_LIB NAMES builtin_interfaces__rosidl_generator_c
     PATHS "/opt/ros/$ENV{ROS_DISTRO}/lib"
