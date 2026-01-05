@@ -13,6 +13,7 @@
   <license>MIT</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
   
+  <build_depend>ros_environment</build_depend>
   <exec_depend>depthai</exec_depend>
   <exec_depend>depthai_ros_msgs</exec_depend>
   <exec_depend>depthai_bridge</exec_depend>

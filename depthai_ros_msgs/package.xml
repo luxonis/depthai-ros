@@ -10,6 +10,7 @@
   <license>MIT</license>
   
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <build_depend>ros_environment</build_depend>
   
   <depend>builtin_interfaces</depend>
   <depend>rclcpp</depend>

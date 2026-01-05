@@ -9,6 +9,7 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
+  <build_depend>ros_environment</build_depend>
   <depend>sensor_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>

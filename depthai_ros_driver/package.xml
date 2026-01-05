@@ -9,6 +9,7 @@
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <build_depend>ros_environment</build_depend>
   <depend>ament_cmake_auto</depend>
   <depend>camera_calibration</depend>
   <depend>rclcpp</depend>
