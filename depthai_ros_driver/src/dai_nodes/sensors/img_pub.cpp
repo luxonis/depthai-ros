@@ -158,8 +158,8 @@ std::shared_ptr<Image> ImagePublisher::convertData(const std::shared_ptr<dai::AD
     auto img = std::make_shared<Image>();
     if(encConfig.enabled) {
         auto daiImg = std::dynamic_pointer_cast<dai::EncodedFrame>(data);
+        info = converter->generateCameraInfo(daiImg);
         if(pubConfig.publishCompressed) {
-            info = converter->generateCameraInfo(daiImg);
             auto rawMsg = converter->toRosMsgRawPtr(daiImg, info);
             info.header = rawMsg.header;
             if(encConfig.profile == dai::VideoEncoderProperties::Profile::MJPEG) {
@@ -173,6 +173,7 @@ std::shared_ptr<Image> ImagePublisher::convertData(const std::shared_ptr<dai::AD
             }
         } else {
             auto rawMsg = converter->toRosMsgRawPtr(daiImg, info);
+            info.header = rawMsg.header;
             sensor_msgs::msg::Image::UniquePtr msg = std::make_unique<sensor_msgs::msg::Image>(rawMsg);
             img->image = std::move(msg);
         }
