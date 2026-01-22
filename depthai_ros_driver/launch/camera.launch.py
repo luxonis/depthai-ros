@@ -64,6 +64,7 @@ def launch_setup(context, *args, **kwargs):
     params_file = ParameterFile(LaunchConfiguration("params_file"), allow_substs=True)
     camera_model = LaunchConfiguration("camera_model", default="OAK-D")
     rs_compat = LaunchConfiguration("rs_compat", default="false")
+    description_enable = LaunchConfiguration("description.enable", default="true")
     pointcloud_enable = LaunchConfiguration("pointcloud.enable", default="false")
     rectify_rgb = LaunchConfiguration("rectify_rgb", default="true")
     namespace = LaunchConfiguration("namespace", default="").perform(context)
@@ -184,6 +185,7 @@ def launch_setup(context, *args, **kwargs):
             PythonLaunchDescriptionSource(
                 os.path.join(urdf_launch_dir, "urdf_launch.py")
             ),
+            condition=IfCondition(description_enable),
             launch_arguments={
                 "namespace": namespace,
                 "tf_prefix": name,
@@ -325,6 +327,11 @@ def generate_launch_description():
             "rs_compat",
             default_value="false",
             description="Enables compatibility with RealSense nodes.",
+        ),
+        DeclareLaunchArgument(
+            "description.enable",
+            default_value="true",
+            description="Enables the URDF description launch.",
         ),
         DeclareLaunchArgument("rectify_rgb", default_value="true"),
         DeclareLaunchArgument("pointcloud.enable", default_value="false"),
