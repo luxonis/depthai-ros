@@ -236,11 +236,11 @@ void BridgePublisher<RosMsg, SimMsg>::publishHelper(std::shared_ptr<SimMsg> inDa
 
         while(opMsgs.size()) {
             RosMsg currMsg = opMsgs.front();
-            if(mainSubCount > 0) {
+            if(!_lazyPublisher || mainSubCount > 0) {
                 _rosPublisher->publish(currMsg);
             }
 
-            if(infoSubCount > 0) {
+            if(!_lazyPublisher || infoSubCount > 0) {
                 auto localCameraInfo = _camInfoManager->getCameraInfo();
                 localCameraInfo.header.stamp = currMsg.header.stamp;
                 localCameraInfo.header.frame_id = currMsg.header.frame_id;
