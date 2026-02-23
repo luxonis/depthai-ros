@@ -33,16 +33,14 @@ void TrackedFeaturesConverter::toRosMsg(std::shared_ptr<dai::TrackedFeatures> in
     msg.header.frame_id = _frameName;
     msg.features.reserve(inFeatures->trackedFeatures.size());
 
-    for(const auto& feature : inFeatures->trackedFeatures) {
-        depthai_ros_msgs::msg::TrackedFeature ft;
-        ft.header = msg.header;
-        ft.position.x = feature.position.x;
-        ft.position.y = feature.position.y;
-        ft.age = feature.age;
-        ft.id = feature.id;
-        ft.harris_score = feature.harrisScore;
-        ft.tracking_error = feature.trackingError;
-        msg.features.emplace_back(ft);
+    for(int i = 0; i < inFeatures->trackedFeatures.size(); ++i) {
+        msg.features[i].header = msg.header;
+        msg.features[i].position.x = inFeatures->trackedFeatures[i].position.x;
+        msg.features[i].position.y = inFeatures->trackedFeatures[i].position.y;
+        msg.features[i].age = inFeatures->trackedFeatures[i].age;
+        msg.features[i].id = inFeatures->trackedFeatures[i].id;
+        msg.features[i].harris_score = inFeatures->trackedFeatures[i].harrisScore;
+        msg.features[i].tracking_error = inFeatures->trackedFeatures[i].trackingError;
     }
     featureMsgs.push_back(msg);
 }
