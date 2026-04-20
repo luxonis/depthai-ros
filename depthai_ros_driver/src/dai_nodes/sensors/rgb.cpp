@@ -35,6 +35,7 @@ void RGB::setNames() {
     ispQName = getName() + "_isp";
     previewQName = getName() + "_preview";
     controlQName = getName() + "_control";
+    stillQName = getName() + "_still";
 }
 
 void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
@@ -58,6 +59,9 @@ void RGB::setXinXout(std::shared_ptr<dai::Pipeline> pipeline) {
     }
     if(ph->getParam<bool>("i_enable_preview")) {
         previewPub = setupOutput(pipeline, previewQName, [&](auto input) { colorCamNode->preview.link(input); });
+    }
+    if(ph->getParam<bool>("i_enable_still")) {
+        stillPub = setupOutput(pipeline, stillQName, [&](auto input) { colorCamNode->still.link(input); });
     }
     xinControl = pipeline->create<dai::node::XLinkIn>();
     xinControl->setStreamName(controlQName);
@@ -118,6 +122,31 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
 
         previewPub->setup(device, convConfig, pubConfig);
     };
+    if(ph->getParam<bool>("i_enable_still")) {
+        auto tfPrefix = getOpticalTFPrefix(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
+        utils::ImgConverterConfig convConfig;
+        convConfig.tfPrefix = tfPrefix;
+        convConfig.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
+        convConfig.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
+
+        utils::ImgPublisherConfig pubConfig;
+        pubConfig.daiNodeName = getName();
+        pubConfig.topicName = "~/" + getName();
+        pubConfig.lazyPub = ph->getParam<bool>("i_enable_lazy_publisher");
+        pubConfig.socket = static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"));
+        pubConfig.calibrationFile = ph->getParam<std::string>("i_calibration_file");
+        pubConfig.rectified = false;
+        pubConfig.width = ph->getParam<int>("i_still_width");
+        pubConfig.height = ph->getParam<int>("i_still_height");
+        pubConfig.maxQSize = ph->getParam<int>("i_max_q_size");
+        pubConfig.topicSuffix = "/still/image_raw";
+        pubConfig.flipImage = ph->getParam<bool>("i_flip_published_image");
+
+        stillPub->setup(device, convConfig, pubConfig);
+
+        triggerStillService = getROSNode()->create_service<std_srvs::srv::Trigger>(
+            "~/" + getName() + "/trigger_still", std::bind(&RGB::triggerStillCB, this, std::placeholders::_1, std::placeholders::_2));
+    };
     controlQ = device->getInputQueue(controlQName);
 }
 
@@ -127,6 +156,10 @@ void RGB::closeQueues() {
         if(ph->getParam<bool>("i_enable_preview")) {
             previewPub->closeQueue();
         }
+    }
+    if(ph->getParam<bool>("i_enable_still")) {
+        triggerStillService.reset();
+        stillPub->closeQueue();
     }
     controlQ->close();
 }
@@ -154,6 +187,13 @@ std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> RGB::getPublishers(
 void RGB::updateParams(const std::vector<rclcpp::Parameter>& params) {
     auto ctrl = ph->setRuntimeParams(params);
     controlQ->send(ctrl);
+}
+
+void RGB::triggerStillCB(std_srvs::srv::Trigger::Request::ConstSharedPtr /*req*/, std_srvs::srv::Trigger::Response::SharedPtr res) {
+    dai::CameraControl ctrl;
+    ctrl.setCaptureStill(true);
+    controlQ->send(ctrl);
+    res->success = true;
 }
 
 }  // namespace dai_nodes

@@ -42,6 +42,7 @@ void SensorParamHandler::declareCommonParams(dai::CameraBoardSocket socket) {
     declareAndLogParam<bool>("i_reverse_stereo_socket_order", false);
     declareAndLogParam<bool>("i_synced", false);
     declareAndLogParam<bool>("i_publish_compressed", false);
+    declareAndLogParam<bool>("i_enable_still", false);
 }
 
 void SensorParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, dai::CameraFeatures features, bool publish) {
@@ -125,6 +126,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     colorCam->setBoardSocket(socketID);
     declareAndLogParam<bool>("i_output_isp", true);
     declareAndLogParam<bool>("i_enable_preview", false);
+    declareAndLogParam<bool>("i_enable_still", false);
     declareAndLogParam<bool>("i_flip_published_image", false);
     colorCam->setFps(declareAndLogParam<double>("i_fps", 30.0));
     int preview_size = declareAndLogParam<int>("i_preview_size", 300);
@@ -194,6 +196,9 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
         videoHeight = maxVideoHeight;
     }
     colorCam->setVideoSize(videoWidth, videoHeight);
+    int still_width = declareAndLogParam<int>("i_still_width", width);
+    int still_height = declareAndLogParam<int>("i_still_height", height);
+    colorCam->setStillSize(still_width, still_height);
     colorCam->setPreviewKeepAspectRatio(declareAndLogParam("i_keep_preview_aspect_ratio", true));
     size_t iso = declareAndLogParam("r_iso", 800, getRangedIntDescriptor(100, 1600));
     size_t exposure = declareAndLogParam("r_exposure", 20000, getRangedIntDescriptor(1, 33000));

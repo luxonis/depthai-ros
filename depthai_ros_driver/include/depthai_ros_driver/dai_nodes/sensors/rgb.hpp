@@ -1,6 +1,8 @@
 #pragma once
 
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
+#include "rclcpp/service.hpp"
+#include "std_srvs/srv/trigger.hpp"
 
 namespace dai {
 class Pipeline;
@@ -48,12 +50,15 @@ class RGB : public BaseNode {
     std::vector<std::shared_ptr<sensor_helpers::ImagePublisher>> getPublishers() override;
 
    private:
-    std::shared_ptr<sensor_helpers::ImagePublisher> rgbPub, previewPub;
+    void triggerStillCB(std_srvs::srv::Trigger::Request::ConstSharedPtr req, std_srvs::srv::Trigger::Response::SharedPtr res);
+
+    std::shared_ptr<sensor_helpers::ImagePublisher> rgbPub, previewPub, stillPub;
+    rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr triggerStillService;
     std::shared_ptr<dai::node::ColorCamera> colorCamNode;
     std::unique_ptr<param_handlers::SensorParamHandler> ph;
     std::shared_ptr<dai::DataInputQueue> controlQ;
     std::shared_ptr<dai::node::XLinkIn> xinControl;
-    std::string ispQName, previewQName, controlQName;
+    std::string ispQName, previewQName, controlQName, stillQName;
 };
 
 }  // namespace dai_nodes
