@@ -194,6 +194,7 @@ void RGB::triggerStillCB(std_srvs::srv::Trigger::Request::ConstSharedPtr /*req*/
     ctrl.setCaptureStill(true);
     controlQ->send(ctrl);
     res->success = true;
+    res->message = "Still capture request sent";
 }
 
 }  // namespace dai_nodes
