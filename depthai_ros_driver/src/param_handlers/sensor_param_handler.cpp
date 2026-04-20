@@ -176,6 +176,9 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
             RCLCPP_ERROR(getROSNode()->get_logger(), "%s", err_stream.str().c_str());
         }
     }
+    int stillWidth = declareAndLogParam<int>("i_still_width", width);
+    int stillHeight = declareAndLogParam<int>("i_still_height", height);
+    colorCam->setStillSize(stillWidth, stillHeight);
     int maxVideoWidth = 3840;
     int maxVideoHeight = 2160;
     int videoWidth = declareAndLogParam<int>("i_width", width);
@@ -195,9 +198,6 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
         videoHeight = maxVideoHeight;
     }
     colorCam->setVideoSize(videoWidth, videoHeight);
-    int still_width = declareAndLogParam<int>("i_still_width", width);
-    int still_height = declareAndLogParam<int>("i_still_height", height);
-    colorCam->setStillSize(still_width, still_height);
     colorCam->setPreviewKeepAspectRatio(declareAndLogParam("i_keep_preview_aspect_ratio", true));
     size_t iso = declareAndLogParam("r_iso", 800, getRangedIntDescriptor(100, 1600));
     size_t exposure = declareAndLogParam("r_exposure", 20000, getRangedIntDescriptor(1, 33000));
