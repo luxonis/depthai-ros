@@ -122,6 +122,7 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
 
         previewPub->setup(device, convConfig, pubConfig);
     };
+    controlQ = device->getInputQueue(controlQName);
     if(ph->getParam<bool>("i_enable_still")) {
         auto tfPrefix = getOpticalTFPrefix(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
         utils::ImgConverterConfig convConfig;
@@ -147,7 +148,6 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         triggerStillService = getROSNode()->create_service<std_srvs::srv::Trigger>(
             "~/" + getName() + "/trigger_still", std::bind(&RGB::triggerStillCB, this, std::placeholders::_1, std::placeholders::_2));
     };
-    controlQ = device->getInputQueue(controlQName);
 }
 
 void RGB::closeQueues() {
