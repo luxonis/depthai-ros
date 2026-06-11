@@ -114,6 +114,10 @@ void PipelineGenerator::updateParams(const std::vector<rclcpp::Parameter>& param
 }
 std::string PipelineGenerator::validatePipeline(std::shared_ptr<rclcpp::Node> node, const std::string& typeStr, int sensorNum, const std::string& deviceName) {
     auto pType = utils::getValFromMap(typeStr, pipelineTypeMap);
+    if (deviceName == "OAK-FFC-4P" || deviceName == "OAK-FFC-3P") {
+        RCLCPP_WARN(node->get_logger(), "OAK-FFC-4P/3P device detected. Default pipelines may not work without reconfiguration.");
+        return typeStr;
+    }
     if(deviceName == "OAK-D-SR-POE") {
         RCLCPP_WARN(node->get_logger(), "OAK-D-SR-POE device detected. Pipeline types other than StereoToF/ToF/RGBToF might not work without reconfiguration.");
     }

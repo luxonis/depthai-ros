@@ -22,6 +22,7 @@ ToFParamHandler::ToFParamHandler(std::shared_ptr<rclcpp::Node> node, const std::
 ToFParamHandler::~ToFParamHandler() = default;
 void ToFParamHandler::declareParams(std::shared_ptr<dai::node::ToF> tof, dai::CameraBoardSocket socket) {
     declareAndLogParam<bool>(ParamNames::PUBLISH_TOPIC, true);
+    declareAndLogParam<bool>("i_publish_intensity_topic", false);
     declareAndLogParam<bool>(ParamNames::SYNCED, false);
     declareAndLogParam<bool>(ParamNames::LOW_BANDWIDTH, false);
     declareAndLogParam<int>(ParamNames::LOW_BANDWIDTH_PROFILE, 4);

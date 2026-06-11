@@ -53,12 +53,14 @@ class ToF : public BaseNode {
 
    private:
     std::shared_ptr<sensor_helpers::ImagePublisher> tofPub;
+    std::shared_ptr<sensor_helpers::ImagePublisher> intensityPub;
     std::shared_ptr<dai::node::ToF> tofNode;
     std::shared_ptr<dai::node::ImageAlign> alignNode;
     std::unique_ptr<param_handlers::ToFParamHandler> ph;
     dai::CameraBoardSocket boardSocket;
     dai::CameraBoardSocket alignedSocket;
     std::string tofQName;
+    std::string intensityQName;
     bool aligned;
 };
 
