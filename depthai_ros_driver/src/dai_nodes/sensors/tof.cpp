@@ -28,7 +28,6 @@ ToF::ToF(const std::string& daiNodeName,
     boardSocket = socket;
     ph = std::make_unique<param_handlers::ToFParamHandler>(node, daiNodeName, deviceName, rsCompat);
     ph->declareParams(tofNode, socket);
-    setInOut(pipeline);
     aligned = ph->getParam<bool>(param_handlers::ParamNames::ALIGNED);
     if(aligned) {
         alignNode = pipeline->create<dai::node::ImageAlign>();
@@ -37,6 +36,7 @@ ToF::ToF(const std::string& daiNodeName,
         alignNode->inputAlignTo.setBlocking(false);
         RCLCPP_DEBUG(getLogger(), "ToF is aligned, make sure to connect inputs/outputs in pipeline creation");
     }
+    setInOut(pipeline);
     RCLCPP_DEBUG(node->get_logger(), "Node %s created", daiNodeName.c_str());
 }
 ToF::~ToF() = default;
@@ -57,14 +57,23 @@ void ToF::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
         encConfig.quality = ph->getParam<int>(ParamNames::LOW_BANDWIDTH_QUALITY);
         encConfig.enabled = ph->getParam<bool>(ParamNames::LOW_BANDWIDTH);
 
-        tofPub = setupOutput(pipeline, tofQName, &tofNode->depth, ph->getParam<bool>(ParamNames::SYNCED), encConfig);
+        auto* tofOut = aligned ? static_cast<dai::Node::Output*>(&alignNode->outputAligned) : static_cast<dai::Node::Output*>(&tofNode->depth);
+        tofPub = setupOutput(pipeline, tofQName, tofOut, ph->getParam<bool>(ParamNames::SYNCED), encConfig);
     }
 }
 
 void ToF::setupQueues(std::shared_ptr<dai::Device> device) {
     using param_handlers::ParamNames;
     if(ph->getParam<bool>(ParamNames::PUBLISH_TOPIC)) {
-        auto tfPrefix = getOpticalFrameName(getSocketName(boardSocket));
+        auto pubSocket = aligned ? getAlignedSocketID() : boardSocket;
+        auto tfPrefix = getOpticalFrameName(getSocketName(pubSocket));
+        auto pubWidth = ph->getParam<int>(ParamNames::WIDTH);
+        auto pubHeight = ph->getParam<int>(ParamNames::HEIGHT);
+        if(aligned) {
+            auto alignedSocketName = getSocketName(pubSocket);
+            pubWidth = ph->getOtherNodeParam<int>(alignedSocketName, ParamNames::WIDTH);
+            pubHeight = ph->getOtherNodeParam<int>(alignedSocketName, ParamNames::HEIGHT);
+        }
 
         utils::ImgConverterConfig convConfig;
         convConfig.tfPrefix = tfPrefix;
@@ -80,11 +89,11 @@ void ToF::setupQueues(std::shared_ptr<dai::Device> device) {
         pubConfig.daiNodeName = getName();
         pubConfig.topicName = "~/" + getName();
         pubConfig.lazyPub = ph->getParam<bool>(ParamNames::ENABLE_LAZY_PUBLISHER);
-        pubConfig.socket = ph->getSocketID();
+        pubConfig.socket = pubSocket;
         pubConfig.calibrationFile = ph->getParam<std::string>(ParamNames::CALIBRATION_FILE);
         pubConfig.rectified = false;
-        pubConfig.width = ph->getParam<int>(ParamNames::WIDTH);
-        pubConfig.height = ph->getParam<int>(ParamNames::HEIGHT);
+        pubConfig.width = pubWidth;
+        pubConfig.height = pubHeight;
         pubConfig.maxQSize = ph->getParam<int>(ParamNames::MAX_Q_SIZE);
 
         tofPub->setup(device, convConfig, pubConfig);
