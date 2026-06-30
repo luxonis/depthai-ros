@@ -1,13 +1,13 @@
 #include "depthai_ros_driver/driver.hpp"
 
 #include <fstream>
-
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai_bridge/TFPublisher.hpp"
 #include "depthai_ros_driver/pipeline/pipeline_generator.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "diagnostic_msgs/msg/diagnostic_array.hpp"
+#include "rclcpp/version.h"
 
 namespace depthai_ros_driver {
 
@@ -22,14 +22,37 @@ Driver::Driver(const rclcpp::NodeOptions& options) : rclcpp::Node("driver", opti
             srvGroup = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
 
             paramCBHandle = this->add_on_set_parameters_callback(std::bind(&Driver::parameterCB, this, std::placeholders::_1));
+#if RCLCPP_VERSION_MAJOR >= 28
             startSrv = this->create_service<Trigger>(
                 "~/start_driver", std::bind(&Driver::startCB, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS(), srvGroup);
             stopSrv = this->create_service<Trigger>(
                 "~/stop_driver", std::bind(&Driver::stopCB, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS(), srvGroup);
-            savePipelineSrv = this->create_service<Trigger>(
-                "~/save_pipeline", std::bind(&Driver::savePipelineCB, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS(), srvGroup);
-            saveCalibSrv = this->create_service<Trigger>(
-                "~/save_calibration", std::bind(&Driver::saveCalibCB, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS(), srvGroup);
+            savePipelineSrv = this->create_service<Trigger>("~/save_pipeline",
+                                                            std::bind(&Driver::savePipelineCB, this, std::placeholders::_1, std::placeholders::_2),
+                                                            rclcpp::ServicesQoS(),
+                                                            srvGroup);
+            saveCalibSrv = this->create_service<Trigger>("~/save_calibration",
+                                                         std::bind(&Driver::saveCalibCB, this, std::placeholders::_1, std::placeholders::_2),
+                                                         rclcpp::ServicesQoS(),
+                                                         srvGroup);
+#else
+            startSrv = this->create_service<Trigger>("~/start_driver",
+                                                     std::bind(&Driver::startCB, this, std::placeholders::_1, std::placeholders::_2),
+                                                     rclcpp::ServicesQoS().get_rmw_qos_profile(),
+                                                     srvGroup);
+            stopSrv = this->create_service<Trigger>("~/stop_driver",
+                                                    std::bind(&Driver::stopCB, this, std::placeholders::_1, std::placeholders::_2),
+                                                    rclcpp::ServicesQoS().get_rmw_qos_profile(),
+                                                    srvGroup);
+            savePipelineSrv = this->create_service<Trigger>("~/save_pipeline",
+                                                            std::bind(&Driver::savePipelineCB, this, std::placeholders::_1, std::placeholders::_2),
+                                                            rclcpp::ServicesQoS().get_rmw_qos_profile(),
+                                                            srvGroup);
+            saveCalibSrv = this->create_service<Trigger>("~/save_calibration",
+                                                         std::bind(&Driver::saveCalibCB, this, std::placeholders::_1, std::placeholders::_2),
+                                                         rclcpp::ServicesQoS().get_rmw_qos_profile(),
+                                                         srvGroup);
+#endif
 
             diagSub =
                 this->create_subscription<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10, std::bind(&Driver::diagCB, this, std::placeholders::_1));
