@@ -125,9 +125,8 @@ add_executable(driver_node src/driver_node.cpp)
 target_link_libraries(driver_node PUBLIC ${PROJECT_NAME} ${SENSOR_LIB_NAME}
   ${NN_LIB_NAME} ${COMMON_LIB_NAME})
 rclcpp_components_register_nodes(${PROJECT_NAME} PLUGIN
-  "depthai_ros_driver::Driver" EXECUTABLE driver)
+  "${PROJECT_NAME}::Driver" EXECUTABLE driver)
 pluginlib_export_plugin_description_file(${PROJECT_NAME} plugins.xml)
-ament_export_include_directories(include)
 
 ament_export_targets(${PROJECT_NAME}Targets HAS_LIBRARY_TARGET)
 ament_export_libraries(${PROJECT_NAME})
@@ -143,15 +142,15 @@ install(
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
   INCLUDES
-  DESTINATION include)
+  DESTINATION include/${PROJECT_NAME})
 
 install(EXPORT ${PROJECT_NAME}Targets DESTINATION share/${PROJECT_NAME}/cmake)
 install(TARGETS driver_node DESTINATION lib/${PROJECT_NAME})
 ament_python_install_package(${PROJECT_NAME})
 
-ament_export_include_directories(include)
+ament_export_include_directories(include/${PROJECT_NAME})
 
-install(DIRECTORY include/ DESTINATION include)
+install(DIRECTORY include/ DESTINATION include/${PROJECT_NAME})
 if(BUILD_TESTING AND TEST_DEPTHAI_ROS_DRIVER)
   # Integration tests
   find_package(ament_cmake_ros REQUIRED)
