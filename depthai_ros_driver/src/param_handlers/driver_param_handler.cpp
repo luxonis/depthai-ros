@@ -1,13 +1,13 @@
 #include "depthai_ros_driver/param_handlers/driver_param_handler.hpp"
 
+#include <stdexcept>
+
 #include "depthai/common/UsbSpeed.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/logger.hpp"
 #include "rclcpp/node.hpp"
 #include "rclcpp/parameter.hpp"
 #include "rclcpp/parameter_value.hpp"
-
-#include <stdexcept>
 
 namespace depthai_ros_driver {
 namespace param_handlers {
