@@ -1,6 +1,7 @@
 #include "depthai_ros_driver_v3/driver.hpp"
 
 #include <fstream>
+
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai_bridge/TFPublisher.hpp"
@@ -27,14 +28,10 @@ Driver::Driver(const rclcpp::NodeOptions& options) : rclcpp::Node("driver", opti
                 "~/start_driver", std::bind(&Driver::startCB, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS(), srvGroup);
             stopSrv = this->create_service<Trigger>(
                 "~/stop_driver", std::bind(&Driver::stopCB, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS(), srvGroup);
-            savePipelineSrv = this->create_service<Trigger>("~/save_pipeline",
-                                                            std::bind(&Driver::savePipelineCB, this, std::placeholders::_1, std::placeholders::_2),
-                                                            rclcpp::ServicesQoS(),
-                                                            srvGroup);
-            saveCalibSrv = this->create_service<Trigger>("~/save_calibration",
-                                                         std::bind(&Driver::saveCalibCB, this, std::placeholders::_1, std::placeholders::_2),
-                                                         rclcpp::ServicesQoS(),
-                                                         srvGroup);
+            savePipelineSrv = this->create_service<Trigger>(
+                "~/save_pipeline", std::bind(&Driver::savePipelineCB, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS(), srvGroup);
+            saveCalibSrv = this->create_service<Trigger>(
+                "~/save_calibration", std::bind(&Driver::saveCalibCB, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS(), srvGroup);
 #else
             startSrv = this->create_service<Trigger>("~/start_driver",
                                                      std::bind(&Driver::startCB, this, std::placeholders::_1, std::placeholders::_2),

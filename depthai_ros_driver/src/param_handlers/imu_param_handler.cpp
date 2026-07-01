@@ -1,4 +1,5 @@
 #include "depthai_ros_driver_v3/param_handlers/imu_param_handler.hpp"
+
 #include <depthai/device/Platform.hpp>
 
 #include "depthai/pipeline/node/IMU.hpp"
