@@ -6,7 +6,11 @@
 #include <depthai/nn_archive/NNArchive.hpp>
 
 #include "camera_info_manager/camera_info_manager.hpp"
-#include "cv_bridge/cv_bridge.hpp"
+#if __has_include("cv_bridge/cv_bridge.hpp")
+    #include "cv_bridge/cv_bridge.hpp"
+#else
+    #include "cv_bridge/cv_bridge.h"
+#endif
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/MessageQueue.hpp"
 #include "depthai/pipeline/Pipeline.hpp"

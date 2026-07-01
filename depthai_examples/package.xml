@@ -16,7 +16,7 @@
     <depend>backward_ros</depend>
     <depend>camera_info_manager</depend>
     <depend>cv_bridge</depend>
-    <depend version_gte="3.7.0">depthai</depend>
+    <depend version_gte="3.7.1">depthai</depend>
     <depend>depthai_bridge</depend>
     <depend>depthai_descriptions</depend>
     <depend>depthai_ros_msgs</depend>

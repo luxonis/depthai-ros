@@ -1,4 +1,3 @@
- 
 name: DepthAI ROS CI/CD
 
 on:
@@ -6,6 +5,8 @@ on:
   push:
     branches:
       - main
+      - develop
+      - develop-old
       - humble
       - galactic
       - foxy
@@ -17,151 +18,143 @@ on:
   pull_request:
     branches:
       - main
+      - develop
+      - develop-old
       - humble
       - galactic
       - foxy
       - iron
       - jazzy
       - kilted
-env:
-  ROS_DISTRO: kilted
 
 jobs:
-  clang-format-lint:
-    name: ament_clang_format
-    runs-on: ubuntu-24.04
-    container:
-      image: ubuntu:noble
+  lint:
+    name: ament_${{ matrix.linter }} (${{ matrix.ros_distro }})
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
-    steps:
-    - uses: actions/checkout@v3.3.0
-    - uses: ros-tooling/setup-ros@0.7.15
-      with:
-        required-ros-distributions: ${{ env.ROS_DISTRO }}
-    - uses: ros-tooling/action-ros2-lint@0.1.3
-      with:
-        distribution: ${{ env.ROS_DISTRO }}
-        linter: clang_format
-        arguments: --config ./.clang-format
-        package-name: |
-          depthai_bridge
-          depthai_examples
-          depthai_ros_msgs
-          depthai_ros_driver
-          depthai_ros
-  linting:
-    name: ament_${{ matrix.linter }}
-    runs-on: ubuntu-24.04
-    container:
-      image: ubuntu:noble
-    strategy:
-      fail-fast: false 
       matrix:
-        linter: [xmllint, pep257, lint_cmake]
-    steps:
-    - uses: actions/checkout@v3.3.0
-    - uses: ros-tooling/setup-ros@0.7.15
-      with:
-        required-ros-distributions: ${{ env.ROS_DISTRO }}
-    - uses: ros-tooling/action-ros2-lint@0.1.3
-      with:
-        distribution: ${{ env.ROS_DISTRO }}
-        linter: ${{ matrix.linter }}
-        package-name: |
-          depthai_bridge
-          depthai_examples
-          depthai_ros_msgs
-          depthai_ros
+        include:
+          - ros_distro: kilted
+            runner: ubuntu-24.04
+            linter: clang_format
 
-  docker-build-amd:
-    name: Build and Upload to Docker Hub
-    runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-    env: 
-      PUSH: ${{ (github.event_name != 'pull_request') && (github.repository == 'luxonis/depthai-ros') && startsWith(github.ref, 'refs/tags/v') }}
+          - ros_distro: kilted
+            runner: ubuntu-24.04
+            linter: xmllint
+
+          - ros_distro: kilted
+            runner: ubuntu-24.04
+            linter: pep257
+
+          - ros_distro: kilted
+            runner: ubuntu-24.04
+            linter: lint_cmake
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        if: env.PUSH == 'true'
+      - name: Set up ROS
+        uses: ros-tooling/setup-ros@0.7.15
         with:
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
-      - name: Get Version
-        if: env.PUSH == 'true'
-        id: vars
-        run: echo ::set-output name=short_ref::${GITHUB_REF#refs/*/}
+          required-ros-distributions: ${{ matrix.ros_distro }}
 
-      - name: Build
-        uses: docker/build-push-action@v3
-        if: env.PUSH == 'false'
+      - name: Run clang_format
+        if: matrix.linter == 'clang_format'
+        uses: ros-tooling/action-ros2-lint@0.1.3
         with:
-          build-args: |
-            ROS_DISTRO=${{ env.ROS_DISTRO }}
-            USE_RVIZ=1
-            BUILD_SEQUENTIAL=1
-          no-cache: true
+          distribution: ${{ matrix.ros_distro }}
+          linter: clang_format
+          arguments: --config ./.clang-format
+          package-name: |
+            depthai_bridge
+            depthai_examples
+            depthai_ros_msgs
+            depthai_ros_driver
+            depthai_ros
 
-      - name: Build and Push
-        uses: docker/build-push-action@v3
-        if: env.PUSH == 'true'
+      - name: Run ${{ matrix.linter }}
+        if: matrix.linter != 'clang_format'
+        uses: ros-tooling/action-ros2-lint@0.1.3
         with:
-          build-args: |
-            ROS_DISTRO=${{ env.ROS_DISTRO }}
-            USE_RVIZ=1
-          push: ${{ env.PUSH }}
-          no-cache: true
-          tags: | 
-            luxonis/depthai-ros:${{ steps.vars.outputs.short_ref }}
-            luxonis/depthai-ros:${{ env.ROS_DISTRO }}-latest
-  docker-build-arm:
-    name: Build and Upload to Docker Hub (ARM-64)
-    runs-on: ubuntu-24.04-arm
+          distribution: ${{ matrix.ros_distro }}
+          linter: ${{ matrix.linter }}
+          package-name: |
+            depthai_bridge
+            depthai_examples
+            depthai_ros_msgs
+            depthai_ros
+
+  docker-build:
+    name: Docker build ${{ matrix.ros_distro }} ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
-    env: 
+      matrix:
+        include:
+          - ros_distro: kilted
+            runner: ubuntu-24.04
+            arch: amd64
+            tag_suffix: '-kilted'
+            latest_tag: kilted-latest
+            build_args: |
+              ROS_DISTRO=kilted
+              USE_RVIZ=1
+              BUILD_SEQUENTIAL=1
+            push_build_args: |
+              ROS_DISTRO=kilted
+              USE_RVIZ=1
+
+          - ros_distro: kilted
+            runner: ubuntu-24.04-arm
+            arch: arm64
+            tag_suffix: '-kilted-arm64'
+            latest_tag: kilted-arm64-latest
+            build_args: |
+              ROS_DISTRO=kilted
+              USE_RVIZ=1
+              BUILD_SEQUENTIAL=1
+            push_build_args: |
+              ROS_DISTRO=kilted
+              USE_RVIZ=1
+
+    env:
       PUSH: ${{ (github.event_name != 'pull_request') && (github.repository == 'luxonis/depthai-ros') && startsWith(github.ref, 'refs/tags/v') }}
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to DockerHub
-        uses: docker/login-action@v1
         if: env.PUSH == 'true'
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PASS }}
+
       - name: Get Version
         if: env.PUSH == 'true'
         id: vars
-        run: echo ::set-output name=short_ref::${GITHUB_REF#refs/*/}
+        run: echo "short_ref=${GITHUB_REF#refs/*/}" >> "$GITHUB_OUTPUT"
 
       - name: Build
-        uses: docker/build-push-action@v3
         if: env.PUSH == 'false'
+        uses: docker/build-push-action@v6
         with:
-          build-args: |
-            ROS_DISTRO=${{ env.ROS_DISTRO }}
-            USE_RVIZ=1
-            BUILD_SEQUENTIAL=1
+          build-args: ${{ matrix.build_args }}
           no-cache: true
 
       - name: Build and Push
-        uses: docker/build-push-action@v3
         if: env.PUSH == 'true'
+        uses: docker/build-push-action@v6
         with:
-          build-args: |
-            ROS_DISTRO=${{ env.ROS_DISTRO }}
-            USE_RVIZ=1
-          push: ${{ env.PUSH }}
+          build-args: ${{ matrix.push_build_args }}
+          push: true
           no-cache: true
-          tags: | 
-            luxonis/depthai-ros:${{ steps.vars.outputs.short_ref }}-arm64
-            luxonis/depthai-ros:${{ env.ROS_DISTRO }}-arm64-latest
+          tags: |
+            luxonis/depthai-ros:${{ steps.vars.outputs.short_ref }}${{ matrix.tag_suffix }}
+            luxonis/depthai-ros:${{ matrix.latest_tag }}

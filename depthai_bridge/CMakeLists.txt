@@ -68,7 +68,7 @@ file(
 add_library(${PROJECT_NAME} SHARED ${LIB_SRC})
 
 target_link_libraries(
-  depthai_bridge
+  ${PROJECT_NAME}
   PUBLIC
   ${composition_interfaces_TARGETS}
   ${depthai_ros_msgs_TARGETS}
@@ -93,19 +93,19 @@ target_link_libraries(
   opencv_highgui
   opencv_calib3d)
 
-ament_export_targets(depthai_bridgeTargets HAS_LIBRARY_TARGET)
+ament_export_targets(${PROJECT_NAME}Targets HAS_LIBRARY_TARGET)
 
-install(DIRECTORY include/ DESTINATION include/)
+install(DIRECTORY include/ DESTINATION include/${PROJECT_NAME})
 
 install(
-  TARGETS depthai_bridge
-  EXPORT depthai_bridgeTargets
+  TARGETS ${PROJECT_NAME}
+  EXPORT ${PROJECT_NAME}Targets
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
   INCLUDES
-  DESTINATION include)
-install(EXPORT depthai_bridgeTargets DESTINATION share/${PROJECT_NAME}/cmake)
+  DESTINATION include/${PROJECT_NAME})
+install(EXPORT ${PROJECT_NAME}Targets DESTINATION share/${PROJECT_NAME}/cmake)
 
 if(BUILD_TESTING)
     find_package(ament_cmake_gtest REQUIRED)
@@ -115,8 +115,8 @@ if(BUILD_TESTING)
           "${PROJECT_NAME}_${test_name}"
           PUBLIC
           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-          $<INSTALL_INTERFACE:include>)
-        target_link_libraries("${PROJECT_NAME}_${test_name}" depthai_bridge)
+          $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
+        target_link_libraries("${PROJECT_NAME}_${test_name}" ${PROJECT_NAME})
 
     endmacro()
     bridge_test(disparity_converter_test DisparityConverterTest.cpp)
@@ -137,8 +137,8 @@ if(BUILD_TESTING)
     install(DIRECTORY resources DESTINATION share/${PROJECT_NAME})
 endif()
 
-ament_export_include_directories(include)
-ament_export_libraries(depthai_bridge)
+ament_export_include_directories(include/${PROJECT_NAME})
+ament_export_libraries(${PROJECT_NAME})
 ament_export_dependencies(${dependencies})
 
 ament_package()

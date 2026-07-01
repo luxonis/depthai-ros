@@ -13,7 +13,7 @@ def launch_setup(context, *args, **kwargs):
     params_file = LaunchConfiguration("params_file")
     filters_prefix = get_package_share_directory("depthai_filters")
     name = LaunchConfiguration('name').perform(context)
-    
+
     return [
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(

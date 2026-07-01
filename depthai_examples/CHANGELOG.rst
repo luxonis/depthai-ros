@@ -41,3 +41,4 @@ Changelog for package depthai_examples
 * Release 2.5.0
 * add ament package:
 * created Bridge and Coverters to handle images, IMU and camera Info
+
