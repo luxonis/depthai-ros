@@ -8,4 +8,3 @@ devel
 __pycache__
 .DS_Store
 *.blob
-depthai-core

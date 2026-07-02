@@ -1,0 +1,3 @@
+[submodule "depthai-core"]
+	path = depthai-core
+	url = ../depthai-core
