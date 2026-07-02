@@ -3,11 +3,9 @@ FROM ros:${ROS_DISTRO}-ros-base
 ARG USE_RVIZ
 ARG BUILD_SEQUENTIAL=0
 ARG BUILD_TESTS=0
-ARG DEPTHAI_CORE_REF=ros-old-devel
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
    && apt-get -y install --no-install-recommends software-properties-common git libusb-1.0-0-dev wget zsh python3-colcon-common-extensions zip unzip tar
-
 
 ENV DEBIAN_FRONTEND=dialog
 RUN sh -c "$(wget https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)"
@@ -15,7 +13,6 @@ RUN sh -c "$(wget https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh
 ENV WS=/ws
 RUN mkdir -p $WS/src
 COPY ./ $WS/src/
-RUN if [ ! -d "$WS/src/depthai-core" ]; then cd $WS/src && git clone --recursive --branch $DEPTHAI_CORE_REF --single-branch https://github.com/luxonis/depthai-core.git; fi
 RUN cd $WS/ && rosdep install --from-paths src --ignore-src -y
 
 RUN cd $WS/ && . /opt/ros/${ROS_DISTRO}/setup.sh && ./src/build.sh -s $BUILD_SEQUENTIAL -r 1 -m 1 -t $BUILD_TESTS
