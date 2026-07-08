@@ -1,5 +1,7 @@
 #pragma once
 
+#include <depthai/nn_archive/NNArchive.hpp>
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <vector>
@@ -41,9 +43,18 @@ class SpatialDetection : public BaseNode {
         spatialNode = pipeline->create<dai::node::SpatialDetectionNetwork>();
         ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName, deviceName, rsCompat, socket);
         ph->declareParams(spatialNode);
-        dai::NNModelDescription description;
-        description.model = ph->getParam<std::string>("i_nn_model");
-        spatialNode->build(camNode.getUnderlyingNode(), stereoNode.getUnderlyingNode(), description);
+        auto nnArchivePath = ph->getParam<std::string>("i_nn_archive");
+        if(!nnArchivePath.empty()) {
+            if(!std::filesystem::exists(nnArchivePath)) {
+                throw std::runtime_error("i_nn_archive path does not exist: " + nnArchivePath);
+            }
+            dai::NNArchive archive(nnArchivePath);
+            spatialNode->build(camNode.getUnderlyingNode(), stereoNode.getUnderlyingNode(), archive);
+        } else {
+            dai::NNModelDescription description;
+            description.model = ph->getParam<std::string>("i_nn_model");
+            spatialNode->build(camNode.getUnderlyingNode(), stereoNode.getUnderlyingNode(), description);
+        }
         RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
         setInOut(pipeline);
     }
