@@ -28,15 +28,15 @@ ament_auto_add_library(
   src/utils.cpp)
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBRARIES})
 rclcpp_components_register_nodes(${PROJECT_NAME}
-  "${PROJECT_NAME}::Detection2DOverlay")
+  "depthai_filters::Detection2DOverlay")
 rclcpp_components_register_nodes(${PROJECT_NAME}
-  "${PROJECT_NAME}::SegmentationOverlay")
-rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::WLSFilter")
-rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::SpatialBB")
+  "depthai_filters::SegmentationOverlay")
+rclcpp_components_register_nodes(${PROJECT_NAME} "depthai_filters::WLSFilter")
+rclcpp_components_register_nodes(${PROJECT_NAME} "depthai_filters::SpatialBB")
 rclcpp_components_register_nodes(${PROJECT_NAME}
-  "${PROJECT_NAME}::FeatureTrackerOverlay")
-rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::Features3D")
-rclcpp_components_register_nodes(${PROJECT_NAME} "${PROJECT_NAME}::ThermalTemp")
+  "depthai_filters::FeatureTrackerOverlay")
+rclcpp_components_register_nodes(${PROJECT_NAME} "depthai_filters::Features3D")
+rclcpp_components_register_nodes(${PROJECT_NAME} "depthai_filters::ThermalTemp")
 
 install(DIRECTORY launch config DESTINATION share/${PROJECT_NAME})
 install(
