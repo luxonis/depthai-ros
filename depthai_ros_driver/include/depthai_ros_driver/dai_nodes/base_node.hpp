@@ -81,13 +81,13 @@ class BaseNode {
      */
     std::string getName();
     /**
-     * @brief    Append ROS node name to the frameName given.
+     * @brief    Append the configured TF prefix to the frameName given.
      *
      * @param[in]  frameName  The frame name
      */
     std::string getFrameName(const std::string& frameName = "");
     /**
-     * @brief    Append ROS node name to the frameName given and append optical frame suffix to it.
+     * @brief    Append the configured TF prefix to the frameName given and append optical frame suffix to it.
      *
      * @param[in]  frameName  The frame name
      */
@@ -99,6 +99,7 @@ class BaseNode {
     rclcpp::Logger getLogger();
 
    private:
+    std::string getTFPrefix();
     std::shared_ptr<rclcpp::Node> baseNode;
 
     std::shared_ptr<dai::Pipeline> pipeline;
