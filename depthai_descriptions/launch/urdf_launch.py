@@ -32,7 +32,11 @@ def launch_setup(context, *args, **kwargs):
     rs_compat = LaunchConfiguration("rs_compat", default="false")
     use_composition = LaunchConfiguration("use_composition", default="false")
 
-    name = LaunchConfiguration("tf_prefix").perform(context)
+    name = LaunchConfiguration("name", default="").perform(context)
+    if not name:
+        name = (
+            LaunchConfiguration("tf_prefix").perform(context).strip("/").split("/")[-1]
+        )
     robot_description = {
         "robot_description": Command(
             [
@@ -106,6 +110,11 @@ def generate_launch_description():
             "namespace",
             default_value="",
             description='Specifies the namespace of the robot state publisher node. Default value will be ""',
+        ),
+        DeclareLaunchArgument(
+            "name",
+            default_value="",
+            description="Name of the robot_state_publisher node. Defaults to the last segment of tf_prefix.",
         ),
         DeclareLaunchArgument(
             "camera_model",

@@ -1,13 +1,13 @@
 #include "depthai_ros_driver/param_handlers/driver_param_handler.hpp"
 
+#include <stdexcept>
+
 #include "depthai/common/UsbSpeed.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/logger.hpp"
 #include "rclcpp/node.hpp"
 #include "rclcpp/parameter.hpp"
 #include "rclcpp/parameter_value.hpp"
-
-#include <stdexcept>
 
 namespace depthai_ros_driver {
 namespace param_handlers {
@@ -59,7 +59,7 @@ void DriverParamHandler::declareParams() {
     declareAndLogParam<bool>("i_publish_tf_from_calibration", true);
     declareAndLogParam<std::string>("i_tf_device_name", getROSNode()->get_name());
     declareAndLogParam<std::string>("i_tf_device_model", "");
-    declareAndLogParam<std::string>("i_tf_base_frame", "oak");
+    declareAndLogParam<std::string>("i_tf_base_frame", getROSNode()->get_name());
     declareAndLogParam<std::string>("i_tf_parent_frame", "oak_parent_frame");
     declareAndLogParam<std::string>("i_tf_cam_pos_x", "0.0");
     declareAndLogParam<std::string>("i_tf_cam_pos_y", "0.0");

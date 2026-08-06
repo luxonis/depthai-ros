@@ -73,6 +73,9 @@ def launch_setup(context, *args, **kwargs):
     pointcloud_enable = LaunchConfiguration("pointcloud.enable", default="false")
     namespace = LaunchConfiguration("namespace", default="").perform(context)
     name = LaunchConfiguration("name").perform(context)
+    tf_prefix = LaunchConfiguration("tf_prefix", default="").perform(context).strip("/")
+    if not tf_prefix:
+        tf_prefix = name
 
     # If RealSense compatibility is enabled, we need to override some parameters, topics and node names
     parameter_overrides = {}
@@ -153,9 +156,8 @@ def launch_setup(context, *args, **kwargs):
         params = {
             "driver": {
                 "i_publish_tf_from_calibration": True,
-                "i_tf_tf_prefix": name,
                 "i_tf_camera_model": cam_model,
-                "i_tf_base_frame": name,
+                "i_tf_base_frame": tf_prefix,
                 "i_tf_parent_frame": parent_frame,
                 "i_tf_cam_pos_x": cam_pos_x.perform(context),
                 "i_tf_cam_pos_y": cam_pos_y.perform(context),
@@ -188,9 +190,10 @@ def launch_setup(context, *args, **kwargs):
             ),
             launch_arguments={
                 "namespace": namespace,
-                "tf_prefix": name,
+                "name": name,
+                "tf_prefix": tf_prefix,
                 "camera_model": camera_model,
-                "base_frame": name,
+                "base_frame": tf_prefix,
                 "parent_frame": parent_frame,
                 "cam_pos_x": cam_pos_x,
                 "cam_pos_y": cam_pos_y,
@@ -235,6 +238,11 @@ def generate_launch_description():
     declared_arguments = [
         DeclareLaunchArgument("name", default_value="oak"),
         DeclareLaunchArgument("namespace", default_value=""),
+        DeclareLaunchArgument(
+            "tf_prefix",
+            default_value="",
+            description="Prefix for image, IMU, and calibration TF frame IDs. Defaults to the node name.",
+        ),
         DeclareLaunchArgument("parent_frame", default_value="oak_parent_frame"),
         DeclareLaunchArgument("camera_model", default_value="OAK-D-PRO"),
         DeclareLaunchArgument("cam_pos_x", default_value="0.0"),

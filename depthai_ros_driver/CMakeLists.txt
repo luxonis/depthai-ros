@@ -152,6 +152,13 @@ ament_python_install_package(${PROJECT_NAME})
 ament_export_include_directories(include)
 
 install(DIRECTORY include/ DESTINATION include)
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+  ament_add_gtest(${PROJECT_NAME}_tf_prefix_test test/tf_prefix_test.cpp)
+  target_link_libraries(${PROJECT_NAME}_tf_prefix_test
+    ${COMMON_LIB_NAME}
+    rclcpp::rclcpp)
+endif()
 if(BUILD_TESTING AND TEST_DEPTHAI_ROS_DRIVER)
   # Integration tests
   find_package(ament_cmake_ros REQUIRED)
