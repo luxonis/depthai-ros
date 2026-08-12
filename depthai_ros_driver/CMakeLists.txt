@@ -125,7 +125,7 @@ add_executable(driver_node src/driver_node.cpp)
 target_link_libraries(driver_node PUBLIC ${PROJECT_NAME} ${SENSOR_LIB_NAME}
   ${NN_LIB_NAME} ${COMMON_LIB_NAME})
 rclcpp_components_register_nodes(${PROJECT_NAME} PLUGIN
-  "${PROJECT_NAME}::Driver" EXECUTABLE driver)
+  "depthai_ros_driver::Driver" EXECUTABLE driver)
 pluginlib_export_plugin_description_file(${PROJECT_NAME} plugins.xml)
 
 ament_export_targets(${PROJECT_NAME}Targets HAS_LIBRARY_TARGET)
