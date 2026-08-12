@@ -121,10 +121,7 @@ target_link_libraries(
   ${rclcpp_components_TARGETS}
   ${std_srvs_TARGETS}
   ${pluginlib_TARGETS})
-add_executable(driver_node src/driver_node.cpp)
-target_link_libraries(driver_node PUBLIC ${PROJECT_NAME} ${SENSOR_LIB_NAME}
-  ${NN_LIB_NAME} ${COMMON_LIB_NAME})
-rclcpp_components_register_nodes(${PROJECT_NAME} PLUGIN
+rclcpp_components_register_node(${PROJECT_NAME} PLUGIN
   "depthai_ros_driver::Driver" EXECUTABLE driver)
 pluginlib_export_plugin_description_file(${PROJECT_NAME} plugins.xml)
 
@@ -145,7 +142,6 @@ install(
   DESTINATION include/${PROJECT_NAME})
 
 install(EXPORT ${PROJECT_NAME}Targets DESTINATION share/${PROJECT_NAME}/cmake)
-install(TARGETS driver_node DESTINATION lib/${PROJECT_NAME})
 ament_python_install_package(${PROJECT_NAME})
 
 ament_export_include_directories(include/${PROJECT_NAME})
