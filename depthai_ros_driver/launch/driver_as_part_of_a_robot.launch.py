@@ -50,8 +50,8 @@ def launch_setup(context, *args, **kwargs):
         tf_params = {
             "camera": {
                 "i_publish_tf_from_calibration": True,
-                "i_tf_tf_prefix": name,
-                "i_tf_camera_model": cam_model,
+                "i_tf_device_name": name,
+                "i_tf_device_model": cam_model,
                 "i_tf_base_frame": name,
                 "i_tf_parent_frame": parent_frame.perform(context),
                 "i_tf_cam_pos_x": cam_pos_x.perform(context),
