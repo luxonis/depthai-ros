@@ -13,7 +13,7 @@ RUN sh -c "$(wget https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh
 ENV WS=/ws
 RUN mkdir -p $WS/src
 COPY ./ $WS/src/
-RUN cd $WS/ && rosdep install --from-paths src --ignore-src -y
+RUN cd $WS/ && apt-get update && rosdep install --from-paths src --ignore-src -y
 
 RUN cd $WS/ && . /opt/ros/${ROS_DISTRO}/setup.sh && ./src/build.sh -s $BUILD_SEQUENTIAL -r 1 -m 1 -t $BUILD_TESTS
 RUN if [ "$USE_RVIZ" = "1" ] ; then echo "RVIZ ENABLED" && sudo apt install -y ros-${ROS_DISTRO}-rviz2 ros-${ROS_DISTRO}-rviz-imu-plugin ; else echo "RVIZ NOT ENABLED"; fi

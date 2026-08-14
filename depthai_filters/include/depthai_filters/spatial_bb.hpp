@@ -1,9 +1,9 @@
 #pragma once
 
-#include "message_filters/subscriber.h"
-#include "message_filters/sync_policies/approximate_time.h"
+#include "message_filters/subscriber.hpp"
+#include "message_filters/sync_policies/approximate_time.hpp"
 #include "message_filters/sync_policies/latest_time.hpp"
-#include "message_filters/synchronizer.h"
+#include "message_filters/synchronizer.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
 #include "sensor_msgs/msg/image.hpp"

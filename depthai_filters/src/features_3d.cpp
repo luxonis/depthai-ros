@@ -16,9 +16,9 @@ Features3D::Features3D(const rclcpp::NodeOptions& options) : rclcpp::Node("featu
     onInit();
 }
 void Features3D::onInit() {
-    depthSub.subscribe(this, "stereo/image_raw");
-    infoSub.subscribe(this, "stereo/camera_info");
-    featureSub.subscribe(this, "feature_tracker/tracked_features");
+    depthSub.subscribe(this, "stereo/image_raw", rclcpp::QoS(10));
+    infoSub.subscribe(this, "stereo/camera_info", rclcpp::QoS(10));
+    featureSub.subscribe(this, "feature_tracker/tracked_features", rclcpp::QoS(10));
     sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), depthSub, infoSub, featureSub);
     sync->registerCallback(std::bind(&Features3D::overlayCB, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     pclPub = this->create_publisher<sensor_msgs::msg::PointCloud2>("features", 10);

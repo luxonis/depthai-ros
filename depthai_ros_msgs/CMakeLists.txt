@@ -27,8 +27,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ImuWithMagneticField.msg"
   "msg/TrackedFeature.msg"
   "msg/TrackedFeatures.msg"
-  # "msg/ImageMarker.msg"
-  # "msg/ImageMarkerArray.msg"
   "msg/SpatialDetection.msg"
   "msg/SpatialDetectionArray.msg"
   "msg/TrackDetection2D.msg"

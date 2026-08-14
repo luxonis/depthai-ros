@@ -13,8 +13,8 @@ FeatureTrackerOverlay::FeatureTrackerOverlay(const rclcpp::NodeOptions& options)
     onInit();
 }
 void FeatureTrackerOverlay::onInit() {
-    imgSub.subscribe(this, "rgb/preview/image_raw");
-    featureSub.subscribe(this, "feature_tracker/tracked_features");
+    imgSub.subscribe(this, "rgb/preview/image_raw", rclcpp::QoS(10));
+    featureSub.subscribe(this, "feature_tracker/tracked_features", rclcpp::QoS(10));
     sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), imgSub, featureSub);
     sync->registerCallback(std::bind(&FeatureTrackerOverlay::overlayCB, this, std::placeholders::_1, std::placeholders::_2));
     overlayPub = this->create_publisher<sensor_msgs::msg::Image>("overlay", 10);

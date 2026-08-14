@@ -15,9 +15,9 @@ WLSFilter::WLSFilter(const rclcpp::NodeOptions& options) : rclcpp::Node("wls_fil
     onInit();
 }
 void WLSFilter::onInit() {
-    disparityImgSub.subscribe(this, "stereo/image_raw");
-    leftImgSub.subscribe(this, "left/image_raw");
-    disparityInfoSub.subscribe(this, "stereo/camera_info");
+    disparityImgSub.subscribe(this, "stereo/image_raw", rclcpp::QoS(10));
+    leftImgSub.subscribe(this, "left/image_raw", rclcpp::QoS(10));
+    disparityInfoSub.subscribe(this, "stereo/camera_info", rclcpp::QoS(10));
     sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), disparityImgSub, disparityInfoSub, leftImgSub);
     sync->registerCallback(std::bind(&WLSFilter::wlsCB, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     filter = cv::ximgproc::createDisparityWLSFilterGeneric(false);
