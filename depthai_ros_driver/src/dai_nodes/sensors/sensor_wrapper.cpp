@@ -66,7 +66,7 @@ void SensorWrapper::setNames() {
     inQName = getName() + "_topic_in";
 }
 
-void SensorWrapper::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
+void SensorWrapper::setInOut(std::shared_ptr<dai::Pipeline> /*pipeline*/) {
     // xIn = pipeline->create<dai::node::XLinkIn>();
     // xIn->setStreamName(inQName);
 }
