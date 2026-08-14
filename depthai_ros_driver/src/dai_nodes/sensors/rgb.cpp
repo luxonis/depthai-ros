@@ -129,6 +129,8 @@ void RGB::setupQueues(std::shared_ptr<dai::Device> device) {
         convConfig.tfPrefix = tfPrefix;
         convConfig.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
         convConfig.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
+        convConfig.addExposureOffset = ph->getParam<bool>("i_add_exposure_offset");
+        convConfig.expOffset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>("i_exposure_offset"));
 
         utils::ImgPublisherConfig pubConfig;
         pubConfig.daiNodeName = getName();
