@@ -3,8 +3,8 @@
 #include <depthai/modelzoo/Zoo.hpp>
 #include <depthai/nn_archive/NNArchive.hpp>
 #include <filesystem>
+#include <stdexcept>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "depthai/common/CameraBoardSocket.hpp"

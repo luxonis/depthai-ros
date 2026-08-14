@@ -5,6 +5,7 @@
 #include <depthai/modelzoo/Zoo.hpp>
 #include <depthai/nn_archive/NNArchive.hpp>
 #include <filesystem>
+#include <stdexcept>
 
 #include "camera_info_manager/camera_info_manager.hpp"
 #if __has_include("cv_bridge/cv_bridge.hpp")

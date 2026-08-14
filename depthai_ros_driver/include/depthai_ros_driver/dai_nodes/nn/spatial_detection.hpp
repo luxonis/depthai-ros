@@ -2,9 +2,9 @@
 
 #include <depthai/nn_archive/NNArchive.hpp>
 #include <filesystem>
+#include <stdexcept>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "camera_info_manager/camera_info_manager.hpp"
 #include "depthai/common/CameraBoardSocket.hpp"
