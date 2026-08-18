@@ -2,6 +2,12 @@
 Changelog for package depthai_bridge
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixes for ROS lyrical
+* Add OAK-4-PRO-W to tf mappings
+* Bringing to parity with develop-old
+
 3.3.0 (2026-06-10)
 ------------------
 * Require DepthAI 3.7.1 packages.

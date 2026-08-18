@@ -2,6 +2,10 @@
 Changelog for package depthai_ros_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixes for ROS lyrical
+
 3.3.0 (2026-06-10)
 ------------------
 * Require DepthAI 3.7.1 packages.
