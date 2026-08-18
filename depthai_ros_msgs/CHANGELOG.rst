@@ -2,8 +2,8 @@
 Changelog for package depthai_ros_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.4.0 (2026-08-18)
+------------------
 * Fixes for ROS lyrical
 
 3.3.0 (2026-06-10)

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>depthai_descriptions</name>
-  <version>3.3.0</version>
+  <version>3.4.0</version>
   <description>The depthai_descriptions package</description>
 
   <author>Adam Serafin</author>

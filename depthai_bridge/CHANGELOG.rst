@@ -2,8 +2,8 @@
 Changelog for package depthai_bridge
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.4.0 (2026-08-18)
+------------------
 * Fixes for ROS lyrical
 * Add OAK-4-PRO-W to tf mappings
 * Bringing to parity with develop-old

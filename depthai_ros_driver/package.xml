@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>depthai_ros_driver</name>
-  <version>3.3.0</version>
+  <version>3.4.0</version>
   <description>Depthai ROS Monolithic node.</description>
   <author>Adam Serafin</author>
   <maintainer email="sebastjan.ahtik@luxonis.com">Aljaž Sebastjan Ahtik</maintainer>
