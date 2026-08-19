@@ -19,7 +19,6 @@ namespace dai {
 class Pipeline;
 class Device;
 class ADatatype;
-class NNModelDescription;
 namespace node {
 class NeuralNetwork;
 class ImageManip;
@@ -72,7 +71,6 @@ class Segmentation : public BaseNode {
     std::shared_ptr<dai::node::ImageManip> imageManip;
     std::unique_ptr<param_handlers::NNParamHandler> ph;
     std::shared_ptr<dai::MessageQueue> nnQ, ptQ;
-    std::shared_ptr<dai::NNModelDescription> description;
     std::string nnQName, ptQName;
 };
 

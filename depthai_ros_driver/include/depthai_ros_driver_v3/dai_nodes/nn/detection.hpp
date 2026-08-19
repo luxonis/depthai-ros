@@ -2,8 +2,9 @@
 
 #include <depthai/modelzoo/Zoo.hpp>
 #include <depthai/nn_archive/NNArchive.hpp>
+#include <filesystem>
 #include <memory>
-#include <string>
+#include <stdexcept>
 #include <vector>
 
 #include "depthai/common/CameraBoardSocket.hpp"
@@ -48,9 +49,18 @@ class Detection : public BaseNode {
         detectionNode = pipeline->create<dai::node::DetectionNetwork>();
         ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName, deviceName, rsCompat, socket);
         ph->declareParams(detectionNode);
-        dai::NNModelDescription description;
-        description.model = ph->getParam<std::string>("i_nn_model");
-        detectionNode->build(camNode.getUnderlyingNode(), description);
+        auto nnArchivePath = ph->getParam<std::string>("i_nn_archive");
+        if(!nnArchivePath.empty()) {
+            if(!std::filesystem::exists(nnArchivePath)) {
+                throw std::runtime_error("i_nn_archive path does not exist: " + nnArchivePath);
+            }
+            dai::NNArchive archive(nnArchivePath);
+            detectionNode->build(camNode.getUnderlyingNode(), archive);
+        } else {
+            dai::NNModelDescription description;
+            description.model = ph->getParam<std::string>("i_nn_model");
+            detectionNode->build(camNode.getUnderlyingNode(), description);
+        }
 
         RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
         setInOut(pipeline);

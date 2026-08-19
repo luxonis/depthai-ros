@@ -25,6 +25,7 @@ NNParamHandler::~NNParamHandler() = default;
 nn::NNFamily NNParamHandler::getNNFamily() {
     std::string nnFamily = declareAndLogParam<std::string>("i_nn_family", "detection");
     declareAndLogParam<std::string>("i_nn_model", "yolov6-nano");
+    declareAndLogParam<std::string>("i_nn_archive", "");
     return utils::getValFromMap(nnFamily, nnFamilyMap);
 }
 

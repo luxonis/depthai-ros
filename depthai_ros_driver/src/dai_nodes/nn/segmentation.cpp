@@ -4,6 +4,8 @@
 #include <depthai/common/CameraBoardSocket.hpp>
 #include <depthai/modelzoo/Zoo.hpp>
 #include <depthai/nn_archive/NNArchive.hpp>
+#include <filesystem>
+#include <stdexcept>
 
 #include "camera_info_manager/camera_info_manager.hpp"
 #if __has_include("cv_bridge/cv_bridge.hpp")
@@ -44,9 +46,18 @@ Segmentation::Segmentation(const std::string& daiNodeName,
     setNames();
     ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName, deviceName, rsCompat, socket);
     ph->declareParams(segNode);
-    description = std::make_shared<dai::NNModelDescription>();
-    description->model = ph->getParam<std::string>("i_nn_model");
-    segNode = pipeline->create<dai::node::NeuralNetwork>()->build(camNode.getUnderlyingNode(), *description);
+    auto nnArchivePath = ph->getParam<std::string>("i_nn_archive");
+    if(!nnArchivePath.empty()) {
+        if(!std::filesystem::exists(nnArchivePath)) {
+            throw std::runtime_error("i_nn_archive path does not exist: " + nnArchivePath);
+        }
+        dai::NNArchive archive(nnArchivePath);
+        segNode = pipeline->create<dai::node::NeuralNetwork>()->build(camNode.getUnderlyingNode(), archive);
+    } else {
+        dai::NNModelDescription description;
+        description.model = ph->getParam<std::string>("i_nn_model");
+        segNode = pipeline->create<dai::node::NeuralNetwork>()->build(camNode.getUnderlyingNode(), description);
+    }
     imageManip = pipeline->create<dai::node::ImageManip>();
     RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
     imageManip->out.link(segNode->input);
