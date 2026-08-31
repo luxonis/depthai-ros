@@ -125,6 +125,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
     colorCam->setBoardSocket(socketID);
     declareAndLogParam<bool>("i_output_isp", true);
     declareAndLogParam<bool>("i_enable_preview", false);
+    declareAndLogParam<bool>("i_enable_still", false);
     declareAndLogParam<bool>("i_flip_published_image", false);
     colorCam->setFps(declareAndLogParam<double>("i_fps", 30.0));
     int preview_size = declareAndLogParam<int>("i_preview_size", 300);
@@ -175,6 +176,9 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::ColorCamera> c
             RCLCPP_ERROR(getROSNode()->get_logger(), "%s", err_stream.str().c_str());
         }
     }
+    int stillWidth = declareAndLogParam<int>("i_still_width", width);
+    int stillHeight = declareAndLogParam<int>("i_still_height", height);
+    colorCam->setStillSize(stillWidth, stillHeight);
     int maxVideoWidth = 3840;
     int maxVideoHeight = 2160;
     int videoWidth = declareAndLogParam<int>("i_width", width);
