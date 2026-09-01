@@ -50,9 +50,10 @@ void ImageConverter::convertFromBitstream(dai::RawImgFrame::Type srcType) {
     this->srcType = srcType;
 }
 
-void ImageConverter::convertDispToDepth(double baseline) {
+void ImageConverter::convertDispToDepth(double baseline, double focalLength) {
     dispToDepth = true;
     this->baseline = baseline;
+    this->focalLength = focalLength;
 }
 
 void ImageConverter::addExposureOffset(dai::CameraExposureOffset& offset) {
@@ -133,7 +134,7 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
 
         // converting disparity
         if(dispToDepth) {
-            auto factor = std::abs(baseline * 10) * info.p[0];
+            auto factor = std::abs(baseline * 10) * focalLength;
             cv::Mat depthOut = cv::Mat(cv::Size(output.cols, output.rows), CV_16UC1);
             depthOut.forEach<uint16_t>([&output, &factor](uint16_t& pixel, const int* position) -> void {
                 auto disp = output.at<uint8_t>(position);

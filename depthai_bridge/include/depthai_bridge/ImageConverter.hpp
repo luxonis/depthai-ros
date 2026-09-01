@@ -71,8 +71,9 @@ class ImageConverter {
     /**
      * @brief Sets converter behavior to convert from disparity to depth when converting messages from bitstream.
      * @param baseline: The baseline of the stereo pair.
+     * @param focalLength: The focal length of the camera.
      */
-    void convertDispToDepth(double baseline);
+    void convertDispToDepth(double baseline, double focalLength);
 
     /**
      * @brief Reverses the order of the stereo sockets when creating CameraInfo to calculate Tx component of Projection matrix.
@@ -140,6 +141,7 @@ class ImageConverter {
     dai::CameraExposureOffset expOffset;
     bool reversedStereoSocketOrder = false;
     double baseline;
+    double focalLength;
     double alphaScalingFactor = 0.0;
     int camHeight = -1;
     int camWidth = -1;
