@@ -1,5 +1,6 @@
 #include "depthai_ros_driver_v3/driver.hpp"
 
+#include <cstdlib>
 #include <fstream>
 
 #include "depthai/device/Device.hpp"
@@ -91,9 +92,11 @@ void Driver::onConfigure() {
                                                               ph->getParam<bool>("i_rs_compat"));
     }
     pipeline->start();
+    const auto* rosDistro = std::getenv("ROS_DISTRO");
     RCLCPP_WARN(get_logger(),
-                "If you detect any issues with Kilted release, please report "
-                "issues to GH: https://github.com/luxonis/depthai-ros/issues/719");
+                "If you detect any issues with %s release, please report "
+                "issues to GH: https://github.com/luxonis/depthai-ros/issues/719",
+                rosDistro != nullptr ? rosDistro : "the current ROS");
 }
 
 void Driver::diagCB(const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg) {
