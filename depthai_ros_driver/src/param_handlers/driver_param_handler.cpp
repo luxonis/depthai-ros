@@ -59,6 +59,7 @@ void DriverParamHandler::declareParams() {
     declareAndLogParam<bool>("i_publish_tf_from_calibration", true);
     declareAndLogParam<std::string>("i_tf_device_name", getROSNode()->get_name());
     declareAndLogParam<std::string>("i_tf_device_model", "");
+    declareAndLogParam<std::string>("i_tf_prefix", getROSNode()->get_name());
     declareAndLogParam<std::string>("i_tf_base_frame", "oak");
     declareAndLogParam<std::string>("i_tf_parent_frame", "oak_parent_frame");
     declareAndLogParam<std::string>("i_tf_cam_pos_x", "0.0");

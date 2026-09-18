@@ -32,7 +32,9 @@ def launch_setup(context, *args, **kwargs):
     rs_compat = LaunchConfiguration("rs_compat", default="false")
     use_composition = LaunchConfiguration("use_composition", default="false")
 
-    name = LaunchConfiguration("tf_prefix").perform(context)
+    rsp_name = LaunchConfiguration("rsp_name").perform(context)
+    if not rsp_name:
+        rsp_name = LaunchConfiguration("tf_prefix").perform(context).strip("/").replace("/", "_")
     robot_description = {
         "robot_description": Command(
             [
@@ -80,18 +82,18 @@ def launch_setup(context, *args, **kwargs):
             package="robot_state_publisher",
             condition=UnlessCondition(use_composition),
             executable="robot_state_publisher",
-            name=name + "_state_publisher",
+            name=rsp_name + "_state_publisher",
             namespace=namespace,
             parameters=[robot_description],
         ),
         LoadComposableNodes(
-            target_container=f"{namespace.perform(context)}/{name}_container",
+            target_container=f"{namespace.perform(context)}/{rsp_name}_container",
             condition=IfCondition(use_composition),
             composable_node_descriptions=[
                 ComposableNode(
                     package="robot_state_publisher",
                     plugin="robot_state_publisher::RobotStatePublisher",
-                    name=name + "_state_publisher",
+                    name=rsp_name + "_state_publisher",
                     namespace=namespace,
                     parameters=[robot_description],
                 )
@@ -102,6 +104,11 @@ def launch_setup(context, *args, **kwargs):
 
 def generate_launch_description():
     declared_arguments = [
+        DeclareLaunchArgument(
+            "rsp_name",
+            default_value="",
+            description="Robot state publisher node and container name. Defaults to tf_prefix.",
+        ),
         DeclareLaunchArgument(
             "namespace",
             default_value="",
@@ -115,7 +122,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "tf_prefix",
             default_value="oak",
-            description="The name of the camera. It can be different from the camera model and it will be used as node `namespace`.",
+            description="Prefix applied to camera-related TF frame names.",
         ),
         DeclareLaunchArgument(
             "base_frame",

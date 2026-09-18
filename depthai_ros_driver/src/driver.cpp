@@ -89,7 +89,8 @@ void Driver::onConfigure() {
                                                               ph->getParam<std::string>("i_tf_imu_from_descr"),
                                                               ph->getParam<std::string>("i_tf_custom_urdf_location"),
                                                               ph->getParam<std::string>("i_tf_custom_xacro_args"),
-                                                              ph->getParam<bool>("i_rs_compat"));
+                                                              ph->getParam<bool>("i_rs_compat"),
+                                                              ph->getParam<std::string>("i_tf_prefix"));
     }
     pipeline->start();
     const auto* rosDistro = std::getenv("ROS_DISTRO");

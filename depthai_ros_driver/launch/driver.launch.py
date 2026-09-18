@@ -73,6 +73,7 @@ def launch_setup(context, *args, **kwargs):
     pointcloud_enable = LaunchConfiguration("pointcloud.enable", default="false")
     namespace = LaunchConfiguration("namespace", default="").perform(context)
     name = LaunchConfiguration("name").perform(context)
+    tf_prefix = LaunchConfiguration("tf_prefix").perform(context)
 
     # If RealSense compatibility is enabled, we need to override some parameters, topics and node names
     parameter_overrides = {}
@@ -145,13 +146,16 @@ def launch_setup(context, *args, **kwargs):
         if pointcloud_enable.perform(context) == "true":
             parameter_overrides["pipeline_gen"]["i_enable_rgbd"] = True
 
-    params = {}
+    if not tf_prefix:
+        tf_prefix = name
+
+    params = {"driver": {"i_tf_prefix": tf_prefix}}
     if publish_tf_from_calibration.perform(context) == "true":
         cam_model = ""
         if override_cam_model.perform(context) == "true":
             cam_model = camera_model.perform(context)
-        params = {
-            "driver": {
+        params["driver"].update(
+            {
                 "i_publish_tf_from_calibration": True,
                 "i_tf_device_name": name,
                 "i_tf_device_model": cam_model,
@@ -165,9 +169,9 @@ def launch_setup(context, *args, **kwargs):
                 "i_tf_cam_yaw": cam_yaw.perform(context),
                 "i_tf_imu_from_descr": imu_from_descr.perform(context),
             }
-        }
+        )
     else:
-        params = {"driver": {"i_publish_tf_from_calibration": False}}
+        params["driver"]["i_publish_tf_from_calibration"] = False
     if pointcloud_enable.perform(context) == "true":
         params["pipeline_gen"] = {"i_enable_rgbd": True}
 
@@ -188,7 +192,8 @@ def launch_setup(context, *args, **kwargs):
             ),
             launch_arguments={
                 "namespace": namespace,
-                "tf_prefix": name,
+                "rsp_name": name,
+                "tf_prefix": tf_prefix,
                 "camera_model": camera_model,
                 "base_frame": name,
                 "parent_frame": parent_frame,
@@ -234,6 +239,11 @@ def generate_launch_description():
 
     declared_arguments = [
         DeclareLaunchArgument("name", default_value="oak"),
+        DeclareLaunchArgument(
+            "tf_prefix",
+            default_value="",
+            description="Prefix for camera-related TF frames. Defaults to the resolved node name.",
+        ),
         DeclareLaunchArgument("namespace", default_value=""),
         DeclareLaunchArgument("parent_frame", default_value="oak_parent_frame"),
         DeclareLaunchArgument("camera_model", default_value="OAK-D-PRO"),

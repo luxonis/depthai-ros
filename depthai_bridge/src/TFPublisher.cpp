@@ -35,10 +35,11 @@ TFPublisher::TFPublisher(std::shared_ptr<rclcpp::Node> node,
                          const std::string& imuFromDescr,
                          const std::string& customURDFLocation,
                          const std::string& customXacroArgs,
-                         const bool rsCompatibilityMode)
+                         const bool rsCompatibilityMode,
+                         const std::string& tfPrefix)
     : camName(camName),
-      nodeName(node->get_name()),
       camModel(camModel),
+      tfPrefix(tfPrefix.empty() ? node->get_name() : tfPrefix),
       baseFrame(baseFrame),
       parentFrame(parentFrame),
       camPosX(camPosX),
@@ -96,11 +97,11 @@ void TFPublisher::publishCamTransforms(nlohmann::json camData, std::shared_ptr<r
         }
 
         std::string name = getSocketName(static_cast<dai::CameraBoardSocket>(cam[0]), camModel, rsCompatibilityMode);
-        ts.child_frame_id = nodeName + std::string("_") + name + std::string("_camera_frame");
+        ts.child_frame_id = tfPrefix + std::string("_") + name + std::string("_camera_frame");
         // check if the camera is at the end of the chain
         if(extrinsics["toCameraSocket"] != -1) {
             ts.header.frame_id = getFrameName(
-                nodeName,
+                tfPrefix,
                 getSocketName(static_cast<dai::CameraBoardSocket>(extrinsics["toCameraSocket"].get<int>()), camModel, rsCompatibilityMode) + "_camera_frame");
         } else {
             ts.header.frame_id = baseFrame;
@@ -110,7 +111,7 @@ void TFPublisher::publishCamTransforms(nlohmann::json camData, std::shared_ptr<r
             ts.transform.rotation.z = 0.0;
         }
         // rotate optical fransform
-        opticalTS.child_frame_id = getOpticalFrameName(nodeName, name, rsCompatibilityMode);
+        opticalTS.child_frame_id = getOpticalFrameName(tfPrefix, name, rsCompatibilityMode);
         opticalTS.header.frame_id = ts.child_frame_id;
         opticalTS.transform.rotation.w = 0.5;
         opticalTS.transform.rotation.x = -0.5;
@@ -124,10 +125,10 @@ void TFPublisher::publishImuTransform(nlohmann::json json, std::shared_ptr<rclcp
     geometry_msgs::msg::TransformStamped ts;
     ts.header.stamp = node->get_clock()->now();
     auto imuExtr = json["imuExtrinsics"];
-    ts.child_frame_id = nodeName + std::string("_imu_frame");
+    ts.child_frame_id = tfPrefix + std::string("_imu_frame");
     if(imuExtr["toCameraSocket"] != -1) {
         ts.header.frame_id = getFrameName(
-            nodeName,
+            tfPrefix,
             getSocketName(static_cast<dai::CameraBoardSocket>(imuExtr["toCameraSocket"].get<int>()), camModel, rsCompatibilityMode) + "_camera_frame");
         auto extrMat = calHandler.getImuToCameraExtrinsics(static_cast<dai::CameraBoardSocket>(imuExtr["toCameraSocket"].get<int>()));
         // pass parts of 4x4 matrix to transfFromExtr
@@ -207,7 +208,7 @@ std::string TFPublisher::prepareXacroArgs() {
         camModel = "OAK-D-S2";
     }
 
-    std::string xacroArgs = "camera_name:=" + camName;
+    std::string xacroArgs = "camera_name:=" + tfPrefix;
     xacroArgs += " camera_model:=" + camModel;
     xacroArgs += " base_frame:=" + baseFrame;
     xacroArgs += " parent_frame:=" + parentFrame;
