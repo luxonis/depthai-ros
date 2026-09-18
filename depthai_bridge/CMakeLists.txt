@@ -120,6 +120,7 @@ if(BUILD_TESTING)
 
     endmacro()
     bridge_test(disparity_converter_test DisparityConverterTest.cpp)
+    bridge_test(depthai_utility_test DepthaiUtilityTest.cpp)
     bridge_test(image_converter_test ImageConverterTest.cpp)
     bridge_test(img_det_converter_test ImgDetectionConverterTest.cpp)
     bridge_test(imu_converter_test ImuConverterTest.cpp)

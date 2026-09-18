@@ -58,7 +58,7 @@ std::string BaseNode::getOpticalFrameName(const std::string& frameName) {
 
 std::string BaseNode::getFramePrefix() {
     auto tfPrefix = getROSNode()->get_parameter("driver.i_tf_prefix").as_string();
-    return tfPrefix.empty() ? getROSNode()->get_name() : tfPrefix;
+    return depthai_bridge::resolveFramePrefix(tfPrefix, getROSNode()->get_name());
 }
 dai::Node::Input& BaseNode::getInput(int /*linkType = 0*/) {
     throw(std::runtime_error("getInput() not implemented"));

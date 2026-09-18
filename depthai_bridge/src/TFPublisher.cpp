@@ -39,7 +39,7 @@ TFPublisher::TFPublisher(std::shared_ptr<rclcpp::Node> node,
                          const std::string& tfPrefix)
     : camName(camName),
       camModel(camModel),
-      tfPrefix(tfPrefix.empty() ? node->get_name() : tfPrefix),
+      tfPrefix(resolveFramePrefix(tfPrefix, node->get_name())),
       baseFrame(baseFrame),
       parentFrame(parentFrame),
       camPosX(camPosX),
@@ -97,7 +97,7 @@ void TFPublisher::publishCamTransforms(nlohmann::json camData, std::shared_ptr<r
         }
 
         std::string name = getSocketName(static_cast<dai::CameraBoardSocket>(cam[0]), camModel, rsCompatibilityMode);
-        ts.child_frame_id = tfPrefix + std::string("_") + name + std::string("_camera_frame");
+        ts.child_frame_id = getFrameName(tfPrefix, name + "_camera_frame");
         // check if the camera is at the end of the chain
         if(extrinsics["toCameraSocket"] != -1) {
             ts.header.frame_id = getFrameName(
@@ -125,7 +125,7 @@ void TFPublisher::publishImuTransform(nlohmann::json json, std::shared_ptr<rclcp
     geometry_msgs::msg::TransformStamped ts;
     ts.header.stamp = node->get_clock()->now();
     auto imuExtr = json["imuExtrinsics"];
-    ts.child_frame_id = tfPrefix + std::string("_imu_frame");
+    ts.child_frame_id = getFrameName(tfPrefix, "imu_frame");
     if(imuExtr["toCameraSocket"] != -1) {
         ts.header.frame_id = getFrameName(
             tfPrefix,

@@ -24,8 +24,7 @@ def launch_setup(context, *args, **kwargs):
 
     name = LaunchConfiguration("name").perform(context)
     tf_prefix = LaunchConfiguration("tf_prefix").perform(context)
-    if not tf_prefix:
-        tf_prefix = name
+    tf_prefix = tf_prefix.strip("/") or name
     rgb_topic_name = name + "/rgb/image_raw"
     if LaunchConfiguration("rectify_rgb").perform(context) == "true":
         rgb_topic_name = name + "/rgb/image_rect"

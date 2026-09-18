@@ -146,8 +146,7 @@ def launch_setup(context, *args, **kwargs):
         if pointcloud_enable.perform(context) == "true":
             parameter_overrides["pipeline_gen"]["i_enable_rgbd"] = True
 
-    if not tf_prefix:
-        tf_prefix = name
+    tf_prefix = tf_prefix.strip("/") or name
 
     params = {"driver": {"i_tf_prefix": tf_prefix}}
     if publish_tf_from_calibration.perform(context) == "true":
