@@ -31,7 +31,8 @@ class TFPublisher {
                          const std::string& imuFromDescr = "false",
                          const std::string& customURDFLocation = "",
                          const std::string& customXacroArgs = "",
-                         const bool rsCompatibilityMode = false);
+                         const bool rsCompatibilityMode = false,
+                         const std::string& tfPrefix = "");
     /**
      * @brief Obtain URDF description by running Xacro with provided arguments.
      */
@@ -54,13 +55,13 @@ class TFPublisher {
     void publishDescription();
     /**
      * @brief Publish camera transforms ("standard" and optical) based on calibration data.
-     * Frame names are based on socket names and use following convention: [base_frame]_[socket_name]_camera_frame and
-     * [base_frame]_[socket_name]_camera_optical_frame
+     * Frame names are based on socket names and use following convention: [tf_prefix]_[socket_name]_camera_frame and
+     * [tf_prefix]_[socket_name]_camera_optical_frame
      */
     void publishCamTransforms(nlohmann::json camData, std::shared_ptr<rclcpp::Node> node, const dai::CalibrationHandler& calHandler);
     /**
      * @brief Publish IMU transform based on calibration data.
-     * Frame name is based on IMU name and uses following convention: [base_frame]_imu_frame.
+     * Frame name is based on IMU name and uses following convention: [tf_prefix]_imu_frame.
      * If IMU extrinsics are not set, warning is printed out and imu frame is published with zero translation and rotation.
      */
     void publishImuTransform(nlohmann::json json, std::shared_ptr<rclcpp::Node> node, const dai::CalibrationHandler& calHandler);
@@ -70,9 +71,9 @@ class TFPublisher {
     bool modelNameAvailable();
     std::unique_ptr<rclcpp::AsyncParametersClient> paramClient;
     std::shared_ptr<tf2_ros::StaticTransformBroadcaster> tfPub;
-    std::string nodeName;
     std::string camName;
     std::string camModel;
+    std::string tfPrefix;
     std::string baseFrame;
     std::string parentFrame;
     std::string camPosX;

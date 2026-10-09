@@ -158,8 +158,22 @@ const std::unordered_map<dai::CameraBoardSocket, std::string> rsSocketNameMap = 
     {dai::CameraBoardSocket::CAM_D, "infra3"},
 };
 
+inline std::string normalizeFramePrefix(const std::string& prefix) {
+    const auto first = prefix.find_first_not_of('/');
+    if(first == std::string::npos) {
+        return "";
+    }
+    return prefix.substr(first, prefix.find_last_not_of('/') - first + 1);
+}
+
+inline std::string resolveFramePrefix(const std::string& prefix, const std::string& fallback) {
+    const auto normalizedPrefix = normalizeFramePrefix(prefix);
+    return normalizedPrefix.empty() ? normalizeFramePrefix(fallback) : normalizedPrefix;
+}
+
 inline std::string getFrameName(const std::string& prefix, const std::string& frameName) {
-    return prefix + "_" + frameName;
+    const auto normalizedPrefix = normalizeFramePrefix(prefix);
+    return normalizedPrefix.empty() ? frameName : normalizedPrefix + "_" + frameName;
 }
 
 inline std::string getOpticalFrameName(const std::string& prefix, const std::string& frameName, bool rsCompat = false) {

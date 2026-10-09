@@ -133,6 +133,10 @@ void ImuConverter::toRosDaiMsg(std::shared_ptr<dai::IMUData> inData, std::deque<
             outImuMsgs.push_back(msg);
         }
     }
+    for(auto& msg : outImuMsgs) {
+        msg.imu.header = msg.header;
+        msg.field.header = msg.header;
+    }
 }
 
 }  // namespace depthai_bridge

@@ -23,6 +23,8 @@ def launch_setup(context, *args, **kwargs):
     depthai_prefix = get_package_share_directory("depthai_ros_driver")
 
     name = LaunchConfiguration("name").perform(context)
+    tf_prefix = LaunchConfiguration("tf_prefix").perform(context)
+    tf_prefix = tf_prefix.strip("/") or name
     rgb_topic_name = name + "/rgb/image_raw"
     if LaunchConfiguration("rectify_rgb").perform(context) == "true":
         rgb_topic_name = name + "/rgb/image_rect"
@@ -42,13 +44,13 @@ def launch_setup(context, *args, **kwargs):
     )
     override_cam_model = LaunchConfiguration("override_cam_model", default="false")
 
-    tf_params = {}
+    tf_params = {"driver": {"i_tf_prefix": tf_prefix}}
     if publish_tf_from_calibration.perform(context) == "true":
         cam_model = ""
         if override_cam_model.perform(context) == "true":
             cam_model = camera_model.perform(context)
-        tf_params = {
-            "camera": {
+        tf_params["driver"].update(
+            {
                 "i_publish_tf_from_calibration": True,
                 "i_tf_device_name": name,
                 "i_tf_device_model": cam_model,
@@ -62,7 +64,9 @@ def launch_setup(context, *args, **kwargs):
                 "i_tf_cam_yaw": cam_yaw.perform(context),
                 "i_tf_imu_from_descr": imu_from_descr.perform(context),
             }
-        }
+        )
+    else:
+        tf_params["driver"]["i_publish_tf_from_calibration"] = False
 
     return [
         ComposableNodeContainer(
@@ -88,6 +92,11 @@ def generate_launch_description():
     depthai_prefix = get_package_share_directory("depthai_ros_driver")
     declared_arguments = [
         DeclareLaunchArgument("name", default_value="oak"),
+        DeclareLaunchArgument(
+            "tf_prefix",
+            default_value="",
+            description="Prefix for camera-related TF frames. Defaults to the node name.",
+        ),
         DeclareLaunchArgument("camera_model", default_value="OAK-D"),
         DeclareLaunchArgument("parent_frame", default_value="oak_parent_frame"),
         DeclareLaunchArgument("cam_pos_x", default_value="0.0"),
