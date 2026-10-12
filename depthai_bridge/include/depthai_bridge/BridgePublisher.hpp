@@ -8,6 +8,7 @@
 
 #include "camera_info_manager/camera_info_manager.hpp"
 #include "depthai/pipeline/MessageQueue.hpp"
+#include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_bridge/depthaiUtility.hpp"
 #include "ffmpeg_image_transport_msgs/msg/ffmpeg_packet.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
@@ -294,11 +295,18 @@ void BridgePublisher<RosMsg, DaiMsg>::publishHelper(std::shared_ptr<DaiMsg> inDa
 
         while(opMsgs.size()) {
             RosMsg currMsg = opMsgs.front();
-            if(!lazyPublisher || mainSubCount > 0) {
+            ImageMsgs::CameraInfo localCameraInfo;
+            if(isImageMessage) {
+                localCameraInfo = camInfoManager->getCameraInfo();
+                if constexpr(std::is_same_v<DaiMsg, dai::ImgFrame> || std::is_same_v<DaiMsg, dai::EncodedFrame>) {
+                    if(cameraParamUri.empty()) {
+                        localCameraInfo = ImageConverter::transformationToCameraInfo(inDataPtr->transformation, localCameraInfo);
+                    }
+                }
+                localCameraInfo.header = currMsg.header;
+            }
+            if(!lazyPublisher || mainSubCount > 0 || (std::is_same_v<RosMsg, ImageMsgs::Image> && infoSubCount > 0)) {
                 if constexpr(std::is_same_v<RosMsg, ImageMsgs::Image>) {
-                    auto localCameraInfo = camInfoManager->getCameraInfo();
-                    localCameraInfo.header.stamp = currMsg.header.stamp;
-                    localCameraInfo.header.frame_id = currMsg.header.frame_id;
                     std::dynamic_pointer_cast<image_transport::CameraPublisher>(rosPublisher)->publish(currMsg, localCameraInfo);
                 } else if constexpr(std::is_same_v<RosMsg, geometry_msgs::msg::TransformStamped>) {
                     // message stamp might be too late by the time of publishing
@@ -326,9 +334,6 @@ void BridgePublisher<RosMsg, DaiMsg>::publishHelper(std::shared_ptr<DaiMsg> inDa
             }
 
             if(infoSubCount > 0 && (std::is_same_v<RosMsg, ImageMsgs::CompressedImage> || std::is_same_v<RosMsg, FFMPEGMsgs::FFMPEGPacket>)) {
-                auto localCameraInfo = camInfoManager->getCameraInfo();
-                localCameraInfo.header.stamp = currMsg.header.stamp;
-                localCameraInfo.header.frame_id = currMsg.header.frame_id;
                 cameraInfoPublisher->publish(localCameraInfo);
             }
             opMsgs.pop_front();

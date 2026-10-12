@@ -226,8 +226,8 @@ void ImageConverter::toRosFFMPEGPacket(std::shared_ptr<dai::EncodedFrame> inData
     outFrameMsg.header = header;
     auto ft = inData->getFrameType();
 
-    outFrameMsg.width = camWidth;
-    outFrameMsg.height = camHeight;
+    outFrameMsg.width = inData->getWidth();
+    outFrameMsg.height = inData->getHeight();
     outFrameMsg.encoding = ffmpegEncoding;
     outFrameMsg.pts = header.stamp.sec * 1000000000 + header.stamp.nanosec;  // in nanoseconds
     outFrameMsg.flags = (int)(ft == dai::EncodedFrame::FrameType::I);
@@ -348,96 +348,45 @@ cv::Mat ImageConverter::rosMsgtoCvMat(ImageMsgs::Image& inMsg) {
 }
 
 sensor_msgs::msg::CameraInfo ImageConverter::generateCameraInfo(std::shared_ptr<dai::ImgFrame> imgFrame) const {
-    sensor_msgs::msg::CameraInfo cameraInfo;
-
-    // Get the ImgTransformation from the ImgFrame
-    const auto& transformation = imgFrame->transformation;
-
-    // Set the width and height
-    cameraInfo.width = transformation.getSize().first;
-    cameraInfo.height = transformation.getSize().second;
-
-    // Set the intrinsic matrix
-    const auto& intrinsicMatrix = transformation.getIntrinsicMatrix();
-    for(int i = 0; i < 3; ++i) {
-        for(int j = 0; j < 3; ++j) {
-            cameraInfo.k[i * 3 + j] = intrinsicMatrix[i][j];
-        }
-    }
-
-    // Set the distortion model
-    cameraInfo.distortion_model = "rational_polynomial";
-
-    // Set the distortion coefficients
-    const auto& distortionCoeffs = transformation.getDistortionCoefficients();
-    cameraInfo.d.resize(distortionCoeffs.size());
-    for(size_t i = 0; i < distortionCoeffs.size(); ++i) {
-        cameraInfo.d[i] = distortionCoeffs[i];
-    }
-
-    // Set the projection matrix
-    for(int i = 0; i < 3; ++i) {
-        for(int j = 0; j < 3; ++j) {
-            cameraInfo.p[i * 4 + j] = intrinsicMatrix[i][j];
-        }
-        // We take extrinsic projection params from initial calibration estimate here
-        cameraInfo.p[i * 4 + 3] = camInfo.p[i * 4 + 3];
-    }
-
-    // Set the rectification matrix (identity matrix)
-    for(int i = 0; i < 3; ++i) {
-        for(int j = 0; j < 3; ++j) {
-            cameraInfo.r[i * 3 + j] = (i == j) ? 1.0 : 0.0;
-        }
-    }
-
-    return cameraInfo;
+    return transformationToCameraInfo(imgFrame->transformation, camInfo);
 }
+
 sensor_msgs::msg::CameraInfo ImageConverter::generateCameraInfo(std::shared_ptr<dai::EncodedFrame> imgFrame) const {
-    sensor_msgs::msg::CameraInfo cameraInfo;
+    return transformationToCameraInfo(imgFrame->transformation, camInfo);
+}
 
-    // Get the ImgTransformation from the ImgFrame
-    const auto& transformation = imgFrame->transformation;
+sensor_msgs::msg::CameraInfo ImageConverter::transformationToCameraInfo(const dai::ImgTransformation& transformation,
+                                                                        const sensor_msgs::msg::CameraInfo& initialInfo) {
+    sensor_msgs::msg::CameraInfo info;
+    info.width = transformation.getSize().first;
+    info.height = transformation.getSize().second;
+    const auto intrinsics = transformation.getIntrinsicMatrix();
+    for(size_t i = 0; i < 3; ++i) {
+        for(size_t j = 0; j < 3; ++j) {
+            info.k[i * 3 + j] = intrinsics[i][j];
+            info.p[i * 4 + j] = intrinsics[i][j];
+        }
+        info.r[i * 3 + i] = 1.0;
+    }
+    info.distortion_model = transformation.getDistortionModel() == dai::CameraModel::Fisheye ? "equidistant" : "rational_polynomial";
+    const auto distortion = transformation.getDistortionCoefficients();
+    info.d.assign(distortion.begin(), distortion.end());
 
-    // Set the width and height
-    cameraInfo.width = transformation.getSize().first;
-    cameraInfo.height = transformation.getSize().second;
-
-    // Set the intrinsic matrix
-    const auto& intrinsicMatrix = transformation.getIntrinsicMatrix();
-    for(int i = 0; i < 3; ++i) {
-        for(int j = 0; j < 3; ++j) {
-            cameraInfo.k[i * 3 + j] = intrinsicMatrix[i][j];
+    // A frame's pose can target any camera; it does not identify the stereo reference.
+    // Retain the configured stereo baseline, but project it with this frame's intrinsics.
+    if(initialInfo.p[0] != 0.0) {
+        const double tx = initialInfo.p[3] / initialInfo.p[0];
+        for(size_t i = 0; i < 3; ++i) {
+            info.p[i * 4 + 3] += intrinsics[i][0] * tx;
         }
     }
-
-    // Set the distortion model
-    cameraInfo.distortion_model = "rational_polynomial";
-
-    // Set the distortion coefficients
-    const auto& distortionCoeffs = transformation.getDistortionCoefficients();
-    cameraInfo.d.resize(distortionCoeffs.size());
-    for(size_t i = 0; i < distortionCoeffs.size(); ++i) {
-        cameraInfo.d[i] = distortionCoeffs[i];
-    }
-
-    // Set the projection matrix
-    for(int i = 0; i < 3; ++i) {
-        for(int j = 0; j < 3; ++j) {
-            cameraInfo.p[i * 4 + j] = intrinsicMatrix[i][j];
-        }
-        // We take extrinsic projection params from initial calibration estimate here
-        cameraInfo.p[i * 4 + 3] = camInfo.p[i * 4 + 3];
-    }
-
-    // Set the rectification matrix (identity matrix)
-    for(int i = 0; i < 3; ++i) {
-        for(int j = 0; j < 3; ++j) {
-            cameraInfo.r[i * 3 + j] = (i == j) ? 1.0 : 0.0;
+    if(initialInfo.p[5] != 0.0) {
+        const double ty = initialInfo.p[7] / initialInfo.p[5];
+        for(size_t i = 0; i < 3; ++i) {
+            info.p[i * 4 + 3] += intrinsics[i][1] * ty;
         }
     }
-
-    return cameraInfo;
+    return info;
 }
 
 ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(dai::CalibrationHandler calibHandler,
@@ -465,8 +414,6 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(dai::CalibrationHa
         cameraData.height = static_cast<uint32_t>(height);
     }
 
-    camWidth = cameraData.width;
-    camHeight = cameraData.height;
     camIntrinsics = calibHandler.getCameraIntrinsics(cameraId, cameraData.width, cameraData.height, topLeftPixelId, bottomRightPixelId);
 
     flatIntrinsics.resize(9);
@@ -487,9 +434,13 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(dai::CalibrationHa
 
     distCoeffs = calibHandler.getDistortionCoefficients(cameraId);
 
-    for(size_t i = 0; i < 8; i++) {
-        distortions.push_back(static_cast<double>(distCoeffs[i]));
+    const bool fisheye = calibHandler.getDistortionModel(cameraId) == dai::CameraModel::Fisheye;
+    const size_t coefficientCount = fisheye ? 4 : 8;
+    if(distCoeffs.size() < coefficientCount) {
+        throw std::runtime_error("Insufficient distortion coefficients for camera calibration");
     }
+    distortions.assign(distCoeffs.begin(), distCoeffs.begin() + coefficientCount);
+    cameraData.distortion_model = fisheye ? "equidistant" : "rational_polynomial";
 
     // Setting Projection matrix if the cameras are stereo pair. Right as the first and left as the second.
     if(calibHandler.getStereoRightCameraId() != dai::CameraBoardSocket::AUTO && calibHandler.getStereoLeftCameraId() != dai::CameraBoardSocket::AUTO) {
@@ -506,7 +457,14 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(dai::CalibrationHa
                 }
                 cv::Mat distCoefficients(distCoeffs);
 
-                cv::Mat newCameraMatrix = cv::getOptimalNewCameraMatrix(cameraMatrix, distCoefficients, cv::Size(width, height), alphaScalingFactor);
+                const cv::Size imageSize(cameraData.width, cameraData.height);
+                cv::Mat newCameraMatrix;
+                if(fisheye) {
+                    cv::fisheye::estimateNewCameraMatrixForUndistortRectify(
+                        cameraMatrix, distCoefficients, imageSize, cv::Mat::eye(3, 3, CV_64F), newCameraMatrix, alphaScalingFactor);
+                } else {
+                    newCameraMatrix = cv::getOptimalNewCameraMatrix(cameraMatrix, distCoefficients, imageSize, alphaScalingFactor);
+                }
                 // Copying the contents of newCameraMatrix to stereoIntrinsics
                 for(int i = 0; i < 3; i++) {
                     for(int j = 0; j < 3; j++) {
@@ -550,8 +508,6 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(dai::CalibrationHa
             std::copy(flatRectifiedRotation.begin(), flatRectifiedRotation.end(), rotation.begin());
         }
     }
-    cameraData.distortion_model = "rational_polynomial";
-
     camInfo = cameraData;
     return cameraData;
 }
