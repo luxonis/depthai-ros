@@ -2,11 +2,27 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
 	<!-- Export a fresh configuration into the calling macro's scope. -->
-	<xacro:macro name="depthai_model_config" params="camera_model">
+	<xacro:macro name="depthai_model_config" params="camera_model imu_sensor:='' imu_frame:='optical'">
 		<xacro:property name="config_file" value="$(find depthai_descriptions)/urdf/include/model_config.yaml" />
 		<xacro:property name="configs" value="${xacro.load_yaml(config_file)}" />
+		<xacro:property name="boards" value="${xacro.load_yaml('$(find depthai_descriptions)/urdf/include/board_models.yaml')}" />
+		<xacro:if value="${camera_model in boards['unsupported']}">
+			<xacro:property name="invalid_board" lazy_eval="false"
+				value="${xacro.fatal('Cannot place board ' + camera_model + ': ' + boards['unsupported'][camera_model])}" />
+		</xacro:if>
+		<xacro:property name="overrides" value="${configs['models'].get(camera_model, dict())}" />
+		<xacro:property name="board_config" value="${boards['models'].get(camera_model, dict(mesh=camera_model))}" />
+		<xacro:property name="merged" value="${dict(dict(configs['defaults'], **board_config), **overrides)}" />
+		<xacro:property name="variants" value="${merged['imu_variants']}" />
+		<xacro:if value="${imu_frame not in ['native', 'optical'] or (imu_sensor != '' and imu_sensor not in variants)}">
+			<xacro:property name="invalid_imu_selection" lazy_eval="false"
+				value="${xacro.fatal('Invalid IMU selection for ' + camera_model + ': sensor=' + imu_sensor + ', frame=' + imu_frame + '; available sensors: ' + ', '.join(variants.keys()))}" />
+		</xacro:if>
+		<xacro:property name="selected" value="${imu_sensor if imu_sensor != '' else (list(variants.keys())[0] if len(variants) == 1 else '')}" />
+		<xacro:property name="use_board_imu" value="${selected != '' and (imu_sensor != '' or overrides.get('imu_xyz') is None)}" />
+		<xacro:property name="imu_override" value="${dict(imu_xyz=variants[selected]['xyz'], imu_rpy=variants[selected][imu_frame + '_rpy']) if use_board_imu else dict()}" />
 		<xacro:property name="device_config" scope="parent"
-			value="${dict(configs['defaults'], **configs['models'].get(camera_model, dict()))}" />
+			value="${dict(merged, **imu_override)}" />
 	</xacro:macro>
 
 </robot>

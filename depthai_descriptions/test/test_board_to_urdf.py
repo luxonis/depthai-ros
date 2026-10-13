@@ -1,7 +1,15 @@
 import importlib.util
+import json
 import math
 from pathlib import Path
 import unittest
+from unittest.mock import patch
+from xml.etree import ElementTree
+
+try:
+    import xacro
+except ImportError:
+    xacro = None
 
 
 SCRIPT = Path(__file__).resolve().parents[1] / 'scripts' / 'board_to_urdf.py'
@@ -41,7 +49,9 @@ class BoardConversionTest(unittest.TestCase):
         self.assertEqual(converter.convert(cycle, 'A', 'native')['reference_camera'], 'A')
 
     def assertVector(self, text, expected):
-        for actual, value in zip(map(float, text.split()), expected):
+        actual_values = list(map(float, text.split()))
+        self.assertEqual(len(actual_values), len(expected))
+        for actual, value in zip(actual_values, expected):
             self.assertAlmostEqual(actual, value)
 
     def test_stereo_chain_and_imu(self):
@@ -90,6 +100,105 @@ class BoardConversionTest(unittest.TestCase):
             converter.parse_transform(data)
         with self.assertRaisesRegex(ValueError, 'finite'):
             converter.parse_transform(extrinsics('A', (float('nan'), 0, 0)))
+
+
+@unittest.skipIf(xacro is None, 'Source the ROS environment to compare expanded URDFs')
+class ExistingUrdfTest(unittest.TestCase):
+    """Compare real board fixtures with the current source-tree Xacro output.
+
+    These cases cover geometry that agrees. Legacy IMU rotations and some
+    IMU positions differ between the sources; only the matching IMU
+    coordinates are checked here.
+    """
+
+    descriptions = SCRIPT.parents[1]
+    boards = descriptions.parent / 'depthai-core/shared/depthai_boards/boards'
+
+    def setUp(self):
+        if not self.boards.is_dir():
+            self.skipTest('depthai_boards checkout is unavailable')
+
+    def board(self, filename, reference=None):
+        path = self.boards / (filename + '.json')
+        if not path.exists():
+            self.skipTest(f'Board fixture is unavailable: {path.name}')
+        return converter.convert(json.loads(path.read_text()), reference, 'native')
+
+    def joints(self, model):
+        # Resolve $(find ...) to this checkout, avoiding stale installed files.
+        with patch('ament_index_python.packages.get_package_share_directory',
+                   return_value=str(self.descriptions)):
+            document = xacro.process_file(
+                str(self.descriptions / 'urdf/depthai_descr.urdf.xacro'),
+                mappings={'camera_model': model})
+        return {joint.attrib['name']: joint.find('origin').attrib
+                for joint in ElementTree.fromstring(document.toxml()).findall('joint')}
+
+    def assertOrigin(self, actual, expected):
+        self.assertVector(actual['xyz'], list(map(float, expected['xyz'].split())))
+        # Equivalent rotations can have different Euler angles, especially
+        # at gimbal lock; compare their matrices instead of their RPY strings.
+        for row_a, row_b in zip(
+                converter.from_rpy(*map(float, actual['rpy'].split())),
+                converter.from_rpy(*map(float, expected['rpy'].split()))):
+            for a, b in zip(row_a, row_b):
+                self.assertAlmostEqual(a, b)
+
+    def assertVector(self, text, expected):
+        actual_values = list(map(float, text.split()))
+        self.assertEqual(len(actual_values), len(expected))
+        for actual, value in zip(actual_values, expected):
+            self.assertAlmostEqual(actual, value)
+
+    def test_existing_camera_origins(self):
+        for model in ('OAK-D', 'OAK-D-PRO', 'OAK-D-PRO-W', 'OAK-D-POE',
+                      'OAK-D-S2', 'OAK-D-S2-POE', 'OAK-D-LITE', 'OAK-D-LR',
+                      'OAK-1', 'OAK4-D', 'OAK4-S', 'OAK-D-CM4-POE'):
+            with self.subTest(model=model):
+                filename = {'OAK4-D': 'OAK-4-D', 'OAK4-S': 'OAK-4-S'}.get(model, model)
+                output = self.board(filename)
+                joints = self.joints(model)
+                for socket, pose in output['cameras'].items():
+                    sensor = {'CAM_A': 'rgb', 'CAM_B': 'left', 'CAM_C': 'right'}[socket]
+                    self.assertOrigin(pose, joints[f'oak_{sensor}_camera_joint'])
+                    self.assertOrigin(output['camera_optical_origin'],
+                                      joints[f'oak_{sensor}_camera_optical_joint'])
+
+    def test_thermal_origins_with_rgb_reference(self):
+        # The automatic terminal is CAM_E, but the URDF base is CAM_A.
+        output = self.board('OAK-T', reference='CAM_A')
+        joints = self.joints('OAK-T')
+        self.assertOrigin(output['cameras']['CAM_A'], joints['oak_rgb_camera_joint'])
+        self.assertOrigin(output['cameras']['CAM_E'], joints['oak_right_camera_joint'])
+
+    def test_short_range_relative_camera_origin(self):
+        # The URDF base is the stereo midpoint, which is not a board camera.
+        output = self.board('OAK-D-SR')
+        joints = self.joints('OAK-D-SR')
+        left = list(map(float, joints['oak_left_camera_joint']['xyz'].split()))
+        right = list(map(float, joints['oak_right_camera_joint']['xyz'].split()))
+        self.assertVector(output['cameras']['CAM_B']['xyz'],
+                          [a - b for a, b in zip(left, right)])
+        self.assertVector(output['cameras']['CAM_C']['xyz'], (0, 0, 0))
+
+    def test_short_range_poe_camera_origins(self):
+        # The ToF camera is the base in both the board and the URDF.
+        output = self.board('OAK-D-SR-POE')
+        joints = self.joints('OAK-D-SR-POE')
+        for socket, joint in (('CAM_B', 'oak_left_camera_joint'),
+                              ('CAM_C', 'oak_right_camera_joint')):
+            self.assertOrigin(output['cameras'][socket], joints[joint])
+
+    def test_oak_d_pro_bno_imu_y(self):
+        output = self.board('OAK-D-PRO')
+        actual_y = float(output['imus']['BNO']['xyz'].split()[1])
+        urdf_y = float(self.joints('OAK-D-PRO')['oak_imu_joint']['xyz'].split()[1])
+        self.assertAlmostEqual(actual_y, urdf_y, places=12)
+
+    def test_oak_d_imu_position(self):
+        output = self.board('OAK-D')
+        self.assertVector(output['imus']['BNO']['xyz'], list(map(
+            float, self.joints('OAK-D')['oak_imu_joint']['xyz'].split())))
 
 
 if __name__ == '__main__':

@@ -19,6 +19,8 @@ def launch_setup(context, *args, **kwargs):
         xacro_path = os.path.join(bringup_dir, "urdf", "depthai_descr.urdf.xacro")
 
     camera_model = LaunchConfiguration("camera_model", default="OAK-D")
+    imu_sensor = LaunchConfiguration("imu_sensor", default="")
+    imu_frame = LaunchConfiguration("imu_frame", default="optical")
     tf_prefix = LaunchConfiguration("tf_prefix", default="oak")
     base_frame = LaunchConfiguration("base_frame", default="oak")
     parent_frame = LaunchConfiguration("parent_frame", default="oak_parent_frame")
@@ -47,6 +49,12 @@ def launch_setup(context, *args, **kwargs):
                 " ",
                 "camera_model:=",
                 camera_model,
+                " ",
+                "imu_sensor:=",
+                "'", imu_sensor, "'",
+                " ",
+                "imu_frame:=",
+                imu_frame,
                 " ",
                 "base_frame:=",
                 base_frame,
@@ -117,7 +125,15 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "camera_model",
             default_value="OAK-D",
-            description="The model of the camera. Using a wrong camera model can disable camera features. Valid models: `OAK-D, OAK-D-LITE`.",
+            description="Board model name from board_models.yaml or model_config.yaml.",
+        ),
+        DeclareLaunchArgument(
+            "imu_sensor", default_value="",
+            description="IMU variant key, e.g. BNO, BMI or LSM6DSV. Required for boards with multiple variants and no legacy IMU pose.",
+        ),
+        DeclareLaunchArgument(
+            "imu_frame", default_value="optical", choices=["optical", "native"],
+            description="Axes for board-derived IMU poses. Optical matches the ROS driver's RDF convention.",
         ),
         DeclareLaunchArgument(
             "tf_prefix",

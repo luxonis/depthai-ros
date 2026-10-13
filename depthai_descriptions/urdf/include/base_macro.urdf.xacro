@@ -7,9 +7,9 @@
 	<xacro:macro name="base"
 		params="camera_name camera_model parent base_frame 
                                            cam_pos_x cam_pos_y cam_pos_z 
-                                           cam_roll cam_pitch cam_yaw has_imu r:=0.8 g:=0.8 b:=0.8 a:=0.8 simulation:=false">
+                                           cam_roll cam_pitch cam_yaw has_imu r:=0.8 g:=0.8 b:=0.8 a:=0.8 simulation:=false imu_sensor:='' imu_frame:='optical'">
 
-		<xacro:depthai_model_config camera_model="${camera_model}" />
+		<xacro:depthai_model_config camera_model="${camera_model}" imu_sensor="${imu_sensor}" imu_frame="${imu_frame}" />
 
 		<xacro:if value="${simulation}">
 			<xacro:property
@@ -37,15 +37,17 @@
 
 		<!-- device Center -->
 		<link name="${camera_name}_model_origin">
-			<visual>
-				<origin xyz="${device_config['mesh_xyz']}" rpy="0 0 0" />
-				<geometry>
-					<mesh filename="${file_prefix}/urdf/models/${model}.stl" />
-				</geometry>
-				<material name="mat">
-					<color rgba="${r} ${g} ${b} ${a}" />
-				</material>
-			</visual>
+			<xacro:if value="${device_config['mesh'] is not None}">
+				<visual>
+					<origin xyz="${device_config['mesh_xyz']}" rpy="0 0 0" />
+					<geometry>
+						<mesh filename="${file_prefix}/urdf/models/${device_config['mesh']}.stl" />
+					</geometry>
+					<material name="mat">
+						<color rgba="${r} ${g} ${b} ${a}" />
+					</material>
+				</visual>
+			</xacro:if>
 		</link>
 
 		<joint name="${camera_name}_model_origin_joint" type="fixed">
@@ -60,7 +62,7 @@
 		<xacro:if value="${has_imu}">
 			<xacro:if value="${device_config['imu_xyz'] is None or device_config['imu_rpy'] is None}">
 				<xacro:property name="invalid_imu" lazy_eval="false"
-					value="${xacro.fatal('No IMU transform defined for camera_model: ' + camera_model)}" />
+					value="${xacro.fatal('No selected IMU transform for ' + camera_model + '. Set imu_sensor to one of: ' + ', '.join(device_config['imu_variants'].keys()))}" />
 			</xacro:if>
 			<link name="${camera_name}_imu_frame" />
 			<joint name="${camera_name}_imu_joint" type="fixed">

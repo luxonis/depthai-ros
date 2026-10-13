@@ -1,5 +1,5 @@
-# Nominal geometry used by the URDF, in metres and radians. Models without
-# overrides retain the historical default layout. A null sensor position means
+# Overrides of board_models.yaml, in metres and radians. Unknown models
+# retain the historical default layout. A null sensor position means
 # that no frame is generated; a null IMU means its transform is not defined.
 defaults:
   mesh_xyz: "0 0 0"
@@ -7,6 +7,11 @@ defaults:
   left_xyz: "0 0.0375 0"
   right_xyz: "0 -0.0375 0"
   right_name: null
+  rgb_rpy: "0 0 0"
+  left_rpy: "0 0 0"
+  right_rpy: "0 0 0"
+  extra_cameras: {}
+  imu_variants: {}
   imu_xyz: null
   imu_rpy: null
 
@@ -15,7 +20,7 @@ models:
     imu_xyz: "0.0 -0.015 -0.013662"
     imu_rpy: "0.0 1.5707963267948966 0.0"
   OAK-D-PRO:
-    imu_xyz: "-0.008 -0.037945 -0.00079"
+    imu_xyz: "-0.008 -0.037948 -0.00079"
     imu_rpy: "3.141592653589793 1.5707963267948966 0.0"
   OAK-D-POE:
     imu_xyz: "-0.008 -0.04 -0.020265"
@@ -29,8 +34,11 @@ models:
     right_xyz: "0 -0.05 0"
   OAK-D-SR-POE:
     mesh_xyz: "0.019 0 0"
-    left_xyz: "0 0.0375 0"
-    right_xyz: "0 0.0175 0"
+    left_xyz: "0 0.037382 0"
+    right_xyz: "0 0.017382 0"
+  OAK-D-CM4-POE:
+    left_xyz: "0 0.077 0"
+    right_xyz: "0 -0.013 0"
   OAK-T:
     left_xyz: null
     right_xyz: "0 -0.025 0"
