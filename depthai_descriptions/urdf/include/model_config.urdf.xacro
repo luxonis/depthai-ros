@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+	<!-- Export a fresh configuration into the calling macro's scope. -->
+	<xacro:macro name="depthai_model_config" params="camera_model">
+		<xacro:property name="config_file" value="$(find depthai_descriptions)/urdf/include/model_config.yaml" />
+		<xacro:property name="configs" value="${xacro.load_yaml(config_file)}" />
+		<xacro:property name="device_config" scope="parent"
+			value="${dict(configs['defaults'], **configs['models'].get(camera_model, dict()))}" />
+	</xacro:macro>
+
+</robot>

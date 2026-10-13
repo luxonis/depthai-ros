@@ -2,16 +2,31 @@
 <robot name="depthai_camera"
 	xmlns:xacro="http://ros.org/wiki/xacro">
 
+	<!-- Camera and optical frames share the same structure for every sensor. -->
+	<xacro:macro name="depthai_camera_frame"
+		params="camera_name base_frame sensor_name joint_name xyz frame_suffix optical_frame_suffix">
+		<xacro:property name="M_PI" value="3.1415926535897931" />
+		<link name="${camera_name}_${sensor_name}_${frame_suffix}" />
+		<joint name="${camera_name}_${joint_name}_camera_joint" type="fixed">
+			<parent link="${base_frame}" />
+			<child link="${camera_name}_${sensor_name}_${frame_suffix}" />
+			<origin xyz="${xyz}" rpy="0 0 0" />
+		</joint>
+		<link name="${camera_name}_${sensor_name}_${optical_frame_suffix}" />
+		<joint name="${camera_name}_${joint_name}_camera_optical_joint" type="fixed">
+			<origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}" />
+			<parent link="${camera_name}_${sensor_name}_${frame_suffix}" />
+			<child link="${camera_name}_${sensor_name}_${optical_frame_suffix}" />
+		</joint>
+	</xacro:macro>
+
 	<xacro:macro name="depthai_camera"
 		params="camera_name camera_model parent base_frame 
                                            cam_pos_x cam_pos_y cam_pos_z 
                                            cam_roll cam_pitch cam_yaw r:=0.8 g:=0.8 b:=0.8 a:=0.8 simulation:=false rs_compat:=false">
 
 		<xacro:include filename="$(find depthai_descriptions)/urdf/include/base_macro.urdf.xacro" />
-		<xacro:property name="M_PI" value="3.1415926535897931" />
-		<xacro:property name="model" value="${camera_model}" />
-		<xacro:property name="has_imu" value="false" />
-		<xacro:property name="baseline" value="0.075" />
+		<xacro:depthai_model_config camera_model="${camera_model}" />
 
 		<xacro:if value="${rs_compat}">
 			<xacro:property name="frame_suffix" value="frame" />
@@ -28,168 +43,25 @@
 			<xacro:property name="right_name" value="right" />
 		</xacro:unless>
 
-		<xacro:if value="${model in ['OAK-D-SR']}">
-			<xacro:property name="baseline" value="0.02" />
-		</xacro:if>
-
-		<xacro:if value="${model in ['OAK-D', 'OAK-D-PRO', 'OAK-D-POE']}">
-			<xacro:property name="has_imu" value="true" />
-		</xacro:if>
-
 		<xacro:base camera_name="${camera_name}" parent="${parent}" camera_model="${camera_model}"
 			base_frame="${base_frame}" cam_pos_x="${cam_pos_x}" cam_pos_y="${cam_pos_y}"
 			cam_pos_z="${cam_pos_z}" cam_roll="${cam_roll}" cam_pitch="${cam_pitch}"
-			cam_yaw="${cam_yaw}" has_imu="${has_imu}" simulation="${simulation}" />
+			cam_yaw="${cam_yaw}" has_imu="${device_config['imu_xyz'] is not None}" simulation="${simulation}" />
 
-		<!-- RGB Camera -->
-		<xacro:unless value="${model in ['OAK-D-SR']}">
-			<link name="${camera_name}_${rgb_name}_${frame_suffix}" />
-
-			<joint name="${camera_name}_rgb_camera_joint" type="fixed">
-				<parent link="${base_frame}" />
-				<child link="${camera_name}_${rgb_name}_${frame_suffix}" />
-				<origin xyz="0 0 0" rpy="0 0 0" />
-			</joint>
-
-			<link name="${camera_name}_${rgb_name}_${optical_frame_suffix}" />
-
-			<joint name="${camera_name}_rgb_camera_optical_joint" type="fixed">
-				<origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}" />
-				<parent link="${camera_name}_${rgb_name}_${frame_suffix}" />
-				<child link="${camera_name}_${rgb_name}_${optical_frame_suffix}" />
-			</joint>
-		</xacro:unless>
-		<!-- LR and SR POE have different baselines and positions -->
-		<xacro:unless value="${model in ['OAK-D-LR', 'OAK-D-SR-POE', 'OAK-T']}">
-
-			<!-- Left Camera -->
-			<link name="${camera_name}_${left_name}_${frame_suffix}" />
-
-			<joint name="${camera_name}_left_camera_joint" type="fixed">
-				<parent link="${base_frame}" />
-				<child link="${camera_name}_${left_name}_${frame_suffix}" />
-				<origin xyz="0 ${baseline/2} 0" rpy="0 0 0" />
-			</joint>
-
-			<link name="${camera_name}_${left_name}_${optical_frame_suffix}" />
-
-			<joint name="${camera_name}_left_camera_optical_joint" type="fixed">
-				<origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}" />
-				<parent link="${camera_name}_${left_name}_${frame_suffix}" />
-				<child link="${camera_name}_${left_name}_${optical_frame_suffix}" />
-			</joint>
-
-
-			<!-- right Camera -->
-			<link name="${camera_name}_${right_name}_${frame_suffix}" />
-
-			<joint name="${camera_name}_right_camera_joint" type="fixed">
-				<parent link="${base_frame}" />
-				<child link="${camera_name}_${right_name}_${frame_suffix}" />
-				<origin xyz="0 -${baseline/2} 0" rpy="0 0 0" />
-			</joint>
-
-			<link name="${camera_name}_${right_name}_${optical_frame_suffix}" />
-
-			<joint name="${camera_name}_right_camera_optical_joint" type="fixed">
-				<origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}" />
-				<parent link="${camera_name}_${right_name}_${frame_suffix}" />
-				<child link="${camera_name}_${right_name}_${optical_frame_suffix}" />
-			</joint>
-
-		</xacro:unless>
-
-		<xacro:if value="${model in ['OAK-D-LR']}">
-
-			<!-- left Camera -->
-			<link name="${camera_name}_${left_name}_${frame_suffix}" />
-
-			<joint name="${camera_name}_left_camera_joint" type="fixed">
-				<parent link="${base_frame}" />
-				<child link="${camera_name}_${left_name}_${frame_suffix}" />
-				<origin xyz="0 0.1 0" rpy="0 0 0" />
-			</joint>
-
-			<link name="${camera_name}_${left_name}_${optical_frame_suffix}" />
-
-			<joint name="${camera_name}_left_camera_optical_joint" type="fixed">
-				<origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}" />
-				<parent link="${camera_name}_${left_name}_${frame_suffix}" />
-				<child link="${camera_name}_${left_name}_${optical_frame_suffix}" />
-			</joint>
-
-			<!-- right Camera -->
-			<link name="${camera_name}_${right_name}_${frame_suffix}" />
-
-			<joint name="${camera_name}_right_camera_joint" type="fixed">
-				<parent link="${base_frame}" />
-				<child link="${camera_name}_${right_name}_${frame_suffix}" />
-				<origin xyz="0 -0.05 0" rpy="0 0 0" />
-			</joint>
-
-			<link name="${camera_name}_${right_name}_${optical_frame_suffix}" />
-
-			<joint name="${camera_name}_right_camera_optical_joint" type="fixed">
-				<origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}" />
-				<parent link="${camera_name}_${right_name}_${frame_suffix}" />
-				<child link="${camera_name}_${right_name}_${optical_frame_suffix}" />
-			</joint>
+		<xacro:if value="${device_config['rgb_xyz'] is not None}">
+			<xacro:depthai_camera_frame camera_name="${camera_name}" base_frame="${base_frame}"
+				sensor_name="${rgb_name}" joint_name="rgb" xyz="${device_config['rgb_xyz']}"
+				frame_suffix="${frame_suffix}" optical_frame_suffix="${optical_frame_suffix}" />
 		</xacro:if>
-
-		<xacro:if value="${model in ['OAK-D-SR-POE']}">
-		
-			<!-- left Camera -->
-			<link name="${camera_name}_${left_name}_${frame_suffix}" />
-
-			<joint name="${camera_name}_left_camera_joint" type="fixed">
-				<parent link="${base_frame}" />
-				<child link="${camera_name}_${left_name}_${frame_suffix}" />
-				<origin xyz="0 0.0375 0" rpy="0 0 0" />
-			</joint>
-
-			<link name="${camera_name}_${left_name}_${optical_frame_suffix}" />
-
-			<joint name="${camera_name}_left_camera_optical_joint" type="fixed">
-				<origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}" />
-				<parent link="${camera_name}_${left_name}_${frame_suffix}" />
-				<child link="${camera_name}_${left_name}_${optical_frame_suffix}" />
-			</joint>
-
-			<!-- right Camera -->
-			<link name="${camera_name}_${right_name}_${frame_suffix}" />
-
-			<joint name="${camera_name}_right_camera_joint" type="fixed">
-				<parent link="${base_frame}" />
-				<child link="${camera_name}_${right_name}_${frame_suffix}" />
-				<origin xyz="0 0.0175 0" rpy="0 0 0" />
-			</joint>
-
-			<link name="${camera_name}_${right_name}_${optical_frame_suffix}" />
-
-			<joint name="${camera_name}_right_camera_optical_joint" type="fixed">
-				<origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}" />
-				<parent link="${camera_name}_${right_name}_${frame_suffix}" />
-				<child link="${camera_name}_${right_name}_${optical_frame_suffix}" />
-			</joint>
+		<xacro:if value="${device_config['left_xyz'] is not None}">
+			<xacro:depthai_camera_frame camera_name="${camera_name}" base_frame="${base_frame}"
+				sensor_name="${left_name}" joint_name="left" xyz="${device_config['left_xyz']}"
+				frame_suffix="${frame_suffix}" optical_frame_suffix="${optical_frame_suffix}" />
 		</xacro:if>
-		<xacro:if value="${model in ['OAK-T']}">
-
-			<!-- right Camera -->
-			<link name="${camera_name}_cam_e_${frame_suffix}" />
-
-			<joint name="${camera_name}_right_camera_joint" type="fixed">
-				<parent link="${base_frame}" />
-				<child link="${camera_name}_cam_e_${frame_suffix}" />
-				<origin xyz="0 -0.025 0" rpy="0 0 0" />
-			</joint>
-
-			<link name="${camera_name}_cam_e_${optical_frame_suffix}" />
-
-			<joint name="${camera_name}_right_camera_optical_joint" type="fixed">
-				<origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}" />
-				<parent link="${camera_name}_cam_e_${frame_suffix}" />
-				<child link="${camera_name}_cam_e_${optical_frame_suffix}" />
-			</joint>
+		<xacro:if value="${device_config['right_xyz'] is not None}">
+			<xacro:depthai_camera_frame camera_name="${camera_name}" base_frame="${base_frame}"
+				sensor_name="${device_config['right_name'] or right_name}" joint_name="right" xyz="${device_config['right_xyz']}"
+				frame_suffix="${frame_suffix}" optical_frame_suffix="${optical_frame_suffix}" />
 		</xacro:if>
 	</xacro:macro>
 
