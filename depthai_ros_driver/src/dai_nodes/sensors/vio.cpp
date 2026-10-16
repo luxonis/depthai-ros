@@ -2,7 +2,7 @@
 
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
-#include "depthai/pipeline/datatype/TransformData.hpp"
+#include "depthai/pipeline/datatype/Odometry.hpp"
 #include "depthai_bridge/TransformDataConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/imu.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
@@ -109,7 +109,7 @@ void Vio::closeQueues() {
 }
 
 void Vio::transCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
-    auto transData = std::dynamic_pointer_cast<dai::TransformData>(data);
+    auto transData = std::dynamic_pointer_cast<dai::Odometry>(data);
     std::deque<nav_msgs::msg::Odometry> deq;
     odomConv->toRosMsg(transData, deq);
     while(deq.size() > 0) {

@@ -1,7 +1,9 @@
 #include "depthai_bridge/TransformDataConverter.hpp"
 
+#include "depthai/pipeline/datatype/Odometry.hpp"
 #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
+#include "tf2/LinearMath/Quaternion.hpp"
 
 namespace depthai_bridge {
 
@@ -30,6 +32,14 @@ void TransformDataConverter::toRosMsg(std::shared_ptr<dai::TransformData> inTran
     odomMsg.pose.pose.orientation.z = quat.qz;
     odomMsg.pose.pose.orientation.w = quat.qw;
     odomMsg.pose.covariance = cov;
+    if(auto odometry = std::dynamic_pointer_cast<dai::Odometry>(inTransform)) {
+        // DepthAI velocity is in the pose reference frame; ROS twist is in child_frame_id.
+        const tf2::Quaternion rotation(quat.qx, quat.qy, quat.qz, quat.qw);
+        const auto velocity = tf2::quatRotate(rotation.inverse(), tf2::Vector3(odometry->velocity.x, odometry->velocity.y, odometry->velocity.z));
+        odomMsg.twist.twist.linear.x = velocity.x();
+        odomMsg.twist.twist.linear.y = velocity.y();
+        odomMsg.twist.twist.linear.z = velocity.z();
+    }
     odomMsgs.push_back(odomMsg);
 }
 
