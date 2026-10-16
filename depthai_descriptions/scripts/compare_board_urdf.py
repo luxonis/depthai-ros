@@ -84,7 +84,8 @@ def expand(descriptions, model, sensor, mode):
     xacro.substitution_args._eval_find = lambda name: str(descriptions) if name == 'depthai_descriptions' else original_find(name)
     try:
         xml = xacro.process_file(str(descriptions / 'urdf/depthai_descr.urdf.xacro'), mappings={
-            'camera_model': model, 'camera_name': 'oak', 'base_frame': 'oak',
+            'camera_model': model, 'pose_source': 'board', 'legacy_frame_aliases': 'false',
+            'camera_name': 'oak', 'base_frame': 'oak',
             'imu_sensor': sensor or '', 'imu_frame': mode})
         return link_poses(ET.fromstring(xml.toxml()))
     except xacro.XacroException as exc:
@@ -94,17 +95,15 @@ def expand(descriptions, model, sensor, mode):
 
 
 def camera_links(config):
-    stereo = config.get('stereo_config', {})
+    names = {'CAM_A': 'rgb', 'CAM_B': 'left', 'CAM_C': 'right',
+             'CAM_D': 'left_back', 'CAM_E': 'right_back'}
+    if config.get('name') == 'OAK-D-SR-POE':
+        names['CAM_A'] = 'tof'
+    elif config.get('name') == 'OAK-T':
+        names['CAM_E'] = 'thermal'
     result = {}
     for socket in config['cameras']:
-        if socket == stereo.get('left_cam'):
-            name = 'left'
-        elif socket == stereo.get('right_cam'):
-            name = 'right'
-        elif socket == 'CAM_A':
-            name = 'rgb'
-        else:
-            name = socket.lower()
+        name = names.get(socket, socket.lower())
         result[socket] = f'oak_{name}_camera_frame'
     return result
 

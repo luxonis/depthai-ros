@@ -69,6 +69,14 @@ void DriverParamHandler::declareParams() {
     declareAndLogParam<std::string>("i_tf_cam_pitch", "0.0");
     declareAndLogParam<std::string>("i_tf_cam_yaw", "0.0");
     declareAndLogParam<std::string>("i_tf_imu_from_descr", "false");
+    declareAndLogParam<std::string>("i_tf_imu_sensor", "");
+    declareAndLogParam<std::string>("i_tf_imu_frame", "auto");
+    // DEPRECATED legacy poses/model aliases are migration defaults for existing models.
+    declareAndLogParam<std::string>("i_tf_pose_source", "legacy");
+    declareAndLogParam<std::string>("i_tf_model_selection", "auto");
+    declareAndLogParam<std::string>("i_tf_fallback_model", "");
+    declareAndLogParam<std::string>("i_tf_mesh_model", "");
+    declareAndLogParam<std::string>("i_tf_legacy_frame_aliases", "true");
     declareAndLogParam<std::string>("i_tf_custom_urdf_location", "");
     declareAndLogParam<std::string>("i_tf_custom_xacro_args", "");
 }

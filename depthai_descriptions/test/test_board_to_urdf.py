@@ -106,9 +106,9 @@ class BoardConversionTest(unittest.TestCase):
 class ExistingUrdfTest(unittest.TestCase):
     """Compare real board fixtures with the current source-tree Xacro output.
 
-    These cases cover geometry that agrees. Legacy IMU rotations and some
-    IMU positions differ between the sources; only the matching IMU
-    coordinates are checked here.
+    These focused regression cases use terminal-origin board mode. The catalog
+    tests additionally cover every camera and IMU variant; legacy compatibility
+    is checked separately against the pinned develop descriptions.
     """
 
     descriptions = SCRIPT.parents[1]
@@ -130,7 +130,7 @@ class ExistingUrdfTest(unittest.TestCase):
                    return_value=str(self.descriptions)):
             document = xacro.process_file(
                 str(self.descriptions / 'urdf/depthai_descr.urdf.xacro'),
-                mappings={'camera_model': model})
+                mappings={'camera_model': model, 'pose_source': 'board', **({'imu_sensor': 'BNO'} if model in ('OAK-D', 'OAK-D-PRO') else {})})
         return {joint.attrib['name']: joint.find('origin').attrib
                 for joint in ElementTree.fromstring(document.toxml()).findall('joint')}
 
@@ -164,15 +164,15 @@ class ExistingUrdfTest(unittest.TestCase):
                     self.assertOrigin(output['camera_optical_origin'],
                                       joints[f'oak_{sensor}_camera_optical_joint'])
 
-    def test_thermal_origins_with_rgb_reference(self):
-        # The automatic terminal is CAM_E, but the URDF base is CAM_A.
-        output = self.board('OAK-T', reference='CAM_A')
+    def test_thermal_origins_with_terminal_reference(self):
+        # Both descriptions use terminal CAM_E as the origin.
+        output = self.board('OAK-T')
         joints = self.joints('OAK-T')
         self.assertOrigin(output['cameras']['CAM_A'], joints['oak_rgb_camera_joint'])
         self.assertOrigin(output['cameras']['CAM_E'], joints['oak_right_camera_joint'])
 
     def test_short_range_relative_camera_origin(self):
-        # The URDF base is the stereo midpoint, which is not a board camera.
+        # Board mode places the terminal right sensor at the origin.
         output = self.board('OAK-D-SR')
         joints = self.joints('OAK-D-SR')
         left = list(map(float, joints['oak_left_camera_joint']['xyz'].split()))

@@ -8,9 +8,12 @@
 #include <depthai/common/CameraBoardSocket.hpp>
 #include <memory>
 #include <string>
+#include <set>
 #include <vector>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
+#include "depthai_bridge/DescriptionRunner.hpp"
+#include "depthai_bridge/FrameAliases.hpp"
 #include "depthai_bridge/depthaiUtility.hpp"
 #include "geometry_msgs/msg/quaternion.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
@@ -19,6 +22,7 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
 namespace depthai_bridge {
+// DEPRECATED develop-compatible constructor, retained for source/link symbol compatibility.
 TFPublisher::TFPublisher(std::shared_ptr<rclcpp::Node> node,
                          const dai::CalibrationHandler& calHandler,
                          const std::vector<dai::CameraFeatures>& camFeatures,
@@ -37,6 +41,34 @@ TFPublisher::TFPublisher(std::shared_ptr<rclcpp::Node> node,
                          const std::string& customXacroArgs,
                          const bool rsCompatibilityMode,
                          const std::string& tfPrefix)
+    : TFPublisher(node, calHandler, camFeatures, camName, camModel, baseFrame, parentFrame, camPosX, camPosY, camPosZ, camRoll, camPitch, camYaw, imuFromDescr, customURDFLocation, customXacroArgs, rsCompatibilityMode, tfPrefix, "", "", "auto", "legacy", "auto", "", "", "true") {}
+
+TFPublisher::TFPublisher(std::shared_ptr<rclcpp::Node> node,
+                         const dai::CalibrationHandler& calHandler,
+                         const std::vector<dai::CameraFeatures>& camFeatures,
+                         const std::string& camName,
+                         const std::string& camModel,
+                         const std::string& baseFrame,
+                         const std::string& parentFrame,
+                         const std::string& camPosX,
+                         const std::string& camPosY,
+                         const std::string& camPosZ,
+                         const std::string& camRoll,
+                         const std::string& camPitch,
+                         const std::string& camYaw,
+                         const std::string& imuFromDescr,
+                         const std::string& customURDFLocation,
+                         const std::string& customXacroArgs,
+                         const bool rsCompatibilityMode,
+                         const std::string& tfPrefix,
+                         const std::string& detectedImu,
+                         const std::string& imuSensor,
+                         const std::string& imuFrame,
+                         const std::string& poseSource,
+                         const std::string& modelSelection,
+                         const std::string& fallbackModel,
+                         const std::string& meshModel,
+                         const std::string& legacyFrameAliases)
     : camName(camName),
       camModel(camModel),
       tfPrefix(resolveFramePrefix(tfPrefix, node->get_name())),
@@ -48,10 +80,18 @@ TFPublisher::TFPublisher(std::shared_ptr<rclcpp::Node> node,
       camRoll(camRoll),
       camPitch(camPitch),
       camYaw(camYaw),
-      camFeatures(camFeatures),
       imuFromDescr(imuFromDescr),
       customURDFLocation(customURDFLocation),
       customXacroArgs(customXacroArgs),
+      detectedImu(detectedImu),
+      imuSensor(imuSensor),
+      imuFrame(imuFrame),
+      poseSource(poseSource),
+      modelSelection(modelSelection),
+      fallbackModel(fallbackModel),
+      meshModel(meshModel),
+      legacyFrameAliases(legacyFrameAliases),
+      camFeatures(camFeatures),
       rsCompatibilityMode(rsCompatibilityMode),
       logger(node->get_logger()) {
     tfPub = std::make_shared<tf2_ros::StaticTransformBroadcaster>(node);
@@ -81,6 +121,12 @@ void TFPublisher::publishDescription() {
 }
 
 void TFPublisher::publishCamTransforms(nlohmann::json camData, std::shared_ptr<rclcpp::Node> node, const dai::CalibrationHandler& calHandler) {
+    std::set<std::string> occupiedFrames;
+    for(const auto& cam : camData) {
+        const auto name = getSocketName(static_cast<dai::CameraBoardSocket>(cam[0].get<int>()), camModel, rsCompatibilityMode);
+        occupiedFrames.insert(getFrameName(tfPrefix, name + (rsCompatibilityMode ? "_frame" : "_camera_frame")));
+        occupiedFrames.insert(getOpticalFrameName(tfPrefix, name, rsCompatibilityMode));
+    }
     for(auto& cam : camData) {
         geometry_msgs::msg::TransformStamped ts;
         geometry_msgs::msg::TransformStamped opticalTS;
@@ -97,18 +143,29 @@ void TFPublisher::publishCamTransforms(nlohmann::json camData, std::shared_ptr<r
         }
 
         std::string name = getSocketName(static_cast<dai::CameraBoardSocket>(cam[0]), camModel, rsCompatibilityMode);
-        ts.child_frame_id = getFrameName(tfPrefix, name + "_camera_frame");
+        ts.child_frame_id = getFrameName(tfPrefix, name + (rsCompatibilityMode ? "_frame" : "_camera_frame"));
         // check if the camera is at the end of the chain
         if(extrinsics["toCameraSocket"] != -1) {
-            ts.header.frame_id = getFrameName(
-                tfPrefix,
-                getSocketName(static_cast<dai::CameraBoardSocket>(extrinsics["toCameraSocket"].get<int>()), camModel, rsCompatibilityMode) + "_camera_frame");
+            ts.header.frame_id =
+                getFrameName(tfPrefix,
+                             getSocketName(static_cast<dai::CameraBoardSocket>(extrinsics["toCameraSocket"].get<int>()), camModel, rsCompatibilityMode)
+                                 + (rsCompatibilityMode ? "_frame" : "_camera_frame"));
         } else {
             ts.header.frame_id = baseFrame;
             ts.transform.rotation.w = 1.0;
             ts.transform.rotation.x = 0.0;
             ts.transform.rotation.y = 0.0;
             ts.transform.rotation.z = 0.0;
+            const std::string socket = dai::toString(currCam);
+            if(cameraPoses.contains(socket)) {
+                const auto& pose = cameraPoses.at(socket);
+                ts.transform.translation.x = pose.at("xyz").at(0).get<double>();
+                ts.transform.translation.y = pose.at("xyz").at(1).get<double>();
+                ts.transform.translation.z = pose.at("xyz").at(2).get<double>();
+                tf2::Quaternion rotation;
+                rotation.setRPY(pose.at("rpy").at(0).get<double>(), pose.at("rpy").at(1).get<double>(), pose.at("rpy").at(2).get<double>());
+                ts.transform.rotation = tf2::toMsg(rotation);
+            }
         }
         // rotate optical fransform
         opticalTS.child_frame_id = getOpticalFrameName(tfPrefix, name, rsCompatibilityMode);
@@ -119,6 +176,17 @@ void TFPublisher::publishCamTransforms(nlohmann::json camData, std::shared_ptr<r
         opticalTS.transform.rotation.z = -0.5;
         tfPub->sendTransform(ts);
         tfPub->sendTransform(opticalTS);
+        if(legacyFrameAliases == "true") {
+            for(const auto& [canonical, deprecated] : detail::legacyCameraFrameAliases(tfPrefix, currCam, camModel, rsCompatibilityMode)) {
+                if(!occupiedFrames.insert(deprecated).second) continue;
+                geometry_msgs::msg::TransformStamped alias;
+                alias.header = ts.header;
+                alias.header.frame_id = canonical;
+                alias.child_frame_id = deprecated;
+                alias.transform.rotation.w = 1.0;
+                tfPub->sendTransform(alias);
+            }
+        }
     }
 }
 void TFPublisher::publishImuTransform(nlohmann::json json, std::shared_ptr<rclcpp::Node> node, const dai::CalibrationHandler& calHandler) {
@@ -127,9 +195,10 @@ void TFPublisher::publishImuTransform(nlohmann::json json, std::shared_ptr<rclcp
     auto imuExtr = json["imuExtrinsics"];
     ts.child_frame_id = getFrameName(tfPrefix, "imu_frame");
     if(imuExtr["toCameraSocket"] != -1) {
-        ts.header.frame_id = getFrameName(
-            tfPrefix,
-            getSocketName(static_cast<dai::CameraBoardSocket>(imuExtr["toCameraSocket"].get<int>()), camModel, rsCompatibilityMode) + "_camera_frame");
+        ts.header.frame_id =
+            getFrameName(tfPrefix,
+                         getSocketName(static_cast<dai::CameraBoardSocket>(imuExtr["toCameraSocket"].get<int>()), camModel, rsCompatibilityMode)
+                             + (rsCompatibilityMode ? "_frame" : "_camera_frame"));
         auto extrMat = calHandler.getImuToCameraExtrinsics(static_cast<dai::CameraBoardSocket>(imuExtr["toCameraSocket"].get<int>()));
         // pass parts of 4x4 matrix to transfFromExtr
         std::vector<float> translation = {extrMat[0][3], extrMat[1][3], extrMat[2][3]};
@@ -184,93 +253,42 @@ geometry_msgs::msg::Quaternion TFPublisher::quatFromRotM(std::vector<std::vector
     return msg_quat;
 }
 
-bool TFPublisher::modelNameAvailable() {
-    std::filesystem::path path = std::filesystem::path(ament_index_cpp::get_package_share_directory("depthai_descriptions")) / "urdf" / "models";
-    convertModelName();
-    try {
-        for(const auto& entry : std::filesystem::directory_iterator(path)) {
-            if(entry.is_regular_file() && entry.path().filename() == camModel + ".stl") {
-                return true;
-            }
-        }
-    } catch(const std::filesystem::filesystem_error& e) {
-        throw std::runtime_error("Could not open depthai_descriptions package directory: " + std::string(e.what()));
-    }
-    return false;
-}
-
-std::string TFPublisher::prepareXacroArgs() {
-    if(!customURDFLocation.empty() || !modelNameAvailable()) {
-        RCLCPP_ERROR(
-            logger,
-            "Model name %s not found in depthai_descriptions package. If camera model is autodetected, please notify developers. Using default model: OAK-D-S2",
-            camModel.c_str());
-        camModel = "OAK-D-S2";
-    }
-
-    std::string xacroArgs = "camera_name:=" + tfPrefix;
-    xacroArgs += " camera_model:=" + camModel;
-    xacroArgs += " base_frame:=" + baseFrame;
-    xacroArgs += " parent_frame:=" + parentFrame;
-    xacroArgs += " cam_pos_x:=" + camPosX;
-    xacroArgs += " cam_pos_y:=" + camPosY;
-    xacroArgs += " cam_pos_z:=" + camPosZ;
-    xacroArgs += " cam_roll:=" + camRoll;
-    xacroArgs += " cam_pitch:=" + camPitch;
-    xacroArgs += " cam_yaw:=" + camYaw;
-    xacroArgs += " has_imu:=" + imuFromDescr;
-    return xacroArgs;
-}
-
-void TFPublisher::convertModelName() {
-    std::map<std::string, std::string> modelMappings = {{"OAK-D-SR-POE", "OAK-D-SR-POE"},
-                                                        {"OAK-D-PRO-W-POE", "OAK-D-S2-POE"},
-                                                        {"OAK-D-PRO-POE", "OAK-D-S2-POE"},
-                                                        {"OAK-D-S2-POE", "OAK-D-S2-POE"},
-                                                        {"OAK-D-POE", "OAK-D-POE"},
-                                                        {"OAK-D-LITE", "OAK-D-PRO"},
-                                                        {"OAK-D-S2", "OAK-D-PRO"},
-                                                        {"OAK-D-PRO-W", "OAK-D-PRO"},
-                                                        {"OAK-D-PRO", "OAK-D-PRO"},
-                                                        {"OAK-D-W", "OAK-D-S2"},
-                                                        {"OAK-D", "OAK-D"},
-                                                        {"OAK-T", "OAK-T"},
-                                                        {"OAK-4-PRO", "OAK4-D"},
-                                                        {"OAK-4-PRO-W", "OAK4-D"},
-                                                        {"OAK4-D-W", "OAK4-D"},
-                                                        {"OAK4-D-PRO", "OAK4-D"}};
-
-    for(const auto& [key, value] : modelMappings) {
-        if(camModel == key) {
-            camModel = value;
-            return;
-        }
-    }
+std::vector<std::string> TFPublisher::prepareXacroArgs() {
+    return {"camera_name:=" + tfPrefix,
+            "camera_model:=" + camModel,
+            "base_frame:=" + baseFrame,
+            "parent_frame:=" + parentFrame,
+            "cam_pos_x:=" + camPosX,
+            "cam_pos_y:=" + camPosY,
+            "cam_pos_z:=" + camPosZ,
+            "cam_roll:=" + camRoll,
+            "cam_pitch:=" + camPitch,
+            "cam_yaw:=" + camYaw,
+            "has_imu:=" + imuFromDescr,
+            "imu_sensor:=" + imuSensor,
+            "imu_frame:=" + imuFrame,
+            "pose_source:=" + poseSource,
+            "model_selection:=" + modelSelection,
+            "fallback_model:=" + fallbackModel,
+            "mesh_model:=" + meshModel,
+            "legacy_frame_aliases:=" + legacyFrameAliases,
+            "use_base_descr:=true"};
 }
 
 std::string TFPublisher::getURDF() {
-    std::string args, path;
-    if(customXacroArgs.empty()) {
-        args = prepareXacroArgs();
-    } else {
-        args = customXacroArgs;
-    }
-    if(customURDFLocation.empty()) {
-        path = ament_index_cpp::get_package_share_directory("depthai_descriptions") + "/urdf/base_descr.urdf.xacro ";
-    } else {
-        path = customURDFLocation + " ";
-    }
-    std::string cmd = "xacro " + path + args;
-    RCLCPP_DEBUG(logger, "Xacro command: %s", cmd.c_str());
-    std::array<char, 128> buffer;
-    std::string result;
-    std::unique_ptr<FILE, int (*)(FILE*)> pipe(popen(cmd.c_str(), "r"), pclose);
-    if(!pipe) {
-        throw std::runtime_error("popen() failed!");
-    }
-    while(fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
-        result += buffer.data();
-    }
-    return result;
+    const auto share = ament_index_cpp::get_package_share_directory("depthai_descriptions");
+    std::vector<std::string> arguments = {"python3", share + "/scripts/resolve_description.py", "--output=json", "--detected-imu=" + detectedImu};
+    if(!customURDFLocation.empty()) arguments.push_back("--description=" + customURDFLocation);
+    const auto mappings = prepareXacroArgs();
+    arguments.insert(arguments.end(), mappings.begin(), mappings.end());
+    if(!customXacroArgs.empty()) arguments.push_back("--custom-args=" + customXacroArgs);
+    const auto result = nlohmann::json::parse(detail::runDescriptionCommand(arguments));
+    const auto urdf = result.at("urdf").get<std::string>();
+    if(urdf.empty()) throw std::runtime_error("Description resolver returned an empty URDF");
+    cameraPoses = result.at("camera_poses");
+    // Keep camModel as the physical device name for topic/socket naming.
+    const auto diagnostics = result.value("diagnostics", std::string());
+    if(!diagnostics.empty()) RCLCPP_WARN(logger, "%s", diagnostics.c_str());
+    return urdf;
 }
 }  // namespace depthai_bridge

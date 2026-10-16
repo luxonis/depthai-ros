@@ -2,9 +2,20 @@
 <robot name="depthai_camera"
 	xmlns:xacro="http://ros.org/wiki/xacro">
 
+    <!-- DEPRECATED identity aliases: migrate consumers to the socket-based names. -->
+    <xacro:macro name="depthai_frame_alias" params="canonical alias">
+        <xacro:if value="${canonical != alias}">
+            <link name="${alias}" />
+            <joint name="${alias}_deprecated_alias_joint" type="fixed">
+                <parent link="${canonical}" /><child link="${alias}" />
+                <origin xyz="0 0 0" rpy="0 0 0" />
+            </joint>
+        </xacro:if>
+    </xacro:macro>
+
 	<!-- Camera and optical frames share the same structure for every sensor. -->
 	<xacro:macro name="depthai_camera_frame"
-		params="camera_name base_frame sensor_name joint_name xyz frame_suffix optical_frame_suffix rpy:='0 0 0'">
+		params="camera_name base_frame sensor_name joint_name xyz frame_suffix optical_frame_suffix rpy:='0 0 0' legacy_name:='' aliases:=false reserved_names:=''">
 		<xacro:property name="M_PI" value="3.1415926535897931" />
 		<link name="${camera_name}_${sensor_name}_${frame_suffix}" />
 		<joint name="${camera_name}_${joint_name}_camera_joint" type="fixed">
@@ -18,16 +29,26 @@
 			<parent link="${camera_name}_${sensor_name}_${frame_suffix}" />
 			<child link="${camera_name}_${sensor_name}_${optical_frame_suffix}" />
 		</joint>
-	</xacro:macro>
+        <xacro:if value="${aliases}">
+            <xacro:depthai_frame_alias canonical="${camera_name}_${sensor_name}_${frame_suffix}" alias="${camera_name}_${sensor_name}_camera_frame" />
+            <xacro:if value="${legacy_name != '' and legacy_name != sensor_name and legacy_name not in reserved_names}">
+                <xacro:depthai_frame_alias canonical="${camera_name}_${sensor_name}_${frame_suffix}" alias="${camera_name}_${legacy_name}_camera_frame" />
+                <xacro:depthai_frame_alias canonical="${camera_name}_${sensor_name}_${optical_frame_suffix}" alias="${camera_name}_${legacy_name}_${optical_frame_suffix}" />
+                <xacro:if value="${frame_suffix == 'frame'}">
+                    <xacro:depthai_frame_alias canonical="${camera_name}_${sensor_name}_${frame_suffix}" alias="${camera_name}_${legacy_name}_frame" />
+                </xacro:if>
+            </xacro:if>
+        </xacro:if>
+    </xacro:macro>
 
-	<!-- Recursive expansion preserves extra sockets on boards with >3 cameras. -->
-	<xacro:macro name="depthai_extra_cameras" params="names cameras camera_name base_frame frame_suffix optical_frame_suffix">
+    <!-- Recursive expansion preserves extra sockets on boards with >3 cameras. -->
+	<xacro:macro name="depthai_extra_cameras" params="names cameras camera_name base_frame frame_suffix optical_frame_suffix socket_names aliases">
 		<xacro:if value="${len(names) > 0}">
 			<xacro:property name="sensor" value="${names[0]}" />
 			<xacro:depthai_camera_frame camera_name="${camera_name}" base_frame="${base_frame}"
-				sensor_name="${sensor}" joint_name="${sensor}" xyz="${cameras[sensor]['xyz']}"
-				rpy="${cameras[sensor]['rpy']}" frame_suffix="${frame_suffix}" optical_frame_suffix="${optical_frame_suffix}" />
-			<xacro:depthai_extra_cameras names="${names[1:]}" cameras="${cameras}" camera_name="${camera_name}"
+				sensor_name="${socket_names.get(cameras[sensor]['socket'], sensor)}" joint_name="${sensor}" xyz="${cameras[sensor]['xyz']}"
+				rpy="${cameras[sensor]['rpy']}" aliases="${aliases}" legacy_name="${sensor}" reserved_names="${list(socket_names.values())}" frame_suffix="${frame_suffix}" optical_frame_suffix="${optical_frame_suffix}" />
+			<xacro:depthai_extra_cameras names="${names[1:]}" aliases="${aliases}" cameras="${cameras}" socket_names="${socket_names}" camera_name="${camera_name}"
 				base_frame="${base_frame}" frame_suffix="${frame_suffix}" optical_frame_suffix="${optical_frame_suffix}" />
 		</xacro:if>
 	</xacro:macro>
@@ -35,10 +56,10 @@
 	<xacro:macro name="depthai_camera"
 		params="camera_name camera_model parent base_frame 
                                            cam_pos_x cam_pos_y cam_pos_z 
-                                           cam_roll cam_pitch cam_yaw r:=0.8 g:=0.8 b:=0.8 a:=0.8 simulation:=false rs_compat:=false imu_sensor:='' imu_frame:='optical'">
+                                           cam_roll cam_pitch cam_yaw r:=0.8 g:=0.8 b:=0.8 a:=0.8 simulation:=false rs_compat:=false has_imu:='auto' imu_sensor:='' imu_frame:='auto' pose_source:='legacy' mesh_model:='' legacy_frame_aliases:=true">
 
 		<xacro:include filename="$(find depthai_descriptions)/urdf/include/base_macro.urdf.xacro" />
-		<xacro:depthai_model_config camera_model="${camera_model}" imu_sensor="${imu_sensor}" imu_frame="${imu_frame}" />
+		<xacro:depthai_model_config camera_model="${camera_model}" imu_sensor="${imu_sensor}" imu_frame="${imu_frame}" pose_source="${pose_source}" mesh_model="${mesh_model}" />
 
 		<xacro:if value="${rs_compat}">
 			<xacro:property name="frame_suffix" value="frame" />
@@ -55,28 +76,37 @@
 			<xacro:property name="right_name" value="right" />
 		</xacro:unless>
 
+		<!-- Keep names identical to depthai_bridge::getSocketName in both TF modes. -->
+		<xacro:property name="socket_names" value="${dict(CAM_A=rgb_name, CAM_B=left_name, CAM_C=right_name, CAM_D=('infra3' if rs_compat else 'left_back'), CAM_E=('infra4' if rs_compat else 'right_back'))}" />
+		<xacro:if value="${camera_model == 'OAK-D-SR-POE'}">
+			<xacro:property name="socket_names" value="${dict(CAM_A='tof', CAM_B='left', CAM_C='right')}" />
+		</xacro:if>
+		<xacro:if value="${camera_model == 'OAK-T'}">
+			<xacro:property name="socket_names" value="${dict(CAM_A='rgb', CAM_B='left', CAM_C='right', CAM_D='left_back', CAM_E='thermal')}" />
+		</xacro:if>
+
 		<xacro:base camera_name="${camera_name}" parent="${parent}" camera_model="${camera_model}"
 			base_frame="${base_frame}" cam_pos_x="${cam_pos_x}" cam_pos_y="${cam_pos_y}"
 			cam_pos_z="${cam_pos_z}" cam_roll="${cam_roll}" cam_pitch="${cam_pitch}"
-			cam_yaw="${cam_yaw}" has_imu="${device_config['imu_xyz'] is not None}" simulation="${simulation}" imu_sensor="${imu_sensor}" imu_frame="${imu_frame}" />
+			cam_yaw="${cam_yaw}" has_imu="${device_config['imu_xyz'] is not None if has_imu == 'auto' else has_imu}" simulation="${simulation}" imu_sensor="${imu_sensor}" imu_frame="${imu_frame}" pose_source="${pose_source}" mesh_model="${mesh_model}" />
 
 		<xacro:if value="${device_config['rgb_xyz'] is not None}">
 			<xacro:depthai_camera_frame camera_name="${camera_name}" base_frame="${base_frame}"
-				sensor_name="${rgb_name}" joint_name="rgb" xyz="${device_config['rgb_xyz']}" rpy="${device_config['rgb_rpy']}"
+				sensor_name="${socket_names.get(device_config.get('rgb_socket'), rgb_name)}" joint_name="rgb" aliases="${legacy_frame_aliases and not device_config['legacy']}" legacy_name="${rgb_name}" reserved_names="${list(socket_names.values())}" xyz="${device_config['rgb_xyz']}" rpy="${device_config['rgb_rpy']}"
 				frame_suffix="${frame_suffix}" optical_frame_suffix="${optical_frame_suffix}" />
 		</xacro:if>
 		<xacro:if value="${device_config['left_xyz'] is not None}">
 			<xacro:depthai_camera_frame camera_name="${camera_name}" base_frame="${base_frame}"
-				sensor_name="${left_name}" joint_name="left" xyz="${device_config['left_xyz']}" rpy="${device_config['left_rpy']}"
+				sensor_name="${socket_names.get(device_config.get('left_socket'), left_name)}" joint_name="left" aliases="${legacy_frame_aliases and not device_config['legacy']}" legacy_name="${left_name}" reserved_names="${list(socket_names.values())}" xyz="${device_config['left_xyz']}" rpy="${device_config['left_rpy']}"
 				frame_suffix="${frame_suffix}" optical_frame_suffix="${optical_frame_suffix}" />
 		</xacro:if>
 		<xacro:if value="${device_config['right_xyz'] is not None}">
 			<xacro:depthai_camera_frame camera_name="${camera_name}" base_frame="${base_frame}"
-				sensor_name="${device_config['right_name'] or right_name}" joint_name="right" xyz="${device_config['right_xyz']}" rpy="${device_config['right_rpy']}"
+				sensor_name="${device_config['right_name'] or socket_names.get(device_config.get('right_socket'), right_name)}" joint_name="right" aliases="${legacy_frame_aliases and not device_config['legacy']}" legacy_name="${'cam_e' if camera_model == 'OAK-T' else right_name}" reserved_names="${list(socket_names.values())}" xyz="${device_config['right_xyz']}" rpy="${device_config['right_rpy']}"
 				frame_suffix="${frame_suffix}" optical_frame_suffix="${optical_frame_suffix}" />
 		</xacro:if>
 		<xacro:depthai_extra_cameras names="${list(device_config['extra_cameras'].keys())}"
-			cameras="${device_config['extra_cameras']}" camera_name="${camera_name}" base_frame="${base_frame}"
+			cameras="${device_config['extra_cameras']}" aliases="${legacy_frame_aliases and not device_config['legacy']}" socket_names="${socket_names}" camera_name="${camera_name}" base_frame="${base_frame}"
 			frame_suffix="${frame_suffix}" optical_frame_suffix="${optical_frame_suffix}" />
 	</xacro:macro>
 

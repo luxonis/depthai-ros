@@ -73,6 +73,8 @@ void Driver::onConfigure() {
     }
 
     if(ph->getParam<bool>("i_publish_tf_from_calibration")) {
+        const auto imuSensor = ph->getParam<std::string>("i_tf_imu_sensor");
+        const auto detectedImu = ph->getParam<std::string>("i_tf_imu_from_descr") == "true" && imuSensor.empty() ? device->getConnectedIMU() : "";
         tfPub = std::make_unique<depthai_bridge::TFPublisher>(shared_from_this(),
                                                               device->readCalibration(),
                                                               device->getConnectedCameraFeatures(),
@@ -90,7 +92,15 @@ void Driver::onConfigure() {
                                                               ph->getParam<std::string>("i_tf_custom_urdf_location"),
                                                               ph->getParam<std::string>("i_tf_custom_xacro_args"),
                                                               ph->getParam<bool>("i_rs_compat"),
-                                                              ph->getParam<std::string>("i_tf_prefix"));
+                                                              ph->getParam<std::string>("i_tf_prefix"),
+                                                              detectedImu,
+                                                              imuSensor,
+                                                              ph->getParam<std::string>("i_tf_imu_frame"),
+                                                              ph->getParam<std::string>("i_tf_pose_source"),
+                                                              ph->getParam<std::string>("i_tf_model_selection"),
+                                                              ph->getParam<std::string>("i_tf_fallback_model"),
+                                                              ph->getParam<std::string>("i_tf_mesh_model"),
+                                                              ph->getParam<std::string>("i_tf_legacy_frame_aliases"));
     }
     pipeline->start();
     const auto* rosDistro = std::getenv("ROS_DISTRO");

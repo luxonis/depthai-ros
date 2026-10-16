@@ -2,8 +2,12 @@
 <robot name="depthai_camera" xmlns:xacro="http://ros.org/wiki/xacro">
 
 	<xacro:arg name="camera_name" default="oak" />
+	<xacro:arg name="has_imu" default="auto" />
 	<xacro:arg name="imu_sensor" default="" />
-	<xacro:arg name="imu_frame" default="optical" />
+	<xacro:arg name="imu_frame" default="auto" />
+	<xacro:arg name="legacy_frame_aliases" default="true" />
+	<xacro:arg name="pose_source" default="legacy" />
+	<xacro:arg name="mesh_model" default="" />
 	<xacro:arg name="camera_model" default="OAK-D" />
 	<xacro:arg name="base_frame" default="oak" />
 	<xacro:arg name="parent_frame" default="oak_parent_frame" />
@@ -19,9 +23,9 @@
 
 	<link name="$(arg parent_frame)" />
 	<xacro:depthai_camera camera_name="$(arg camera_name)" parent="$(arg parent_frame)"
-		camera_model="$(arg camera_model)" imu_sensor="$(arg imu_sensor)" imu_frame="$(arg imu_frame)" base_frame="$(arg base_frame)"
+		camera_model="$(arg camera_model)" imu_sensor="$(arg imu_sensor)" imu_frame="$(arg imu_frame)" pose_source="$(arg pose_source)" mesh_model="$(arg mesh_model)" base_frame="$(arg base_frame)"
 		cam_pos_x="$(arg cam_pos_x)" cam_pos_y="$(arg cam_pos_y)" cam_pos_z="$(arg cam_pos_z)"
 		cam_roll="$(arg cam_roll)" cam_pitch="$(arg cam_pitch)" cam_yaw="$(arg cam_yaw)"
-		rs_compat="$(arg rs_compat)" />
+		rs_compat="$(arg rs_compat)" legacy_frame_aliases="$(arg legacy_frame_aliases)" has_imu="$(arg has_imu)" />
 
 </robot>

@@ -38,6 +38,19 @@ class ComparisonTest(unittest.TestCase):
             self.assertEqual(selected, {('BNO', 'native'), ('BMI', 'native'),
                                         ('BNO', 'optical'), ('BMI', 'optical')})
 
+    def test_deprecated_aliases_do_not_count_as_extra_sensors(self):
+        descriptions = Path(__file__).resolve().parents[1]
+        boards = descriptions.parent / 'depthai-core/shared/depthai_boards/boards'
+        if not boards.is_dir():
+            self.skipTest('depthai_boards checkout is unavailable')
+        args = SimpleNamespace(boards=boards, descriptions=descriptions, reference=None,
+                               imu_frame='both', imu_sensor=None,
+                               position_tolerance=0.001, angle_tolerance=0.0001)
+        for model in ('OAK-D-SR-POE', 'OAK-T', 'PERCEPT'):
+            with self.subTest(model=model), contextlib.redirect_stdout(io.StringIO()) as output:
+                different = compare.compare_model(model, args)
+            self.assertFalse(different, output.getvalue())
+
     def test_equivalent_rotations(self):
         first = compare.pose({'rpy': '0 0 0'})
         second = compare.pose({'rpy': f'0 0 {2 * math.pi}'})

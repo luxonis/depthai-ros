@@ -15,6 +15,8 @@ class Node;
 namespace depthai_bridge {
 class TFPublisher {
    public:
+    // DEPRECATED constructor: use the overload with explicit description policy.
+    [[deprecated("Use the TFPublisher overload with explicit description policy")]]
     explicit TFPublisher(std::shared_ptr<rclcpp::Node> node,
                          const dai::CalibrationHandler& calHandler,
                          const std::vector<dai::CameraFeatures>& camFeatures,
@@ -33,6 +35,33 @@ class TFPublisher {
                          const std::string& customXacroArgs = "",
                          const bool rsCompatibilityMode = false,
                          const std::string& tfPrefix = "");
+
+    explicit TFPublisher(std::shared_ptr<rclcpp::Node> node,
+                         const dai::CalibrationHandler& calHandler,
+                         const std::vector<dai::CameraFeatures>& camFeatures,
+                         const std::string& camName,
+                         const std::string& camModel,
+                         const std::string& baseFrame,
+                         const std::string& parentFrame,
+                         const std::string& camPosX,
+                         const std::string& camPosY,
+                         const std::string& camPosZ,
+                         const std::string& camRoll,
+                         const std::string& camPitch,
+                         const std::string& camYaw,
+                         const std::string& imuFromDescr,
+                         const std::string& customURDFLocation,
+                         const std::string& customXacroArgs,
+                         const bool rsCompatibilityMode,
+                         const std::string& tfPrefix,
+                         const std::string& detectedImu,
+                         const std::string& imuSensor = "",
+                         const std::string& imuFrame = "auto",
+                         const std::string& poseSource = "legacy",
+                         const std::string& modelSelection = "auto",
+                         const std::string& fallbackModel = "",
+                         const std::string& meshModel = "",
+                         const std::string& legacyFrameAliases = "true");
     /**
      * @brief Obtain URDF description by running Xacro with provided arguments.
      */
@@ -41,14 +70,8 @@ class TFPublisher {
     geometry_msgs::msg::Quaternion quatFromRotM(std::vector<std::vector<float>> extrMat);
 
    private:
-    /**
-     * @brief Converts model name to one of the available model families
-     */
-    void convertModelName();
-    /**
-     * @brief Prepare arguments for xacro command. If custom URDF location is not provided, check if model name is available in depthai_descriptions package.
-     */
-    std::string prepareXacroArgs();
+    /// Prepare mappings for the shared board/chip description resolver.
+    std::vector<std::string> prepareXacroArgs();
     /**
      * @brief Get URDF description and set it as a parameter for robot_state_publisher
      */
@@ -65,10 +88,6 @@ class TFPublisher {
      * If IMU extrinsics are not set, warning is printed out and imu frame is published with zero translation and rotation.
      */
     void publishImuTransform(nlohmann::json json, std::shared_ptr<rclcpp::Node> node, const dai::CalibrationHandler& calHandler);
-    /**
-     * @brief Check if model STL file is available in depthai_descriptions package.
-     */
-    bool modelNameAvailable();
     std::unique_ptr<rclcpp::AsyncParametersClient> paramClient;
     std::shared_ptr<tf2_ros::StaticTransformBroadcaster> tfPub;
     std::string camName;
@@ -85,6 +104,15 @@ class TFPublisher {
     std::string imuFromDescr;
     std::string customURDFLocation;
     std::string customXacroArgs;
+    std::string detectedImu;
+    std::string imuSensor;
+    std::string imuFrame;
+    std::string poseSource;
+    std::string modelSelection;
+    std::string fallbackModel;
+    std::string meshModel;
+    std::string legacyFrameAliases;
+    nlohmann::json cameraPoses;
     std::vector<dai::CameraFeatures> camFeatures;
     bool rsCompatibilityMode;
     rclcpp::Logger logger;
