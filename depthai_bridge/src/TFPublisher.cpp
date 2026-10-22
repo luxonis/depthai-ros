@@ -254,6 +254,9 @@ geometry_msgs::msg::Quaternion TFPublisher::quatFromRotM(std::vector<std::vector
 }
 
 std::vector<std::string> TFPublisher::prepareXacroArgs() {
+    // Processed IMU reports use optical/RDF axes, matching publishImuTransform.
+    // Keep explicit native selection available for raw reports.
+    const auto resolvedImuFrame = imuFrame == "auto" ? std::string("optical") : imuFrame;
     return {"camera_name:=" + tfPrefix,
             "camera_model:=" + camModel,
             "base_frame:=" + baseFrame,
@@ -266,7 +269,7 @@ std::vector<std::string> TFPublisher::prepareXacroArgs() {
             "cam_yaw:=" + camYaw,
             "has_imu:=" + imuFromDescr,
             "imu_sensor:=" + imuSensor,
-            "imu_frame:=" + imuFrame,
+            "imu_frame:=" + resolvedImuFrame,
             "pose_source:=" + poseSource,
             "model_selection:=" + modelSelection,
             "fallback_model:=" + fallbackModel,
