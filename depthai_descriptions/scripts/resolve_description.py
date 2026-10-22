@@ -28,6 +28,10 @@ def resolve_model(model, boards, overrides):
 
 
 def resolve_imu(sensor, detected, variants, required):
+    # RVC4 reports its LSM6DSV accelerometer using the generic name "accel".
+    # Only apply this hardware alias on boards that describe that sensor.
+    if not sensor and detected == 'accel' and 'LSM6DSV' in variants:
+        detected = 'LSM6DSV'
     requested = sensor or detected
     if requested in variants:
         return requested
@@ -57,7 +61,9 @@ def expand(mappings, description=None, detected_imu='', share=None):
         requested_source = mappings.get('pose_source', 'legacy')
         selection = mappings.pop('model_selection', 'auto')
         if selection == 'auto':
-            selection = 'legacy' if requested_source == 'legacy' and mappings.get('use_base_descr') == 'true' else 'exact'
+            # Standalone Xacro/launch users historically selected an exact model.
+            # TFPublisher explicitly requests the old driver family mapping.
+            selection = 'exact'
         if selection not in ('exact', 'legacy'):
             raise ValueError('model_selection must be exact or legacy')
         if selection == 'legacy':
@@ -65,6 +71,10 @@ def expand(mappings, description=None, detected_imu='', share=None):
             target = legacy['model_aliases'].get(model, model)
             warnings.append(f'DEPRECATED model_selection=legacy: {model} -> {target}; use exact for board geometry.')
             model = target
+            if model not in legacy['models'] and mappings.get('fallback_model'):
+                fallback = mappings.pop('fallback_model')
+                warnings.append(f'Legacy model fallback: {model} -> {fallback}')
+                model = fallback
         try:
             model = resolve_model(model, boards, overrides)
         except ValueError:
@@ -82,6 +92,10 @@ def expand(mappings, description=None, detected_imu='', share=None):
         record = boards['models'].get(model, {})
         config = legacy['models'][model] if effective_source == 'legacy' else dict(record, **overrides['models'].get(model, {}))
         required = mappings.get('has_imu', 'false').lower() in ('true', '1')
+        if effective_source == 'legacy' and required and (config.get('imu_xyz') is None or config.get('imu_rpy') is None):
+            raise ValueError(f'Legacy description for {model} has no IMU transform. '
+                             'Selecting imu_sensor cannot add one to frozen legacy geometry. '
+                             'Use pose_source:=board, or provide a URDF containing the IMU transform you want to test.')
         # Detection is only relevant when this description owns the IMU TF.
         sensor = mappings.get('imu_sensor', '')
         if effective_source == 'board' and (sensor or required):

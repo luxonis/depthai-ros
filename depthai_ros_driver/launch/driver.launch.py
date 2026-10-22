@@ -189,6 +189,10 @@ def launch_setup(context, *args, **kwargs):
         params["pipeline_gen"] = {"i_enable_rgbd": True}
 
     launch_prefix = setup_launch_prefix(context)
+    # Default IMU reports use optical/RDF axes, as in TFPublisher::prepareXacroArgs.
+    resolved_imu_frame = imu_frame.perform(context)
+    if resolved_imu_frame == "auto":
+        resolved_imu_frame = "optical"
 
     return [
         Node(
@@ -221,7 +225,7 @@ def launch_setup(context, *args, **kwargs):
                 # Defer IMU selection until the device is connected in calibration mode.
                 "has_imu": "false" if publish_tf_from_calibration.perform(context) == "true" else "auto",
                 "imu_sensor": "" if publish_tf_from_calibration.perform(context) == "true" else imu_sensor,
-                "imu_frame": imu_frame,
+                "imu_frame": resolved_imu_frame,
                 "pose_source": pose_source,
                 "model_selection": model_selection,
                 "fallback_model": fallback_model,

@@ -82,15 +82,17 @@ TFPublisher::TFPublisher(std::shared_ptr<rclcpp::Node> node,
       camYaw(camYaw),
       imuFromDescr(imuFromDescr),
       customURDFLocation(customURDFLocation),
-      customXacroArgs(customXacroArgs),
-      detectedImu(detectedImu),
-      imuSensor(imuSensor),
-      imuFrame(imuFrame),
-      poseSource(poseSource),
-      modelSelection(modelSelection),
-      fallbackModel(fallbackModel),
-      meshModel(meshModel),
-      legacyFrameAliases(legacyFrameAliases),
+      descriptionPolicy(nlohmann::json{{"custom_args", customXacroArgs},
+                                       {"detected_imu", detectedImu},
+                                       {"imu_sensor", imuSensor},
+                                       {"imu_frame", imuFrame},
+                                       {"pose_source", poseSource},
+                                       {"model_selection", modelSelection},
+                                       {"fallback_model", fallbackModel},
+                                       {"mesh_model", meshModel},
+                                       {"legacy_frame_aliases", legacyFrameAliases},
+                                       {"camera_poses", nlohmann::json::object()}}
+                            .dump()),
       camFeatures(camFeatures),
       rsCompatibilityMode(rsCompatibilityMode),
       logger(node->get_logger()) {
@@ -121,6 +123,9 @@ void TFPublisher::publishDescription() {
 }
 
 void TFPublisher::publishCamTransforms(nlohmann::json camData, std::shared_ptr<rclcpp::Node> node, const dai::CalibrationHandler& calHandler) {
+    const auto policy = nlohmann::json::parse(descriptionPolicy);
+    const auto& cameraPoses = policy.at("camera_poses");
+    const bool publishAliases = policy.at("legacy_frame_aliases") == "true";
     std::set<std::string> occupiedFrames;
     for(const auto& cam : camData) {
         const auto name = getSocketName(static_cast<dai::CameraBoardSocket>(cam[0].get<int>()), camModel, rsCompatibilityMode);
@@ -176,7 +181,7 @@ void TFPublisher::publishCamTransforms(nlohmann::json camData, std::shared_ptr<r
         opticalTS.transform.rotation.z = -0.5;
         tfPub->sendTransform(ts);
         tfPub->sendTransform(opticalTS);
-        if(legacyFrameAliases == "true") {
+        if(publishAliases) {
             for(const auto& [canonical, deprecated] : detail::legacyCameraFrameAliases(tfPrefix, currCam, camModel, rsCompatibilityMode)) {
                 if(!occupiedFrames.insert(deprecated).second) continue;
                 geometry_msgs::msg::TransformStamped alias;
@@ -256,7 +261,16 @@ geometry_msgs::msg::Quaternion TFPublisher::quatFromRotM(std::vector<std::vector
 std::vector<std::string> TFPublisher::prepareXacroArgs() {
     // Processed IMU reports use optical/RDF axes, matching publishImuTransform.
     // Keep explicit native selection available for raw reports.
+    const auto policy = nlohmann::json::parse(descriptionPolicy);
+    const auto imuFrame = policy.at("imu_frame").get<std::string>();
     const auto resolvedImuFrame = imuFrame == "auto" ? std::string("optical") : imuFrame;
+    const auto poseSource = policy.at("pose_source").get<std::string>();
+    auto modelSelection = policy.at("model_selection").get<std::string>();
+    auto fallbackModel = policy.at("fallback_model").get<std::string>();
+    if(modelSelection == "auto" && poseSource == "legacy") {
+        modelSelection = "legacy";
+        if(fallbackModel.empty()) fallbackModel = "OAK-D-S2";
+    }
     return {"camera_name:=" + tfPrefix,
             "camera_model:=" + camModel,
             "base_frame:=" + baseFrame,
@@ -268,27 +282,30 @@ std::vector<std::string> TFPublisher::prepareXacroArgs() {
             "cam_pitch:=" + camPitch,
             "cam_yaw:=" + camYaw,
             "has_imu:=" + imuFromDescr,
-            "imu_sensor:=" + imuSensor,
+            "imu_sensor:=" + policy.at("imu_sensor").get<std::string>(),
             "imu_frame:=" + resolvedImuFrame,
             "pose_source:=" + poseSource,
             "model_selection:=" + modelSelection,
             "fallback_model:=" + fallbackModel,
-            "mesh_model:=" + meshModel,
-            "legacy_frame_aliases:=" + legacyFrameAliases,
+            "mesh_model:=" + policy.at("mesh_model").get<std::string>(),
+            "legacy_frame_aliases:=" + policy.at("legacy_frame_aliases").get<std::string>(),
             "use_base_descr:=true"};
 }
 
 std::string TFPublisher::getURDF() {
     const auto share = ament_index_cpp::get_package_share_directory("depthai_descriptions");
-    std::vector<std::string> arguments = {"python3", share + "/scripts/resolve_description.py", "--output=json", "--detected-imu=" + detectedImu};
-    if(!customURDFLocation.empty()) arguments.push_back("--description=" + customURDFLocation);
-    const auto mappings = prepareXacroArgs();
-    arguments.insert(arguments.end(), mappings.begin(), mappings.end());
-    if(!customXacroArgs.empty()) arguments.push_back("--custom-args=" + customXacroArgs);
+    auto policy = nlohmann::json::parse(descriptionPolicy);
+    const auto arguments = detail::descriptionCommand(share,
+                                                      customURDFLocation,
+                                                      policy.at("custom_args").get<std::string>(),
+                                                      policy.at("detected_imu").get<std::string>(),
+                                                      prepareXacroArgs(),
+                                                      DEPTHAI_DESCRIPTION_PYTHON);
     const auto result = nlohmann::json::parse(detail::runDescriptionCommand(arguments));
     const auto urdf = result.at("urdf").get<std::string>();
     if(urdf.empty()) throw std::runtime_error("Description resolver returned an empty URDF");
-    cameraPoses = result.at("camera_poses");
+    policy["camera_poses"] = result.at("camera_poses");
+    descriptionPolicy = policy.dump();
     // Keep camModel as the physical device name for topic/socket naming.
     const auto diagnostics = result.value("diagnostics", std::string());
     if(!diagnostics.empty()) RCLCPP_WARN(logger, "%s", diagnostics.c_str());

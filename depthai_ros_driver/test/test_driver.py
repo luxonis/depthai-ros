@@ -122,6 +122,21 @@ class TestDriverLaunch(unittest.TestCase):
         self.assertTrue(self.testHelper.testTriggerService("/oak/stop_driver"))
         proc_output.assertWaitFor("Driver stopped!", timeout=10.0, stream="stderr")
 
+        # Both saves must respond with a failure instead of crashing or timing
+        # out when their device-dependent operations cannot run after stop().
+        for service in ("save_pipeline", "save_calibration"):
+            client = self.node.create_client(Trigger, "/oak/" + service)
+            try:
+                self.assertTrue(client.wait_for_service(timeout_sec=5.0))
+                future = client.call_async(Trigger.Request())
+                rclpy.spin_until_future_complete(self.node, future, timeout_sec=5.0)
+                self.assertTrue(future.done(), service + " did not respond")
+                response = future.result()
+                self.assertFalse(response.success)
+                self.assertIn("not connected", response.message)
+            finally:
+                self.node.destroy_client(client)
+
         self.assertTrue(self.testHelper.testTriggerService("/oak/start_driver"))
         proc_output.assertWaitFor("Driver ready!", timeout=10.0, stream="stderr")
 

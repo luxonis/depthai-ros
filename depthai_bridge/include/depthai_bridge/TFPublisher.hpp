@@ -15,8 +15,7 @@ class Node;
 namespace depthai_bridge {
 class TFPublisher {
    public:
-    // DEPRECATED constructor: use the overload with explicit description policy.
-    [[deprecated("Use the TFPublisher overload with explicit description policy")]]
+    // Develop-compatible constructor; existing clients need no source changes.
     explicit TFPublisher(std::shared_ptr<rclcpp::Node> node,
                          const dai::CalibrationHandler& calHandler,
                          const std::vector<dai::CameraFeatures>& camFeatures,
@@ -103,16 +102,10 @@ class TFPublisher {
     std::string camYaw;
     std::string imuFromDescr;
     std::string customURDFLocation;
-    std::string customXacroArgs;
-    std::string detectedImu;
-    std::string imuSensor;
-    std::string imuFrame;
-    std::string poseSource;
-    std::string modelSelection;
-    std::string fallbackModel;
-    std::string meshModel;
-    std::string legacyFrameAliases;
-    nlohmann::json cameraPoses;
+    // Serialized private policy occupies the former customXacroArgs string slot.
+    // Keep the develop member layout: old clients allocate/destruct this class
+    // inline, so adding members would corrupt their allocations after relinking.
+    std::string descriptionPolicy;
     std::vector<dai::CameraFeatures> camFeatures;
     bool rsCompatibilityMode;
     rclcpp::Logger logger;

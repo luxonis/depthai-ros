@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include <fstream>
+#include <stdexcept>
 
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
@@ -148,6 +149,13 @@ void Driver::stop() {
             RCLCPP_INFO(get_logger(), "Driver already stopped!");
         }
     }
+    if(!rclcpp::ok(get_node_base_interface()->get_context())) {
+        // Pipeline::stop joins node threads, but dynamic calibration also owns
+        // asynchronous workers that live until its nodes are destroyed. Release
+        // them before process-wide OpenCV state is torn down. Keep the stopped
+        // pipeline available to services while the ROS context is still alive.
+        pipeline.reset();
+    }
 }
 
 void Driver::restart() {
@@ -162,6 +170,9 @@ void Driver::restart() {
 }
 
 void Driver::saveCalib() {
+    if(!device || device->isClosed()) {
+        throw std::runtime_error("Cannot save calibration: device is not connected");
+    }
     auto calibHandler = device->readCalibration();
     std::stringstream savePath;
     savePath << "/tmp/" << device->getDeviceId().c_str() << "_calibration.json";
@@ -176,22 +187,44 @@ void Driver::loadCalib(const std::string& path) {
 }
 
 void Driver::saveCalibCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res) {
-    saveCalib();
-    res->success = true;
+    try {
+        saveCalib();
+        res->success = true;
+    } catch(const std::exception& error) {
+        res->success = false;
+        res->message = error.what();
+        RCLCPP_ERROR(get_logger(), "Saving calibration failed: %s", error.what());
+    }
 }
 
 void Driver::savePipeline() {
+    if(!device || !pipeline) {
+        throw std::runtime_error("Cannot save pipeline: no pipeline has been configured");
+    }
+    if(device->isClosed()) {
+        throw std::runtime_error("Cannot save pipeline: device is not connected; start the driver before saving");
+    }
     std::stringstream savePath;
-    savePath << "/tmp/" << device->getDeviceId().c_str() << "_pipeline.json";
+    // Use the cached identity; serialization itself still needs a live device.
+    savePath << "/tmp/" << device->getDeviceInfo().getDeviceId() << "_pipeline.json";
+    const auto schema = pipeline->serializeToJson()["pipeline"];
     RCLCPP_INFO(get_logger(), "Saving pipeline schema to: %s", savePath.str().c_str());
-    std::ofstream file(savePath.str());
-    file << pipeline->serializeToJson()["pipeline"];
+    std::ofstream file;
+    file.exceptions(std::ios::failbit | std::ios::badbit);
+    file.open(savePath.str());
+    file << schema;
     file.close();
 }
 
 void Driver::savePipelineCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res) {
-    savePipeline();
-    res->success = true;
+    try {
+        savePipeline();
+        res->success = true;
+    } catch(const std::exception& error) {
+        res->success = false;
+        res->message = error.what();
+        RCLCPP_ERROR(get_logger(), "Saving pipeline failed: %s", error.what());
+    }
 }
 
 void Driver::startCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res) {

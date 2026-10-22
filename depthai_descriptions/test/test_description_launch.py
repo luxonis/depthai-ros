@@ -65,6 +65,28 @@ class DescriptionLaunchTest(unittest.TestCase):
                                 sensor = sensor.perform(context)
                             self.assertEqual(sensor, '' if calibration == 'true' else 'BMI')
 
+    def test_driver_description_imu_axes_match_report_axes(self):
+        module = load_launch('depthai_ros_driver', 'driver.launch.py')
+        for requested, expected in ((None, 'optical'), ('auto', 'optical'),
+                                    ('native', 'native'), ('optical', 'optical')):
+            with self.subTest(imu_frame=requested), tempfile.TemporaryDirectory() as logs, \
+                 patch.dict(os.environ, ROS_LOG_DIR=logs), \
+                 patch.object(module, 'get_package_share_directory', side_effect=lambda package: str(ROOT / package)), \
+                 patch.object(module, 'ComposableNode'), \
+                 patch.object(module, 'ComposableNodeContainer'), \
+                 patch.object(module, 'IncludeLaunchDescription') as include:
+                values = dict(publish_tf_from_calibration='false', pose_source='board',
+                              camera_model='OAK-D-S2', imu_sensor='BMI')
+                if requested is not None:
+                    values['imu_frame'] = requested
+                context = self.context(module, **values)
+                module.launch_setup(context)
+                passed = dict(include.call_args.kwargs['launch_arguments'])
+                frame = passed['imu_frame']
+                if not isinstance(frame, str):
+                    frame = frame.perform(context)
+                self.assertEqual(frame, expected)
+
     def test_description_launch_forwards_has_imu_and_rejects_failure(self):
         module = load_launch('depthai_descriptions', 'urdf_launch.py')
         with tempfile.TemporaryDirectory() as logs, patch.dict(os.environ, ROS_LOG_DIR=logs), \

@@ -11,6 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(ament_index_cpp REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
 find_package(camera_info_manager REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(depthai_ros_msgs REQUIRED)
@@ -66,6 +67,7 @@ file(
   "src/TrackSpatialDetectionConverter.cpp")
 
 add_library(${PROJECT_NAME} SHARED ${LIB_SRC})
+target_compile_definitions(${PROJECT_NAME} PRIVATE DEPTHAI_DESCRIPTION_PYTHON="${Python3_EXECUTABLE}")
 
 target_link_libraries(
   ${PROJECT_NAME}
@@ -122,6 +124,8 @@ if(BUILD_TESTING)
     bridge_test(disparity_converter_test DisparityConverterTest.cpp)
     bridge_test(depthai_utility_test DepthaiUtilityTest.cpp)
     bridge_test(description_runner_test DescriptionRunnerTest.cpp)
+    bridge_test(tf_publisher_compatibility_test TFPublisherCompatibilityTest.cpp)
+    target_sources(depthai_bridge_tf_publisher_compatibility_test PRIVATE test/TFPublisherLegacyClient.cpp)
     bridge_test(image_converter_test ImageConverterTest.cpp)
     bridge_test(img_det_converter_test ImgDetectionConverterTest.cpp)
     bridge_test(imu_converter_test ImuConverterTest.cpp)

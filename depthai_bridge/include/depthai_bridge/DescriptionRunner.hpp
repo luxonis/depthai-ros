@@ -11,6 +11,26 @@
 
 namespace depthai_bridge {
 namespace detail {
+// Preserve develop's replacement semantics: a custom argument string owns all
+// Xacro mappings, including defaults defined by a user's custom description.
+inline std::vector<std::string> descriptionCommand(const std::string& share,
+                                                   const std::string& customDescription,
+                                                   const std::string& customArgs,
+                                                   const std::string& detectedImu,
+                                                   const std::vector<std::string>& mappings,
+                                                   const std::string& python = "python3") {
+    std::vector<std::string> arguments = {python, share + "/scripts/resolve_description.py", "--output=json"};
+    if(!customArgs.empty()) {
+        arguments.push_back("--description=" + (customDescription.empty() ? share + "/urdf/base_descr.urdf.xacro" : customDescription));
+        arguments.push_back("--custom-args=" + customArgs);
+    } else {
+        arguments.push_back("--detected-imu=" + detectedImu);
+        if(!customDescription.empty()) arguments.push_back("--description=" + customDescription);
+        arguments.insert(arguments.end(), mappings.begin(), mappings.end());
+    }
+    return arguments;
+}
+
 inline std::string shellQuote(const std::string& value) {
     std::string result = "'";
     for(char c : value) {

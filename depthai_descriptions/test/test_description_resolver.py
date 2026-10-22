@@ -47,6 +47,20 @@ class DescriptionResolverTest(unittest.TestCase):
         # Device detection must not affect descriptions which do not own IMU TF.
         self.expand('OAK-D-S2', has_imu='false', detected='UNSUPPORTED_CHIP')
 
+    def test_rvc4_accel_detection(self):
+        automatic = self.expand('OAK4-D-W', use_base_descr='true', has_imu='true',
+                                detected='accel', imu_frame='optical')
+        explicit = self.expand('OAK4-D-W', use_base_descr='true', has_imu='true',
+                               imu_sensor='LSM6DSV', imu_frame='optical')
+        self.assertEqual(automatic['imu_sensor'], 'LSM6DSV')
+        self.assertEqual(automatic['urdf'], explicit['urdf'])
+        override = self.expand('OAK4-D-W', has_imu='true', detected='accel', imu_sensor='AK099')
+        self.assertEqual(override['imu_sensor'], 'AK099')
+        with self.assertRaisesRegex(ValueError, "IMU 'accel' is not described"):
+            self.expand('OAK-D-S2', has_imu='true', detected='accel')
+        with self.assertRaisesRegex(ValueError, "IMU 'UNSUPPORTED_CHIP' is not described"):
+            self.expand('OAK4-D-W', has_imu='true', detected='accel', imu_sensor='UNSUPPORTED_CHIP')
+
     def test_frame_mode_and_tf_ownership(self):
         for mode in ('native', 'optical'):
             result = self.expand('OAK-D-S2', use_base_descr='true', has_imu='true', imu_sensor='BMI', imu_frame=mode)
@@ -59,6 +73,15 @@ class DescriptionResolverTest(unittest.TestCase):
             root = ElementTree.fromstring(self.expand('OAK-D-S2', use_base_descr=base, has_imu='false')['urdf'])
             self.assertIsNone(root.find("joint[@name='oak_imu_joint']"))
             self.assertEqual(root.find("joint[@name='oak_left_camera_joint']") is None, base == 'true')
+
+    def test_legacy_missing_imu_has_actionable_error(self):
+        with patch('ament_index_python.packages.get_package_share_directory', return_value=str(DESCRIPTION)):
+            with self.assertRaisesRegex(ValueError, 'Legacy description for OAK-D-S2-POE has no IMU transform'):
+                resolver.expand(dict(camera_model='OAK-D-S2-POE', pose_source='legacy',
+                                     use_base_descr='true', has_imu='true', imu_sensor='BMI'), share=DESCRIPTION)
+            result = resolver.expand(dict(camera_model='OAK-D-S2-POE', pose_source='legacy',
+                                          use_base_descr='true', has_imu='false'), share=DESCRIPTION)
+            self.assertNotIn('oak_imu_frame', result['urdf'])
 
     def test_terminal_origin_metadata(self):
         sr = self.expand('OAK-D-SR', use_base_descr='true', has_imu='true', imu_sensor='BMI')

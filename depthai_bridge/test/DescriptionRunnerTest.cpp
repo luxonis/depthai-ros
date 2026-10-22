@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <algorithm>
+
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "depthai_bridge/DescriptionRunner.hpp"
 #include "depthai_bridge/FrameAliases.hpp"
@@ -32,6 +34,25 @@ TEST(DescriptionRunner, ResolvesInstalledDescriptionAndDetectedChip) {
     EXPECT_EQ(result.at("imu_sensor"), "BMI");
     EXPECT_DOUBLE_EQ(result.at("camera_poses").at("CAM_C").at("xyz").at(1).get<double>(), 0.0);
     EXPECT_NE(result.at("urdf").get<std::string>().find("oak_imu_joint"), std::string::npos);
+}
+
+TEST(DescriptionRunner, CustomArgumentsReplaceDriverMappings) {
+    const auto share = ament_index_cpp::get_package_share_directory("depthai_descriptions");
+    const auto arguments = depthai_bridge::detail::descriptionCommand(
+        share, "", "camera_name:=custom", "UNSUPPORTED_IMU", {"camera_model:=UNKNOWN", "base_frame:=driver_override", "has_imu:=true", "pose_source:=board"});
+    const auto result = nlohmann::json::parse(depthai_bridge::detail::runDescriptionCommand(arguments));
+    const auto xml = result.at("urdf").get<std::string>();
+    EXPECT_EQ(result.at("pose_source"), "custom");
+    EXPECT_NE(xml.find("custom_center_joint"), std::string::npos);
+    EXPECT_EQ(xml.find("driver_override"), std::string::npos);
+    EXPECT_EQ(xml.find("imu_joint"), std::string::npos);
+    EXPECT_EQ(xml.find("left_camera_joint"), std::string::npos);
+}
+
+TEST(DescriptionRunner, DefaultMappingsStillReachCustomDescriptions) {
+    const auto arguments = depthai_bridge::detail::descriptionCommand("/share", "/custom path/robot.xacro", "", "BMI270", {"base_frame:=robot"});
+    EXPECT_NE(std::find(arguments.begin(), arguments.end(), "--description=/custom path/robot.xacro"), arguments.end());
+    EXPECT_NE(std::find(arguments.begin(), arguments.end(), "base_frame:=robot"), arguments.end());
 }
 
 TEST(DescriptionRunner, DeprecatedFrameAliases) {

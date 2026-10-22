@@ -54,7 +54,7 @@ class LegacyCompatibilityTest(unittest.TestCase):
         aliases = yaml.safe_load((DESCRIPTION / 'urdf/include/legacy_models.yaml').read_text())['model_aliases']
         for model, target in aliases.items():
             with self.subTest(model=model):
-                result = self.resolve(camera_model=model, use_base_descr='true')
+                result = self.resolve(camera_model=model, use_base_descr='true', model_selection='legacy')
                 self.assertEqual(result['model'], target)
                 self.assertEqual(result['camera_poses'], {})
                 self.assertIn('DEPRECATED model_selection=legacy', result['diagnostics'])
@@ -64,6 +64,25 @@ class LegacyCompatibilityTest(unittest.TestCase):
         board = self.resolve(camera_model='OAK-D-LITE', use_base_descr='true', pose_source='board')
         self.assertEqual(board['model'], 'OAK-D-LITE')
         self.assertEqual(board['pose_source'], 'board')
+
+    def test_standalone_base_description_preserves_exact_model(self):
+        for model in ('OAK-D-S2', 'OAK-D-LITE', 'OAK-D-PRO-W'):
+            with self.subTest(model=model):
+                result = self.resolve(camera_model=model, use_base_descr='true', has_imu='false')
+                self.assertEqual(result['model'], model)
+                expected = self.expand(model, fixture=True, base=True, has_imu='false')
+                actual = ET.fromstring(result['urdf'])
+                self.assertEqual([n.attrib for n in actual.findall('.//mesh')],
+                                 [n.attrib for n in expected.findall('.//mesh')])
+
+    def test_calibration_legacy_fallback_preserves_develop_geometry(self):
+        for model in ('UNKNOWN', 'PERCEPT', 'OAK-FFC-4P'):
+            with self.subTest(model=model):
+                result = self.resolve(camera_model=model, use_base_descr='true',
+                                      model_selection='legacy', fallback_model='OAK-D-S2')
+                self.assertEqual(result['model'], 'OAK-D-S2')
+                self.assertEqual(result['pose_source'], 'legacy')
+                self.assertEqual(result['camera_poses'], {})
 
     def test_explicit_fallback_and_new_model_board_default(self):
         with self.assertRaisesRegex(ValueError, 'Unknown camera model'):
@@ -91,3 +110,20 @@ class LegacyCompatibilityTest(unittest.TestCase):
         rs = ET.fromstring(self.resolve(camera_model='OAK-D', pose_source='board', rs_compat='true')['urdf'])
         joint = rs.find("joint/child[@link='oak_color_camera_frame']/..")
         self.assertEqual(joint.find('parent').attrib['link'], 'oak_color_frame')
+
+    def test_sparse_boards_preserve_unoccupied_role_aliases(self):
+        for model, alias, canonical in [('RAE-D-E', 'left', 'right_back'),
+                                        ('RAE-D-E', 'right', 'left_back'),
+                                        ('TOF-FFC-A-B', 'right', 'left'),
+                                        ('TOF-FFC-C-D', 'left', 'left_back')]:
+            for rs in (False, True):
+                with self.subTest(model=model, alias=alias, rs=rs):
+                    names = dict(left='infra2', right='infra1', left_back='infra3', right_back='infra4') if rs else {}
+                    old, new = names.get(alias, alias), names.get(canonical, canonical)
+                    root = ET.fromstring(self.resolve(camera_model=model, pose_source='board', has_imu='false',
+                                                      rs_compat=str(rs).lower())['urdf'])
+                    joint = root.find(f"joint/child[@link='oak_{old}_camera_frame']/..")
+                    self.assertIsNotNone(joint)
+                    suffix = 'frame' if rs else 'camera_frame'
+                    self.assertEqual(joint.find('parent').get('link'), f'oak_{new}_{suffix}')
+                    self.assertOrigin(joint.find('origin').attrib, dict(xyz='0 0 0', rpy='0 0 0'))

@@ -2,6 +2,7 @@
 """Build a single URDF gallery and publish labels and sensor-axis markers."""
 import json
 import math
+import signal
 from pathlib import Path
 import sys
 from xml.etree import ElementTree as ET
@@ -155,9 +156,14 @@ def main():
     except (KeyboardInterrupt, ExternalShutdownException):
         pass
     finally:
-        node.destroy_node()
-        if rclpy.ok():
-            rclpy.shutdown()
+        # A terminal/process-group SIGINT can be followed by launch forwarding
+        # SIGINT to this process. Do not interrupt destruction halfway through.
+        previous = signal.signal(signal.SIGINT, signal.SIG_IGN)
+        try:
+            node.destroy_node()
+            rclpy.try_shutdown()
+        finally:
+            signal.signal(signal.SIGINT, previous)
 
 
 if __name__ == '__main__':
