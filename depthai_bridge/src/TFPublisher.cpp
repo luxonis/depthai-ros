@@ -1,14 +1,10 @@
 #include "depthai_bridge/TFPublisher.hpp"
 
-#include <dirent.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-
 #include <depthai/common/CameraBoardSocket.hpp>
 #include <memory>
-#include <string>
 #include <set>
+#include <stdexcept>
+#include <string>
 #include <vector>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
@@ -41,7 +37,25 @@ TFPublisher::TFPublisher(std::shared_ptr<rclcpp::Node> node,
                          const std::string& customXacroArgs,
                          const bool rsCompatibilityMode,
                          const std::string& tfPrefix)
-    : TFPublisher(node, calHandler, camFeatures, camName, camModel, baseFrame, parentFrame, camPosX, camPosY, camPosZ, camRoll, camPitch, camYaw, imuFromDescr, customURDFLocation, customXacroArgs, rsCompatibilityMode, tfPrefix, "", "", "auto", "legacy", "auto", "", "", "true") {}
+    : TFPublisher(node,
+                  calHandler,
+                  camFeatures,
+                  camName,
+                  camModel,
+                  baseFrame,
+                  parentFrame,
+                  camPosX,
+                  camPosY,
+                  camPosZ,
+                  camRoll,
+                  camPitch,
+                  camYaw,
+                  imuFromDescr,
+                  customURDFLocation,
+                  customXacroArgs,
+                  rsCompatibilityMode,
+                  tfPrefix,
+                  "") {}
 
 TFPublisher::TFPublisher(std::shared_ptr<rclcpp::Node> node,
                          const dai::CalibrationHandler& calHandler,

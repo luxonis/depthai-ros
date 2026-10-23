@@ -3,10 +3,6 @@ models:
   AR0234DEV:
     board_file: AR0234DEV.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0 0.035
@@ -22,10 +18,6 @@ models:
   BW1097:
     board_file: BW1097.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.02 0
@@ -41,10 +33,6 @@ models:
   BW1098OBC:
     board_file: BW1098OBC.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -60,10 +48,6 @@ models:
   DM1092:
     board_file: DM1092.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.01 0
@@ -79,10 +63,6 @@ models:
   DM1097:
     board_file: DM1097.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.02 0
@@ -98,10 +78,6 @@ models:
   DM1098OAKD_WIFI:
     board_file: DM1098OAKD_WIFI.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -117,10 +93,6 @@ models:
   DM2097-C11:
     board_file: DM2097-C11.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.077 0
@@ -136,10 +108,6 @@ models:
   DM2097:
     board_file: DM2097.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.077 0
@@ -155,10 +123,6 @@ models:
   OAK-1-97:
     board_file: OAK-1-97.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: null
@@ -170,10 +134,6 @@ models:
   OAK-1-C09:
     board_file: OAK-1-C09.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: null
@@ -185,10 +145,6 @@ models:
   OAK-1-LITE-C05:
     board_file: OAK-1-LITE-C05.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: null
@@ -200,10 +156,6 @@ models:
   OAK-1-LITE-W:
     board_file: OAK-1-LITE-W.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: null
@@ -215,10 +167,6 @@ models:
   OAK-1-LITE:
     board_file: OAK-1-LITE.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: null
@@ -230,10 +178,6 @@ models:
   OAK-1-MAX:
     board_file: OAK-1-MAX.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: null
@@ -245,10 +189,6 @@ models:
   OAK-1-POE-C10:
     board_file: OAK-1-POE-C10.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: null
@@ -260,10 +200,6 @@ models:
   OAK-1-POE:
     board_file: OAK-1-POE.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: null
@@ -275,10 +211,6 @@ models:
   OAK-1-W-97:
     board_file: OAK-1-W-97.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: null
@@ -290,10 +222,6 @@ models:
   OAK-1-W-POE-97:
     board_file: OAK-1-W-POE-97.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: null
@@ -305,10 +233,6 @@ models:
   OAK-1-W-POE:
     board_file: OAK-1-W-POE.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: null
@@ -320,10 +244,6 @@ models:
   OAK-1-W:
     board_file: OAK-1-W.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: null
@@ -335,10 +255,6 @@ models:
   OAK-1:
     board_file: OAK-1.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: OAK-1
     rgb_xyz: 0 0 0
     left_xyz: null
@@ -350,10 +266,6 @@ models:
   OAK-4-D-W-97:
     board_file: OAK-4-D-W-97.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -379,10 +291,6 @@ models:
   OAK-4-D-W:
     board_file: OAK-4-D-W.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -408,16 +316,12 @@ models:
   OAK-4-D:
     board_file: OAK-4-D.json
     reference_camera: CAM_A
-    base_offset: &id001
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
     right_xyz: 0 -0.0375 0
-    extra_cameras: &id002 {}
-    imu_variants: &id003
+    extra_cameras: &id001 {}
+    imu_variants: &id002
       LSM6DSV:
         name: LSM6DSV
         xyz: -0.002 0.044032 0.002697
@@ -437,10 +341,6 @@ models:
   OAK-4-S-W:
     board_file: OAK-4-S-W.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: null
@@ -462,16 +362,12 @@ models:
   OAK-4-S:
     board_file: OAK-4-S.json
     reference_camera: CAM_A
-    base_offset: &id004
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: null
     right_xyz: null
-    extra_cameras: &id005 {}
-    imu_variants: &id006
+    extra_cameras: &id003 {}
+    imu_variants: &id004
       LSM6DSV:
         name: LSM6DSV
         xyz: 0.002 -0.012263 -0.019577
@@ -487,10 +383,6 @@ models:
   OAK-D-CM4-POE-C11:
     board_file: OAK-D-CM4-POE-C11.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.077 0
@@ -506,10 +398,6 @@ models:
   OAK-D-CM4-POE-C24:
     board_file: OAK-D-CM4-POE-C24.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.077 0
@@ -525,10 +413,6 @@ models:
   OAK-D-CM4-POE:
     board_file: OAK-D-CM4-POE.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: OAK-D-CM4-POE
     rgb_xyz: 0 0 0
     left_xyz: 0 0.077 0
@@ -549,10 +433,6 @@ models:
   OAK-D-CM4:
     board_file: OAK-D-CM4.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.077 0
@@ -568,10 +448,6 @@ models:
   OAK-D-LITE:
     board_file: OAK-D-LITE.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: OAK-D-LITE
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -597,10 +473,6 @@ models:
   OAK-D-LR:
     board_file: OAK-D-LR.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: OAK-D-LR
     rgb_xyz: 0 0 0
     left_xyz: 0 0.1 0
@@ -626,10 +498,6 @@ models:
   OAK-D-POE-C22:
     board_file: OAK-D-POE-C22.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -650,10 +518,6 @@ models:
   OAK-D-POE-W-97:
     board_file: OAK-D-POE-W-97.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -674,10 +538,6 @@ models:
   OAK-D-POE-W-C12:
     board_file: OAK-D-POE-W-C12.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -698,10 +558,6 @@ models:
   OAK-D-POE-W:
     board_file: OAK-D-POE-W.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -727,10 +583,6 @@ models:
   OAK-D-POE:
     board_file: OAK-D-POE.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: OAK-D-POE
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -751,10 +603,6 @@ models:
   OAK-D-PRO-97:
     board_file: OAK-D-PRO-97.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -780,10 +628,6 @@ models:
   OAK-D-PRO-POE-97:
     board_file: OAK-D-PRO-POE-97.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -809,10 +653,6 @@ models:
   OAK-D-PRO-POE-CUSTOM:
     board_file: OAK-D-PRO-POE-CUSTOM.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -838,10 +678,6 @@ models:
   OAK-D-PRO-POE:
     board_file: OAK-D-PRO-POE.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -867,10 +703,6 @@ models:
   OAK-D-PRO-W-97:
     board_file: OAK-D-PRO-W-97.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -896,10 +728,6 @@ models:
   OAK-D-PRO-W-CUSTOM:
     board_file: OAK-D-PRO-W-CUSTOM.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -925,10 +753,6 @@ models:
   OAK-D-PRO-W-DEV:
     board_file: OAK-D-PRO-W-DEV.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -954,10 +778,6 @@ models:
   OAK-D-PRO-W-POE-97:
     board_file: OAK-D-PRO-W-POE-97.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -983,10 +803,6 @@ models:
   OAK-D-PRO-W-POE-C01:
     board_file: OAK-D-PRO-W-POE-C01.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -1007,10 +823,6 @@ models:
   OAK-D-PRO-W-POE-CUSTOM:
     board_file: OAK-D-PRO-W-POE-CUSTOM.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -1036,10 +848,6 @@ models:
   OAK-D-PRO-W-POE:
     board_file: OAK-D-PRO-W-POE.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -1065,10 +873,6 @@ models:
   OAK-D-PRO-W:
     board_file: OAK-D-PRO-W.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: OAK-D-PRO-W
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -1094,10 +898,6 @@ models:
   OAK-D-PRO:
     board_file: OAK-D-PRO.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: OAK-D-PRO
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -1123,10 +923,6 @@ models:
   OAK-D-S2-POE:
     board_file: OAK-D-S2-POE.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: OAK-D-S2-POE
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -1152,10 +948,6 @@ models:
   OAK-D-S2:
     board_file: OAK-D-S2.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: OAK-D-S2
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -1181,10 +973,6 @@ models:
   OAK-D-SR-POE:
     board_file: OAK-D-SR-POE.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: OAK-D-SR-POE
     rgb_xyz: 0 0 0
     left_xyz: 0 0.037382 0
@@ -1205,10 +993,6 @@ models:
   OAK-D-SR:
     board_file: OAK-D-SR.json
     reference_camera: CAM_C
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: OAK-D-SR
     rgb_xyz: null
     left_xyz: 0 0.02 0
@@ -1232,10 +1016,6 @@ models:
   OAK-D-W-97:
     board_file: OAK-D-W-97.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -1261,10 +1041,6 @@ models:
   OAK-D-W-POE-C62:
     board_file: OAK-D-W-POE-C62.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -1290,10 +1066,6 @@ models:
   OAK-D-W:
     board_file: OAK-D-W.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -1319,10 +1091,6 @@ models:
   OAK-D:
     board_file: OAK-D.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: OAK-D
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
@@ -1343,10 +1111,6 @@ models:
   OAK-FFC-1P:
     board_file: OAK-FFC-1P.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: null
@@ -1358,10 +1122,6 @@ models:
   OAK-FFC-3P-C44:
     board_file: OAK-FFC-3P-C44.json
     reference_camera: CAM_A
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0
     left_xyz: null
@@ -1373,10 +1133,6 @@ models:
   OAK-T:
     board_file: OAK-T.json
     reference_camera: CAM_E
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: OAK-T
     rgb_xyz: 0 0.025 0
     left_xyz: null
@@ -1396,10 +1152,6 @@ models:
   PERCEPT:
     board_file: PERCEPT.json
     reference_camera: CAM_B
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: 0 0 0.0221
     left_xyz: 0 0 0
@@ -1423,10 +1175,6 @@ models:
   RAE-D-E:
     board_file: RAE-D-E.json
     reference_camera: CAM_D
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: null
     left_xyz: 0 0.075 0
@@ -1440,10 +1188,6 @@ models:
   TOF-FFC-A-B:
     board_file: TOF-FFC-A-B.json
     reference_camera: CAM_B
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: null
     left_xyz: 0 0.0471 0
@@ -1457,10 +1201,6 @@ models:
   TOF-FFC-C-D:
     board_file: TOF-FFC-C-D.json
     reference_camera: CAM_C
-    base_offset:
-    - 0
-    - 0
-    - 0
     mesh: null
     rgb_xyz: null
     left_xyz: 0 0.0471 0
@@ -1474,13 +1214,12 @@ models:
   OAK4-D:
     board_file: OAK-4-D.json
     reference_camera: CAM_A
-    base_offset: *id001
     mesh: OAK4-D
     rgb_xyz: 0 0 0
     left_xyz: 0 0.0375 0
     right_xyz: 0 -0.0375 0
-    extra_cameras: *id002
-    imu_variants: *id003
+    extra_cameras: *id001
+    imu_variants: *id002
     rgb_rpy: 0 0 0
     rgb_socket: CAM_A
     right_rpy: 0 0 0
@@ -1490,13 +1229,12 @@ models:
   OAK4-S:
     board_file: OAK-4-S.json
     reference_camera: CAM_A
-    base_offset: *id004
     mesh: OAK4-S
     rgb_xyz: 0 0 0
     left_xyz: null
     right_xyz: null
-    extra_cameras: *id005
-    imu_variants: *id006
+    extra_cameras: *id003
+    imu_variants: *id004
     rgb_rpy: 0 0 0
     rgb_socket: CAM_A
 unsupported:

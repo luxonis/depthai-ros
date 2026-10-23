@@ -14,50 +14,19 @@ from launch_ros.descriptions import ComposableNode
 
 def launch_setup(context, *args, **kwargs):
     bringup_dir = get_package_share_directory("depthai_descriptions")
-    use_base_descr = LaunchConfiguration("use_base_descr", default="false")
-
-    camera_model = LaunchConfiguration("camera_model", default="OAK-D")
-    imu_sensor = LaunchConfiguration("imu_sensor", default="")
-    imu_frame = LaunchConfiguration("imu_frame", default="auto")
-    pose_source = LaunchConfiguration("pose_source", default="legacy")
-    model_selection = LaunchConfiguration("model_selection", default="auto")
-    fallback_model = LaunchConfiguration("fallback_model", default="")
-    mesh_model = LaunchConfiguration("mesh_model", default="")
-    legacy_frame_aliases = LaunchConfiguration("legacy_frame_aliases", default="true")
-    tf_prefix = LaunchConfiguration("tf_prefix", default="oak")
-    base_frame = LaunchConfiguration("base_frame", default="oak")
-    parent_frame = LaunchConfiguration("parent_frame", default="oak_parent_frame")
-    cam_pos_x = LaunchConfiguration("cam_pos_x", default="0.0")
-    cam_pos_y = LaunchConfiguration("cam_pos_y", default="0.0")
-    cam_pos_z = LaunchConfiguration("cam_pos_z", default="0.0")
-    cam_roll = LaunchConfiguration("cam_roll", default="1.5708")
-    cam_pitch = LaunchConfiguration("cam_pitch", default="0.0")
-    cam_yaw = LaunchConfiguration("cam_yaw", default="1.5708")
-    namespace = LaunchConfiguration("namespace", default="")
-    rs_compat = LaunchConfiguration("rs_compat", default="false")
-    use_composition = LaunchConfiguration("use_composition", default="false")
-
-    rsp_name = LaunchConfiguration("rsp_name").perform(context)
-    if not rsp_name:
-        rsp_name = LaunchConfiguration("tf_prefix").perform(context).strip("/").replace("/", "_")
-    has_imu = LaunchConfiguration("has_imu", default="auto").perform(context)
-    if has_imu == "auto" and use_base_descr.perform(context) == "true":
-        has_imu = "false"
-    mappings = {
-        "camera_name": tf_prefix.perform(context), "camera_model": camera_model.perform(context),
-        "imu_sensor": imu_sensor.perform(context), "imu_frame": imu_frame.perform(context),
-        "has_imu": has_imu, "use_base_descr": use_base_descr.perform(context),
-        "base_frame": base_frame.perform(context), "parent_frame": parent_frame.perform(context),
-        "cam_pos_x": cam_pos_x.perform(context), "cam_pos_y": cam_pos_y.perform(context),
-        "cam_pos_z": cam_pos_z.perform(context), "cam_roll": cam_roll.perform(context),
-        "cam_pitch": cam_pitch.perform(context), "cam_yaw": cam_yaw.perform(context),
-        "rs_compat": rs_compat.perform(context),
-        "pose_source": pose_source.perform(context),
-        "model_selection": model_selection.perform(context),
-        "fallback_model": fallback_model.perform(context),
-        "mesh_model": mesh_model.perform(context),
-        "legacy_frame_aliases": legacy_frame_aliases.perform(context),
-    }
+    namespace = LaunchConfiguration("namespace")
+    use_composition = LaunchConfiguration("use_composition")
+    mappings = {name: LaunchConfiguration(name).perform(context) for name in (
+        "camera_model", "imu_sensor", "imu_frame", "has_imu", "use_base_descr",
+        "base_frame", "parent_frame", "cam_pos_x", "cam_pos_y", "cam_pos_z",
+        "cam_roll", "cam_pitch", "cam_yaw", "rs_compat", "pose_source",
+        "model_selection", "fallback_model", "mesh_model", "legacy_frame_aliases",
+    )}
+    mappings["camera_name"] = LaunchConfiguration("tf_prefix").perform(context)
+    if mappings["has_imu"] == "auto" and mappings["use_base_descr"] == "true":
+        mappings["has_imu"] = "false"
+    rsp_name = (LaunchConfiguration("rsp_name").perform(context)
+                or mappings["camera_name"].strip("/").replace("/", "_"))
     command = [sys.executable, os.path.join(bringup_dir, "scripts", "resolve_description.py")]
     command.extend(f"{key}:={value}" for key, value in mappings.items())
     result = subprocess.run(command, capture_output=True, text=True)

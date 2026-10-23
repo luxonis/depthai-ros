@@ -30,21 +30,17 @@ def generate(boards, meshes):
             board = json.loads(path.read_text())
             config = board.get('board_config', board)
             # Board mode always uses the unique terminal sensor as its origin.
-            reference = None
-            native = convert(board, reference, 'native')
-            optical = convert(board, reference, 'optical')
+            native = convert(board, None, 'native')
+            optical = convert(board, None, 'optical')
         except (ValueError, KeyError, TypeError) as exc:
             unsupported[model] = str(exc)
             continue
 
-        offset = [0, 0, 0]
-
         def xyz(pose):
-            return ' '.join(format(float(v) + d, '.12g')
-                            for v, d in zip(pose['xyz'].split(), offset))
+            return ' '.join(format(float(v), '.12g') for v in pose['xyz'].split())
 
         record = {'board_file': path.name, 'reference_camera': native['reference_camera'],
-                  'base_offset': offset, 'mesh': model if (meshes / (model + '.stl')).exists() else None,
+                  'mesh': model if (meshes / (model + '.stl')).exists() else None,
                   'rgb_xyz': None, 'left_xyz': None, 'right_xyz': None,
                   'extra_cameras': {}, 'imu_variants': {}}
         stereo = config.get('stereo_config', {})

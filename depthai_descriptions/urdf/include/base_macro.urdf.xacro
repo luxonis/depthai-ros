@@ -32,7 +32,6 @@
 
 		<!-- base_link of the sensor-->
 		<link name="${base_frame}" />
-		<xacro:property name="model" value="${camera_model}" />
 
 		<joint name="${camera_name}_center_joint" type="fixed">
 			<parent link="${parent}" />
