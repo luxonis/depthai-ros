@@ -291,6 +291,9 @@ class DirectImuSource:
     def close(self):
         self.resources.close()
 
+    def now(self):
+        return self.dai.Clock.now().total_seconds()
+
 
 class RosImuSource:
     def __init__(self, topic):
@@ -331,6 +334,9 @@ class RosImuSource:
         if not rclpy.ok():
             raise ValueError('ROS context stopped')
         rclpy.spin_once(self.node, timeout_sec=0.05)
+
+    def now(self):
+        return self.node.get_clock().now().nanoseconds*1e-9
 
     def close(self):
         if self.node is not None:
@@ -457,12 +463,15 @@ def run(args):
                 except ValueError as exc:
                     print(f'INCONCLUSIVE: {exc}. Retry the stillness check.', flush=True)
                     continue
-                cutoff = time.monotonic()
+                detector = FirstPulse(max(args.acc_threshold, 4*noise) if kind == 'acc' else args.gyro_threshold,
+                                      kind, max_tilt=args.max_tilt)
                 with lock:
                     buffer.clear()
                     problems.clear()
-                detector = FirstPulse(max(args.acc_threshold, 4*noise) if kind == 'acc' else args.gyro_threshold,
-                                      kind, max_tilt=args.max_tilt)
+                    cutoff = time.monotonic()
+                    # Use the report clock: delayed pre-arming motion may arrive
+                    # after MOVE NOW even when the stream passes its age check.
+                    armed_stamp = source.now()
                 print(f'MOVE NOW: {instruction}!', flush=True)
                 deadline = cutoff + args.timeout
                 result = None
@@ -479,7 +488,7 @@ def run(args):
                         if sample['arrival'] < cutoff:
                             continue
                         # Do not accept old, heavily batched samples from before arming.
-                        if sample['stamp'] <= still[-1]['stamp']:
+                        if sample['stamp'] < armed_stamp:
                             continue
                         bias = acc if kind == 'acc' else gyro
                         value = [v-b for v, b in zip(sample[kind], bias)]

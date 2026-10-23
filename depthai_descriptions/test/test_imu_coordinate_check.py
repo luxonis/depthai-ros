@@ -72,6 +72,7 @@ class ImuCoordinateCheckTest(unittest.TestCase):
                 with patch.dict('sys.modules', depthai=dai):
                     try:
                         source.start(samples.append, 10)
+                        self.assertAlmostEqual(source.now(), 10.01)
                         source.poll()
                     finally:
                         source.close()
@@ -98,6 +99,77 @@ class ImuCoordinateCheckTest(unittest.TestCase):
                 source.close()
         dai.Pipeline.return_value.__exit__.assert_called_once()
         dai.Device.return_value.__exit__.assert_called_once()
+
+    def test_ros_source_clock_matches_report_timestamps(self):
+        source = check.RosImuSource('/oak/imu/data')
+        source.node = MagicMock()
+        source.node.get_clock.return_value.now.return_value.nanoseconds = 1700000000123456789
+        self.assertAlmostEqual(source.now(), 1700000000.123456789, delta=1e-6)
+
+    def run_timed_motion(self, standalone, delay, pulse_start):
+        # Simulate delivery independently of measurement time, with a source
+        # clock far from the monotonic clock used for receipt/deadlines.
+        elapsed = 0.
+        next_sample = 1
+        epoch = 1000. if standalone else 1700000000.
+        source = MagicMock()
+        source.now.side_effect = lambda: epoch + elapsed
+
+        def emit():
+            measured = elapsed - delay
+            moving = pulse_start <= measured < pulse_start + .16
+            callback(dict(stamp=epoch + measured, age=delay, frame='oak_imu_frame',
+                          acc=[2. if moving else 0., 0., 9.81], gyro=[0., 0., 0.], valid=True))
+
+        def start(receive, timeout):
+            nonlocal callback
+            callback = receive
+            emit()
+
+        def sleep(duration):
+            nonlocal elapsed, next_sample
+            end = elapsed + duration
+            while next_sample * .01 <= end:
+                elapsed = next_sample * .01
+                next_sample += 1
+                emit()
+            elapsed = end
+
+        callback = None
+        source.start.side_effect = start
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / 'report.json'
+            args = SimpleNamespace(standalone=standalone, device='', imu_frame='optical', topic='/oak/imu/data',
+                                   imu_link='oak_imu_frame', body_link='oak', model='OAK-D-S2', imu_sensor='BMI',
+                                   timeout=1., skip_gyro=True, prepare_seconds=3, angle=30., max_tilt=4.,
+                                   acc_threshold=.5, gyro_threshold=.15, still_acc_threshold=.5,
+                                   still_gyro_threshold=.25, output=str(output))
+            with patch.object(check, 'load_description', return_value=('BMI', IDENTITY, '<robot/>', dict(origin='test'))), \
+                    patch.object(check, 'DirectImuSource', return_value=source), \
+                    patch.object(check, 'RosImuSource', return_value=source), \
+                    patch.object(check.threading, 'Thread'), \
+                    patch.object(check.time, 'monotonic', side_effect=lambda: 10000. + elapsed), \
+                    patch.object(check.time, 'sleep', side_effect=sleep), \
+                    patch('builtins.input', side_effect=['', 'q']), patch('builtins.print'):
+                self.assertEqual(check.run(args), 1)
+            source.now.assert_called_once_with()
+            return json.loads(output.read_text())
+
+    def test_delayed_motion_measured_before_arming_is_not_scored(self):
+        # Baseline ends at 1.2 s and the countdown arms at 4.2 s. This
+        # pulse ends before arming but arrives entirely after MOVE NOW.
+        for standalone in (True, False):
+            with self.subTest(standalone=standalone):
+                report = self.run_timed_motion(standalone, delay=.3, pulse_start=4.)
+                self.assertEqual([r['name'] for r in report['results']], ['gravity'])
+
+    def test_motion_measured_after_arming_is_scored(self):
+        for standalone in (True, False):
+            for delay in (0., .3):
+                with self.subTest(standalone=standalone, delay=delay):
+                    report = self.run_timed_motion(standalone, delay=delay, pulse_start=4.3)
+                    self.assertEqual([r['name'] for r in report['results']], ['gravity', 'forward'])
+                    self.assertEqual(report['results'][-1]['status'], 'PASS')
 
     def feed(self, detector, values):
         result = None
