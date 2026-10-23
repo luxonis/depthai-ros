@@ -106,7 +106,7 @@ class ImuCoordinateCheckTest(unittest.TestCase):
         source.node.get_clock.return_value.now.return_value.nanoseconds = 1700000000123456789
         self.assertAlmostEqual(source.now(), 1700000000.123456789, delta=1e-6)
 
-    def run_timed_motion(self, standalone, delay, pulse_start):
+    def run_timed_motion(self, standalone, delay, pulse_start, *, motion=None, expect_armed=True, **options):
         # Simulate delivery independently of measurement time, with a source
         # clock far from the monotonic clock used for receipt/deadlines.
         elapsed = 0.
@@ -118,8 +118,9 @@ class ImuCoordinateCheckTest(unittest.TestCase):
         def emit():
             measured = elapsed - delay
             moving = pulse_start <= measured < pulse_start + .16
+            acc, gyro = motion(measured) if motion else ([2. if moving else 0., 0., 9.81], [0., 0., 0.])
             callback(dict(stamp=epoch + measured, age=delay, frame='oak_imu_frame',
-                          acc=[2. if moving else 0., 0., 9.81], gyro=[0., 0., 0.], valid=True))
+                          acc=acc, gyro=gyro, valid=True))
 
         def start(receive, timeout):
             nonlocal callback
@@ -144,6 +145,7 @@ class ImuCoordinateCheckTest(unittest.TestCase):
                                    timeout=1., skip_gyro=True, prepare_seconds=3, angle=30., max_tilt=4.,
                                    acc_threshold=.5, gyro_threshold=.15, still_acc_threshold=.5,
                                    still_gyro_threshold=.25, output=str(output))
+            vars(args).update(options)
             with patch.object(check, 'load_description', return_value=('BMI', IDENTITY, '<robot/>', dict(origin='test'))), \
                     patch.object(check, 'DirectImuSource', return_value=source), \
                     patch.object(check, 'RosImuSource', return_value=source), \
@@ -152,7 +154,10 @@ class ImuCoordinateCheckTest(unittest.TestCase):
                     patch.object(check.time, 'sleep', side_effect=sleep), \
                     patch('builtins.input', side_effect=['', 'q']), patch('builtins.print'):
                 self.assertEqual(check.run(args), 1)
-            source.now.assert_called_once_with()
+            if expect_armed:
+                source.now.assert_called_once_with()
+            else:
+                source.now.assert_not_called()
             return json.loads(output.read_text())
 
     def test_delayed_motion_measured_before_arming_is_not_scored(self):
@@ -170,6 +175,43 @@ class ImuCoordinateCheckTest(unittest.TestCase):
                     report = self.run_timed_motion(standalone, delay=delay, pulse_start=4.3)
                     self.assertEqual([r['name'] for r in report['results']], ['gravity', 'forward'])
                     self.assertEqual(report['results'][-1]['status'], 'PASS')
+
+    def test_countdown_gravity_drift_cannot_score_stationary_camera(self):
+        # These slow tilts pass the whole-preparation RMS/peak-gyro limits,
+        # but leave enough gravity residual to trigger a forward pulse at rest.
+        for standalone in (True, False):
+            for degrees, threshold, countdown in ((6., .5, 3), (3., .5, 3), (1.5, .2, 10)):
+                with self.subTest(standalone=standalone, degrees=degrees, threshold=threshold, countdown=countdown):
+                    def motion(stamp):
+                        fraction = max(0., min(1., (stamp - 1.2) / countdown))
+                        angle = math.radians(degrees) * fraction
+                        speed = math.radians(degrees) / countdown if 1.2 < stamp < 1.2 + countdown else 0.
+                        return [9.81 * math.sin(angle), 0., 9.81 * math.cos(angle)], [0., speed, 0.]
+
+                    preparation = [dict(stamp=i*.01, acc=motion(i*.01)[0], gyro=motion(i*.01)[1])
+                                   for i in range(1, round((1.2 + countdown) * 100) + 1)]
+                    check.baseline(preparation)
+                    residual = [a-b for a, b in zip(motion(1.2 + countdown)[0], [0., 0., 9.81])]
+                    self.assertGreater(check.norm(residual), threshold)
+                    self.assertEqual(check.direction_result(residual, [1, 0, 0], IDENTITY, 30)['status'], 'PASS')
+                    report = self.run_timed_motion(standalone, delay=0., pulse_start=math.inf,
+                                                   motion=motion, expect_armed=False,
+                                                   acc_threshold=threshold, prepare_seconds=countdown)
+                    self.assertEqual([r['name'] for r in report['results']], ['gravity'])
+                    self.assertFalse(report['passed'])
+
+    def test_stationary_countdown_and_hand_tremor_still_allow_real_motion(self):
+        for countdown in (0, 3):
+            with self.subTest(countdown=countdown):
+                pulse_start = 1.3 + countdown
+                def motion(stamp):
+                    moving = pulse_start <= stamp < pulse_start + .16
+                    return [2. if moving else .3 * (-1)**round(stamp * 100), 0., 9.81], [0., 0., 0.]
+
+                report = self.run_timed_motion(True, delay=0., pulse_start=pulse_start,
+                                               motion=motion, prepare_seconds=countdown)
+                self.assertEqual([r['name'] for r in report['results']], ['gravity', 'forward'])
+                self.assertEqual(report['results'][-1]['status'], 'PASS')
 
     def feed(self, detector, values):
         result = None

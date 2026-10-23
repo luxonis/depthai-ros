@@ -460,6 +460,17 @@ def run(args):
                     baseline(preparation, args.still_acc_threshold, args.still_gyro_threshold)
                     if not preparation or time.monotonic() - preparation[-1]['arrival'] > 0.3:
                         raise ValueError('IMU stream is stale')
+                    # Whole-countdown RMS can hide a slow tilt. Compare the
+                    # final gravity estimate with the baseline we will subtract;
+                    # cap drift below the motion threshold even if stillness
+                    # limits were relaxed. A short average suppresses IMU noise.
+                    final = [s for s in preparation if preparation[-1]['stamp'] - s['stamp'] <= 0.1]
+                    final_acc = [statistics.mean(s['acc'][i] for s in final) for i in range(3)]
+                    drift = norm([a-b for a, b in zip(final_acc, acc)])
+                    drift_limit = min(args.still_acc_threshold, args.acc_threshold)
+                    if drift >= drift_limit:
+                        raise ValueError(f'Gravity changed during preparation: {drift:.3f}/{drift_limit:.3f} m/s²; '
+                                         'keep the camera orientation steady')
                 except ValueError as exc:
                     print(f'INCONCLUSIVE: {exc}. Retry the stillness check.', flush=True)
                     continue
@@ -558,7 +569,7 @@ def main():
     parser.add_argument('--max-tilt', type=float, default=4, help='Maximum orientation change during translation in degrees (default: 4)')
     parser.add_argument('--acc-threshold', type=float, default=0.5, help='Motion threshold in m/s^2')
     parser.add_argument('--gyro-threshold', type=float, default=0.15, help='Rotation threshold in rad/s')
-    parser.add_argument('--still-acc-threshold', type=float, default=0.5, help='Allowed acceleration RMS during stillness/countdown in m/s² (default: 0.5)')
+    parser.add_argument('--still-acc-threshold', type=float, default=0.5, help='Allowed acceleration RMS and countdown gravity drift in m/s² (default: 0.5; drift also capped by --acc-threshold)')
     parser.add_argument('--still-gyro-threshold', type=float, default=0.25, help='Allowed peak gyro during stillness/countdown in rad/s (default: 0.25)')
     parser.add_argument('--timeout', type=float, default=10, help='Seconds to wait for each first pulse / topic')
     import sys
