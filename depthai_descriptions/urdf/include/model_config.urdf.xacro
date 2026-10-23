@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="depthai_model_config" params="camera_model imu_sensor:='' imu_frame:='auto' pose_source:='legacy' mesh_model:=''">
+    <xacro:property name="configs" value="${xacro.load_yaml('$(find depthai_descriptions)/urdf/include/model_config.yaml')}" />
+    <xacro:property name="boards" value="${xacro.load_yaml('$(find depthai_descriptions)/urdf/include/board_models.yaml')}" />
+    <!-- DEPRECATED: frozen develop poses preserve existing installations. Opt into pose_source=board. -->
+    <xacro:property name="legacy" value="${xacro.load_yaml('$(find depthai_descriptions)/urdf/include/legacy_models.yaml')['models']}" />
+    <xacro:property name="resolved_model" value="${camera_model if camera_model in boards['models'] or camera_model in legacy else configs.get('aliases', dict()).get(camera_model, camera_model)}" />
+    <xacro:if value="${pose_source not in ['legacy', 'board'] or imu_frame not in ['auto', 'native', 'optical']}">
+      <xacro:property name="invalid" lazy_eval="false" value="${xacro.fatal('Invalid pose_source or imu_frame')}" />
+    </xacro:if>
+    <xacro:property name="use_legacy" value="${pose_source == 'legacy' and resolved_model in legacy}" />
+    <xacro:if value="${not use_legacy and resolved_model not in boards['models']}">
+      <xacro:property name="invalid" lazy_eval="false" value="${xacro.fatal('No valid board description: ' + resolved_model)}" />
+    </xacro:if>
+    <xacro:property name="record" value="${legacy[resolved_model] if use_legacy else dict(boards['models'][resolved_model], **configs['models'].get(resolved_model, dict()))}" />
+    <xacro:property name="merged" value="${dict(configs['defaults'], **record)}" />
+    <xacro:property name="variants" value="${merged['imu_variants']}" />
+    <xacro:if value="${not use_legacy and imu_sensor != '' and imu_sensor not in variants}">
+      <xacro:property name="invalid" lazy_eval="false" value="${xacro.fatal('Invalid IMU selection: ' + imu_sensor)}" />
+    </xacro:if>
+    <xacro:property name="selected" value="${'' if use_legacy else (imu_sensor if imu_sensor != '' else (list(variants.keys())[0] if len(variants) == 1 else ''))}" />
+    <xacro:property name="mode" value="${'native' if imu_frame == 'auto' else imu_frame}" />
+    <xacro:property name="imu_override" value="${dict(imu_xyz=variants[selected]['xyz'], imu_rpy=variants[selected][mode + '_rpy']) if selected != '' else dict()}" />
+    <xacro:property name="mesh" value="${mesh_model if mesh_model != '' else (merged['mesh'] or configs.get('mesh_aliases', dict()).get(resolved_model))}" />
+    <xacro:property name="device_config" scope="parent" value="${dict(dict(merged, **imu_override), mesh=mesh, legacy=use_legacy)}" />
+  </xacro:macro>
+</robot>
