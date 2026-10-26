@@ -32,6 +32,7 @@ struct ParamNames {
     static constexpr const char* FPS = "i_fps";
     static constexpr const char* RESIZE_MODE = "i_resize_mode";
     static constexpr const char* UNDISTORTED = "i_undistorted";
+    static constexpr const char* ROTATION = "i_rotation";
     static constexpr const char* ISO = "r_iso";
     static constexpr const char* EXPOSURE = "r_exposure";
     static constexpr const char* SET_MAN_EXPOSURE = "r_set_man_exposure";

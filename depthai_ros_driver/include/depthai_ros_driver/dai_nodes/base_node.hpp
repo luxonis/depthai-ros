@@ -63,7 +63,8 @@ class BaseNode {
                                                                 const std::string& qName,
                                                                 dai::Node::Output* out,
                                                                 bool isSynced = false,
-                                                                const utils::VideoEncoderConfig& encoderConfig = {});
+                                                                const utils::VideoEncoderConfig& encoderConfig = {},
+                                                                int rotation = 0);
     virtual void closeQueues() = 0;
 
     void setNodeName(const std::string& daiNodeName);

@@ -51,6 +51,7 @@ StereoParamHandler::StereoParamHandler(std::shared_ptr<rclcpp::Node> node, const
     declareAndLogParam<int>(ParamNames::LOW_BANDWIDTH_BITRATE, 0);
     declareAndLogParam<std::string>(ParamNames::LOW_BANDWIDTH_FFMPEG_ENCODER, "libx264");
     declareAndLogParam<bool>("i_output_disparity", false);
+    declareAndLogParam<int>(ParamNames::ROTATION, 0);
     declareAndLogParam<bool>(ParamNames::GET_BASE_DEVICE_TIMESTAMP, false);
     declareAndLogParam<bool>(ParamNames::UPDATE_ROS_BASE_TIME_ON_ROS_MSG, false);
     declareAndLogParam<bool>(ParamNames::PUBLISH_TOPIC, true);

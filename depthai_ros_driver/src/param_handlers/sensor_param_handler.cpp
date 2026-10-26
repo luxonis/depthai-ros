@@ -52,6 +52,7 @@ void SensorParamHandler::declareParams(std::shared_ptr<dai::node::Camera> cam, b
     declareAndLogParam<float>(ParamNames::FPS, fps);
     declareAndLogParam<bool>(ParamNames::UNDISTORTED, true);
     declareAndLogParam<std::string>(ParamNames::RESIZE_MODE, "CROP");
+    declareAndLogParam<int>(ParamNames::ROTATION, 0);
 
     size_t iso = declareAndLogParam(ParamNames::ISO, 800, getRangedIntDescriptor(100, 1600));
     size_t exposure = declareAndLogParam(ParamNames::EXPOSURE, 1000, getRangedIntDescriptor(1, 33000));

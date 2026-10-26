@@ -166,21 +166,22 @@ void Stereo::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
         encConf.frameFreq = ph->getParam<int>("i_low_bandwidth_frame_freq");
         encConf.quality = ph->getParam<int>("i_low_bandwidth_quality");
         encConf.enabled = lowBandwidth;
+        int rotation = ph->getParam<int>(param_handlers::ParamNames::ROTATION);
 
         if(outputDisparity || lowBandwidth) {
             if(ph->getParam<bool>("i_use_neural_depth")) {
-                stereoPub = setupOutput(pipeline, stereoQName, &neuralDepthNode->disparity, ph->getParam<bool>("i_synced"), encConf);
+                stereoPub = setupOutput(pipeline, stereoQName, &neuralDepthNode->disparity, ph->getParam<bool>("i_synced"), encConf, rotation);
             } else {
-                stereoPub = setupOutput(pipeline, stereoQName, &stereoCamNode->disparity, ph->getParam<bool>("i_synced"), encConf);
+                stereoPub = setupOutput(pipeline, stereoQName, &stereoCamNode->disparity, ph->getParam<bool>("i_synced"), encConf, rotation);
             }
         } else {
             if(aligned && platform == dai::Platform::RVC4) {
-                stereoPub = setupOutput(pipeline, stereoQName, &alignNode->outputAligned, ph->getParam<bool>("i_synced"), encConf);
+                stereoPub = setupOutput(pipeline, stereoQName, &alignNode->outputAligned, ph->getParam<bool>("i_synced"), encConf, rotation);
             } else {
                 if(ph->getParam<bool>("i_use_neural_depth")) {
-                    stereoPub = setupOutput(pipeline, stereoQName, &neuralDepthNode->depth, ph->getParam<bool>("i_synced"), encConf);
+                    stereoPub = setupOutput(pipeline, stereoQName, &neuralDepthNode->depth, ph->getParam<bool>("i_synced"), encConf, rotation);
                 } else {
-                    stereoPub = setupOutput(pipeline, stereoQName, &stereoCamNode->depth, ph->getParam<bool>("i_synced"), encConf);
+                    stereoPub = setupOutput(pipeline, stereoQName, &stereoCamNode->depth, ph->getParam<bool>("i_synced"), encConf, rotation);
                 }
             }
         }

@@ -91,6 +91,28 @@ sensor_msgs::msg::CameraInfo getCalibInfo(const rclcpp::Logger& logger,
     return info;
 }
 
+void rotateCameraInfo180(sensor_msgs::msg::CameraInfo& info) {
+    // Pixel (u, v) moves to (w - 1 - u, h - 1 - v); in the rotated frame x and y change sign, so focal lengths stay positive
+    info.k[2] = info.width - 1.0 - info.k[2];
+    info.k[5] = info.height - 1.0 - info.k[5];
+    info.p[2] = info.width - 1.0 - info.p[2];
+    info.p[6] = info.height - 1.0 - info.p[6];
+    info.p[3] = -info.p[3];
+    info.p[7] = -info.p[7];
+    // R' = S * R * S for S = diag(-1, -1, 1)
+    for(int i : {2, 5, 6, 7}) {
+        info.r[i] = -info.r[i];
+    }
+    if(info.distortion_model == "rational_polynomial" || info.distortion_model == "plumb_bob") {
+        // k1, k2, p1, p2, k3, k4, k5, k6, s1, s2, s3, s4, tau_x, tau_y
+        for(size_t i : {2, 3, 8, 9, 10, 11, 12, 13}) {
+            if(i < info.d.size()) {
+                info.d[i] = -info.d[i];
+            }
+        }
+    }
+}
+
 }  // namespace sensor_helpers
 }  // namespace dai_nodes
 }  // namespace depthai_ros_driver

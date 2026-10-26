@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "depthai/common/ImgTransformations.hpp"
 #include "depthai/pipeline/Node.hpp"
 #include "depthai/pipeline/datatype/ADatatype.hpp"
 #include "depthai_ros_driver/utils.hpp"
@@ -16,10 +17,15 @@ class Device;
 class Pipeline;
 class MessageQueue;
 namespace node {
+class ImageManip;
 class VideoEncoder;
 class XLinkOut;
 }  // namespace node
 }  // namespace dai
+
+namespace tf2_ros {
+class StaticTransformBroadcaster;
+}
 
 namespace depthai_bridge {
 class ImageConverter;
@@ -59,6 +65,7 @@ class ImagePublisher {
      * @brief Construct a new Image Publisher object
      *
      * Creates XLinkOut if synced and VideoEncoder if lowBandwidth is enabled. linkFunc is stored and returned when link is called.
+     * If rotation is 180, creates an ImageManip that rotates the output before the encoder, the queue and the Sync node.
      */
     ImagePublisher(std::shared_ptr<rclcpp::Node> node,
                    std::shared_ptr<dai::Pipeline> pipeline,
@@ -66,7 +73,8 @@ class ImagePublisher {
                    dai::Node::Output* out,
                    bool synced = false,
                    bool ipcEnabled = false,
-                   const utils::VideoEncoderConfig& encoderConfig = {});
+                   const utils::VideoEncoderConfig& encoderConfig = {},
+                   int rotation = 0);
 
     ~ImagePublisher();
     /**
@@ -87,6 +95,7 @@ class ImagePublisher {
     void publish(std::shared_ptr<Image> img);
     void publish(std::shared_ptr<Image> img, rclcpp::Time timestamp);
     std::shared_ptr<Image> convertData(const std::shared_ptr<dai::ADatatype>& data);
+    sensor_msgs::msg::CameraInfo rotatedCameraInfo(dai::ImgTransformation transformation);
     std::shared_ptr<dai::node::VideoEncoder> createEncoder(std::shared_ptr<dai::Pipeline> pipeline, const utils::VideoEncoderConfig& encoderConfig);
 
    private:
@@ -98,6 +107,8 @@ class ImagePublisher {
     std::shared_ptr<depthai_bridge::ImageConverter> converter;
     std::shared_ptr<dai::node::XLinkOut> xout;
     std::shared_ptr<dai::node::VideoEncoder> encoder;
+    std::shared_ptr<dai::node::ImageManip> rotationManip;
+    std::shared_ptr<tf2_ros::StaticTransformBroadcaster> rotatedFrameBroadcaster;
     dai::Node::Output* out;
     rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr infoPub;
     rclcpp::Publisher<ffmpeg_image_transport_msgs::msg::FFMPEGPacket>::SharedPtr ffmpegPub;

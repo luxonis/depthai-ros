@@ -5,14 +5,17 @@
 #include "camera_info_manager/camera_info_manager.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/node/ImageManip.hpp"
 #include "depthai/pipeline/node/VideoEncoder.hpp"
 #include "depthai/properties/VideoEncoderProperties.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "ffmpeg_image_transport_msgs/msg/ffmpeg_packet.hpp"
+#include "geometry_msgs/msg/transform_stamped.hpp"
 #include "image_transport/image_transport.hpp"
 #include "sensor_msgs/msg/compressed_image.hpp"
+#include "tf2_ros/static_transform_broadcaster.h"
 
 namespace depthai_ros_driver {
 namespace dai_nodes {
@@ -23,8 +26,19 @@ ImagePublisher::ImagePublisher(std::shared_ptr<rclcpp::Node> node,
                                dai::Node::Output* out,
                                bool synced,
                                bool ipcEnabled,
-                               const utils::VideoEncoderConfig& encoderConfig)
+                               const utils::VideoEncoderConfig& encoderConfig,
+                               int rotation)
     : node(node), encConfig(encoderConfig), out(out), qName(qName), ipcEnabled(ipcEnabled), synced(synced) {
+    if(rotation != 0) {
+        if(rotation != 180) {
+            throw std::runtime_error("Unsupported rotation " + std::to_string(rotation) + " for " + qName + ", only 0 and 180 are supported");
+        }
+        // Rotate on device, before the encoder, the queue and the Sync node
+        rotationManip = pipeline->create<dai::node::ImageManip>();
+        rotationManip->initialConfig->addFlipHorizontal().addFlipVertical();
+        this->out->link(rotationManip->inputImage);
+        this->out = &rotationManip->out;
+    }
     if(encoderConfig.enabled) {
         encoder = createEncoder(pipeline, encoderConfig);
         this->out->link(encoder->input);
@@ -33,6 +47,20 @@ ImagePublisher::ImagePublisher(std::shared_ptr<rclcpp::Node> node,
 void ImagePublisher::setup(std::shared_ptr<dai::Device> device, const utils::ImgConverterConfig& convConf, const utils::ImgPublisherConfig& pubConf) {
     convConfig = convConf;
     pubConfig = pubConf;
+    if(rotationManip) {
+        // 2 bytes per pixel covers NV12, RAW8 and RAW16 outputs
+        rotationManip->setMaxOutputFrameSize(pubConfig.width * pubConfig.height * 2);
+        // Rotated images get their own optical frame, rotated 180 degrees about z
+        geometry_msgs::msg::TransformStamped ts;
+        ts.header.stamp = node->get_clock()->now();
+        ts.header.frame_id = convConfig.tfPrefix;
+        ts.child_frame_id = convConfig.tfPrefix + "_rotated";
+        ts.transform.rotation.z = 1.0;
+        ts.transform.rotation.w = 0.0;
+        rotatedFrameBroadcaster = std::make_shared<tf2_ros::StaticTransformBroadcaster>(node);
+        rotatedFrameBroadcaster->sendTransform(ts);
+        convConfig.tfPrefix = ts.child_frame_id;
+    }
     createImageConverter(device);
     createInfoManager(device);
     if(pubConfig.topicName.empty()) {
@@ -153,13 +181,21 @@ void ImagePublisher::addQueueCB() {
 std::string ImagePublisher::getQueueName() {
     return qName;
 }
+sensor_msgs::msg::CameraInfo ImagePublisher::rotatedCameraInfo(dai::ImgTransformation transformation) {
+    // Undo the manip's flips to get the unrotated intrinsics, then rotate them exactly (pixel u -> w - 1 - u)
+    auto unrotated = std::make_shared<dai::ImgFrame>();
+    unrotated->transformation = transformation.addFlipHorizontal().addFlipVertical();
+    auto info = converter->generateCameraInfo(unrotated);
+    rotateCameraInfo180(info);
+    return info;
+}
 std::shared_ptr<Image> ImagePublisher::convertData(const std::shared_ptr<dai::ADatatype>& data) {
     sensor_msgs::msg::CameraInfo info;
     auto img = std::make_shared<Image>();
     if(encConfig.enabled) {
         auto daiImg = std::dynamic_pointer_cast<dai::EncodedFrame>(data);
         if(pubConfig.calibrationFile.empty()) {
-            info = converter->generateCameraInfo(daiImg);
+            info = rotationManip ? rotatedCameraInfo(daiImg->transformation) : converter->generateCameraInfo(daiImg);
         } else {
             info = infoManager->getCameraInfo();
         }
@@ -184,7 +220,7 @@ std::shared_ptr<Image> ImagePublisher::convertData(const std::shared_ptr<dai::AD
     } else {
         auto daiImg = std::dynamic_pointer_cast<dai::ImgFrame>(data);
         if(pubConfig.calibrationFile.empty()) {
-            info = converter->generateCameraInfo(daiImg);
+            info = rotationManip ? rotatedCameraInfo(daiImg->transformation) : converter->generateCameraInfo(daiImg);
         } else {
             info = infoManager->getCameraInfo();
         }
