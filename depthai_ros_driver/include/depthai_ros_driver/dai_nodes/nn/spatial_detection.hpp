@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <depthai/nn_archive/NNArchive.hpp>
 #include <filesystem>
 #include <memory>
@@ -104,6 +105,11 @@ class SpatialDetection : public BaseNode {
             utils::ImgPublisherConfig pubConf;
             pubConf.width = ph->getOtherNodeParam<int>(sensor_helpers::getNodeName(getROSNode(), sensor_helpers::NodeNameEnum::Stereo), "i_width");
             pubConf.height = ph->getOtherNodeParam<int>(sensor_helpers::getNodeName(getROSNode(), sensor_helpers::NodeNameEnum::Stereo), "i_height");
+            if(const auto archive = spatialNode->neuralNetwork->getNNArchive()) {
+                pubConf.width = std::max(pubConf.width, int(archive->get().getInputWidth().value()));
+                pubConf.height = std::max(pubConf.height, int(archive->get().getInputHeight().value()));
+            }
+            pubConf.undistorted = true;
             pubConf.daiNodeName = getName();
             pubConf.topicName = "~/" + getName() + "/passthrough_depth";
             pubConf.infoSuffix = "/passthrough_depth";

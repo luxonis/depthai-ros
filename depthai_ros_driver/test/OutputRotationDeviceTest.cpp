@@ -32,7 +32,9 @@ TEST(OutputRotationDevice, PreservesDepthAndOutputGeometry) {
         pipeline->start();
         for(int sequence = 0; sequence < 5; ++sequence) {
             int cvType = type == dai::ImgFrame::Type::RAW16 ? CV_16UC1 : type == dai::ImgFrame::Type::GRAY8 ? CV_8UC1 : CV_8UC3;
-            cv::Mat pixels(400, 640, cvType);
+            // NN-aligned and decimated outputs differ from the configured stereo input size.
+            const std::array<cv::Size, 5> depthSizes = {cv::Size(640, 400), {300, 300}, {320, 200}, {512, 384}, {640, 400}};
+            cv::Mat pixels(type == dai::ImgFrame::Type::RAW16 ? depthSizes[sequence] : cv::Size(640, 400), cvType);
             cv::RNG rng(sequence + 1);
             rng.fill(pixels, cv::RNG::UNIFORM, 0, type == dai::ImgFrame::Type::RAW16 ? 65536 : 256);
             if(type != dai::ImgFrame::Type::RAW16 && device->getPlatform() == dai::Platform::RVC2) {
@@ -42,8 +44,8 @@ TEST(OutputRotationDevice, PreservesDepthAndOutputGeometry) {
             }
             auto frame = std::make_shared<dai::ImgFrame>();
             frame->setType(type);
-            frame->setWidth(640);
-            frame->setHeight(400);
+            frame->setWidth(pixels.cols);
+            frame->setHeight(pixels.rows);
             frame->setStride(pixels.step);
             frame->setData(std::vector<uint8_t>(pixels.data, pixels.data + pixels.total() * pixels.elemSize()));
             frame->setSequenceNum(sequence);

@@ -40,15 +40,9 @@ void ImagePublisher::setup(std::shared_ptr<dai::Device> device, const utils::Img
     convConfig = convConf;
     pubConfig = pubConf;
     if(rotation) {
-        if(encoder && device->getPlatform() == dai::Platform::RVC2) {
-            const int width = rotation->rotation.swapsAxes() ? pubConfig.height : pubConfig.width;
-            const int height = rotation->rotation.swapsAxes() ? pubConfig.width : pubConfig.height;
-            const int heightMultiple = encConfig.profile == dai::VideoEncoderProperties::Profile::MJPEG ? 2 : 8;
-            if(width % 32 || height % heightMultiple)
-                throw std::invalid_argument("Rotated RVC2 encoder output requires width divisible by 32 and height divisible by "
-                                            + std::to_string(heightMultiple) + "; adjust the native i_width/i_height");
-        }
-        rotation->configure(pubConfig.width, pubConfig.height);
+        const int encoderHeightMultiple =
+            encoder && device->getPlatform() == dai::Platform::RVC2 ? (encConfig.profile == dai::VideoEncoderProperties::Profile::MJPEG ? 2 : 8) : 0;
+        rotation->configure(pubConfig.width, pubConfig.height, encoderHeightMultiple);
         convConfig.tfPrefix = rotation->rotation.frame(convConfig.tfPrefix);
     }
     createImageConverter(device);

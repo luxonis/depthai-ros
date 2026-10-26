@@ -242,3 +242,17 @@ TEST(ImageConverterRotationTest, EncodedDimensionsComeFromOutputFrame) {
     EXPECT_EQ(packets.front().width, 400);
     EXPECT_EQ(packets.front().height, 640);
 }
+
+TEST(ImageConverterRotationTest, CameraInfoIncludesFramePadding) {
+    depthai_bridge::ImageConverter converter("optical", false);
+    auto frame = std::make_shared<dai::ImgFrame>();
+    frame->setWidth(224);
+    frame->setHeight(133);
+    frame->transformation.setSize(213, 133);
+    frame->transformation.setIntrinsicMatrix({{{100, 0, 106}, {0, 100, 66}, {0, 0, 1}}});
+    const auto info = converter.generateCameraInfo(frame);
+    EXPECT_EQ(info.width, 224);
+    EXPECT_EQ(info.height, 133);
+    EXPECT_EQ(info.k[0], 100);
+    EXPECT_EQ(info.k[2], 106);
+}

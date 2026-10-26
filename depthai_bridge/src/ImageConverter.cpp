@@ -352,9 +352,9 @@ sensor_msgs::msg::CameraInfo ImageConverter::generateCameraInfo(std::shared_ptr<
     // Get the ImgTransformation from the ImgFrame
     const auto& transformation = imgFrame->transformation;
 
-    // Set the width and height
-    cameraInfo.width = transformation.getSize().first;
-    cameraInfo.height = transformation.getSize().second;
+    // The frame can include alignment padding beyond the transformation's logical size.
+    cameraInfo.width = imgFrame->getWidth();
+    cameraInfo.height = imgFrame->getHeight();
 
     // Set the intrinsic matrix
     const auto& intrinsicMatrix = transformation.getIntrinsicMatrix();

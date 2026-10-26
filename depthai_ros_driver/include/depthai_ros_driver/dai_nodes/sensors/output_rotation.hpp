@@ -3,6 +3,7 @@
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/ImageManip.hpp"
+#include "depthai/pipeline/node/Script.hpp"
 #include "depthai_bridge/OutputRotation.hpp"
 
 namespace depthai_ros_driver::dai_nodes::sensor_helpers {
@@ -18,25 +19,52 @@ class OutputRotation {
             manip->setRunOnHost(false);
             manip->setBackend(dai::node::ImageManip::Backend::CPU);
         }
-        input.link(warp->inputImage);
+        control = pipeline->create<dai::node::Script>();
+        input.link(control->inputs["in"]);
+        control->outputs["image"].link(warp->inputImage);
+        control->outputs["warp"].link(warp->inputConfig);
+        control->outputs["crop"].link(crop->inputConfig);
+        warp->inputConfig.setWaitForMessage(true);
+        crop->inputConfig.setWaitForMessage(true);
         warp->out.link(crop->inputImage);
     }
-    void configure(int width, int height) {
+    void configure(int width, int height, int encoderHeightMultiple = 0) {
         if(width <= 0 || height <= 0) throw std::invalid_argument("Output rotation requires an explicit stream width and height");
         const int ow = rotation.swapsAxes() ? height : width;
         const int oh = rotation.swapsAxes() ? width : height;
-        auto matrix = rotation.matrix(width, height);
-        // Warp crop bounds use pixel edges. A one-pixel border retains the last source row/column.
-        // RVC2 samples reflected axes one pixel earlier than its reported transformation.
-        matrix[2] += 1 + correctionX();
-        matrix[5] += 1 + correctionY();
-        warp->initialConfig->addTransformPerspective(matrix);
+        // Parameters bound the allocation; every frame's metadata defines the actual geometry.
         const int paddedWidth = ((ow + 2 + 15) / 16) * 16;
-        warp->initialConfig->setOutputSize(paddedWidth, oh + 2);
-        warp->initialConfig->base.center = false;
         warp->setMaxOutputFrameSize(paddedWidth * (oh + 2) * 4);
-        crop->initialConfig->addCrop(1, 1, ow, oh);
         crop->setMaxOutputFrameSize(ow * oh * 4);
+        control->setScript("encoder_height_multiple = " + std::to_string(encoderHeightMultiple) + "\nangle = " + std::to_string(degrees)
+                           + "\ncx = " + std::to_string(correctionX()) + "\ncy = " + std::to_string(correctionY()) + R"(
+while True:
+    image = node.io["in"].get()
+    w, h = image.getWidth(), image.getHeight()
+    ow, oh = (h, w) if angle != 180 else (w, h)
+    if encoder_height_multiple and (ow % 32 or oh % encoder_height_multiple):
+        raise ValueError("Rotated RVC2 encoder output %dx%d requires width divisible by 32 and height divisible by %d"
+                         % (ow, oh, encoder_height_multiple))
+    if angle == 90:
+        matrix = [0, -1, h, 1, 0, 1, 0, 0, 1]
+    elif angle == 180:
+        matrix = [-1, 0, w, 0, -1, h, 0, 0, 1]
+    else:
+        matrix = [0, 1, 1, -1, 0, w, 0, 0, 1]
+    # One-pixel border retains the final source row/column; compensate RVC2 sampling.
+    matrix[2] += cx
+    matrix[5] += cy
+    warp = ImageManipConfig()
+    warp.addTransformPerspective(matrix)
+    warp.setOutputCenter(False)
+    # Use a crop to size the canvas without recentering the transform.
+    warp.addCrop(0, 0, ((ow + 17) // 16) * 16, oh + 2)
+    crop = ImageManipConfig()
+    crop.addCrop(1, 1, ow, oh)
+    node.io["warp"].send(warp)
+    node.io["crop"].send(crop)
+    node.io["image"].send(image)
+)");
     }
     dai::Node::Output& out() {
         return crop->out;
@@ -62,5 +90,6 @@ class OutputRotation {
     int degrees;
     bool rvc2;
     std::shared_ptr<dai::node::ImageManip> warp, crop;
+    std::shared_ptr<dai::node::Script> control;
 };
 }  // namespace depthai_ros_driver::dai_nodes::sensor_helpers
