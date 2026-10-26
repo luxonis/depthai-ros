@@ -36,6 +36,8 @@ namespace depthai_ros_driver {
 namespace dai_nodes {
 
 namespace sensor_helpers {
+class OutputRotation;
+
 /**
  * @brief Image struct
  *
@@ -91,6 +93,7 @@ class ImagePublisher {
 
    private:
     std::shared_ptr<rclcpp::Node> node;
+    std::unique_ptr<OutputRotation> rotation;
     utils::VideoEncoderConfig encConfig;
     utils::ImgPublisherConfig pubConfig;
     utils::ImgConverterConfig convConfig;

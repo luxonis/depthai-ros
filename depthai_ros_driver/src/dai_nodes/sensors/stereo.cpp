@@ -259,8 +259,8 @@ void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
     pubConfig.daiNodeName = sensorName;
     pubConfig.rectified = true;
     pubConfig.undistorted = true;
-    pubConfig.width = ph->getOtherNodeParam<int>(sensorName, "i_width");
-    pubConfig.height = ph->getOtherNodeParam<int>(sensorName, "i_height");
+    pubConfig.width = ph->getParam<int>("i_width");
+    pubConfig.height = ph->getParam<int>("i_height");
     pubConfig.topicName = "~/" + sensorName;
     pubConfig.topicSuffix = rsCompatibilityMode() ? "/image_rect_raw" : "/image_rect";
     pubConfig.maxQSize = ph->getOtherNodeParam<int>(sensorName, "i_max_q_size");
@@ -308,6 +308,13 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     pubConf.width = ph->getParam<int>(ParamNames::WIDTH);
     pubConf.height = ph->getParam<int>(ParamNames::HEIGHT);
     pubConf.socket = ph->getSocketID();
+    if(aligned && pubConf.socket != leftSensInfo.socket && pubConf.socket != rightSensInfo.socket && !convConfig.outputDisparity && !convConfig.lowBandwidth) {
+        const auto target = ph->getParam<std::string>("i_socket_name");
+        if(getROSNode()->has_parameter(target + "." + ParamNames::WIDTH) && getROSNode()->has_parameter(target + "." + ParamNames::HEIGHT)) {
+            pubConf.width = ph->getOtherNodeParam<int>(target, ParamNames::WIDTH);
+            pubConf.height = ph->getOtherNodeParam<int>(target, ParamNames::HEIGHT);
+        }
+    }
     pubConf.calibrationFile = ph->getParam<std::string>(ParamNames::CALIBRATION_FILE);
     pubConf.leftSocket = leftSensInfo.socket;
     pubConf.rightSocket = rightSensInfo.socket;

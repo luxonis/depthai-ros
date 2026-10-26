@@ -40,6 +40,16 @@ TEST(SpatialDetectionConverterTest, ToRosMsgTest) {
     EXPECT_FLOAT_EQ(opDetectionMsgs[0].detections[0].position.x, 0.1);
     EXPECT_FLOAT_EQ(opDetectionMsgs[0].detections[0].position.y, 0.2);
     EXPECT_FLOAT_EQ(opDetectionMsgs[0].detections[0].position.z, 0.3);
+
+    converter.setOutputRotation(90);
+    converter.toRosMsg(inNetData, opDetectionMsgs);
+    const auto& rotated = opDetectionMsgs.back();
+    EXPECT_EQ(rotated.header.frame_id, "testFrame_rotated");
+    EXPECT_FLOAT_EQ(rotated.detections[0].position.x, -0.2);
+    EXPECT_FLOAT_EQ(rotated.detections[0].position.y, 0.1);
+    EXPECT_FLOAT_EQ(rotated.detections[0].position.z, 0.3);
+    EXPECT_FLOAT_EQ(rotated.detections[0].bbox.center.position.x, 360);
+    EXPECT_FLOAT_EQ(rotated.detections[0].bbox.size_x, 240);
 }
 
 TEST(SpatialDetectionConverterTest, ToRosVisionMsgTest) {
@@ -77,6 +87,16 @@ TEST(SpatialDetectionConverterTest, ToRosVisionMsgTest) {
     EXPECT_FLOAT_EQ(opDetectionMsgs[0].detections[0].results[0].pose.pose.position.x, 0.1);
     EXPECT_FLOAT_EQ(opDetectionMsgs[0].detections[0].results[0].pose.pose.position.y, 0.2);
     EXPECT_FLOAT_EQ(opDetectionMsgs[0].detections[0].results[0].pose.pose.position.z, 0.3);
+
+    converter.setOutputRotation(90);
+    converter.toRosVisionMsg(inNetData, opDetectionMsgs);
+    const auto& rotated = opDetectionMsgs.back();
+    EXPECT_EQ(rotated.header.frame_id, "testFrame_rotated");
+    EXPECT_FLOAT_EQ(rotated.detections[0].results[0].pose.pose.position.x, -0.2);
+    EXPECT_FLOAT_EQ(rotated.detections[0].results[0].pose.pose.position.y, 0.1);
+    EXPECT_FLOAT_EQ(rotated.detections[0].results[0].pose.pose.position.z, 0.3);
+    EXPECT_FLOAT_EQ(rotated.detections[0].bbox.center.position.x, 360);
+    EXPECT_FLOAT_EQ(rotated.detections[0].bbox.size.x, 240);
 }
 
 }  // namespace depthai_bridge

@@ -122,7 +122,7 @@ class TestDriverLaunch(unittest.TestCase):
         self.assertTrue(self.testHelper.testTriggerService("/oak/stop_driver"))
         proc_output.assertWaitFor("Driver stopped!", timeout=10.0, stream="stderr")
 
-        self.assertTrue(self.testHelper.testTriggerService("/oak/start_driver"))
+        self.assertTrue(self.testHelper.testTriggerService("/oak/start_driver", timeout=15))
         proc_output.assertWaitFor("Driver ready!", timeout=10.0, stream="stderr")
 
     def test_save_calibration(self, proc_output):

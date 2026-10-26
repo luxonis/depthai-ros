@@ -123,6 +123,7 @@ void RGBD::setupQueues(std::shared_ptr<dai::Device> /* device */) {
     options.qos_overriding_options = rclcpp::QosOverridingOptions();
     pclConv = std::make_unique<depthai_bridge::PointCloudConverter>(tfPrefix, ph->getParam<bool>(ParamNames::GET_BASE_DEVICE_TIMESTAMP));
     pclConv->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>(ParamNames::UPDATE_ROS_BASE_TIME_ON_ROS_MSG));
+    pclConv->setOutputRotation(getROSNode()->get_parameter("driver.i_output_rotation_deg").as_int());
     pclConv->setDepthUnit(dai::StereoDepthConfig::AlgorithmControl::DepthUnit::METER);
 
     pclPub = getROSNode()->create_publisher<sensor_msgs::msg::PointCloud2>("~/" + getName() + "/points", ph->getParam<int>(ParamNames::MAX_Q_SIZE), options);

@@ -119,6 +119,7 @@ if(BUILD_TESTING)
         target_link_libraries("${PROJECT_NAME}_${test_name}" ${PROJECT_NAME})
 
     endmacro()
+    bridge_test(output_rotation_test OutputRotationTest.cpp)
     bridge_test(disparity_converter_test DisparityConverterTest.cpp)
     bridge_test(depthai_utility_test DepthaiUtilityTest.cpp)
     bridge_test(image_converter_test ImageConverterTest.cpp)

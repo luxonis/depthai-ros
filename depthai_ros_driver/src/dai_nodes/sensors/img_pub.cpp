@@ -8,6 +8,7 @@
 #include "depthai/pipeline/node/VideoEncoder.hpp"
 #include "depthai/properties/VideoEncoderProperties.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/output_rotation.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "ffmpeg_image_transport_msgs/msg/ffmpeg_packet.hpp"
@@ -25,6 +26,11 @@ ImagePublisher::ImagePublisher(std::shared_ptr<rclcpp::Node> node,
                                bool ipcEnabled,
                                const utils::VideoEncoderConfig& encoderConfig)
     : node(node), encConfig(encoderConfig), out(out), qName(qName), ipcEnabled(ipcEnabled), synced(synced) {
+    const int degrees = node->get_parameter("driver.i_output_rotation_deg").as_int();
+    if(degrees) {
+        rotation = std::make_unique<OutputRotation>(pipeline, *out, degrees);
+        this->out = &rotation->out();
+    }
     if(encoderConfig.enabled) {
         encoder = createEncoder(pipeline, encoderConfig);
         this->out->link(encoder->input);
@@ -33,6 +39,18 @@ ImagePublisher::ImagePublisher(std::shared_ptr<rclcpp::Node> node,
 void ImagePublisher::setup(std::shared_ptr<dai::Device> device, const utils::ImgConverterConfig& convConf, const utils::ImgPublisherConfig& pubConf) {
     convConfig = convConf;
     pubConfig = pubConf;
+    if(rotation) {
+        if(encoder && device->getPlatform() == dai::Platform::RVC2) {
+            const int width = rotation->rotation.swapsAxes() ? pubConfig.height : pubConfig.width;
+            const int height = rotation->rotation.swapsAxes() ? pubConfig.width : pubConfig.height;
+            const int heightMultiple = encConfig.profile == dai::VideoEncoderProperties::Profile::MJPEG ? 2 : 8;
+            if(width % 32 || height % heightMultiple)
+                throw std::invalid_argument("Rotated RVC2 encoder output requires width divisible by 32 and height divisible by "
+                                            + std::to_string(heightMultiple) + "; adjust the native i_width/i_height");
+        }
+        rotation->configure(pubConfig.width, pubConfig.height);
+        convConfig.tfPrefix = rotation->rotation.frame(convConfig.tfPrefix);
+    }
     createImageConverter(device);
     createInfoManager(device);
     if(pubConfig.topicName.empty()) {
@@ -126,6 +144,11 @@ void ImagePublisher::createInfoManager(std::shared_ptr<dai::Device> device) {
     } else {
         infoManager->loadCameraInfo(pubConfig.calibrationFile);
     }
+    if(rotation) {
+        auto info = infoManager->getCameraInfo();
+        if(pubConfig.undistorted) std::fill(info.d.begin(), info.d.end(), 0.0);
+        rotation->rotation.cameraInfo(info);  // Validate calibration before starting callback threads.
+    }
 };
 ImagePublisher::~ImagePublisher() {
     closeQueue();
@@ -138,7 +161,7 @@ void ImagePublisher::closeQueue() {
     }
 }
 void ImagePublisher::link(dai::Node::Input& in) {
-    out->link(in);
+    (encoder ? encoder->out : *out).link(in);
 }
 std::shared_ptr<dai::MessageQueue> ImagePublisher::getQueue() {
     return dataQ;
@@ -164,8 +187,7 @@ std::shared_ptr<Image> ImagePublisher::convertData(const std::shared_ptr<dai::AD
             info = infoManager->getCameraInfo();
         }
         if(pubConfig.publishCompressed) {
-            auto rawMsg = converter->toRosMsgRawPtr(daiImg, info);
-            info.header = rawMsg.header;
+            info.header = converter->getRosHeader(daiImg, convConfig.addExposureOffset, convConfig.expOffset);
             if(encConfig.profile == dai::VideoEncoderProperties::Profile::MJPEG) {
                 std::deque<sensor_msgs::msg::CompressedImage> deq;
                 converter->toRosCompressedMsg(daiImg, deq);
@@ -176,7 +198,9 @@ std::shared_ptr<Image> ImagePublisher::convertData(const std::shared_ptr<dai::AD
                 img->ffmpegPacket = std::make_unique<ffmpeg_image_transport_msgs::msg::FFMPEGPacket>(deq.front());
             }
         } else {
-            auto rawMsg = converter->toRosMsgRawPtr(daiImg, info);
+            auto decodeInfo = info;
+            if(rotation && convConfig.isStereo && pubConfig.calibrationFile.empty()) decodeInfo.p[0] = std::abs(info.k[rotation->rotation.swapsAxes() ? 3 : 0]);
+            auto rawMsg = converter->toRosMsgRawPtr(daiImg, decodeInfo);
             info.header = rawMsg.header;
             sensor_msgs::msg::Image::UniquePtr msg = std::make_unique<sensor_msgs::msg::Image>(rawMsg);
             img->image = std::move(msg);
@@ -198,6 +222,11 @@ std::shared_ptr<Image> ImagePublisher::convertData(const std::shared_ptr<dai::AD
     }
     if(pubConfig.undistorted) {
         std::fill(info.d.begin(), info.d.end(), 0.0);
+    }
+    if(rotation) {
+        rotation->cameraInfo(info, pubConfig.calibrationFile.empty());
+        // The image converter already uses the output frame.
+        info.header.frame_id = convConfig.tfPrefix;
     }
     sensor_msgs::msg::CameraInfo::UniquePtr infoMsg = std::make_unique<sensor_msgs::msg::CameraInfo>(info);
     img->info = std::move(infoMsg);

@@ -5,7 +5,9 @@
 
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
+#include "depthai_bridge/OutputRotation.hpp"
 #include "depthai_bridge/TFPublisher.hpp"
+#include "depthai_bridge/depthaiUtility.hpp"
 #include "depthai_ros_driver/pipeline/pipeline_generator.hpp"
 #include "depthai_ros_driver/utils.hpp"
 #include "diagnostic_msgs/msg/diagnostic_array.hpp"
@@ -92,6 +94,19 @@ void Driver::onConfigure() {
                                                               ph->getParam<bool>("i_rs_compat"),
                                                               ph->getParam<std::string>("i_tf_prefix"));
     }
+    depthai_bridge::OutputRotation rotation(ph->getParam<int>("i_output_rotation_deg"));
+    if(rotation.enabled()) {
+        rotationTfPub = std::make_unique<tf2_ros::StaticTransformBroadcaster>(shared_from_this());
+        std::vector<geometry_msgs::msg::TransformStamped> transforms;
+        auto prefix = depthai_bridge::resolveFramePrefix(ph->getParam<std::string>("i_tf_prefix"), get_name());
+        for(const auto& camera : device->getConnectedCameraFeatures()) {
+            auto socket = depthai_bridge::getSocketName(camera.socket, device->getDeviceName(), ph->getParam<bool>("i_rs_compat"));
+            auto tf = rotation.transform(depthai_bridge::getOpticalFrameName(prefix, socket, ph->getParam<bool>("i_rs_compat")));
+            tf.header.stamp = now();
+            transforms.push_back(tf);
+        }
+        rotationTfPub->sendTransform(transforms);
+    }
     pipeline->start();
     const auto* rosDistro = std::getenv("ROS_DISTRO");
     RCLCPP_WARN(get_logger(),
@@ -129,6 +144,7 @@ void Driver::stop() {
     if(camRunning) {
         pipeline->stop();
         generator.reset();
+        rotationTfPub.reset();
         camRunning = false;
         if(rclcpp::ok()) {
             RCLCPP_INFO(get_logger(), "Driver stopped!");

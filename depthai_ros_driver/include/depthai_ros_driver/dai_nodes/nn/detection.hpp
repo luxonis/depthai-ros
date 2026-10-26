@@ -80,6 +80,7 @@ class Detection : public BaseNode {
         auto tfPrefix = getOpticalFrameName(socketName);
 
         detConverter = std::make_unique<depthai_bridge::ImgDetectionConverter>(tfPrefix, false, ph->getParam<bool>("i_get_base_device_timestamp"));
+        detConverter->setOutputRotation(getROSNode()->get_parameter("driver.i_output_rotation_deg").as_int());
         detConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
         rclcpp::PublisherOptions options;
         options.qos_overriding_options = rclcpp::QosOverridingOptions();
@@ -93,6 +94,12 @@ class Detection : public BaseNode {
             convConf.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
 
             utils::ImgPublisherConfig pubConf;
+            if(getROSNode()->get_parameter("driver.i_output_rotation_deg").as_int() != 0) {
+                const auto archive = detectionNode->neuralNetwork->getNNArchive();
+                if(!archive) throw std::invalid_argument("Rotating NN passthrough requires model input dimensions");
+                pubConf.width = archive->get().getInputWidth().value();
+                pubConf.height = archive->get().getInputHeight().value();
+            }
             pubConf.daiNodeName = getName();
             pubConf.topicName = "~/" + getName() + "/passthrough";
             pubConf.infoSuffix = "/passthrough";
@@ -142,10 +149,8 @@ class Detection : public BaseNode {
      * @brief      Closes the queues for the DetectionNetwork node and the passthrough.
      */
     void closeQueues() override {
-        nnQ->close();
-        if(ph->getParam<bool>("i_enable_passthrough")) {
-            ptQ->close();
-        }
+        if(nnQ) nnQ->close();
+        if(ptPub) ptPub->closeQueue();
     };
 
    private:
@@ -172,7 +177,7 @@ class Detection : public BaseNode {
     std::shared_ptr<dai::node::DetectionNetwork> detectionNode;
     std::shared_ptr<dai::node::ImageManip> imageManip;
     std::unique_ptr<param_handlers::NNParamHandler> ph;
-    std::shared_ptr<dai::MessageQueue> nnQ, ptQ;
+    std::shared_ptr<dai::MessageQueue> nnQ;
     std::string nnQName, ptQName;
 };
 

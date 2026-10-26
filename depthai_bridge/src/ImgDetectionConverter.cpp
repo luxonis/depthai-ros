@@ -11,7 +11,7 @@ void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inData,
     VisionMsgs::Detection2DArray opDetectionMsg;
 
     opDetectionMsg.header = getRosHeader(inData);
-    opDetectionMsg.header.frame_id = frameName;
+    opDetectionMsg.header.frame_id = outputRotation.frame(frameName);
     opDetectionMsg.detections.resize(inData->detections.size());
 
     auto [width, height] = inData->transformation->getSize();
@@ -33,6 +33,7 @@ void ImgDetectionConverter::toRosMsg(std::shared_ptr<dai::ImgDetections> inData,
         float ySize = yMax - yMin;
         float xCenter = xMin + xSize / 2;
         float yCenter = yMin + ySize / 2;
+        outputRotation.boundingBox(xCenter, yCenter, xSize, ySize, normalized ? 1.f : float(width), normalized ? 1.f : float(height));
 
         opDetectionMsg.detections[i].results.resize(1);
 

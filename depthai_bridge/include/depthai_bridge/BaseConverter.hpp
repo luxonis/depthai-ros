@@ -5,6 +5,7 @@
 
 #include "depthai/common/CameraExposureOffset.hpp"
 #include "depthai/pipeline/datatype/Buffer.hpp"
+#include "depthai_bridge/OutputRotation.hpp"
 #include "rclcpp/time.hpp"
 #include "std_msgs/msg/header.hpp"
 
@@ -35,6 +36,10 @@ class BaseConverter {
                                        bool addExpOffset = false,
                                        dai::CameraExposureOffset offset = dai::CameraExposureOffset());
 
+    void setOutputRotation(int degrees) {
+        outputRotation = OutputRotation(degrees);
+    }
+
     std::string getFrameName() const {
         return frameName;
     }
@@ -46,6 +51,7 @@ class BaseConverter {
     }
 
    protected:
+    OutputRotation outputRotation;
     const std::string frameName;
     std::chrono::time_point<std::chrono::steady_clock> steadyBaseTime;
     rclcpp::Time rosBaseTime;

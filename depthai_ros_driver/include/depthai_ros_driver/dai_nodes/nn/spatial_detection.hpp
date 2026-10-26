@@ -64,8 +64,9 @@ class SpatialDetection : public BaseNode {
         std::string socketName = getSocketName(ph->getSocketID());
         auto tfPrefix = getOpticalFrameName(socketName);
         detConverter = std::make_unique<depthai_bridge::SpatialDetectionConverter>(tfPrefix, false, ph->getParam<bool>("i_get_base_device_timestamp"));
+        detConverter->setOutputRotation(getROSNode()->get_parameter("driver.i_output_rotation_deg").as_int());
         detConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
-        nnQ->addCallback(std::bind(&SpatialDetection::spatialCB, this, std::placeholders::_1, std::placeholders::_2));
+        nnQCBID = nnQ->addCallback(std::bind(&SpatialDetection::spatialCB, this, std::placeholders::_1, std::placeholders::_2));
         rclcpp::PublisherOptions options;
         options.qos_overriding_options = rclcpp::QosOverridingOptions();
         detPub = getROSNode()->template create_publisher<vision_msgs::msg::Detection3DArray>("~/" + getName() + "/spatial_detections", 10, options);
@@ -77,6 +78,12 @@ class SpatialDetection : public BaseNode {
             convConf.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
 
             utils::ImgPublisherConfig pubConf;
+            if(getROSNode()->get_parameter("driver.i_output_rotation_deg").as_int() != 0) {
+                const auto archive = spatialNode->neuralNetwork->getNNArchive();
+                if(!archive) throw std::invalid_argument("Rotating NN passthrough requires model input dimensions");
+                pubConf.width = archive->get().getInputWidth().value();
+                pubConf.height = archive->get().getInputHeight().value();
+            }
             pubConf.daiNodeName = getName();
             pubConf.topicName = "~/" + getName() + "/passthrough";
             pubConf.infoSuffix = "/passthrough";
@@ -129,14 +136,12 @@ class SpatialDetection : public BaseNode {
         }
     };
     void closeQueues() override {
-        nnQ->removeCallback(nnQCBID);
-        nnQ->close();
-        if(ph->getParam<bool>("i_enable_passthrough")) {
-            ptQ->close();
+        if(nnQ) {
+            nnQ->removeCallback(nnQCBID);
+            nnQ->close();
         }
-        if(ph->getParam<bool>("i_enable_passthrough_depth")) {
-            ptDepthQ->close();
-        }
+        if(ptPub) ptPub->closeQueue();
+        if(ptDepthPub) ptDepthPub->closeQueue();
     };
 
    private:
@@ -161,7 +166,7 @@ class SpatialDetection : public BaseNode {
     std::shared_ptr<dai::node::SpatialDetectionNetwork> spatialNode;
     std::shared_ptr<dai::node::ImageManip> imageManip;
     std::unique_ptr<param_handlers::NNParamHandler> ph;
-    std::shared_ptr<dai::MessageQueue> nnQ, ptQ, ptDepthQ;
+    std::shared_ptr<dai::MessageQueue> nnQ;
     std::shared_ptr<dai::node::XLinkOut> xoutNN, xoutPT, xoutPTDepth;
     std::string nnQName, ptQName, ptDepthQName;
     int nnQCBID;

@@ -207,7 +207,8 @@ TEST_F(ImageConverterTest, CalibrationToCameraInfoTest) {
     EXPECT_EQ(cameraInfo.height, 480);
     EXPECT_EQ(cameraInfo.distortion_model, "rational_polynomial");
     EXPECT_EQ(cameraInfo.k.size(), 9);
-    EXPECT_EQ(cameraInfo.d.size(), 8);
+    const auto coefficients = calibHandler.getDistortionCoefficients(cameraId);
+    EXPECT_EQ(cameraInfo.d, std::vector<double>(coefficients.begin(), coefficients.end()));
     EXPECT_EQ(cameraInfo.p.size(), 12);
     EXPECT_EQ(cameraInfo.r.size(), 9);
 }
@@ -217,3 +218,27 @@ int main(int argc, char** argv) {
     return RUN_ALL_TESTS();
 }
 }  // namespace depthai_bridge
+
+TEST(ImageConverterRotationTest, ExcludesAllocationPaddingFromRawImage) {
+    depthai_bridge::ImageConverter converter("optical", false);
+    auto frame = std::make_shared<dai::ImgFrame>();
+    frame->setType(dai::ImgFrame::Type::GRAY8);
+    frame->setWidth(4);
+    frame->setHeight(3);
+    frame->setStride(8);
+    frame->setData(std::vector<uint8_t>(32, 7));
+    auto image = converter.toRosMsgRawPtr(frame);
+    EXPECT_EQ(image.data.size(), 24);
+    EXPECT_EQ(image.step, 8);
+}
+
+TEST(ImageConverterRotationTest, EncodedDimensionsComeFromOutputFrame) {
+    depthai_bridge::ImageConverter converter("optical_rotated", false);
+    auto frame = std::make_shared<dai::EncodedFrame>();
+    frame->setWidth(400);
+    frame->setHeight(640);
+    std::deque<ffmpeg_image_transport_msgs::msg::FFMPEGPacket> packets;
+    converter.toRosFFMPEGPacket(frame, packets);
+    EXPECT_EQ(packets.front().width, 400);
+    EXPECT_EQ(packets.front().height, 640);
+}

@@ -1,0 +1,8 @@
+/**:
+  ros__parameters:
+    driver:
+      # Clockwise pixel rotation: 0, 90, 180 or 270. Restart the driver to change it.
+      i_output_rotation_deg: 180
+    pipeline_gen:
+      i_pipeline_type: RGBD
+      i_enable_rgbd: true

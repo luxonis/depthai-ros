@@ -195,15 +195,14 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
             outImageMsg.height = inData->getHeight();
             outImageMsg.width = inData->getWidth();
             outImageMsg.step = inData->getStride();
-            ;
             if(outImageMsg.encoding == "16UC1" || outImageMsg.encoding == "32FC1")
                 outImageMsg.is_bigendian = false;
             else
                 outImageMsg.is_bigendian = true;
 
-            size_t size = inData->getData().size();
-            outImageMsg.data.reserve(size);
-            outImageMsg.data.assign(inData->getData().begin(), inData->getData().end());
+            const size_t size = size_t(outImageMsg.step) * outImageMsg.height;
+            if(size > inData->getData().size()) throw std::runtime_error("Image buffer is smaller than stride * height");
+            outImageMsg.data.assign(inData->getData().begin(), inData->getData().begin() + size);
         }
     }
     return outImageMsg;
@@ -226,8 +225,8 @@ void ImageConverter::toRosFFMPEGPacket(std::shared_ptr<dai::EncodedFrame> inData
     outFrameMsg.header = header;
     auto ft = inData->getFrameType();
 
-    outFrameMsg.width = camWidth;
-    outFrameMsg.height = camHeight;
+    outFrameMsg.width = inData->getWidth();
+    outFrameMsg.height = inData->getHeight();
     outFrameMsg.encoding = ffmpegEncoding;
     outFrameMsg.pts = header.stamp.sec * 1000000000 + header.stamp.nanosec;  // in nanoseconds
     outFrameMsg.flags = (int)(ft == dai::EncodedFrame::FrameType::I);
@@ -366,7 +365,7 @@ sensor_msgs::msg::CameraInfo ImageConverter::generateCameraInfo(std::shared_ptr<
     }
 
     // Set the distortion model
-    cameraInfo.distortion_model = "rational_polynomial";
+    cameraInfo.distortion_model = transformation.getDistortionModel() == dai::CameraModel::Fisheye ? "equidistant" : "rational_polynomial";
 
     // Set the distortion coefficients
     const auto& distortionCoeffs = transformation.getDistortionCoefficients();
@@ -412,7 +411,7 @@ sensor_msgs::msg::CameraInfo ImageConverter::generateCameraInfo(std::shared_ptr<
     }
 
     // Set the distortion model
-    cameraInfo.distortion_model = "rational_polynomial";
+    cameraInfo.distortion_model = transformation.getDistortionModel() == dai::CameraModel::Fisheye ? "equidistant" : "rational_polynomial";
 
     // Set the distortion coefficients
     const auto& distortionCoeffs = transformation.getDistortionCoefficients();
@@ -487,9 +486,7 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(dai::CalibrationHa
 
     distCoeffs = calibHandler.getDistortionCoefficients(cameraId);
 
-    for(size_t i = 0; i < 8; i++) {
-        distortions.push_back(static_cast<double>(distCoeffs[i]));
-    }
+    distortions.assign(distCoeffs.begin(), distCoeffs.end());
 
     // Setting Projection matrix if the cameras are stereo pair. Right as the first and left as the second.
     if(calibHandler.getStereoRightCameraId() != dai::CameraBoardSocket::AUTO && calibHandler.getStereoLeftCameraId() != dai::CameraBoardSocket::AUTO) {
@@ -550,7 +547,7 @@ ImageMsgs::CameraInfo ImageConverter::calibrationToCameraInfo(dai::CalibrationHa
             std::copy(flatRectifiedRotation.begin(), flatRectifiedRotation.end(), rotation.begin());
         }
     }
-    cameraData.distortion_model = "rational_polynomial";
+    cameraData.distortion_model = calibHandler.getDistortionModel(cameraId) == dai::CameraModel::Fisheye ? "equidistant" : "rational_polynomial";
 
     camInfo = cameraData;
     return cameraData;
