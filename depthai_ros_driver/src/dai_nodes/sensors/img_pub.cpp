@@ -37,6 +37,8 @@ ImagePublisher::ImagePublisher(std::shared_ptr<rclcpp::Node> node,
         // Rotate on device, before the encoder, the queue and the Sync node
         rotationManip = pipeline->create<dai::node::ImageManip>();
         rotationManip->initialConfig->addFlipHorizontal().addFlipVertical();
+        // Don't let a slow manip stall the output it shares with alignment and NN
+        rotationManip->inputImage.setBlocking(false);
         this->out->link(rotationManip->inputImage);
         this->out = &rotationManip->out;
     }
@@ -61,6 +63,9 @@ void ImagePublisher::setup(std::shared_ptr<dai::Device> device, const utils::Img
         rotatedFrameBroadcaster = std::make_shared<tf2_ros::StaticTransformBroadcaster>(node);
         rotatedFrameBroadcaster->sendTransform(ts);
         convConfig.tfPrefix = ts.child_frame_id;
+        if(!pubConfig.calibrationFile.empty()) {
+            RCLCPP_WARN(node->get_logger(), "%s: i_calibration_file is published as is, it must describe the rotated image", qName.c_str());
+        }
     }
     createImageConverter(device);
     createInfoManager(device);
@@ -187,7 +192,12 @@ sensor_msgs::msg::CameraInfo ImagePublisher::rotatedCameraInfo(dai::ImgTransform
     auto unrotated = std::make_shared<dai::ImgFrame>();
     unrotated->transformation = transformation.addFlipHorizontal().addFlipVertical();
     auto info = converter->generateCameraInfo(unrotated);
+    auto d = info.d;
     rotateCameraInfo180(info);
+    if(transformation.getDistortionModel() != dai::CameraModel::Perspective) {
+        // Non-perspective (e.g. fisheye) coefficients are all radial, which a 180 degree rotation leaves unchanged
+        info.d = d;
+    }
     return info;
 }
 std::shared_ptr<Image> ImagePublisher::convertData(const std::shared_ptr<dai::ADatatype>& data) {
