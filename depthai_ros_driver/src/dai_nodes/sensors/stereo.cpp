@@ -308,13 +308,19 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     pubConf.undistorted = !convConfig.alphaScalingEnabled;
     pubConf.width = ph->getParam<int>(ParamNames::WIDTH);
     pubConf.height = ph->getParam<int>(ParamNames::HEIGHT);
-    if(aligned) {
-        // Aligned depth has the size of the image it is aligned to, at most that sensor's full resolution
-        for(const auto& f : device->getConnectedCameraFeatures()) {
-            if(f.socket == ph->getSocketID()) {
-                pubConf.maxWidth = f.width;
-                pubConf.maxHeight = f.height;
+    auto alignName = ph->getParam<std::string>("i_socket_name");
+    if(aligned && getROSNode()->has_parameter(alignName + ".i_width")) {
+        // Aligned depth has the size of the image it is aligned to
+        if(ph->getOtherNodeParam<bool>(alignName, "i_publish_full_resolution")) {
+            for(const auto& f : device->getConnectedCameraFeatures()) {
+                if(f.socket == ph->getSocketID()) {
+                    pubConf.maxWidth = f.width;
+                    pubConf.maxHeight = f.height;
+                }
             }
+        } else {
+            pubConf.maxWidth = ph->getOtherNodeParam<int>(alignName, "i_width");
+            pubConf.maxHeight = ph->getOtherNodeParam<int>(alignName, "i_height");
         }
     }
     pubConf.socket = ph->getSocketID();
