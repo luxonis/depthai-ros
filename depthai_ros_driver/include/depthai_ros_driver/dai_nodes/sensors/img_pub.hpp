@@ -95,10 +95,10 @@ class ImagePublisher {
     void publish(std::shared_ptr<Image> img);
     void publish(std::shared_ptr<Image> img, rclcpp::Time timestamp);
     std::shared_ptr<Image> convertData(const std::shared_ptr<dai::ADatatype>& data);
-    sensor_msgs::msg::CameraInfo rotatedCameraInfo(dai::ImgTransformation transformation);
     std::shared_ptr<dai::node::VideoEncoder> createEncoder(std::shared_ptr<dai::Pipeline> pipeline, const utils::VideoEncoderConfig& encoderConfig);
 
    private:
+    sensor_msgs::msg::CameraInfo rotatedCameraInfo(dai::ImgTransformation transformation);
     std::shared_ptr<rclcpp::Node> node;
     utils::VideoEncoderConfig encConfig;
     utils::ImgPublisherConfig pubConfig;
