@@ -88,6 +88,10 @@ void Camera::setupQueues(std::shared_ptr<dai::Device> device) {
         pubConfig.undistorted = ph->getParam<bool>(ParamNames::UNDISTORTED);
         pubConfig.width = ph->getParam<int>(ParamNames::WIDTH);
         pubConfig.height = ph->getParam<int>(ParamNames::HEIGHT);
+        if(ph->getParam<bool>("i_publish_full_resolution")) {
+            pubConfig.maxWidth = camNode->getMaxWidth();
+            pubConfig.maxHeight = camNode->getMaxHeight();
+        }
         pubConfig.maxQSize = ph->getParam<int>(ParamNames::MAX_Q_SIZE);
         pubConfig.publishCompressed = ph->getParam<bool>(ParamNames::PUBLISH_COMPRESSED);
 

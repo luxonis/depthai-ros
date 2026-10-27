@@ -308,6 +308,15 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     pubConf.undistorted = !convConfig.alphaScalingEnabled;
     pubConf.width = ph->getParam<int>(ParamNames::WIDTH);
     pubConf.height = ph->getParam<int>(ParamNames::HEIGHT);
+    if(aligned) {
+        // Aligned depth has the size of the image it is aligned to, at most that sensor's full resolution
+        for(const auto& f : device->getConnectedCameraFeatures()) {
+            if(f.socket == ph->getSocketID()) {
+                pubConf.maxWidth = f.width;
+                pubConf.maxHeight = f.height;
+            }
+        }
+    }
     pubConf.socket = ph->getSocketID();
     pubConf.calibrationFile = ph->getParam<std::string>(ParamNames::CALIBRATION_FILE);
     pubConf.leftSocket = leftSensInfo.socket;

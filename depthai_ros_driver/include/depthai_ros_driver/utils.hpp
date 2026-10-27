@@ -73,6 +73,9 @@ struct ImgPublisherConfig {
     bool undistorted = false;
     int width = 0;
     int height = 0;
+    // Upper bound on the frame size when it can exceed width x height (full resolution, aligned depth)
+    int maxWidth = 0;
+    int maxHeight = 0;
     int maxQSize = 8;
     bool qBlocking = false;
     bool publishCompressed = false;

@@ -1,5 +1,6 @@
 #include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 
+#include <algorithm>
 #include <rclcpp/logging.hpp>
 
 #include "camera_info_manager/camera_info_manager.hpp"
@@ -49,7 +50,7 @@ void ImagePublisher::setup(std::shared_ptr<dai::Device> device, const utils::Img
     pubConfig = pubConf;
     if(rotationManip) {
         // 2 bytes per pixel covers NV12, RAW8 and RAW16 outputs
-        rotationManip->setMaxOutputFrameSize(pubConfig.width * pubConfig.height * 2);
+        rotationManip->setMaxOutputFrameSize(std::max(pubConfig.width * pubConfig.height, pubConfig.maxWidth * pubConfig.maxHeight) * 2);
         // Rotated images get their own optical frame, rotated 180 degrees about z
         geometry_msgs::msg::TransformStamped ts;
         ts.header.stamp = node->get_clock()->now();
