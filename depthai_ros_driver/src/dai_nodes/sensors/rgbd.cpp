@@ -5,8 +5,10 @@
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/Camera.hpp"
 #include "depthai/pipeline/node/ImageAlign.hpp"
+#include "depthai/pipeline/node/MessageDemux.hpp"
 #include "depthai/pipeline/node/host/RGBD.hpp"
 #include "depthai_bridge/PointCloudConverter.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/output_rotation.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/stereo.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/tof.hpp"
 #include "depthai_ros_driver/param_handlers/base_param_handler.hpp"
@@ -29,16 +31,9 @@ RGBD::RGBD(const std::string& daiNodeName,
     using namespace param_handlers;
     RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
     setNames();
-    rgbdNode = pipeline->create<dai::node::RGBD>()->build();
-    ph = std::make_unique<RGBDParamHandler>(node, daiNodeName, device->getDeviceName(), rsCompat);
-    ph->declareParams(rgbdNode, camNode.getSocketID());
-    int threadNum = ph->getParam<int>("i_num_threads");
-    if(threadNum > 1) {
-        rgbdNode->useCPUMT(threadNum);
-    }
+    createNode(pipeline, device, camNode);
     auto color = camNode.getUnderlyingNode();
     auto platform = device->getPlatform();
-    rgbdNode->runSyncOnHost(ph->getParam<bool>("i_run_sync_on_host"));
     auto fps = ph->getOtherNodeParam<float>(camNode.getName(), ParamNames::FPS);
 
     auto* out = color->requestOutput(std::pair<int, int>(ph->getOtherNodeParam<int>(camNode.getName(), ParamNames::WIDTH),
@@ -47,7 +42,7 @@ RGBD::RGBD(const std::string& daiNodeName,
                                      dai::ImgResizeMode::CROP,
                                      fps,
                                      true);
-    out->link(rgbdNode->inColor);
+    out->link(getInput(static_cast<int>(link_types::RGBDLinkType::rgb)));
     if(platform == dai::Platform::RVC4) {
         if(!aligned) {
             align = pipeline->create<dai::node::ImageAlign>();
@@ -56,7 +51,7 @@ RGBD::RGBD(const std::string& daiNodeName,
             out->link(align->inputAlignTo);
             align->inputAlignTo.setBlocking(false);
             align->input.setBlocking(false);
-            align->outputAligned.link(rgbdNode->inDepth);
+            align->outputAligned.link(getInput(static_cast<int>(link_types::RGBDLinkType::depth)));
         } else {
             RCLCPP_DEBUG(getLogger(), "Stereo depth output is reported to be aligned. Please connect its output externally");
         }
@@ -65,7 +60,7 @@ RGBD::RGBD(const std::string& daiNodeName,
             out->link(stereo->inputAlignTo);
             stereo->inputAlignTo.setBlocking(false);
         }
-        stereo->depth.link(rgbdNode->inDepth);
+        stereo->depth.link(getInput(static_cast<int>(link_types::RGBDLinkType::depth)));
     }
 
     RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
@@ -82,9 +77,7 @@ RGBD::RGBD(const std::string& daiNodeName,
     using namespace param_handlers;
     RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
     setNames();
-    rgbdNode = pipeline->create<dai::node::RGBD>()->build();
-    ph = std::make_unique<RGBDParamHandler>(node, daiNodeName, device->getDeviceName(), rsCompat);
-    ph->declareParams(rgbdNode, camNode.getSocketID());
+    createNode(pipeline, device, camNode);
     auto color = camNode.getUnderlyingNode();
     auto tof = tofNode.getUnderlyingNode();
     auto fps = ph->getOtherNodeParam<float>(camNode.getName(), ParamNames::FPS);
@@ -94,7 +87,7 @@ RGBD::RGBD(const std::string& daiNodeName,
                                      dai::ImgResizeMode::CROP,
                                      fps,
                                      true);
-    out->link(rgbdNode->inColor);
+    out->link(getInput(static_cast<int>(link_types::RGBDLinkType::rgb)));
     if(!aligned) {
         align = pipeline->create<dai::node::ImageAlign>();
         align->setRunOnHost(ph->getParam<bool>("i_run_align_on_host"));
@@ -102,13 +95,41 @@ RGBD::RGBD(const std::string& daiNodeName,
         out->link(align->inputAlignTo);
         align->inputAlignTo.setBlocking(false);
         align->input.setBlocking(false);
-        align->outputAligned.link(rgbdNode->inDepth);
+        align->outputAligned.link(getInput(static_cast<int>(link_types::RGBDLinkType::depth)));
     } else {
         RCLCPP_DEBUG(getLogger(), "Depth has been prealigned! Please remember to link manually in pipeline creation.");
     }
 
     RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
 }
+void RGBD::createNode(std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device, SensorWrapper& camera) {
+    rgbdNode = pipeline->create<dai::node::RGBD>()->build();
+    ph = std::make_unique<param_handlers::RGBDParamHandler>(getROSNode(), getName(), device->getDeviceName(), rsCompatibilityMode());
+    ph->declareParams(rgbdNode, camera.getSocketID());
+    const int degrees = getROSNode()->get_parameter("driver.i_output_rotation_deg").as_int();
+    if(degrees) {
+        const int width = ph->getOtherNodeParam<int>(camera.getName(), "i_width");
+        const int height = ph->getOtherNodeParam<int>(camera.getName(), "i_height");
+        colorRotation = std::make_shared<sensor_helpers::OutputRotation>(pipeline, degrees, true);
+        depthRotation = std::make_shared<sensor_helpers::OutputRotation>(pipeline, degrees, true);
+        // Drop unmatched/old pairs before rotation, so independent branch backpressure
+        // cannot make color and depth skip different frames and starve synchronization.
+        inputSync = pipeline->create<dai::node::Sync>();
+        auto demux = pipeline->create<dai::node::MessageDemux>();
+        demux->input.setBlocking(false);
+        demux->input.setMaxSize(1);
+        inputSync->out.link(demux->input);
+        rgbdNode->inDepth.setBlocking(true);
+        rgbdNode->inColor.setBlocking(true);
+        demux->outputs["color"].link(colorRotation->input());
+        demux->outputs["depth"].link(depthRotation->input());
+        colorRotation->configure(width, height);
+        depthRotation->configure(width, height);
+        colorRotation->out().link(rgbdNode->inColor);
+        depthRotation->out().link(rgbdNode->inDepth);
+    }
+}
+
 RGBD::~RGBD() = default;
 
 void RGBD::setNames() {}
@@ -118,12 +139,12 @@ void RGBD::setInOut(std::shared_ptr<dai::Pipeline> /* pipeline */) {}
 void RGBD::setupQueues(std::shared_ptr<dai::Device> /* device */) {
     using ParamNames = param_handlers::ParamNames;
     pclQ = rgbdNode->pcl.createOutputQueue(ph->getParam<int>(ParamNames::MAX_Q_SIZE), false);
-    auto tfPrefix = getOpticalFrameName(getSocketName(ph->getSocketID()));
+    auto tfPrefix = depthai_bridge::OutputRotation(getROSNode()->get_parameter("driver.i_output_rotation_deg").as_int())
+                        .frame(getOpticalFrameName(getSocketName(ph->getSocketID())));
     rclcpp::PublisherOptions options;
     options.qos_overriding_options = rclcpp::QosOverridingOptions();
     pclConv = std::make_unique<depthai_bridge::PointCloudConverter>(tfPrefix, ph->getParam<bool>(ParamNames::GET_BASE_DEVICE_TIMESTAMP));
     pclConv->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>(ParamNames::UPDATE_ROS_BASE_TIME_ON_ROS_MSG));
-    pclConv->setOutputRotation(getROSNode()->get_parameter("driver.i_output_rotation_deg").as_int());
     pclConv->setDepthUnit(dai::StereoDepthConfig::AlgorithmControl::DepthUnit::METER);
 
     pclPub = getROSNode()->create_publisher<sensor_msgs::msg::PointCloud2>("~/" + getName() + "/points", ph->getParam<int>(ParamNames::MAX_Q_SIZE), options);
@@ -152,9 +173,9 @@ void RGBD::link(dai::Node::Input& in, int /*linkType*/) {
 
 dai::Node::Input& RGBD::getInput(int linkType) {
     if(linkType == static_cast<int>(link_types::RGBDLinkType::rgb)) {
-        return rgbdNode->inColor;
+        return inputSync ? inputSync->inputs["color"] : rgbdNode->inColor;
     } else if(linkType == static_cast<int>(link_types::RGBDLinkType::depth)) {
-        return rgbdNode->inDepth;
+        return inputSync ? inputSync->inputs["depth"] : rgbdNode->inDepth;
     } else {
         RCLCPP_ERROR(getLogger(), "Wrong link type: %d", linkType);
         throw std::runtime_error("Wrong link type specified!");

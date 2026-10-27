@@ -71,24 +71,3 @@ TEST(ImgDetectionConverterTest, ToRosMsgPtrTest) {
 }
 
 }  // namespace depthai_bridge
-
-TEST(ImgDetectionRotationTest, RotatesBoundingBoxEdges) {
-    depthai_bridge::ImgDetectionConverter converter("optical");
-    converter.setOutputRotation(90);
-    auto data = std::make_shared<dai::ImgDetections>();
-    data->detections.resize(1);
-    data->detections[0].xmin = 0.25;
-    data->detections[0].xmax = 0.5;
-    data->detections[0].ymin = 0.0;
-    data->detections[0].ymax = 0.25;
-    dai::ImgTransformation transform;
-    transform.setSize(640, 400);
-    data->transformation = transform;
-    auto result = converter.toRosMsgPtr(data);
-    EXPECT_EQ(result->header.frame_id, "optical_rotated");
-    const auto& box = result->detections[0].bbox;
-    EXPECT_DOUBLE_EQ(box.center.position.x, 350);
-    EXPECT_DOUBLE_EQ(box.center.position.y, 240);
-    EXPECT_DOUBLE_EQ(box.size_x, 100);
-    EXPECT_DOUBLE_EQ(box.size_y, 160);
-}

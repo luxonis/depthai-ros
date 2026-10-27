@@ -72,9 +72,13 @@ void BaseNode::closeQueues() {
     throw(std::runtime_error("closeQueues() not implemented"));
 };
 
-std::shared_ptr<sensor_helpers::ImagePublisher> BaseNode::setupOutput(
-    std::shared_ptr<dai::Pipeline> pipeline, const std::string& qName, dai::Node::Output* out, bool isSynced, const utils::VideoEncoderConfig& encoderConfig) {
-    return std::make_shared<sensor_helpers::ImagePublisher>(getROSNode(), pipeline, qName, out, isSynced, ipcEnabled(), encoderConfig);
+std::shared_ptr<sensor_helpers::ImagePublisher> BaseNode::setupOutput(std::shared_ptr<dai::Pipeline> pipeline,
+                                                                      const std::string& qName,
+                                                                      dai::Node::Output* out,
+                                                                      bool isSynced,
+                                                                      const utils::VideoEncoderConfig& encoderConfig,
+                                                                      std::shared_ptr<sensor_helpers::OutputRotation> inputRotation) {
+    return std::make_shared<sensor_helpers::ImagePublisher>(getROSNode(), pipeline, qName, out, isSynced, ipcEnabled(), encoderConfig, inputRotation);
 };
 
 void BaseNode::setNames() {

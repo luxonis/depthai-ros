@@ -2,6 +2,11 @@
   ros__parameters:
     driver:
       # Clockwise pixel rotation: 0, 90, 180 or 270. Restart the driver to change it.
+      # NN, feature-tracker and RGBD inputs rotate on device.
+      # Stereo/alignment inputs stay native. RGBD produces organized clouds on the host.
+      # Intrinsic correction exchanges only metadata with the host, not image pixels.
+      # Stock RVC2 color/mono rotation resamples pixels (up to ~2 px); depth is exact.
+      # RVC2 image rotation can substantially reduce pipeline throughput.
       i_output_rotation_deg: 180
     pipeline_gen:
       i_pipeline_type: RGBD

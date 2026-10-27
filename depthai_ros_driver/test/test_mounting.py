@@ -14,11 +14,14 @@ import rclpy
 from rclpy.qos import QoSProfile, DurabilityPolicy, qos_profile_sensor_data
 from sensor_msgs.msg import CameraInfo, Image, Imu, PointCloud2
 from tf2_msgs.msg import TFMessage
+from depthai_ros_msgs.msg import TrackedFeatures
 from rcl_interfaces.msg import Parameter, ParameterValue, ParameterType
 from rcl_interfaces.srv import SetParameters
 
 DEVICE = os.getenv("DEPTHAI_ROTATION_TEST_DEVICE", "")
 ANGLE = int(os.getenv("DEPTHAI_ROTATION_TEST_ANGLE", "90"))
+RGB_TRACKER = os.getenv("DEPTHAI_ROTATION_TEST_TRACKER", "left_rect") == "rgb"
+FEATURE_TOPIC = ("rgb" if RGB_TRACKER else "left_rect") + "_feature_tracker/tracked_features"
 
 
 def generate_test_description():
@@ -31,6 +34,9 @@ def generate_test_description():
             "pipeline_gen.i_enable_rgbd": True,
             "stereo.i_left_rect_publish_topic": True,
             "stereo.i_right_rect_publish_topic": True,
+            ("rgb.i_enable_feature_tracker" if RGB_TRACKER else "stereo.i_left_rect_enable_feature_tracker"): True,
+            "rgb.i_height": 384,
+            "stereo.i_height": 384,
             "imu.i_enable_rotation": False,
             "imu.i_enable_mag": False,
             "imu.i_acc_mode": "ACCELEROMETER_RAW",
@@ -56,18 +62,23 @@ class TestMounting(unittest.TestCase):
         rclpy.init()
         node = rclpy.create_node("mounting_test")
         messages, transforms = {}, {}
+        counts = {}
+        def receive(topic, message):
+            messages[topic] = message
+            counts[topic] = counts.get(topic, 0) + 1
         subscriptions = []
         topics = {
             "rgb/image_raw": Image, "rgb/camera_info": CameraInfo,
             "stereo/image_raw": Image, "stereo/camera_info": CameraInfo,
             "left/image_rect": Image, "right/image_rect": Image,
+            FEATURE_TOPIC: TrackedFeatures,
             "rgbd/points": PointCloud2, "depth_points": PointCloud2, "imu/data": Imu,
         }
         try:
             for topic, msg_type in topics.items():
                 subscriptions.append(node.create_subscription(
                     msg_type, "/oak/" + topic,
-                    lambda msg, key=topic: messages.__setitem__(key, msg), qos_profile_sensor_data))
+                    lambda msg, key=topic: receive(key, msg), qos_profile_sensor_data))
             subscriptions.append(node.create_subscription(
                 TFMessage, "/tf_static",
                 lambda msg: transforms.update({t.child_frame_id: t for t in msg.transforms}),
@@ -75,14 +86,15 @@ class TestMounting(unittest.TestCase):
             deadline = time.monotonic() + 45
             while time.monotonic() < deadline:
                 rclpy.spin_once(node, timeout_sec=0.1)
-                if len(messages) == len(topics):
+                if len(messages) == len(topics) and min(counts.values()) >= 5:
                     # Cameras can publish invalid depth during startup exposure settling.
                     clouds = [messages[t] for t in ("rgbd/points", "depth_points")]
                     if all(np.count_nonzero(np.ndarray((c.height, c.width), dtype="<f4",
                            buffer=c.data, offset=8, strides=(c.row_step, c.point_step)) > 0) > 100 for c in clouds):
                         break
             self.assertEqual(set(messages), set(topics))
-            size = (400, 640) if ANGLE % 180 else (640, 400)
+            self.assertTrue(all(count >= 5 for count in counts.values()), counts)
+            size = (384, 640) if ANGLE % 180 else (640, 384)
             for topic, msg in messages.items():
                 if isinstance(msg, Imu):
                     self.assertFalse(msg.header.frame_id.endswith("_rotated"))
@@ -92,6 +104,10 @@ class TestMounting(unittest.TestCase):
                     self.assertIn(msg.header.frame_id, transforms)
                     tf = transforms[msg.header.frame_id]
                     self.assertEqual(tf.header.frame_id + "_rotated", tf.child_frame_id)
+                if isinstance(msg, TrackedFeatures):
+                    for feature in msg.features:
+                        self.assertTrue(0 <= feature.position.x < size[0])
+                        self.assertTrue(0 <= feature.position.y < size[1])
                 if isinstance(msg, (Image, CameraInfo)):
                     self.assertEqual((msg.width, msg.height), size, topic)
                 if isinstance(msg, Image):
@@ -104,7 +120,7 @@ class TestMounting(unittest.TestCase):
                 if isinstance(msg, PointCloud2):
                     self.assertEqual((msg.width, msg.height), size)
                     self.assertEqual(len(msg.data), msg.row_step * msg.height)
-            # Back-projecting either cloud must recover its organized pixel grid.
+            # Both organized clouds must project onto the rotated pixel grid.
             info = messages["stereo/camera_info"]
             for topic in ("rgbd/points", "depth_points"):
                 cloud = messages[topic]
@@ -112,9 +128,9 @@ class TestMounting(unittest.TestCase):
                                  buffer=cloud.data, strides=(cloud.row_step, cloud.point_step, 4))
                 valid = np.isfinite(xyz).all(axis=2) & (xyz[:, :, 2] > 0)
                 self.assertGreater(valid.sum(), 100)
-                rows, cols = np.indices(valid.shape)
                 u = xyz[:, :, 0][valid] / xyz[:, :, 2][valid] * info.k[0] + info.k[2]
                 v = xyz[:, :, 1][valid] / xyz[:, :, 2][valid] * info.k[4] + info.k[5]
+                rows, cols = np.indices(valid.shape)
                 np.testing.assert_allclose(u, cols[valid], atol=0.01, rtol=0)
                 np.testing.assert_allclose(v, rows[valid], atol=0.01, rtol=0)
             client = node.create_client(SetParameters, "/oak/set_parameters")

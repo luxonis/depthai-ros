@@ -16,6 +16,7 @@
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_bridge/ImgDetectionConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/base_node.hpp"
+#include "depthai_ros_driver/dai_nodes/nn/rotated_input.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
@@ -49,19 +50,29 @@ class Detection : public BaseNode {
         detectionNode = pipeline->create<dai::node::DetectionNetwork>();
         ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName, deviceName, rsCompat, socket);
         ph->declareParams(detectionNode);
+        const int degrees = node->get_parameter("driver.i_output_rotation_deg").as_int();
         auto nnArchivePath = ph->getParam<std::string>("i_nn_archive");
         if(!nnArchivePath.empty()) {
             if(!std::filesystem::exists(nnArchivePath)) {
                 throw std::runtime_error("i_nn_archive path does not exist: " + nnArchivePath);
             }
             dai::NNArchive archive(nnArchivePath);
-            detectionNode->build(camNode.getUnderlyingNode(), archive);
+            if(degrees)
+                detectionNode->setModelPath(nnArchivePath);
+            else
+                detectionNode->build(camNode.getUnderlyingNode(), archive);
         } else {
             dai::NNModelDescription description;
             description.model = ph->getParam<std::string>("i_nn_model");
-            detectionNode->build(camNode.getUnderlyingNode(), description);
+            if(degrees)
+                detectionNode->setFromModelZoo(description);
+            else
+                detectionNode->build(camNode.getUnderlyingNode(), description);
         }
 
+        if(degrees) {
+            rotatedInput = std::make_unique<nn_helpers::RotatedInput>(pipeline, camNode.getUnderlyingNode(), *detectionNode->neuralNetwork, degrees);
+        }
         RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
         setInOut(pipeline);
     }
@@ -79,8 +90,8 @@ class Detection : public BaseNode {
         std::string socketName = getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id")));
         auto tfPrefix = getOpticalFrameName(socketName);
 
-        detConverter = std::make_unique<depthai_bridge::ImgDetectionConverter>(tfPrefix, false, ph->getParam<bool>("i_get_base_device_timestamp"));
-        detConverter->setOutputRotation(getROSNode()->get_parameter("driver.i_output_rotation_deg").as_int());
+        detConverter = std::make_unique<depthai_bridge::ImgDetectionConverter>(
+            rotatedInput ? rotatedInput->image->rotation.frame(tfPrefix) : tfPrefix, false, ph->getParam<bool>("i_get_base_device_timestamp"));
         detConverter->setUpdateRosBaseTimeOnToRosMsg(ph->getParam<bool>("i_update_ros_base_time_on_ros_msg"));
         rclcpp::PublisherOptions options;
         options.qos_overriding_options = rclcpp::QosOverridingOptions();
@@ -94,12 +105,7 @@ class Detection : public BaseNode {
             convConf.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
 
             utils::ImgPublisherConfig pubConf;
-            if(getROSNode()->get_parameter("driver.i_output_rotation_deg").as_int() != 0) {
-                const auto archive = detectionNode->neuralNetwork->getNNArchive();
-                if(!archive) throw std::invalid_argument("Rotating NN passthrough requires model input dimensions");
-                pubConf.width = archive->get().getInputWidth().value();
-                pubConf.height = archive->get().getInputHeight().value();
-            }
+            pubConf.undistorted = bool(rotatedInput);
             pubConf.daiNodeName = getName();
             pubConf.topicName = "~/" + getName() + "/passthrough";
             pubConf.infoSuffix = "/passthrough";
@@ -142,7 +148,7 @@ class Detection : public BaseNode {
      */
     void setInOut(std::shared_ptr<dai::Pipeline> pipeline) override {
         if(ph->getParam<bool>("i_enable_passthrough")) {
-            ptPub = setupOutput(pipeline, ptQName, &detectionNode->passthrough);
+            ptPub = setupOutput(pipeline, ptQName, &detectionNode->passthrough, false, {}, rotatedInput ? rotatedInput->image : nullptr);
         }
     };
     /**
@@ -154,6 +160,7 @@ class Detection : public BaseNode {
     };
 
    private:
+    std::unique_ptr<nn_helpers::RotatedInput> rotatedInput;
     /**
      * @brief      Callback for the DetectionNetwork node. Converts the ImgDetections to Detection2DArray and publishes it.
      *

@@ -14,7 +14,6 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
     SpatialMessages::SpatialDetectionArray opDetectionMsg;
 
     opDetectionMsg.header = getRosHeader(inNetData);
-    opDetectionMsg.header.frame_id = outputRotation.frame(frameName);
     opDetectionMsg.detections.resize(inNetData->detections.size());
 
     auto [width, height] = inNetData->transformation->getSize();
@@ -36,7 +35,6 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
         float ySize = yMax - yMin;
         float xCenter = xMin + xSize / 2;
         float yCenter = yMin + ySize / 2;
-        outputRotation.boundingBox(xCenter, yCenter, xSize, ySize, normalized ? 1.f : float(width), normalized ? 1.f : float(height));
         opDetectionMsg.detections[i].results.resize(1);
 
         opDetectionMsg.detections[i].results[0].class_id = inNetData->detections[i].labelName;
@@ -51,9 +49,6 @@ void SpatialDetectionConverter::toRosMsg(std::shared_ptr<dai::SpatialImgDetectio
         opDetectionMsg.detections[i].position.x = inNetData->detections[i].spatialCoordinates.x / 1000;
         opDetectionMsg.detections[i].position.y = inNetData->detections[i].spatialCoordinates.y / 1000;
         opDetectionMsg.detections[i].position.z = inNetData->detections[i].spatialCoordinates.z / 1000;
-        auto xy = outputRotation.vector(opDetectionMsg.detections[i].position.x, opDetectionMsg.detections[i].position.y);
-        opDetectionMsg.detections[i].position.x = xy.first;
-        opDetectionMsg.detections[i].position.y = xy.second;
     }
 
     opDetectionMsgs.push_back(opDetectionMsg);
@@ -72,7 +67,6 @@ void SpatialDetectionConverter::toRosVisionMsg(std::shared_ptr<dai::SpatialImgDe
     vision_msgs::msg::Detection3DArray opDetectionMsg;
 
     opDetectionMsg.header = getRosHeader(inNetData);
-    opDetectionMsg.header.frame_id = outputRotation.frame(frameName);
     opDetectionMsg.detections.resize(inNetData->detections.size());
 
     auto [width, height] = inNetData->transformation->getSize();
@@ -94,7 +88,6 @@ void SpatialDetectionConverter::toRosVisionMsg(std::shared_ptr<dai::SpatialImgDe
         float ySize = yMax - yMin;
         float xCenter = xMin + xSize / 2;
         float yCenter = yMin + ySize / 2;
-        outputRotation.boundingBox(xCenter, yCenter, xSize, ySize, normalized ? 1.f : float(width), normalized ? 1.f : float(height));
         opDetectionMsg.detections[i].results.resize(1);
 
         opDetectionMsg.detections[i].id = std::to_string(inNetData->detections[i].label);
@@ -110,10 +103,6 @@ void SpatialDetectionConverter::toRosVisionMsg(std::shared_ptr<dai::SpatialImgDe
         opDetectionMsg.detections[i].results[0].pose.pose.position.x = inNetData->detections[i].spatialCoordinates.x / 1000;
         opDetectionMsg.detections[i].results[0].pose.pose.position.y = inNetData->detections[i].spatialCoordinates.y / 1000;
         opDetectionMsg.detections[i].results[0].pose.pose.position.z = inNetData->detections[i].spatialCoordinates.z / 1000;
-        auto& position = opDetectionMsg.detections[i].results[0].pose.pose.position;
-        auto xy = outputRotation.vector(position.x, position.y);
-        position.x = xy.first;
-        position.y = xy.second;
     }
 
     opDetectionMsgs.push_back(opDetectionMsg);

@@ -44,13 +44,6 @@ void PointCloudConverter::toRosMsg(std::shared_ptr<dai::PointCloudData> inPcl, s
     msg.width = width;
     msg.height = height;
     msg.is_dense = inPcl->isOrganized();
-    msg.header.frame_id = outputRotation.frame(msg.header.frame_id);
-    if(inPcl->isOrganized() && outputRotation.swapsAxes()) std::swap(msg.width, msg.height);
-    auto destination = [&](size_t i) {
-        if(!inPcl->isOrganized() || !outputRotation.enabled()) return i;
-        auto pixel = outputRotation.pixel(int(i % width), int(i / width), int(width), int(height));
-        return size_t(pixel.second) * msg.width + pixel.first;
-    };
 
     msg.fields.clear();
     sensor_msgs::msg::PointField field_x;
@@ -91,11 +84,10 @@ void PointCloudConverter::toRosMsg(std::shared_ptr<dai::PointCloudData> inPcl, s
     if(isColored) {
         auto points = inPcl->getPointsRGB();
         for(size_t i = 0; i < points.size(); ++i) {
-            float* ptr = reinterpret_cast<float*>(&msg.data[destination(i) * pointStep]);
+            float* ptr = reinterpret_cast<float*>(&msg.data[i * pointStep]);
             const auto& pt = points[i];
-            auto xy = outputRotation.vector(pt.x, pt.y);
-            ptr[0] = xy.first * scaleFactor;
-            ptr[1] = xy.second * scaleFactor;
+            ptr[0] = pt.x * scaleFactor;
+            ptr[1] = pt.y * scaleFactor;
             ptr[2] = pt.z * scaleFactor;
             uint32_t rgb = (pt.r << 16) | (pt.g << 8) | pt.b;
             float rgb_float;
@@ -105,11 +97,10 @@ void PointCloudConverter::toRosMsg(std::shared_ptr<dai::PointCloudData> inPcl, s
     } else {
         auto points = inPcl->getPoints();
         for(size_t i = 0; i < points.size(); ++i) {
-            float* ptr = reinterpret_cast<float*>(&msg.data[destination(i) * pointStep]);
+            float* ptr = reinterpret_cast<float*>(&msg.data[i * pointStep]);
             const auto& pt = points[i];
-            auto xy = outputRotation.vector(pt.x, pt.y);
-            ptr[0] = xy.first * scaleFactor;
-            ptr[1] = xy.second * scaleFactor;
+            ptr[0] = pt.x * scaleFactor;
+            ptr[1] = pt.y * scaleFactor;
             ptr[2] = pt.z * scaleFactor;
         }
     }

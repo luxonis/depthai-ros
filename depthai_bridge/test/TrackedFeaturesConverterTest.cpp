@@ -36,23 +36,3 @@ TEST(TrackedFeaturesConverterTest, ToRosMsgTest) {
     EXPECT_FLOAT_EQ(ft.tracking_error, 6.0f);
 }
 }  // namespace depthai_bridge
-
-TEST(TrackedFeaturesRotationTest, KeepsFeatureIdentityAndRotatesPixels) {
-    depthai_bridge::TrackedFeaturesConverter converter("optical");
-    converter.setOutputRotation(90);
-    converter.setImageSize(640, 400);
-    auto data = std::make_shared<dai::TrackedFeatures>();
-    dai::TrackedFeature feature;
-    feature.position = {10, 20};
-    feature.id = 7;
-    feature.age = 3;
-    data->trackedFeatures.push_back(feature);
-    std::deque<depthai_ros_msgs::msg::TrackedFeatures> messages;
-    converter.toRosMsg(data, messages);
-    auto& result = messages.front();
-    EXPECT_EQ(result.header.frame_id, "optical_rotated");
-    EXPECT_EQ(result.features[0].header.frame_id, result.header.frame_id);
-    EXPECT_EQ(result.features[0].id, 7);
-    EXPECT_DOUBLE_EQ(result.features[0].position.x, 379);
-    EXPECT_DOUBLE_EQ(result.features[0].position.y, 10);
-}

@@ -47,14 +47,6 @@ class OutputRotation {
         if(degrees == 180 || degrees == 270) xy.second += (swapsAxes() ? width : height) - 1;
         return xy;
     }
-    void boundingBox(float& x, float& y, float& sizeX, float& sizeY, float width, float height) const {
-        if(!enabled()) return;
-        // Bounding boxes use image edges, unlike integer pixel centers.
-        const auto center = pixel(x, y, width + 1, height + 1);
-        x = center.first;
-        y = center.second;
-        if(swapsAxes()) std::swap(sizeX, sizeY);
-    }
     std::array<float, 9> matrix(int width, int height) const {
         auto x = vector(1.f, 0.f);
         auto y = vector(0.f, 1.f);

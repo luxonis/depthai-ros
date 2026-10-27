@@ -3,7 +3,6 @@
 #include <opencv2/calib3d.hpp>
 
 #include "depthai_bridge/OutputRotation.hpp"
-#include "depthai_bridge/PointCloudConverter.hpp"
 
 using depthai_bridge::OutputRotation;
 
@@ -58,39 +57,6 @@ TEST(OutputRotation, ProjectionAndDistortionAgreeInRotatedFrame) {
         rotation.cameraInfo(deviceInfo, true);
         for(int i = 0; i < 9; i++) EXPECT_DOUBLE_EQ(info.k[i], deviceInfo.k[i]);
         for(int i = 0; i < 12; i++) EXPECT_DOUBLE_EQ(info.p[i], deviceInfo.p[i]);
-    }
-}
-
-TEST(OutputRotation, OrganizedCloudPreservesPixelCorrespondenceAndColor) {
-    for(int angle : {0, 90, 180, 270}) {
-        auto data = std::make_shared<dai::PointCloudData>();
-        std::vector<dai::Point3fRGBA> points;
-        for(int i = 0; i < 6; i++) points.push_back({float(i), float(i + 1), float(i + 2), uint8_t(i), 0, 0});
-        data->setPointsRGB(points);
-        data->setWidth(3);
-        data->setHeight(2);
-        data->setColor(true);
-        depthai_bridge::PointCloudConverter converter("optical");
-        converter.setOutputRotation(angle);
-        std::deque<sensor_msgs::msg::PointCloud2> messages;
-        converter.toRosMsg(data, messages);
-        auto& cloud = messages.front();
-        OutputRotation rotation(angle);
-        EXPECT_EQ(cloud.width, rotation.swapsAxes() ? 2 : 3);
-        EXPECT_EQ(cloud.height, rotation.swapsAxes() ? 3 : 2);
-        for(int y = 0; y < 2; y++)
-            for(int x = 0; x < 3; x++) {
-                auto pixel = rotation.pixel(x, y, 3, 2);
-                auto i = y * 3 + x;
-                auto point = reinterpret_cast<const float*>(cloud.data.data() + pixel.second * cloud.row_step + pixel.first * cloud.point_step);
-                auto xy = rotation.vector(points[i].x, points[i].y);
-                EXPECT_FLOAT_EQ(point[0], xy.first);
-                EXPECT_FLOAT_EQ(point[1], xy.second);
-                EXPECT_FLOAT_EQ(point[2], points[i].z);
-                uint32_t color;
-                std::memcpy(&color, point + 3, 4);
-                EXPECT_EQ(color, uint32_t(i) << 16);
-            }
     }
 }
 

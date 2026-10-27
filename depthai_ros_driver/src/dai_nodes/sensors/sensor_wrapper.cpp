@@ -2,10 +2,12 @@
 
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/node/Camera.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/nn_wrapper.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/camera.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/feature_tracker.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/output_rotation.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/thermal.hpp"
 #include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
@@ -47,7 +49,26 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
     }
     if(ph->getParam<bool>("i_enable_feature_tracker")) {
         featureTrackerNode = std::make_unique<FeatureTracker>(daiNodeName + std::string("_feature_tracker"), node, pipeline, deviceName, rsCompat);
-        sensorNode->link(featureTrackerNode->getInput());
+        const int degrees = node->get_parameter("driver.i_output_rotation_deg").as_int();
+        if(!degrees && pipeline->getDefaultDevice()->getPlatform() == dai::Platform::RVC2 && sensorNode->getDefaultOut()) {
+            sensorNode->link(featureTrackerNode->getInput());
+        } else {
+            // FeatureTracker requires grayscale on RVC4. Request it directly from the
+            // camera, independently of image publication and its color/encoder format.
+            const int width = ph->getParam<int>("i_width"), height = ph->getParam<int>("i_height");
+            auto* output =
+                sensorNode->getUnderlyingNode()->requestOutput(std::make_pair(width, height),
+                                                               dai::ImgFrame::Type::GRAY8,
+                                                               utils::getValFromMap(ph->getParam<std::string>("i_resize_mode"), sensor_helpers::resizeModeMap),
+                                                               ph->getParam<float>("i_fps"),
+                                                               ph->getParam<bool>("i_undistorted"));
+            if(degrees) {
+                sensor_helpers::OutputRotation rotation(pipeline, *output, degrees);
+                rotation.configure(width, height);
+                output = &rotation.out();
+            }
+            output->link(featureTrackerNode->getInput());
+        }
     }
     if(ph->getParam<bool>("i_enable_nn")) {
         nnNode = std::make_unique<NNWrapper>(daiNodeName + std::string("_nn"), node, pipeline, deviceName, rsCompat, *this);

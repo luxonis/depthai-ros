@@ -24,11 +24,22 @@ ImagePublisher::ImagePublisher(std::shared_ptr<rclcpp::Node> node,
                                dai::Node::Output* out,
                                bool synced,
                                bool ipcEnabled,
-                               const utils::VideoEncoderConfig& encoderConfig)
-    : node(node), encConfig(encoderConfig), out(out), qName(qName), ipcEnabled(ipcEnabled), synced(synced) {
+                               const utils::VideoEncoderConfig& encoderConfig,
+                               std::shared_ptr<OutputRotation> inputRotation)
+    : node(node),
+      rotation(inputRotation),
+      inputRotated(bool(inputRotation)),
+      encConfig(encoderConfig),
+      out(out),
+      qName(qName),
+      ipcEnabled(ipcEnabled),
+      synced(synced) {
     const int degrees = node->get_parameter("driver.i_output_rotation_deg").as_int();
-    if(degrees) {
-        rotation = std::make_unique<OutputRotation>(pipeline, *out, degrees);
+    if(degrees && !inputRotated) {
+        rotation = std::make_shared<OutputRotation>(pipeline, *out, degrees);
+        // A slow publication branch must not exhaust the native camera/depth pool.
+        rotation->input().setBlocking(false);
+        rotation->input().setMaxSize(1);
         this->out = &rotation->out();
     }
     if(encoderConfig.enabled) {
@@ -42,7 +53,7 @@ void ImagePublisher::setup(std::shared_ptr<dai::Device> device, const utils::Img
     if(rotation) {
         const int encoderHeightMultiple =
             encoder && device->getPlatform() == dai::Platform::RVC2 ? (encConfig.profile == dai::VideoEncoderProperties::Profile::MJPEG ? 2 : 8) : 0;
-        rotation->configure(pubConfig.width, pubConfig.height, encoderHeightMultiple);
+        if(!inputRotated) rotation->configure(pubConfig.width, pubConfig.height, encoderHeightMultiple);
         convConfig.tfPrefix = rotation->rotation.frame(convConfig.tfPrefix);
     }
     createImageConverter(device);
@@ -154,6 +165,9 @@ void ImagePublisher::closeQueue() {
         dataQ->close();
     }
 }
+void ImagePublisher::linkImage(dai::Node::Input& in) {
+    out->link(in);
+}
 void ImagePublisher::link(dai::Node::Input& in) {
     (encoder ? encoder->out : *out).link(in);
 }
@@ -192,9 +206,14 @@ std::shared_ptr<Image> ImagePublisher::convertData(const std::shared_ptr<dai::AD
                 img->ffmpegPacket = std::make_unique<ffmpeg_image_transport_msgs::msg::FFMPEGPacket>(deq.front());
             }
         } else {
-            auto decodeInfo = info;
-            if(rotation && convConfig.isStereo && pubConfig.calibrationFile.empty()) decodeInfo.p[0] = std::abs(info.k[rotation->rotation.swapsAxes() ? 3 : 0]);
-            auto rawMsg = converter->toRosMsgRawPtr(daiImg, decodeInfo);
+            auto rawMsg = [&]() {
+                if(rotation && convConfig.isStereo && pubConfig.calibrationFile.empty()) {
+                    auto decodeInfo = info;
+                    decodeInfo.p[0] = std::abs(info.k[rotation->rotation.swapsAxes() ? 3 : 0]);
+                    return converter->toRosMsgRawPtr(daiImg, decodeInfo);
+                }
+                return converter->toRosMsgRawPtr(daiImg, info);
+            }();
             info.header = rawMsg.header;
             sensor_msgs::msg::Image::UniquePtr msg = std::make_unique<sensor_msgs::msg::Image>(rawMsg);
             img->image = std::move(msg);
@@ -218,7 +237,16 @@ std::shared_ptr<Image> ImagePublisher::convertData(const std::shared_ptr<dai::AD
         std::fill(info.d.begin(), info.d.end(), 0.0);
     }
     if(rotation) {
-        rotation->cameraInfo(info, pubConfig.calibrationFile.empty());
+        const auto header = info.header;
+        info.header = std_msgs::msg::Header();
+        if(!rotatedInfo || rotatedInfo->first != info) {
+            auto native = info;
+            rotation->cameraInfo(info, pubConfig.calibrationFile.empty());
+            rotatedInfo = std::make_pair(std::move(native), info);
+        } else {
+            info = rotatedInfo->second;
+        }
+        info.header = header;
         // The image converter already uses the output frame.
         info.header.frame_id = convConfig.tfPrefix;
     }
