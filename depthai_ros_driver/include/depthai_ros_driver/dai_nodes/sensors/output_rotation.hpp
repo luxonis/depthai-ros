@@ -25,7 +25,6 @@ class OutputRotation {
         for(auto& manip : {warp, crop}) {
             manip->setRunOnHost(false);
             manip->inputImage.setMaxSize(1);
-            manip->setBackend(dai::node::ImageManip::Backend::CPU);
         }
         control = pipeline->create<dai::node::Script>();
         control->outputs["image"].link(warp->inputImage);
