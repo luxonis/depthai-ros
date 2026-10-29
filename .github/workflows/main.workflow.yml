@@ -176,3 +176,17 @@ jobs:
           tags: |
             luxonis/depthai-ros:${{ steps.vars.outputs.short_ref }}${{ matrix.tag_suffix }}
             luxonis/depthai-ros:${{ matrix.latest_tag }}
+
+  docker-build-status:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: always()
+    steps:
+      - name: Check docker build passed
+        run: |
+          if [ "${{ needs.docker-build.result }}" != "success" ]; then
+            echo "Docker build failed"
+            exit 1
+          fi
+          echo "All docker builds passed"
