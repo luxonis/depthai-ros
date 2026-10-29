@@ -75,7 +75,8 @@ void Driver::onConfigure() {
 
     if(ph->getParam<bool>("i_publish_tf_from_calibration")) {
         const auto imuSensor = ph->getParam<std::string>("i_tf_imu_sensor");
-        const auto detectedImu = ph->getParam<std::string>("i_tf_imu_from_descr") == "true" && imuSensor.empty() ? device->getConnectedIMU() : "";
+        auto detectedImu = ph->getParam<std::string>("i_tf_imu_from_descr") == "true" && imuSensor.empty() ? device->getConnectedIMU() : "";
+        if(detectedImu == "NONE") detectedImu = "";
         tfPub = std::make_unique<depthai_bridge::TFPublisher>(shared_from_this(),
                                                               device->readCalibration(),
                                                               device->getConnectedCameraFeatures(),
