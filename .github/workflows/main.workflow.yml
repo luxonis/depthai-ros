@@ -92,9 +92,15 @@ jobs:
     name: Linting
     runs-on: ubuntu-latest
     needs: lint
+    if: always()
     steps:
       - name: Check lint passed
-        run: echo "All linting checks passed"
+        run: |
+          if [ "${{ needs.lint.result }}" != "success" ]; then
+            echo "Linting failed"
+            exit 1
+          fi
+          echo "All linting checks passed"
 
   docker-build:
     name: Docker build ${{ matrix.ros_distro }} ${{ matrix.arch }}
