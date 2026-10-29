@@ -20,15 +20,12 @@
 	// Set *default* container specific settings.json values on container create.
 	"settings": {
 		"terminal.integrated.profiles.linux": {
-			"zsh": {
-				"path": "zsh"
-			},
 			"bash": {
 				"path": "bash"
 			}
 			
 		},
-		"terminal.integrated.defaultProfile.linux": "zsh"
+		"terminal.integrated.defaultProfile.linux": "bash"
 	},
 	"extensions": [
 		"dotjoshjohnson.xml",
