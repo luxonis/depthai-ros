@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<robot name="base"
+	xmlns:xacro="http://ros.org/wiki/xacro">
+
+	<xacro:macro name="base"
+		params="camera_name camera_model parent base_frame 
+                                           cam_pos_x cam_pos_y cam_pos_z 
+                                           cam_roll cam_pitch cam_yaw has_imu r:=0.8 g:=0.8 b:=0.8 a:=0.8 simulation:=false">
+
+		<xacro:if value="${simulation}">
+			<xacro:property
+				name="file_prefix"
+				value="file://$(find depthai_descriptions)"
+			/>
+		</xacro:if>
+		<xacro:unless value="${simulation}">
+			<xacro:property
+				name="file_prefix"
+				value="package://depthai_descriptions"
+			/>
+		</xacro:unless>
+
+		<!-- base_link of the sensor-->
+		<link name="${base_frame}" />
+		<xacro:property name="M_PI" value="3.1415926535897931" />
+		<xacro:property name="model" value="${camera_model}" />
+
+		<joint name="${camera_name}_center_joint" type="fixed">
+			<parent link="${parent}" />
+			<child link="${base_frame}" />
+			<origin xyz="${cam_pos_x} ${cam_pos_y} ${cam_pos_z}"
+				rpy="${cam_roll} ${cam_pitch} ${cam_yaw}" />
+		</joint>
+
+		<!-- device Center -->
+		<xacro:unless value="${model in ['OAK-D-SR-POE']}">
+			<link name="${camera_name}_model_origin">
+				<visual>
+					<origin xyz="0 0 0" rpy="0 0 0" />
+					<geometry>
+						<mesh filename="${file_prefix}/urdf/models/${model}.stl" />
+					</geometry>
+					<material name="mat">
+						<color rgba="${r} ${g} ${b} ${a}" />
+					</material>
+				</visual>
+			</link>
+		</xacro:unless>
+		<xacro:if value="${model in ['OAK-D-SR-POE']}">
+			<link name="${camera_name}_model_origin">
+				<visual>
+					<origin xyz="0.019 0 0" rpy="0 0 0" />
+					<geometry>
+						<mesh filename="${file_prefix}/urdf/models/${model}.stl" />
+					</geometry>
+					<material name="mat">
+						<color rgba="${r} ${g} ${b} ${a}" />
+					</material>
+				</visual>
+			</link>
+		</xacro:if>
+
+		<joint name="${camera_name}_model_origin_joint" type="fixed">
+			<parent link="${base_frame}" />
+			<child link="${camera_name}_model_origin" />
+			<origin xyz="0 0 0" rpy="1.5708 0 1.5708" />
+		</joint>
+
+
+		<!-- IMU -->
+
+		<xacro:if value="${model == 'OAK-D'}">
+			<xacro:property name="imu_offset_x" value="0.0" />
+			<xacro:property name="imu_offset_y" value="-0.015" />
+			<xacro:property name="imu_offset_z" value="-0.013662" />
+			<xacro:property name="imu_r" value="0.0" />
+			<xacro:property name="imu_p" value="${M_PI/2.0}" />
+			<xacro:property name="imu_y" value="0.0" />
+		</xacro:if>
+
+		<xacro:if value="${model == 'OAK-D-PRO'}">
+			<xacro:property name="imu_offset_x" value="-0.008" />
+			<xacro:property name="imu_offset_y" value="-0.037945" />
+			<xacro:property name="imu_offset_z" value="-0.00079" />
+			<xacro:property name="imu_r" value="${M_PI}" />
+			<xacro:property name="imu_p" value="${M_PI/2.0}" />
+			<xacro:property name="imu_y" value="0.0" />
+		</xacro:if>
+
+		<xacro:if value="${model == 'OAK-D-POE'}">
+			<xacro:property name="imu_offset_x" value="-0.008" />
+			<xacro:property name="imu_offset_y" value="-0.04" />
+			<xacro:property name="imu_offset_z" value="-0.020265" />
+			<xacro:property name="imu_r" value="${M_PI}" />
+			<xacro:property name="imu_p" value="${M_PI/2.0}" />
+			<xacro:property name="imu_y" value="0.0" />
+		</xacro:if>
+
+		<xacro:if value="${has_imu}">
+			<link name="${camera_name}_imu_frame" />
+			<joint name="${camera_name}_imu_joint" type="fixed">
+				<parent link="${base_frame}" />
+				<child link="${camera_name}_imu_frame" />
+				<origin xyz="${imu_offset_x} ${imu_offset_y} ${imu_offset_z}"
+					rpy="${imu_r} ${imu_p} ${imu_y}" />
+			</joint>
+		</xacro:if>
+
+	</xacro:macro>
+</robot>

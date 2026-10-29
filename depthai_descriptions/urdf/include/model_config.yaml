@@ -1,0 +1,42 @@
+# Visual configuration and fallback defaults. Board sensor geometry is never overridden here.
+# DEPRECATED develop poses/model aliases are isolated in legacy_models.yaml.
+defaults:
+  mesh_xyz: 0 0 0
+  rgb_xyz: 0 0 0
+  left_xyz: 0 0.0375 0
+  right_xyz: 0 -0.0375 0
+  right_name: null
+  rgb_rpy: 0 0 0
+  left_rpy: 0 0 0
+  right_rpy: 0 0 0
+  extra_cameras: {}
+  imu_variants: {}
+  imu_xyz: null
+  imu_rpy: null
+  mesh_base_xyz: 0 0 0
+models:
+  OAK-D-IOT-75:
+    mesh: OAK-D-IOT-75
+  OAK-D-PRO-W:
+    # STL export translation, measured by registering shared housing vertices
+    # against OAK-D-PRO.stl (same mechanical reference). Metres in STL axes;
+    # base_macro applies the common STL-to-body rotation afterwards.
+    # Legacy mode intentionally retains the develop placement.
+    mesh_xyz: -0.04851541 -0.019533 -0.0227523
+  OAK-D-SR-POE:
+    mesh_xyz: 0.019 0 0
+  OAK-D-SR:
+    mesh_base_xyz: 0 0.01 0
+  OAK-T:
+    mesh_base_xyz: 0 0.025 0
+aliases:
+  OAK-4-PRO: OAK4-D
+  OAK-4-PRO-W: OAK4-D
+  OAK4-D-W: OAK4-D
+  OAK4-D-PRO: OAK4-D
+mesh_aliases:
+  OAK-D-PRO-POE: OAK-D-S2-POE
+  OAK-D-PRO-W-POE: OAK-D-S2-POE
+  OAK-D-W: OAK-D-S2
+  OAK-4-D: OAK4-D
+  OAK-4-S: OAK4-S
