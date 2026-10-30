@@ -22,6 +22,13 @@ using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono
 
 class DisparityConverter {
    public:
+    /**
+     * @param frameName frame_id of the messages
+     * @param focalLength focal length of the (rectified) camera, in pixels
+     * @param baseline distance between the stereo cameras, in centimeters
+     * @param minDepth minimum depth, in centimeters
+     * @param maxDepth maximum depth, in centimeters
+     */
     DisparityConverter(
         const std::string frameName, float focalLength, float baseline = 7.5, float minDepth = 80, float maxDepth = 1100, bool getBaseDeviceTimestamp = false);
     ~DisparityConverter();
