@@ -250,6 +250,7 @@ void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
     convConfig.getBaseDeviceTimestamp = ph->getParam<bool>("i_get_base_device_timestamp");
     convConfig.updateROSBaseTimeOnRosMsg = ph->getParam<bool>("i_update_ros_base_time_on_ros_msg");
     convConfig.lowBandwidth = ph->getParam<bool>(isLeft ? "i_left_rect_low_bandwidth" : "i_right_rect_low_bandwidth");
+    convConfig.ffmpegEncoder = ph->getParam<std::string>(isLeft ? "i_left_rect_low_bandwidth_ffmpeg_encoder" : "i_right_rect_low_bandwidth_ffmpeg_encoder");
     convConfig.encoding = dai::ImgFrame::Type::GRAY8;
     convConfig.addExposureOffset = ph->getParam<bool>(isLeft ? "i_left_rect_add_exposure_offset" : "i_right_rect_add_exposure_offset");
     convConfig.expOffset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>(isLeft ? "i_left_rect_exposure_offset" : "i_right_rect_exposure_offset"));
@@ -288,6 +289,7 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     convConfig.tfPrefix = tfPrefix;
     convConfig.updateROSBaseTimeOnRosMsg = ph->getParam<bool>(ParamNames::UPDATE_ROS_BASE_TIME_ON_ROS_MSG);
     convConfig.lowBandwidth = ph->getParam<bool>(ParamNames::LOW_BANDWIDTH);
+    convConfig.ffmpegEncoder = ph->getParam<std::string>(ParamNames::LOW_BANDWIDTH_FFMPEG_ENCODER);
     convConfig.encoding = dai::ImgFrame::Type::RAW8;
     convConfig.addExposureOffset = ph->getParam<bool>(ParamNames::ADD_EXPOSURE_OFFSET);
     convConfig.expOffset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>(ParamNames::EXPOSURE_OFFSET));
