@@ -55,7 +55,7 @@ TEST(DisparityConverterTest, ToRosMsgPtrTest) {
     EXPECT_EQ(outDispImagePtr->f, 1.0f);
     EXPECT_EQ(outDispImagePtr->min_disparity, 0.1f);
     EXPECT_EQ(outDispImagePtr->max_disparity, 10.0f);
-    EXPECT_EQ(outDispImagePtr->t, 0.01f);
+    EXPECT_EQ(outDispImagePtr->t, 1.0f);  // baseline of 100 cm = 1 m
     EXPECT_EQ(outDispImagePtr->image.encoding, sensor_msgs::image_encodings::TYPE_32FC1);
     EXPECT_EQ(outDispImagePtr->image.height, 2);
     EXPECT_EQ(outDispImagePtr->image.width, 2);
