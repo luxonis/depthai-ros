@@ -66,15 +66,20 @@ class SpatialDetection : public BaseNode {
         }
         if(degrees) {
             rotatedInput = std::make_unique<nn_helpers::RotatedInput>(pipeline, camNode.getUnderlyingNode(), *spatialNode->neuralNetwork, degrees, true);
-            // Align to the actual NN camera output. Stereo alignment parameters
-            // alone do not establish the geometry of the connected depth stream.
+            // RVC2 performs stereo alignment internally. ImageAlign rejects a
+            // second alignment to the same camera, even for a different NN crop.
+            // Keep the depth's own transformation so spatial ROIs can be mapped
+            // between the rotated depth and NN crops without resampling depth.
+            const auto nativeSocket = stereoNode.isAligned() ? stereoNode.getSocketID()
+                                                             : pipeline->getDefaultDevice()->readCalibration().getStereoRightCameraId();
+            const bool alreadyAligned = pipeline->getDefaultDevice()->getPlatform() == dai::Platform::RVC2 && nativeSocket == camNode.getSocketID();
             const int width = std::max(ph->getOtherNodeParam<int>(stereoNode.getName(), "i_width"), ph->getOtherNodeParam<int>(camNode.getName(), "i_width"));
             const int height =
                 std::max(ph->getOtherNodeParam<int>(stereoNode.getName(), "i_height"), ph->getOtherNodeParam<int>(camNode.getName(), "i_height"));
             rotatedInput->linkDepth(pipeline,
                                     *spatialNode,
                                     *stereoNode.getUnderlyingNode(),
-                                    false,
+                                    alreadyAligned,
                                     width,
                                     height,
                                     ph->getOtherNodeParam<bool>(stereoNode.getName(), "i_run_align_on_host"));

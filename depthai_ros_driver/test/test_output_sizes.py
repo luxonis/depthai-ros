@@ -12,11 +12,13 @@ from launch_ros.descriptions import ComposableNode
 import rclpy
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Image, CameraInfo
+from vision_msgs.msg import Detection3DArray
 
 DEVICE = os.getenv('DEPTHAI_ROTATION_TEST_DEVICE', '')
 MODE = os.getenv('DEPTHAI_ROTATION_SIZE_CASE', 'decimation')
 ANGLE = int(os.getenv('DEPTHAI_ROTATION_TEST_ANGLE', '90'))
 FACTOR = int(os.getenv('DEPTHAI_ROTATION_DECIMATION_FACTOR', '2'))
+SPATIAL_ALIGNED = os.getenv('DEPTHAI_ROTATION_SPATIAL_ALIGNED', '1') == '1'
 if MODE not in ('nn', 'spatial', 'decimation', 'aligned') or FACTOR not in (2, 3):
     raise ValueError('Select nn/spatial/decimation/aligned and decimation factor 2 or 3')
 params = {'driver.i_output_rotation_deg': ANGLE, 'driver.i_enable_ir': False,
@@ -27,10 +29,11 @@ if MODE == 'nn':
     TOPIC = '/oak/rgb_nn/passthrough'
     SIZE = (512, 384)
 elif MODE == 'spatial':
-    params.update({'pipeline_gen.i_nn_type': 'spatial', 'nn.i_enable_passthrough_depth': True})
+    params.update({'pipeline_gen.i_nn_type': 'spatial', 'nn.i_enable_passthrough_depth': True,
+                   'stereo.i_aligned': SPATIAL_ALIGNED})
     TOPIC = '/oak/nn/passthrough_depth'
     # OAK4 aligns to the 512x384 model; the USB RGBD pipeline retains 640x400 depth.
-    SIZE = (512, 384) if '.' in DEVICE else (640, 400)
+    SIZE = (512, 384) if '.' in DEVICE or not SPATIAL_ALIGNED else (640, 400)
 else:
     params.update({'stereo.i_aligned': MODE == 'aligned', 'stereo.i_enable_decimation_filter': True,
                    'stereo.i_decimation_filter_decimation_factor': FACTOR})
@@ -57,6 +60,13 @@ class TestSizes(unittest.TestCase):
         node = rclpy.create_node('check_sizes')
         messages = {}
         image_count = 0
+        detection_count = 0
+        detection_frame = None
+
+        def receive_detections(message):
+            nonlocal detection_count, detection_frame
+            detection_count += 1
+            detection_frame = message.header.frame_id
 
         def receive(message, suffix):
             nonlocal image_count
@@ -67,14 +77,17 @@ class TestSizes(unittest.TestCase):
         subscriptions = [node.create_subscription(t, TOPIC + suffix,
             lambda m,k=suffix: receive(m,k), qos_profile_sensor_data)
             for t,suffix in [(Image, '/image_raw'), (CameraInfo, '/camera_info')]]
+        if MODE == 'spatial':
+            subscriptions.append(node.create_subscription(Detection3DArray, '/oak/nn/spatial_detections',
+                receive_detections, qos_profile_sensor_data))
         try:
             deadline = time.monotonic() + 60
-            while (len(messages) < 2 or image_count < 5) and time.monotonic() < deadline:
+            while (len(messages) < 2 or image_count < 5 or (MODE == 'spatial' and detection_count < 5)) and time.monotonic() < deadline:
                 rclpy.spin_once(node, timeout_sec=.1)
             self.assertEqual(len(messages), 2)
             self.assertGreaterEqual(image_count, 5)
             expected = SIZE[::-1] if ANGLE % 180 else SIZE
-            if MODE == 'nn' or (MODE == 'spatial' and '.' in DEVICE):
+            if MODE == 'nn' or (MODE == 'spatial' and ('.' in DEVICE or not SPATIAL_ALIGNED)):
                 expected = SIZE
             for key,msg in messages.items():
                 print(key, msg.width, msg.height, msg.header.frame_id, flush=True)
@@ -82,6 +95,9 @@ class TestSizes(unittest.TestCase):
             self.assertEqual(len(messages['/image_raw'].data), messages['/image_raw'].step * expected[1])
             self.assertEqual(messages['/image_raw'].header.frame_id, messages['/camera_info'].header.frame_id)
             self.assertEqual(messages['/image_raw'].header.frame_id.endswith('_rotated'), bool(ANGLE))
+            if MODE == 'spatial':
+                self.assertGreaterEqual(detection_count, 5)
+                self.assertEqual(detection_frame, messages['/image_raw'].header.frame_id)
             info = messages['/camera_info']
             self.assertGreater(info.k[0],0)
             self.assertGreater(info.k[4],0)
