@@ -21,6 +21,9 @@ class OutputRotation {
     OutputRotation(std::shared_ptr<dai::Pipeline> pipeline, int degrees, bool opticalIntrinsics = false)
         : rotation(degrees), opticalIntrinsics(opticalIntrinsics), degrees(degrees), rvc2(pipeline->getDefaultDevice()->getPlatform() == dai::Platform::RVC2) {
         warp = pipeline->create<dai::node::ImageManip>();
+        // Keep the final crop in a separate pass: ImageManip clips the source
+        // sampling region to the inverse output bounds. Fusing the crop with
+        // rotation excludes boundary pixels (including RAW16 depth) on RVC2/RVC4.
         crop = pipeline->create<dai::node::ImageManip>();
         for(auto& manip : {warp, crop}) {
             manip->setRunOnHost(false);

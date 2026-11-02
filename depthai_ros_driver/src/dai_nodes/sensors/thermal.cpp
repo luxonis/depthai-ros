@@ -2,6 +2,7 @@
 #include "depthai_ros_driver/dai_nodes/sensors/thermal.hpp"
 
 #include <memory>
+#include <stdexcept>
 
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
@@ -17,6 +18,11 @@ namespace dai_nodes {
 Thermal::Thermal(
     const std::string& daiNodeName, std::shared_ptr<rclcpp::Node> node, std::shared_ptr<dai::Pipeline> pipeline, const std::string& deviceName, bool rsCompat)
     : BaseNode(daiNodeName, node, pipeline, deviceName, rsCompat) {
+    if(node->get_parameter("driver.i_output_rotation_deg").as_int() != 0) {
+        throw std::invalid_argument(
+            "Thermal output rotation is unsupported: ImageManip cannot process FP16 temperature or YUV422i color frames. "
+            "Set driver.i_output_rotation_deg to 0.");
+    }
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     thermalNode = pipeline->create<dai::node::Thermal>();

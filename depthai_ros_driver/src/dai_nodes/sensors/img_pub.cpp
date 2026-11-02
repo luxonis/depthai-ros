@@ -239,6 +239,7 @@ std::shared_ptr<Image> ImagePublisher::convertData(const std::shared_ptr<dai::AD
     if(rotation) {
         const auto header = info.header;
         info.header = std_msgs::msg::Header();
+        std::lock_guard<std::mutex> lock(rotatedInfoMutex);
         if(!rotatedInfo || rotatedInfo->first != info) {
             auto native = info;
             rotation->cameraInfo(info, pubConfig.calibrationFile.empty());

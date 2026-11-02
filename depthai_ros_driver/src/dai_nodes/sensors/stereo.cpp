@@ -1,5 +1,6 @@
 #include "depthai_ros_driver/dai_nodes/sensors/stereo.hpp"
 
+#include <algorithm>
 #include <optional>
 #include <stdexcept>
 
@@ -326,8 +327,10 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     if(aligned && pubConf.socket != leftSensInfo.socket && pubConf.socket != rightSensInfo.socket && !convConfig.outputDisparity && !convConfig.lowBandwidth) {
         const auto target = ph->getParam<std::string>("i_socket_name");
         if(getROSNode()->has_parameter(target + "." + ParamNames::WIDTH) && getROSNode()->has_parameter(target + "." + ParamNames::HEIGHT)) {
-            pubConf.width = ph->getOtherNodeParam<int>(target, ParamNames::WIDTH);
-            pubConf.height = ph->getOtherNodeParam<int>(target, ParamNames::HEIGHT);
+            // RVC2 alignment can retain the native stereo size. Bound rotation
+            // allocations by both sizes; frame metadata supplies the actual geometry.
+            pubConf.width = std::max(pubConf.width, ph->getOtherNodeParam<int>(target, ParamNames::WIDTH));
+            pubConf.height = std::max(pubConf.height, ph->getOtherNodeParam<int>(target, ParamNames::HEIGHT));
         }
     }
     pubConf.calibrationFile = ph->getParam<std::string>(ParamNames::CALIBRATION_FILE);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <mutex>
 #include <optional>
 #include <string>
 
@@ -97,6 +98,7 @@ class ImagePublisher {
    private:
     std::shared_ptr<rclcpp::Node> node;
     std::shared_ptr<OutputRotation> rotation;
+    std::mutex rotatedInfoMutex;
     std::optional<std::pair<sensor_msgs::msg::CameraInfo, sensor_msgs::msg::CameraInfo>> rotatedInfo;
     bool inputRotated;
     utils::VideoEncoderConfig encConfig;

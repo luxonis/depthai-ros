@@ -66,18 +66,18 @@ class SpatialDetection : public BaseNode {
         }
         if(degrees) {
             rotatedInput = std::make_unique<nn_helpers::RotatedInput>(pipeline, camNode.getUnderlyingNode(), *spatialNode->neuralNetwork, degrees, true);
-            const auto nativeSocket = stereoNode.isAligned() ? static_cast<dai::CameraBoardSocket>(ph->getOtherNodeParam<int>("stereo", "i_board_socket_id"))
-                                                             : pipeline->getDefaultDevice()->readCalibration().getStereoRightCameraId();
-            const bool alreadyAligned = pipeline->getDefaultDevice()->getPlatform() == dai::Platform::RVC2 && nativeSocket == socket;
-            const int width = std::max(ph->getOtherNodeParam<int>("stereo", "i_width"), ph->getOtherNodeParam<int>(camNode.getName(), "i_width"));
-            const int height = std::max(ph->getOtherNodeParam<int>("stereo", "i_height"), ph->getOtherNodeParam<int>(camNode.getName(), "i_height"));
+            // Align to the actual NN camera output. Stereo alignment parameters
+            // alone do not establish the geometry of the connected depth stream.
+            const int width = std::max(ph->getOtherNodeParam<int>(stereoNode.getName(), "i_width"), ph->getOtherNodeParam<int>(camNode.getName(), "i_width"));
+            const int height =
+                std::max(ph->getOtherNodeParam<int>(stereoNode.getName(), "i_height"), ph->getOtherNodeParam<int>(camNode.getName(), "i_height"));
             rotatedInput->linkDepth(pipeline,
                                     *spatialNode,
                                     *stereoNode.getUnderlyingNode(),
-                                    alreadyAligned,
+                                    false,
                                     width,
                                     height,
-                                    ph->getOtherNodeParam<bool>("stereo", "i_run_align_on_host"));
+                                    ph->getOtherNodeParam<bool>(stereoNode.getName(), "i_run_align_on_host"));
         }
         RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
         setInOut(pipeline);

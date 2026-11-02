@@ -7,6 +7,7 @@
       # Intrinsic correction exchanges only metadata with the host, not image pixels.
       # Stock RVC2 color/mono rotation resamples pixels (up to ~2 px); depth is exact.
       # RVC2 image rotation can substantially reduce pipeline throughput.
+      # Thermal pipelines require 0; their FP16/YUV422i formats cannot be rotated.
       i_output_rotation_deg: 180
     pipeline_gen:
       i_pipeline_type: RGBD

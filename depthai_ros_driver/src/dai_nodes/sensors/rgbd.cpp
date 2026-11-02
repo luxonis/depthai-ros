@@ -1,5 +1,7 @@
 #include "depthai_ros_driver/dai_nodes/sensors/rgbd.hpp"
 
+#include <algorithm>
+
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/MessageQueue.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
@@ -32,6 +34,15 @@ RGBD::RGBD(const std::string& daiNodeName,
     RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     createNode(pipeline, device, camNode);
+    if(depthRotation) {
+        // RVC2 aligned depth can retain the native stereo dimensions.
+        const auto stereoName = sensor_helpers::getNodeName(getROSNode(), sensor_helpers::NodeNameEnum::Stereo);
+        const int width =
+            std::max(ph->getOtherNodeParam<int>(camNode.getName(), ParamNames::WIDTH), ph->getOtherNodeParam<int>(stereoName, ParamNames::WIDTH));
+        const int height =
+            std::max(ph->getOtherNodeParam<int>(camNode.getName(), ParamNames::HEIGHT), ph->getOtherNodeParam<int>(stereoName, ParamNames::HEIGHT));
+        depthRotation->configure(width, height);
+    }
     auto color = camNode.getUnderlyingNode();
     auto platform = device->getPlatform();
     auto fps = ph->getOtherNodeParam<float>(camNode.getName(), ParamNames::FPS);
