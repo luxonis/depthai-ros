@@ -2,8 +2,8 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.13.0 (2026-11-04)
+-------------------
 * Add optional RGB still capture with configurable image dimensions, a still image topic, and a trigger service.
 * Apply configured exposure offsets to still image timestamps.
 * Prioritize the selected DepthAI v2 SDK headers when DepthAI v3 is also installed,
