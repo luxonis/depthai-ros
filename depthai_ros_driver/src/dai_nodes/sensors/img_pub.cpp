@@ -1,6 +1,7 @@
 #include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 
 #include <rclcpp/logging.hpp>
+#include <stdexcept>
 
 #include "camera_info_manager/camera_info_manager.hpp"
 #include "depthai/device/Device.hpp"
@@ -120,11 +121,11 @@ void ImagePublisher::createInfoManager(std::shared_ptr<dai::Device> device) {
         auto info = sensor_helpers::getCalibInfo(node->get_logger(), converter, calHandler, pubConfig.socket, pubConfig.width, pubConfig.height);
         if(pubConfig.rectified) {
             std::fill(info.d.begin(), info.d.end(), 0.0);
-            info.r[0] = info.r[4] = info.r[8] = 1.0;
+            info.r = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
         }
         infoManager->setCameraInfo(info);
-    } else {
-        infoManager->loadCameraInfo(pubConfig.calibrationFile);
+    } else if(!infoManager->loadCameraInfo(pubConfig.calibrationFile)) {
+        throw std::runtime_error("Failed to load camera calibration for " + pubConfig.topicName + " from " + pubConfig.calibrationFile);
     }
 };
 ImagePublisher::~ImagePublisher() {
@@ -194,7 +195,7 @@ std::shared_ptr<Image> ImagePublisher::convertData(const std::shared_ptr<dai::AD
         img->image = std::move(msg);
     }
     if(pubConfig.rectified) {
-        info.r[0] = info.r[4] = info.r[8] = 1.0;
+        info.r = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
     }
     if(pubConfig.undistorted) {
         std::fill(info.d.begin(), info.d.end(), 0.0);

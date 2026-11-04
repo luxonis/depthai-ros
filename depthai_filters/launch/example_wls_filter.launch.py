@@ -31,7 +31,7 @@ def launch_setup(context, *args, **kwargs):
                         remappings=[
                             ('image', name+'/left/image_raw'),
                             ('camera_info', name+'/left/camera_info'),
-                            ('image_rect', name+'/left/image_rect')
+                            ('image_rect', name+'/left_rectified/image_rect')
                         ]
                     ),
                     ComposableNode(
@@ -39,7 +39,7 @@ def launch_setup(context, *args, **kwargs):
                         plugin="depthai_filters::WLSFilter",
                         remappings=[('stereo/image_raw', name+'/stereo/image_raw'),
                                     ('stereo/camera_info', name+'/stereo/camera_info'),
-                                    ('left/image_raw', name+'/left/image_rect')]
+                                    ('left/image_raw', name+'/left_rectified/image_rect')]
                     ),
             ],
         ),

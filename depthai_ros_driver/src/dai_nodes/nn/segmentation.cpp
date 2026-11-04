@@ -105,8 +105,12 @@ void Segmentation::segmentationCB(const std::string& /* name */, const std::shar
     auto layers = seg->getAllLayerNames();
     auto outputName = layers[0];
     auto nnFrame = seg->getTensor<int32_t>(outputName, true);
+    if(!seg->transformation) {
+        RCLCPP_WARN(getROSNode()->get_logger(), "Segmentation output has no image transformation; skipping publication.");
+        return;
+    }
     auto [width, height] = seg->transformation->getSize();
-    nnFrame.reshape({width, height});
+    nnFrame.reshape({height, width});
     cv::Mat nn_mat = cv::Mat(nnFrame.shape()[0], nnFrame.shape()[1], CV_32SC1, nnFrame.data());
     auto classNum = seg->getTensor<int32_t>(layers[1], true).shape()[1];
     cv::Mat cv_frame = decodeDeeplab(nn_mat, classNum);
@@ -117,6 +121,7 @@ void Segmentation::segmentationCB(const std::string& /* name */, const std::shar
     header.stamp = getROSNode()->get_clock()->now();
     auto tfPrefix = getOpticalFrameName(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
     header.frame_id = tfPrefix;
+    auto nnInfo = depthai_bridge::ImageConverter::transformationToCameraInfo(*seg->transformation);
     nnInfo.header = header;
     imgBridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, cv_frame);
     imgBridge.toImageMsg(img_msg);

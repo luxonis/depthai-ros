@@ -82,6 +82,10 @@ class ImageConverter : public BaseConverter {
     sensor_msgs::msg::CameraInfo generateCameraInfo(std::shared_ptr<dai::ImgFrame> imgFrame) const;
     sensor_msgs::msg::CameraInfo generateCameraInfo(std::shared_ptr<dai::EncodedFrame> imgFrame) const;
 
+    /** Convert frame geometry, retaining only the stereo baseline from initialInfo. */
+    static sensor_msgs::msg::CameraInfo transformationToCameraInfo(const dai::ImgTransformation& transformation,
+                                                                   const sensor_msgs::msg::CameraInfo& initialInfo = sensor_msgs::msg::CameraInfo());
+
     /** TODO(sachin): Add support for ros msg to cv mat since we have some
      *  encodings which cv supports but ros doesn't
      **/
@@ -145,8 +149,6 @@ class ImageConverter : public BaseConverter {
     bool reversedStereoSocketOrder = false;
     double baseline;
     double alphaScalingFactor = 0.0;
-    int camHeight = -1;
-    int camWidth = -1;
     std::string ffmpegEncoding = "libx264";
     ImageMsgs::CameraInfo camInfo;
 };
