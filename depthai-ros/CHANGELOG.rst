@@ -2,6 +2,15 @@
 Changelog for package depthai-ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add optional RGB still capture with configurable image dimensions, a still image topic, and a trigger service.
+* Apply configured exposure offsets to still image timestamps.
+* Prioritize the selected DepthAI v2 SDK headers when DepthAI v3 is also installed,
+  preventing v3 headers under the ROS include directory from shadowing v2 headers.
+  Downstream dependencies can still override include ordering; mixing DepthAI v2
+  and v3 in the same CMake target is not supported.
+
 2.12.2 (2026-01-5)
 -------------------
 * Find interfaces only on ARM Docker build
