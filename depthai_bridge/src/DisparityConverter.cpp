@@ -41,7 +41,7 @@ void DisparityConverter::toRosMsg(std::shared_ptr<dai::ImgFrame> inData, std::de
     outDispImageMsg.min_disparity = _focalLength * _baseline / _maxDepth;
     outDispImageMsg.max_disparity = _focalLength * _baseline / _minDepth;
 
-    outDispImageMsg.t = _baseline / 100.0;  // converting cm to meters
+    outDispImageMsg.t = _baseline;  // already in meters (converted in the constructor)
 
     // copying the data to ros msg
     // outDispImageMsg.header       = imgHeader;
