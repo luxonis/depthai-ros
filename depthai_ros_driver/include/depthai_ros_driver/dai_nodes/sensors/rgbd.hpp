@@ -12,6 +12,7 @@ class ADatatype;
 namespace node {
 class ImageAlign;
 class RGBD;
+class Sync;
 }  // namespace node
 }  // namespace dai
 
@@ -62,11 +63,14 @@ class RGBD : public BaseNode {
     std::shared_ptr<dai::node::RGBD> getUnderlyingNode();
 
    private:
+    void createNode(std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<dai::Device> device, SensorWrapper& camera);
+    std::shared_ptr<sensor_helpers::OutputRotation> colorRotation, depthRotation;
     std::unique_ptr<depthai_bridge::PointCloudConverter> pclConv;
     void pclCB(const std::string& name, const std::shared_ptr<dai::ADatatype>& data);
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pclPub;
     std::shared_ptr<dai::node::RGBD> rgbdNode;
     std::shared_ptr<dai::node::ImageAlign> align;
+    std::shared_ptr<dai::node::Sync> inputSync;
     std::unique_ptr<param_handlers::RGBDParamHandler> ph;
     std::shared_ptr<dai::MessageQueue> pclQ;
     int cbID;

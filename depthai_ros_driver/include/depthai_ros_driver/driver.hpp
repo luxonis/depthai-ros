@@ -12,6 +12,7 @@
 #include "rclcpp/callback_group.hpp"
 #include "rclcpp/node.hpp"
 #include "std_srvs/srv/trigger.hpp"
+#include "tf2_ros/static_transform_broadcaster.h"
 
 namespace dai {
 class Pipeline;
@@ -95,6 +96,7 @@ class Driver : public rclcpp::Node {
     std::atomic<bool> camRunning = false;
     std::atomic<bool> starting = false;
     std::unique_ptr<depthai_bridge::TFPublisher> tfPub;
+    std::unique_ptr<tf2_ros::StaticTransformBroadcaster> rotationTfPub;
     rclcpp::TimerBase::SharedPtr startTimer;
     rclcpp::CallbackGroup::SharedPtr srvGroup;
 };

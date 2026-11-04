@@ -25,6 +25,7 @@ namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace sensor_helpers {
 class ImagePublisher;
+class OutputRotation;
 struct VideoEncoderConfig;
 }  // namespace sensor_helpers
 class BaseNode {
@@ -63,7 +64,8 @@ class BaseNode {
                                                                 const std::string& qName,
                                                                 dai::Node::Output* out,
                                                                 bool isSynced = false,
-                                                                const utils::VideoEncoderConfig& encoderConfig = {});
+                                                                const utils::VideoEncoderConfig& encoderConfig = {},
+                                                                std::shared_ptr<sensor_helpers::OutputRotation> inputRotation = nullptr);
     virtual void closeQueues() = 0;
 
     void setNodeName(const std::string& daiNodeName);

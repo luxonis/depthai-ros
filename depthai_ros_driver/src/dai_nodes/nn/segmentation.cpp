@@ -43,6 +43,8 @@ Segmentation::Segmentation(const std::string& daiNodeName,
                            const dai::CameraBoardSocket& socket)
     : BaseNode(daiNodeName, node, pipeline, deviceName, rsCompat) {
     RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
+    if(node->get_parameter("driver.i_output_rotation_deg").as_int() != 0)
+        throw std::invalid_argument("Output rotation is not supported by the host segmentation decoder");
     setNames();
     ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName, deviceName, rsCompat, socket);
     ph->declareParams(segNode);

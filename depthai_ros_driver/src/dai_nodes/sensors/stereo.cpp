@@ -1,5 +1,6 @@
 #include "depthai_ros_driver/dai_nodes/sensors/stereo.hpp"
 
+#include <algorithm>
 #include <optional>
 #include <stdexcept>
 
@@ -14,6 +15,7 @@
 #include "depthai_ros_driver/dai_nodes/nn/spatial_nn_wrapper.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/feature_tracker.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/output_rotation.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/rgbd.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
@@ -72,6 +74,8 @@ Stereo::Stereo(const std::string& daiNodeName,
         neuralDepthNode->build(*leftOut, *rightOut, ph->getModel());
     } else {
         stereoCamNode = pipeline->create<dai::node::StereoDepth>();
+        // Rotation retains source frames while processing; leave room for native consumers.
+        if(platform == dai::Platform::RVC2 && node->get_parameter("driver.i_output_rotation_deg").as_int()) stereoCamNode->setNumFramesPool(8);
         ph->declareParams(stereoCamNode);
         leftOut =
             left->getUnderlyingNode()->requestOutput(std::make_pair<int, int>(ph->getParam<int>(ParamNames::WIDTH), ph->getParam<int>(ParamNames::HEIGHT)),
@@ -218,22 +222,34 @@ void Stereo::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
     if(ph->getParam<bool>("i_left_rect_enable_feature_tracker")) {
         featureTrackerLeftR = std::make_unique<FeatureTracker>(
             leftSensInfo.name + std::string("_rect_feature_tracker"), getROSNode(), pipeline, getDeviceName(), rsCompatibilityMode());
-        auto in = featureTrackerLeftR->getInput();
-        if(ph->getParam<bool>("i_use_neural_depth")) {
-            neuralDepthNode->rectifiedLeft.link(in);
+        auto& in = featureTrackerLeftR->getInput();
+        auto& out = neuralDepthNode ? neuralDepthNode->rectifiedLeft : stereoCamNode->rectifiedLeft;
+        const int degrees = getROSNode()->get_parameter("driver.i_output_rotation_deg").as_int();
+        if(leftRectPub) {
+            leftRectPub->linkImage(in);
+        } else if(degrees) {
+            sensor_helpers::OutputRotation rotation(pipeline, out, degrees);
+            rotation.configure(ph->getParam<int>("i_width"), ph->getParam<int>("i_height"));
+            rotation.out().link(in);
         } else {
-            stereoCamNode->rectifiedLeft.link(in);
+            out.link(in);
         }
     }
 
     if(ph->getParam<bool>("i_right_rect_enable_feature_tracker")) {
         featureTrackerRightR = std::make_unique<FeatureTracker>(
             rightSensInfo.name + std::string("_rect_feature_tracker"), getROSNode(), pipeline, getDeviceName(), rsCompatibilityMode());
-        auto in = featureTrackerRightR->getInput();
-        if(ph->getParam<bool>("i_use_neural_depth")) {
-            neuralDepthNode->rectifiedRight.link(in);
+        auto& in = featureTrackerRightR->getInput();
+        auto& out = neuralDepthNode ? neuralDepthNode->rectifiedRight : stereoCamNode->rectifiedRight;
+        const int degrees = getROSNode()->get_parameter("driver.i_output_rotation_deg").as_int();
+        if(rightRectPub) {
+            rightRectPub->linkImage(in);
+        } else if(degrees) {
+            sensor_helpers::OutputRotation rotation(pipeline, out, degrees);
+            rotation.configure(ph->getParam<int>("i_width"), ph->getParam<int>("i_height"));
+            rotation.out().link(in);
         } else {
-            stereoCamNode->rectifiedRight.link(in);
+            out.link(in);
         }
     }
 }
@@ -259,8 +275,8 @@ void Stereo::setupRectQueue(std::shared_ptr<dai::Device> device,
     pubConfig.daiNodeName = sensorName;
     pubConfig.rectified = true;
     pubConfig.undistorted = true;
-    pubConfig.width = ph->getOtherNodeParam<int>(sensorName, "i_width");
-    pubConfig.height = ph->getOtherNodeParam<int>(sensorName, "i_height");
+    pubConfig.width = ph->getParam<int>("i_width");
+    pubConfig.height = ph->getParam<int>("i_height");
     pubConfig.topicName = "~/" + sensorName;
     pubConfig.topicSuffix = rsCompatibilityMode() ? "/image_rect_raw" : "/image_rect";
     pubConfig.maxQSize = ph->getOtherNodeParam<int>(sensorName, "i_max_q_size");
@@ -308,6 +324,15 @@ void Stereo::setupStereoQueue(std::shared_ptr<dai::Device> device) {
     pubConf.width = ph->getParam<int>(ParamNames::WIDTH);
     pubConf.height = ph->getParam<int>(ParamNames::HEIGHT);
     pubConf.socket = ph->getSocketID();
+    if(aligned && pubConf.socket != leftSensInfo.socket && pubConf.socket != rightSensInfo.socket && !convConfig.outputDisparity && !convConfig.lowBandwidth) {
+        const auto target = ph->getParam<std::string>("i_socket_name");
+        if(getROSNode()->has_parameter(target + "." + ParamNames::WIDTH) && getROSNode()->has_parameter(target + "." + ParamNames::HEIGHT)) {
+            // RVC2 alignment can retain the native stereo size. Bound rotation
+            // allocations by both sizes; frame metadata supplies the actual geometry.
+            pubConf.width = std::max(pubConf.width, ph->getOtherNodeParam<int>(target, ParamNames::WIDTH));
+            pubConf.height = std::max(pubConf.height, ph->getOtherNodeParam<int>(target, ParamNames::HEIGHT));
+        }
+    }
     pubConf.calibrationFile = ph->getParam<std::string>(ParamNames::CALIBRATION_FILE);
     pubConf.leftSocket = leftSensInfo.socket;
     pubConf.rightSocket = rightSensInfo.socket;
