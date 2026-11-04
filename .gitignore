@@ -6,3 +6,6 @@ build
 *.blob
 log
 install
+.cache
+.github
+colcon_defaults.yaml
