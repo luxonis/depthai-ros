@@ -2,5 +2,10 @@
 devel
 __pycache__
 build
+install
+log
+colcon_defaults.yaml
 .DS_Store
 *.blob
+.cache
+.github
