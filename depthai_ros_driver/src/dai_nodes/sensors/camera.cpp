@@ -75,6 +75,7 @@ void Camera::setupQueues(std::shared_ptr<dai::Device> device) {
         convConfig.getBaseDeviceTimestamp = ph->getParam<bool>(ParamNames::GET_BASE_DEVICE_TIMESTAMP);
         convConfig.updateROSBaseTimeOnRosMsg = ph->getParam<bool>(ParamNames::UPDATE_ROS_BASE_TIME_ON_ROS_MSG);
         convConfig.lowBandwidth = ph->getParam<bool>(ParamNames::LOW_BANDWIDTH);
+        convConfig.ffmpegEncoder = ph->getParam<std::string>(ParamNames::LOW_BANDWIDTH_FFMPEG_ENCODER);
         convConfig.addExposureOffset = ph->getParam<bool>(ParamNames::ADD_EXPOSURE_OFFSET);
         convConfig.expOffset = static_cast<dai::CameraExposureOffset>(ph->getParam<int>(ParamNames::EXPOSURE_OFFSET));
         convConfig.reverseSocketOrder = ph->getParam<bool>(ParamNames::REVERSE_STEREO_SOCKET_ORDER);
