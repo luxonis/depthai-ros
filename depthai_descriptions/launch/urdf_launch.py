@@ -1,82 +1,41 @@
 import os
+import subprocess
+import sys
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.conditions import IfCondition, UnlessCondition
-from launch.substitutions import Command, LaunchConfiguration
+from launch.substitutions import LaunchConfiguration
+from launch_ros.parameter_descriptions import ParameterValue
 from launch_ros.actions import LoadComposableNodes, Node
 from launch_ros.descriptions import ComposableNode
 
 
 def launch_setup(context, *args, **kwargs):
     bringup_dir = get_package_share_directory("depthai_descriptions")
-    use_base_descr = LaunchConfiguration("use_base_descr", default="false")
-    xacro_path = ""
-    if use_base_descr.perform(context) == "true":
-        xacro_path = os.path.join(bringup_dir, "urdf", "base_descr.urdf.xacro")
-    else:
-        xacro_path = os.path.join(bringup_dir, "urdf", "depthai_descr.urdf.xacro")
-
-    camera_model = LaunchConfiguration("camera_model", default="OAK-D")
-    tf_prefix = LaunchConfiguration("tf_prefix", default="oak")
-    base_frame = LaunchConfiguration("base_frame", default="oak")
-    parent_frame = LaunchConfiguration("parent_frame", default="oak_parent_frame")
-    cam_pos_x = LaunchConfiguration("cam_pos_x", default="0.0")
-    cam_pos_y = LaunchConfiguration("cam_pos_y", default="0.0")
-    cam_pos_z = LaunchConfiguration("cam_pos_z", default="0.0")
-    cam_roll = LaunchConfiguration("cam_roll", default="1.5708")
-    cam_pitch = LaunchConfiguration("cam_pitch", default="0.0")
-    cam_yaw = LaunchConfiguration("cam_yaw", default="1.5708")
-    namespace = LaunchConfiguration("namespace", default="")
-    rs_compat = LaunchConfiguration("rs_compat", default="false")
-    use_composition = LaunchConfiguration("use_composition", default="false")
-
-    rsp_name = LaunchConfiguration("rsp_name").perform(context)
-    if not rsp_name:
-        rsp_name = LaunchConfiguration("tf_prefix").perform(context).strip("/").replace("/", "_")
-    robot_description = {
-        "robot_description": Command(
-            [
-                "xacro",
-                " ",
-                xacro_path,
-                " ",
-                "camera_name:=",
-                tf_prefix,
-                " ",
-                "camera_model:=",
-                camera_model,
-                " ",
-                "base_frame:=",
-                base_frame,
-                " ",
-                "parent_frame:=",
-                parent_frame,
-                " ",
-                "cam_pos_x:=",
-                cam_pos_x,
-                " ",
-                "cam_pos_y:=",
-                cam_pos_y,
-                " ",
-                "cam_pos_z:=",
-                cam_pos_z,
-                " ",
-                "cam_roll:=",
-                cam_roll,
-                " ",
-                "cam_pitch:=",
-                cam_pitch,
-                " ",
-                "cam_yaw:=",
-                cam_yaw,
-                " ",
-                "rs_compat:=",
-                rs_compat,
-            ]
-        )
-    }
+    namespace = LaunchConfiguration("namespace")
+    use_composition = LaunchConfiguration("use_composition")
+    mappings = {name: LaunchConfiguration(name).perform(context) for name in (
+        "camera_model", "imu_sensor", "imu_frame", "has_imu", "use_base_descr",
+        "base_frame", "parent_frame", "cam_pos_x", "cam_pos_y", "cam_pos_z",
+        "cam_roll", "cam_pitch", "cam_yaw", "rs_compat", "pose_source",
+        "model_selection", "fallback_model", "mesh_model", "legacy_frame_aliases",
+    )}
+    mappings["camera_name"] = LaunchConfiguration("tf_prefix").perform(context)
+    if mappings["has_imu"] == "auto" and mappings["use_base_descr"] == "true":
+        mappings["has_imu"] = "false"
+    rsp_name = (LaunchConfiguration("rsp_name").perform(context)
+                or mappings["camera_name"].strip("/").replace("/", "_"))
+    command = [sys.executable, os.path.join(bringup_dir, "scripts", "resolve_description.py")]
+    command.extend(f"{key}:={value}" for key, value in mappings.items())
+    result = subprocess.run(command, capture_output=True, text=True)
+    if result.returncode != 0 or not result.stdout.strip():
+        raise RuntimeError(f"Unable to generate robot description: {result.stderr}")
+    if result.stderr.strip():
+        from launch.logging import get_logger
+        get_logger("depthai_descriptions").warning(result.stderr.strip())
+    robot_description = {"robot_description": ParameterValue(result.stdout, value_type=str)}
     return [
         Node(
             package="robot_state_publisher",
@@ -104,6 +63,11 @@ def launch_setup(context, *args, **kwargs):
 
 def generate_launch_description():
     declared_arguments = [
+        DeclareLaunchArgument("pose_source", default_value="legacy"),
+        DeclareLaunchArgument("model_selection", default_value="auto"),
+        DeclareLaunchArgument("fallback_model", default_value=""),
+        DeclareLaunchArgument("mesh_model", default_value=""),
+        DeclareLaunchArgument("legacy_frame_aliases", default_value="true"),
         DeclareLaunchArgument(
             "rsp_name",
             default_value="",
@@ -117,7 +81,19 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "camera_model",
             default_value="OAK-D",
-            description="The model of the camera. Using a wrong camera model can disable camera features. Valid models: `OAK-D, OAK-D-LITE`.",
+            description="Board model name from board_models.yaml or model_config.yaml.",
+        ),
+        DeclareLaunchArgument(
+            "has_imu", default_value="auto", choices=["auto", "true", "false"],
+            description="Publish IMU TF from this description; auto selects available poses in the full description.",
+        ),
+        DeclareLaunchArgument(
+            "imu_sensor", default_value="",
+            description="IMU variant key, e.g. BNO, BMI or LSM6DSV. Required for boards with multiple variants and no legacy IMU pose.",
+        ),
+        DeclareLaunchArgument(
+            "imu_frame", default_value="auto", choices=["auto", "optical", "native"],
+            description="Axes for board-derived IMU poses. Optical matches the ROS driver's RDF convention.",
         ),
         DeclareLaunchArgument(
             "tf_prefix",
