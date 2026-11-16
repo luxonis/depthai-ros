@@ -112,7 +112,7 @@ class ExistingUrdfTest(unittest.TestCase):
     """
 
     descriptions = SCRIPT.parents[1]
-    boards = descriptions.parent / 'depthai-core/shared/depthai_boards/boards'
+    boards = descriptions.parent / 'external/depthai-core/shared/depthai_boards/boards'
 
     def setUp(self):
         if not self.boards.is_dir():

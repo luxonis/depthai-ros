@@ -70,7 +70,7 @@ class TestMounting(unittest.TestCase):
         topics = {
             "rgb/image_raw": Image, "rgb/camera_info": CameraInfo,
             "stereo/image_raw": Image, "stereo/camera_info": CameraInfo,
-            "left/image_rect": Image, "right/image_rect": Image,
+            "left_rectified/image_rect": Image, "right_rectified/image_rect": Image,
             FEATURE_TOPIC: TrackedFeatures,
             "rgbd/points": PointCloud2, "depth_points": PointCloud2, "imu/data": Imu,
         }

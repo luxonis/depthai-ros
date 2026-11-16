@@ -77,7 +77,7 @@ def generate(boards, meshes):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--boards', type=Path,
-                        default=DESCRIPTIONS.parent / 'depthai-core/shared/depthai_boards/boards')
+                        default=DESCRIPTIONS.parent / 'external/depthai-core/shared/depthai_boards/boards')
     parser.add_argument('--output', type=Path,
                         default=DESCRIPTIONS / 'urdf/include/board_models.yaml')
     args = parser.parse_args()

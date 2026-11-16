@@ -178,7 +178,8 @@ while True:
             info.k[5] -= correctionY();
             info.p[6] -= correctionY();
         }
-        rotation.cameraInfo(info, transformed);
+        // The converter projects the native baseline through the frame's rotated K.
+        rotation.cameraInfo(info, transformed, transformed);
     }
     depthai_bridge::OutputRotation rotation;
     const bool opticalIntrinsics;

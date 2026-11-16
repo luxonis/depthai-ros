@@ -41,7 +41,7 @@ class RotatedInput {
             if(requested == types.end()) throw std::invalid_argument("Unsupported rotated NN input type: " + *inputs.front().preprocessing.daiType);
             type = requested->second;
         }
-        native = camera->requestOutput(size, type, dai::ImgResizeMode::CROP, std::nullopt, true);
+        native = camera->requestOutput(size, type, archive.getInputResizeMode().value_or(dai::ImgResizeMode::CROP), std::nullopt, true);
         image = std::make_shared<sensor_helpers::OutputRotation>(pipeline, *native, degrees, spatial);
         image->configure(size.first, size.second);
         image->out().link(network.input);

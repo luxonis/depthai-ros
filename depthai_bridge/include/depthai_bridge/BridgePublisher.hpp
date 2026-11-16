@@ -301,6 +301,8 @@ void BridgePublisher<RosMsg, DaiMsg>::publishHelper(std::shared_ptr<DaiMsg> inDa
                 if constexpr(std::is_same_v<DaiMsg, dai::ImgFrame> || std::is_same_v<DaiMsg, dai::EncodedFrame>) {
                     if(cameraParamUri.empty()) {
                         localCameraInfo = ImageConverter::transformationToCameraInfo(inDataPtr->transformation, localCameraInfo);
+                        localCameraInfo.width = inDataPtr->getWidth();
+                        localCameraInfo.height = inDataPtr->getHeight();
                     }
                 }
                 localCameraInfo.header = currMsg.header;

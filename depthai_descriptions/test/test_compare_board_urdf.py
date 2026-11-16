@@ -40,7 +40,7 @@ class ComparisonTest(unittest.TestCase):
 
     def test_deprecated_aliases_do_not_count_as_extra_sensors(self):
         descriptions = Path(__file__).resolve().parents[1]
-        boards = descriptions.parent / 'depthai-core/shared/depthai_boards/boards'
+        boards = descriptions.parent / 'external/depthai-core/shared/depthai_boards/boards'
         if not boards.is_dir():
             self.skipTest('depthai_boards checkout is unavailable')
         args = SimpleNamespace(boards=boards, descriptions=descriptions, reference=None,

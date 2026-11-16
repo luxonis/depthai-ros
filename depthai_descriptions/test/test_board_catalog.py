@@ -155,7 +155,7 @@ class BoardCatalogTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / 'catalog.yaml'
             subprocess.run([sys.executable, str(self.descriptions / 'scripts/generate_board_models.py'),
-                            '--boards', str(self.boards), '--output', str(output)],
+                            '--output', str(output)],
                            check=True, capture_output=True, text=True)
             self.assertEqual(yaml.safe_load(output.read_text()), self.catalog)
 

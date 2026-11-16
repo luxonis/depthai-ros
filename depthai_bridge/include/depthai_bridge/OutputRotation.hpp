@@ -62,8 +62,9 @@ class OutputRotation {
         tf.transform.rotation.w = std::cos(halfAngle);
         return tf;
     }
-    // pixelsRotated: K already contains the device image homography; P's translation is still native.
-    void cameraInfo(sensor_msgs::msg::CameraInfo& info, bool pixelsRotated = false) const {
+    // pixelsRotated: K already contains the device image homography.
+    // projectionTranslationRotated: P's translation was already projected through that homography.
+    void cameraInfo(sensor_msgs::msg::CameraInfo& info, bool pixelsRotated = false, bool projectionTranslationRotated = false) const {
         if(!enabled()) return;
         const auto q = matrix(1, 1);
         auto h = matrix(info.width, info.height);
@@ -82,7 +83,7 @@ class OutputRotation {
                     m[i * columns + j] = 0;
                     for(int k = 0; k < 3; ++k) m[i * columns + j] += tmp[i * columns + k] * q[j * 3 + k];
                 }
-            if(columns == 4) {
+            if(columns == 4 && !projectionTranslationRotated) {
                 for(int i = 0; i < 3; ++i) {
                     m[i * columns + 3] = 0;
                     for(int k = 0; k < 3; ++k) m[i * columns + 3] += q[i * 3 + k] * src[k * columns + 3];

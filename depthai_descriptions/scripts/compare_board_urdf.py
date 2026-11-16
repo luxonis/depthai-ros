@@ -179,7 +179,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('models', nargs='*')
     parser.add_argument('--descriptions', type=Path, default=DESCRIPTIONS, help='Description package directory')
-    parser.add_argument('--boards', type=Path, default=DESCRIPTIONS.parent / 'depthai-core/shared/depthai_boards/boards')
+    parser.add_argument('--boards', type=Path, default=DESCRIPTIONS.parent / 'external/depthai-core/shared/depthai_boards/boards')
     parser.add_argument('--reference', help='Override automatic terminal camera selection')
     parser.add_argument('--imu-frame', choices=['native', 'optical', 'both'], default='both')
     parser.add_argument('--imu-sensor', help='Compare only this IMU variant (default: select and compare every listed variant)')

@@ -6,6 +6,7 @@
 #include "depthai/depthai.hpp"
 #include "depthai/pipeline/datatype/ImgFrame.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_bridge/OutputRotation.hpp"
 #include "ffmpeg_image_transport_msgs/msg/ffmpeg_packet.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
 #include "sensor_msgs/msg/compressed_image.hpp"
@@ -64,6 +65,34 @@ TEST_F(ImageConverterTest, CameraInfoProjectsStereoBaselineAtCurrentFocalLength)
     EXPECT_DOUBLE_EQ(info.p[0], 200);
     EXPECT_DOUBLE_EQ(info.p[3], -15);
     EXPECT_DOUBLE_EQ(info.p[3] / info.p[0], calibration.p[3] / calibration.p[0]);
+}
+
+TEST_F(ImageConverterTest, RotatedCameraInfoProjectsStereoBaselineOnce) {
+    const std::array<std::array<float, 3>, 3> intrinsics = {{{400, 0, 320}, {0, 420, 240}, {0, 0, 1}}};
+    for(int angle : {0, 90, 180, 270}) {
+        SCOPED_TRACE(angle);
+        OutputRotation rotation(angle);
+        for(bool vertical : {false, true}) {
+            SCOPED_TRACE(vertical);
+            sensor_msgs::msg::CameraInfo calibration;
+            calibration.p = {400, 0, 320, vertical ? 0.0 : -30.0, 0, 420, 240, vertical ? -21.0 : 0.0, 0, 0, 1, 0};
+            dai::ImgTransformation transformation(640, 480, intrinsics);
+            transformation.addScale(0.5f, 0.5f).setSize(320, 240);
+            auto expected = ImageConverter::transformationToCameraInfo(transformation, calibration);
+            rotation.cameraInfo(expected);
+
+            // Model the device homography before conversion, including a resize.
+            const auto h = rotation.matrix(320, 240);
+            transformation.addTransformation({{{h[0], h[1], h[2]}, {h[3], h[4], h[5]}, {h[6], h[7], h[8]}}});
+            transformation.setSize(rotation.swapsAxes() ? 240 : 320, rotation.swapsAxes() ? 320 : 240);
+            auto actual = ImageConverter::transformationToCameraInfo(transformation, calibration);
+            rotation.cameraInfo(actual, true, true);
+            EXPECT_EQ(actual.width, expected.width);
+            EXPECT_EQ(actual.height, expected.height);
+            for(size_t i = 0; i < actual.k.size(); ++i) EXPECT_DOUBLE_EQ(actual.k[i], expected.k[i]);
+            for(size_t i = 0; i < actual.p.size(); ++i) EXPECT_DOUBLE_EQ(actual.p[i], expected.p[i]);
+        }
+    }
 }
 
 TEST_F(ImageConverterTest, CameraInfoUsesFisheyeModelAndMatchesEncodedFrames) {
