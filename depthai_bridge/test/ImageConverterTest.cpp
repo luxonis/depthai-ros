@@ -24,6 +24,65 @@ class ImageConverterTest : public ::testing::Test {
     }
 };
 
+TEST_F(ImageConverterTest, CameraInfoTracksCropAndResize) {
+    const std::array<std::array<float, 3>, 3> intrinsics = {{{400, 0, 320}, {0, 420, 240}, {0, 0, 1}}};
+    dai::ImgTransformation transformation(640, 480, intrinsics);
+    transformation.setDistortionCoefficients({0.1f, 0.2f, 0.3f, 0.4f});
+    transformation.addCrop(100, 60, 400, 300).addScale(0.5f, 0.5f).setSize(200, 150);
+    sensor_msgs::msg::CameraInfo initialInfo;
+    initialInfo.width = 640;
+    initialInfo.height = 480;
+    initialInfo.k[0] = 999;
+    initialInfo.d = {9.0};
+    initialInfo.r[0] = 0.5;
+    auto info = ImageConverter::transformationToCameraInfo(transformation, initialInfo);
+    EXPECT_EQ(info.width, 200u);
+    EXPECT_EQ(info.height, 150u);
+    EXPECT_DOUBLE_EQ(info.k[0], 200);
+    EXPECT_DOUBLE_EQ(info.k[4], 210);
+    EXPECT_DOUBLE_EQ(info.k[2], 110);
+    EXPECT_DOUBLE_EQ(info.k[5], 90);
+    EXPECT_EQ(info.d.size(), 4u);
+    EXPECT_FLOAT_EQ(info.d[0], 0.1f);
+    EXPECT_DOUBLE_EQ(info.p[0], info.k[0]);
+    EXPECT_DOUBLE_EQ(info.p[2], info.k[2]);
+    EXPECT_DOUBLE_EQ(info.p[3], 0);
+    EXPECT_DOUBLE_EQ(info.r[0], 1);
+    EXPECT_DOUBLE_EQ(info.r[4], 1);
+    EXPECT_DOUBLE_EQ(info.r[8], 1);
+}
+
+TEST_F(ImageConverterTest, CameraInfoProjectsStereoBaselineAtCurrentFocalLength) {
+    sensor_msgs::msg::CameraInfo calibration;
+    calibration.p[0] = 400;
+    calibration.p[5] = 420;
+    calibration.p[3] = -30;
+    const std::array<std::array<float, 3>, 3> intrinsics = {{{400, 0, 320}, {0, 420, 240}, {0, 0, 1}}};
+    dai::ImgTransformation transformation(640, 480, intrinsics);
+    transformation.addScale(0.5f, 0.5f).setSize(320, 240);
+    auto info = ImageConverter::transformationToCameraInfo(transformation, calibration);
+    EXPECT_DOUBLE_EQ(info.p[0], 200);
+    EXPECT_DOUBLE_EQ(info.p[3], -15);
+    EXPECT_DOUBLE_EQ(info.p[3] / info.p[0], calibration.p[3] / calibration.p[0]);
+}
+
+TEST_F(ImageConverterTest, CameraInfoUsesFisheyeModelAndMatchesEncodedFrames) {
+    const std::array<std::array<float, 3>, 3> intrinsics = {{{400, 0, 320}, {0, 420, 240}, {0, 0, 1}}};
+    dai::ImgTransformation transformation(640, 480, intrinsics, dai::CameraModel::Fisheye, {0.1f, 0.2f, 0.3f, 0.4f});
+    auto frame = std::make_shared<dai::ImgFrame>();
+    auto encoded = std::make_shared<dai::EncodedFrame>();
+    frame->transformation = transformation;
+    encoded->transformation = transformation;
+    ImageConverter converter("test_frame", true);
+    auto info = converter.generateCameraInfo(frame);
+    EXPECT_EQ(info.distortion_model, "equidistant");
+    EXPECT_EQ(info, converter.generateCameraInfo(encoded));
+    frame->transformation.addScale(0.5f, 0.5f).setSize(320, 240);
+    auto resizedInfo = converter.generateCameraInfo(frame);
+    EXPECT_EQ(resizedInfo.width, 320u);
+    EXPECT_DOUBLE_EQ(resizedInfo.k[0], 200);
+}
+
 TEST_F(ImageConverterTest, ConstructorTest) {
     ImageConverter converter("test_frame", true, false);
     EXPECT_EQ(converter.getFrameName(), "test_frame");
@@ -116,6 +175,15 @@ TEST_F(ImageConverterTest, ToRosFFMPEGPacketTest) {
     EXPECT_EQ(outFrameMsg.header.frame_id, "test_frame");
     EXPECT_EQ(outFrameMsg.encoding, "libx264");
     EXPECT_EQ(outFrameMsg.data.size(), 640 * 480 * 3);
+    EXPECT_EQ(outFrameMsg.width, 640u);
+    EXPECT_EQ(outFrameMsg.height, 480u);
+
+    inData->setWidth(320);
+    inData->setHeight(240);
+    outImageMsgs.clear();
+    converter.toRosFFMPEGPacket(inData, outImageMsgs);
+    EXPECT_EQ(outImageMsgs.front().width, 320u);
+    EXPECT_EQ(outImageMsgs.front().height, 240u);
 }
 
 TEST_F(ImageConverterTest, ToRosMsgTest) {
@@ -210,6 +278,39 @@ TEST_F(ImageConverterTest, CalibrationToCameraInfoTest) {
     EXPECT_EQ(cameraInfo.d.size(), 8);
     EXPECT_EQ(cameraInfo.p.size(), 12);
     EXPECT_EQ(cameraInfo.r.size(), 9);
+}
+
+TEST_F(ImageConverterTest, FisheyeCalibrationUsesFourCoefficients) {
+    std::ifstream f(ament_index_cpp::get_package_share_directory("depthai_bridge") + "/resources/cal.json");
+    auto calibration = dai::CalibrationHandler::fromJson(nlohmann::json::parse(f));
+    const auto socket = dai::CameraBoardSocket::CAM_B;
+    calibration.setCameraType(socket, dai::CameraModel::Fisheye);
+    calibration.setDistortionCoefficients(socket, {0.01f, -0.02f, 0.003f, -0.004f});
+    ImageConverter converter("test_frame", true);
+    for(bool alphaScaling : {false, true}) {
+        if(alphaScaling) converter.setAlphaScaling(0.5);
+        auto info = converter.calibrationToCameraInfo(calibration, socket);
+        EXPECT_EQ(info.distortion_model, "equidistant");
+        ASSERT_EQ(info.d.size(), 4u);
+        EXPECT_FLOAT_EQ(info.d[0], 0.01f);
+        EXPECT_FLOAT_EQ(info.d[3], -0.004f);
+        EXPECT_GT(info.k[0], 0.0);
+        EXPECT_GT(info.k[4], 0.0);
+    }
+}
+
+TEST_F(ImageConverterTest, RejectsIncompletePerspectiveCalibration) {
+    std::ifstream f(ament_index_cpp::get_package_share_directory("depthai_bridge") + "/resources/cal.json");
+    auto data = nlohmann::json::parse(f);
+    const auto socket = dai::CameraBoardSocket::CAM_A;
+    for(auto& camera : data["cameraData"]) {
+        if(camera[0].get<int>() == static_cast<int>(socket)) {
+            camera[1]["distortionCoeff"] = {0.1, 0.2};
+        }
+    }
+    auto calibration = dai::CalibrationHandler::fromJson(data);
+    ImageConverter converter("test_frame", true);
+    EXPECT_THROW(converter.calibrationToCameraInfo(calibration, socket), std::runtime_error);
 }
 
 int main(int argc, char** argv) {
