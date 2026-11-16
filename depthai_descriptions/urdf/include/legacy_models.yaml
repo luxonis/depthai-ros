@@ -1,0 +1,254 @@
+# DEPRECATED: frozen develop geometry. Do not use as board geometry or regenerate from boards.
+source_revision: 703ad4a4fda81fb88428a1c543d0a70a0dbb1687
+models:
+  OAK-1:
+    mesh: OAK-1
+    extra_cameras: {}
+    imu_variants: {}
+    imu_xyz: null
+    imu_rpy: null
+    right_name: null
+    rgb_xyz: 0 0 0
+    rgb_rpy: 0 0 0
+    left_xyz: 0 0.0375 0
+    left_rpy: 0 0 0
+    right_xyz: 0 -0.0375 0
+    right_rpy: 0 0 0
+    mesh_xyz: 0 0 0
+    mesh_base_xyz: 0 0 0
+  OAK-D-CM4-POE:
+    mesh: OAK-D-CM4-POE
+    extra_cameras: {}
+    imu_variants: {}
+    imu_xyz: null
+    imu_rpy: null
+    right_name: null
+    rgb_xyz: 0 0 0
+    rgb_rpy: 0 0 0
+    left_xyz: 0 0.0375 0
+    left_rpy: 0 0 0
+    right_xyz: 0 -0.0375 0
+    right_rpy: 0 0 0
+    mesh_xyz: 0 0 0
+    mesh_base_xyz: 0 0 0
+  OAK-D-IOT-75:
+    mesh: OAK-D-IOT-75
+    extra_cameras: {}
+    imu_variants: {}
+    imu_xyz: null
+    imu_rpy: null
+    right_name: null
+    rgb_xyz: 0 0 0
+    rgb_rpy: 0 0 0
+    left_xyz: 0 0.0375 0
+    left_rpy: 0 0 0
+    right_xyz: 0 -0.0375 0
+    right_rpy: 0 0 0
+    mesh_xyz: 0 0 0
+    mesh_base_xyz: 0 0 0
+  OAK-D-LITE:
+    mesh: OAK-D-LITE
+    extra_cameras: {}
+    imu_variants: {}
+    imu_xyz: null
+    imu_rpy: null
+    right_name: null
+    rgb_xyz: 0 0 0
+    rgb_rpy: 0 0 0
+    left_xyz: 0 0.0375 0
+    left_rpy: 0 0 0
+    right_xyz: 0 -0.0375 0
+    right_rpy: 0 0 0
+    mesh_xyz: 0 0 0
+    mesh_base_xyz: 0 0 0
+  OAK-D-LR:
+    mesh: OAK-D-LR
+    extra_cameras: {}
+    imu_variants: {}
+    imu_xyz: null
+    imu_rpy: null
+    right_name: null
+    rgb_xyz: 0 0 0
+    rgb_rpy: 0 0 0
+    left_xyz: 0 0.1 0
+    left_rpy: 0 0 0
+    right_xyz: 0 -0.05 0
+    right_rpy: 0 0 0
+    mesh_xyz: 0 0 0
+    mesh_base_xyz: 0 0 0
+  OAK-D-POE:
+    mesh: OAK-D-POE
+    extra_cameras: {}
+    imu_variants: {}
+    imu_xyz: -0.008 -0.04 -0.020265
+    imu_rpy: 3.141592653589793 1.5707963267948966 0.0
+    right_name: null
+    rgb_xyz: 0 0 0
+    rgb_rpy: 0 0 0
+    left_xyz: 0 0.0375 0
+    left_rpy: 0 0 0
+    right_xyz: 0 -0.0375 0
+    right_rpy: 0 0 0
+    mesh_xyz: 0 0 0
+    mesh_base_xyz: 0 0 0
+  OAK-D-PRO-W:
+    mesh: OAK-D-PRO-W
+    extra_cameras: {}
+    imu_variants: {}
+    imu_xyz: null
+    imu_rpy: null
+    right_name: null
+    rgb_xyz: 0 0 0
+    rgb_rpy: 0 0 0
+    left_xyz: 0 0.0375 0
+    left_rpy: 0 0 0
+    right_xyz: 0 -0.0375 0
+    right_rpy: 0 0 0
+    mesh_xyz: 0 0 0
+    mesh_base_xyz: 0 0 0
+  OAK-D-PRO:
+    mesh: OAK-D-PRO
+    extra_cameras: {}
+    imu_variants: {}
+    imu_xyz: -0.008 -0.037945 -0.00079
+    imu_rpy: 3.141592653589793 1.5707963267948966 0.0
+    right_name: null
+    rgb_xyz: 0 0 0
+    rgb_rpy: 0 0 0
+    left_xyz: 0 0.0375 0
+    left_rpy: 0 0 0
+    right_xyz: 0 -0.0375 0
+    right_rpy: 0 0 0
+    mesh_xyz: 0 0 0
+    mesh_base_xyz: 0 0 0
+  OAK-D-S2-POE:
+    mesh: OAK-D-S2-POE
+    extra_cameras: {}
+    imu_variants: {}
+    imu_xyz: null
+    imu_rpy: null
+    right_name: null
+    rgb_xyz: 0 0 0
+    rgb_rpy: 0 0 0
+    left_xyz: 0 0.0375 0
+    left_rpy: 0 0 0
+    right_xyz: 0 -0.0375 0
+    right_rpy: 0 0 0
+    mesh_xyz: 0 0 0
+    mesh_base_xyz: 0 0 0
+  OAK-D-S2:
+    mesh: OAK-D-S2
+    extra_cameras: {}
+    imu_variants: {}
+    imu_xyz: null
+    imu_rpy: null
+    right_name: null
+    rgb_xyz: 0 0 0
+    rgb_rpy: 0 0 0
+    left_xyz: 0 0.0375 0
+    left_rpy: 0 0 0
+    right_xyz: 0 -0.0375 0
+    right_rpy: 0 0 0
+    mesh_xyz: 0 0 0
+    mesh_base_xyz: 0 0 0
+  OAK-D-SR-POE:
+    mesh: OAK-D-SR-POE
+    extra_cameras: {}
+    imu_variants: {}
+    imu_xyz: null
+    imu_rpy: null
+    right_name: null
+    rgb_xyz: 0 0 0
+    rgb_rpy: 0 0 0
+    left_xyz: 0 0.0375 0
+    left_rpy: 0 0 0
+    right_xyz: 0 0.0175 0
+    right_rpy: 0 0 0
+    mesh_xyz: 0.019 0 0
+    mesh_base_xyz: 0 0 0
+  OAK-D-SR:
+    mesh: OAK-D-SR
+    extra_cameras: {}
+    imu_variants: {}
+    imu_xyz: null
+    imu_rpy: null
+    right_name: null
+    rgb_xyz: null
+    rgb_rpy: 0 0 0
+    left_xyz: 0 0.01 0
+    left_rpy: 0 0 0
+    right_xyz: 0 -0.01 0
+    right_rpy: 0 0 0
+    mesh_xyz: 0 0 0
+    mesh_base_xyz: 0 0 0
+  OAK-D:
+    mesh: OAK-D
+    extra_cameras: {}
+    imu_variants: {}
+    imu_xyz: 0.0 -0.015 -0.013662
+    imu_rpy: 0.0 1.5707963267948966 0.0
+    right_name: null
+    rgb_xyz: 0 0 0
+    rgb_rpy: 0 0 0
+    left_xyz: 0 0.0375 0
+    left_rpy: 0 0 0
+    right_xyz: 0 -0.0375 0
+    right_rpy: 0 0 0
+    mesh_xyz: 0 0 0
+    mesh_base_xyz: 0 0 0
+  OAK-T:
+    mesh: OAK-T
+    extra_cameras: {}
+    imu_variants: {}
+    imu_xyz: null
+    imu_rpy: null
+    right_name: cam_e
+    rgb_xyz: 0 0 0
+    rgb_rpy: 0 0 0
+    left_xyz: null
+    left_rpy: 0 0 0
+    right_xyz: 0 -0.025 0
+    right_rpy: 0 0 0
+    mesh_xyz: 0 0 0
+    mesh_base_xyz: 0 0 0
+  OAK4-D:
+    mesh: OAK4-D
+    extra_cameras: {}
+    imu_variants: {}
+    imu_xyz: null
+    imu_rpy: null
+    right_name: null
+    rgb_xyz: 0 0 0
+    rgb_rpy: 0 0 0
+    left_xyz: 0 0.0375 0
+    left_rpy: 0 0 0
+    right_xyz: 0 -0.0375 0
+    right_rpy: 0 0 0
+    mesh_xyz: 0 0 0
+    mesh_base_xyz: 0 0 0
+  OAK4-S:
+    mesh: OAK4-S
+    extra_cameras: {}
+    imu_variants: {}
+    imu_xyz: null
+    imu_rpy: null
+    right_name: null
+    rgb_xyz: 0 0 0
+    rgb_rpy: 0 0 0
+    left_xyz: 0 0.0375 0
+    left_rpy: 0 0 0
+    right_xyz: 0 -0.0375 0
+    right_rpy: 0 0 0
+    mesh_xyz: 0 0 0
+    mesh_base_xyz: 0 0 0
+model_aliases:
+  OAK-D-PRO-W-POE: OAK-D-S2-POE
+  OAK-D-PRO-POE: OAK-D-S2-POE
+  OAK-D-LITE: OAK-D-PRO
+  OAK-D-S2: OAK-D-PRO
+  OAK-D-PRO-W: OAK-D-PRO
+  OAK-D-W: OAK-D-S2
+  OAK-4-PRO: OAK4-D
+  OAK-4-PRO-W: OAK4-D
+  OAK4-D-W: OAK4-D
+  OAK4-D-PRO: OAK4-D
