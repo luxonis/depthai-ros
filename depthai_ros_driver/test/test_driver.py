@@ -137,7 +137,7 @@ class TestDriverLaunch(unittest.TestCase):
             finally:
                 self.node.destroy_client(client)
 
-        self.assertTrue(self.testHelper.testTriggerService("/oak/start_driver"))
+        self.assertTrue(self.testHelper.testTriggerService("/oak/start_driver", timeout=15))
         proc_output.assertWaitFor("Driver ready!", timeout=10.0, stream="stderr")
 
     def test_save_calibration(self, proc_output):

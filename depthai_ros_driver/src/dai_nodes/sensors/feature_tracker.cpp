@@ -4,6 +4,7 @@
 #include "depthai/pipeline/MessageQueue.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/node/FeatureTracker.hpp"
+#include "depthai_bridge/OutputRotation.hpp"
 #include "depthai_bridge/TrackedFeaturesConverter.hpp"
 #include "depthai_ros_driver/param_handlers/feature_tracker_param_handler.hpp"
 #include "depthai_ros_driver/utils.hpp"
@@ -38,7 +39,8 @@ void FeatureTracker::setInOut(std::shared_ptr<dai::Pipeline> /* pipeline */) {}
 
 void FeatureTracker::setupQueues(std::shared_ptr<dai::Device> /* device */) {
     featureQ = featureNode->outputFeatures.createOutputQueue(ph->getParam<int>("i_max_q_size"), false);
-    auto tfPrefix = getFrameName(parentName);
+    const int rotation = getROSNode()->get_parameter("driver.i_output_rotation_deg").as_int();
+    auto tfPrefix = rotation ? depthai_bridge::OutputRotation(rotation).frame(getOpticalFrameName(parentName)) : getFrameName(parentName);
     rclcpp::PublisherOptions options;
     options.qos_overriding_options = rclcpp::QosOverridingOptions();
     featureConverter = std::make_unique<depthai_bridge::TrackedFeaturesConverter>(tfPrefix, ph->getParam<bool>("i_get_base_device_timestamp"));

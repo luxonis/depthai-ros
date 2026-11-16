@@ -195,15 +195,14 @@ ImageMsgs::Image ImageConverter::toRosMsgRawPtr(std::shared_ptr<dai::ImgFrame> i
             outImageMsg.height = inData->getHeight();
             outImageMsg.width = inData->getWidth();
             outImageMsg.step = inData->getStride();
-            ;
             if(outImageMsg.encoding == "16UC1" || outImageMsg.encoding == "32FC1")
                 outImageMsg.is_bigendian = false;
             else
                 outImageMsg.is_bigendian = true;
 
-            size_t size = inData->getData().size();
-            outImageMsg.data.reserve(size);
-            outImageMsg.data.assign(inData->getData().begin(), inData->getData().end());
+            const size_t size = size_t(outImageMsg.step) * outImageMsg.height;
+            if(size > inData->getData().size()) throw std::runtime_error("Image buffer is smaller than stride * height");
+            outImageMsg.data.assign(inData->getData().begin(), inData->getData().begin() + size);
         }
     }
     return outImageMsg;
@@ -348,7 +347,11 @@ cv::Mat ImageConverter::rosMsgtoCvMat(ImageMsgs::Image& inMsg) {
 }
 
 sensor_msgs::msg::CameraInfo ImageConverter::generateCameraInfo(std::shared_ptr<dai::ImgFrame> imgFrame) const {
-    return transformationToCameraInfo(imgFrame->transformation, camInfo);
+    auto info = transformationToCameraInfo(imgFrame->transformation, camInfo);
+    // The frame can include alignment padding beyond the transformation's logical size.
+    info.width = imgFrame->getWidth();
+    info.height = imgFrame->getHeight();
+    return info;
 }
 
 sensor_msgs::msg::CameraInfo ImageConverter::generateCameraInfo(std::shared_ptr<dai::EncodedFrame> imgFrame) const {

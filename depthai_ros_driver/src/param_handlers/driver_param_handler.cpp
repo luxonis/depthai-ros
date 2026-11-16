@@ -38,6 +38,11 @@ std::string DriverParamHandler::getPipelineAutoCalibrationMode() {
     throw std::invalid_argument("Invalid driver.i_pipeline_auto_calibration_mode parameter type. Use OFF, ON_START, CONTINUOUS, empty, true, or false.");
 }
 void DriverParamHandler::declareParams() {
+    auto rotationDescriptor = getRangedIntDescriptor(0, 270);
+    rotationDescriptor.integer_range.front().step = 90;
+    rotationDescriptor.read_only = true;
+    rotationDescriptor.description = "Clockwise output image rotation in degrees; stereo and IMU inputs stay native.";
+    declareAndLogParam<int>("i_output_rotation_deg", 0, rotationDescriptor);
     declareAndLogParam<bool>("i_enable_ir", true);
     declareAndLogParam<std::string>("i_usb_speed", "SUPER");
     declareAndLogParam<std::string>("i_device_id", "");
