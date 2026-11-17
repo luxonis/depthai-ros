@@ -25,6 +25,9 @@ class PointCloudConverter : public BaseConverter {
     void setDepthUnit(dai::StereoDepthConfig::AlgorithmControl::DepthUnit depthUnit);
     double getScaleFactor() const;
     void toRosMsg(std::shared_ptr<dai::PointCloudData> inPcl, std::deque<sensor_msgs::msg::PointCloud2>& pclMsgs);
+    // Rotate optical coordinates and the organized pixel grid together. Sparse
+    // clouds retain their ordering; colors and timestamps are preserved.
+    void toRosMsgRotated(std::shared_ptr<dai::PointCloudData> inPcl, std::deque<sensor_msgs::msg::PointCloud2>& pclMsgs, int rotationDegrees);
 
    private:
     double scaleFactor;

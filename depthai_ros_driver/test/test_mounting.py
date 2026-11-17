@@ -20,6 +20,10 @@ from rcl_interfaces.srv import SetParameters
 
 DEVICE = os.getenv("DEPTHAI_ROTATION_TEST_DEVICE", "")
 ANGLE = int(os.getenv("DEPTHAI_ROTATION_TEST_ANGLE", "90"))
+DURATION = float(os.getenv("DEPTHAI_ROTATION_TEST_DURATION", "0"))
+MIN_IMAGE_FPS = float(os.getenv("DEPTHAI_ROTATION_MIN_IMAGE_FPS", "0"))
+if MIN_IMAGE_FPS > 0 and DURATION < 10:
+    raise ValueError("Throughput checks require DEPTHAI_ROTATION_TEST_DURATION >= 10 seconds")
 RGB_TRACKER = os.getenv("DEPTHAI_ROTATION_TEST_TRACKER", "left_rect") == "rgb"
 FEATURE_TOPIC = ("rgb" if RGB_TRACKER else "left_rect") + "_feature_tracker/tracked_features"
 
@@ -83,15 +87,22 @@ class TestMounting(unittest.TestCase):
                 TFMessage, "/tf_static",
                 lambda msg: transforms.update({t.child_frame_id: t for t in msg.transforms}),
                 QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL)))
-            deadline = time.monotonic() + 45
+            started = time.monotonic()
+            deadline = started + max(45, DURATION + 15)
             while time.monotonic() < deadline:
                 rclpy.spin_once(node, timeout_sec=0.1)
-                if len(messages) == len(topics) and min(counts.values()) >= 5:
+                if time.monotonic() - started >= DURATION and len(messages) == len(topics) and min(counts.values()) >= 5:
                     # Cameras can publish invalid depth during startup exposure settling.
                     clouds = [messages[t] for t in ("rgbd/points", "depth_points")]
                     if all(np.count_nonzero(np.ndarray((c.height, c.width), dtype="<f4",
                            buffer=c.data, offset=8, strides=(c.row_step, c.point_step)) > 0) > 100 for c in clouds):
                         break
+            if DURATION:
+                elapsed = time.monotonic() - started
+                rates = {topic: counts.get(topic, 0) / elapsed for topic in ("rgb/image_raw", "stereo/image_raw")}
+                print("SOAK_COUNTS", counts, "IMAGE_RATES", rates, flush=True)
+                for topic, rate in rates.items():
+                    self.assertGreaterEqual(rate, MIN_IMAGE_FPS, topic)
             self.assertEqual(set(messages), set(topics))
             self.assertTrue(all(count >= 5 for count in counts.values()), counts)
             size = (384, 640) if ANGLE % 180 else (640, 384)

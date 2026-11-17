@@ -1,8 +1,10 @@
 #include <gtest/gtest.h>
 
 #include <cstdlib>
+#include <iostream>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
+#include <string>
 #include <thread>
 
 #include "depthai/device/Device.hpp"
@@ -16,12 +18,21 @@
 #include "depthai_ros_driver_v3/dai_nodes/nn/rotated_input.hpp"
 #include "depthai_ros_driver_v3/dai_nodes/sensors/output_rotation.hpp"
 
-// Closing a USB pipeline reboots RVC2 asynchronously. Give the device time to
-// re-enumerate between test cases, just as the loops below do between pipelines.
+// Device close/reboot is asynchronous on USB. Retry only the transient stream
+// open error, never a running pipeline or a failed geometry assertion.
 class OutputRotationDevice : public ::testing::Test {
    protected:
-    void TearDown() override {
-        if(std::getenv("DEPTHAI_ROTATION_TEST_DEVICE")) std::this_thread::sleep_for(std::chrono::seconds(3));
+    std::shared_ptr<dai::Device> openDevice(const char* deviceId) {
+        const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(20);
+        while(true) {
+            try {
+                return std::make_shared<dai::Device>(dai::DeviceInfo(deviceId));
+            } catch(const std::runtime_error& error) {
+                if(std::string(error.what()).find("Couldn't open stream") == std::string::npos || std::chrono::steady_clock::now() >= deadline) throw;
+                std::cerr << "Waiting for device to reopen: " << error.what() << std::endl;
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+            }
+        }
     }
 };
 
@@ -30,7 +41,7 @@ TEST_F(OutputRotationDevice, PreservesDepthAndOutputGeometry) {
     if(!deviceId) GTEST_SKIP() << "Set DEPTHAI_ROTATION_TEST_DEVICE to run the hardware rotation test";
     for(auto type : {dai::ImgFrame::Type::GRAY8, dai::ImgFrame::Type::RAW16, dai::ImgFrame::Type::BGR888i}) {
         std::this_thread::sleep_for(std::chrono::seconds(3));
-        auto device = std::make_shared<dai::Device>(dai::DeviceInfo(deviceId));
+        auto device = openDevice(deviceId);
         auto pipeline = std::make_shared<dai::Pipeline>(device);
         // A pass-through manip gives the test a device output to rotate.
         auto source = pipeline->create<dai::node::ImageManip>();
@@ -101,6 +112,55 @@ TEST_F(OutputRotationDevice, PreservesDepthAndOutputGeometry) {
     }
 }
 
+// Host publication must preserve full pixel precision and adapt to actual frame
+// sizes, without modifying a frame still used by a native device consumer.
+TEST_F(OutputRotationDevice, PreservesPublishedPixelsOnHost) {
+    const auto* deviceId = std::getenv("DEPTHAI_ROTATION_TEST_DEVICE");
+    if(!deviceId) GTEST_SKIP() << "Set DEPTHAI_ROTATION_TEST_DEVICE";
+    auto device = openDevice(deviceId);
+    auto pipeline = std::make_shared<dai::Pipeline>(device);
+    auto source = pipeline->create<dai::node::ImageManip>();
+    source->setRunOnHost(false);
+    source->setMaxOutputFrameSize(640 * 400 * 4);
+    auto input = source->inputImage.createInputQueue();
+    auto native = source->out.createOutputQueue();
+    std::vector<std::shared_ptr<dai::MessageQueue>> outputs;
+    for(int degrees : {90, 180, 270}) {
+        depthai_ros_driver::dai_nodes::sensor_helpers::OutputRotation rotation(pipeline, source->out, degrees);
+        rotation.setRunOnHost(true);
+        rotation.configure(640, 400);
+        outputs.push_back(rotation.out().createOutputQueue());
+    }
+    pipeline->start();
+    int sequence = 0;
+    for(auto type : {dai::ImgFrame::Type::GRAY8, dai::ImgFrame::Type::RAW16, dai::ImgFrame::Type::BGR888i, dai::ImgFrame::Type::RGB888p}) {
+        for(auto size : {cv::Size(640, 400), cv::Size(320, 200), cv::Size(512, 384)}) {
+            cv::Mat pixels(size, type == dai::ImgFrame::Type::RAW16 ? CV_16UC1 : type == dai::ImgFrame::Type::GRAY8 ? CV_8UC1 : CV_8UC3);
+            cv::RNG rng(++sequence);
+            rng.fill(pixels, cv::RNG::UNIFORM, 0, type == dai::ImgFrame::Type::RAW16 ? 65536 : 256);
+            auto frame = std::make_shared<dai::ImgFrame>();
+            frame->setCvFrame(pixels, type);
+            frame->setSequenceNum(sequence);
+            frame->setTimestamp(std::chrono::steady_clock::now());
+            input->send(frame);
+            auto original = native->get<dai::ImgFrame>();
+            for(int i = 0; i < 3; ++i) {
+                auto result = outputs[i]->get<dai::ImgFrame>();
+                cv::Mat expected;
+                cv::rotate(original->getCvFrame(), expected, i == 0 ? cv::ROTATE_90_CLOCKWISE : i == 1 ? cv::ROTATE_180 : cv::ROTATE_90_COUNTERCLOCKWISE);
+                EXPECT_EQ(result->getSequenceNum(), sequence);
+                EXPECT_EQ(result->getTimestamp(), original->getTimestamp());
+                EXPECT_EQ(result->getType(), type);
+                ASSERT_EQ(result->getWidth(), expected.cols);
+                ASSERT_EQ(result->getHeight(), expected.rows);
+                EXPECT_EQ(cv::norm(expected, result->getCvFrame(), cv::NORM_INF), 0);
+            }
+        }
+    }
+    pipeline->stop();
+    pipeline->wait();
+}
+
 // Compare the actual NN input with its passthrough: rotating only publication
 // would leave the model consuming the native orientation and fail these checks.
 TEST_F(OutputRotationDevice, RotatesBeforeInference) {
@@ -109,7 +169,7 @@ TEST_F(OutputRotationDevice, RotatesBeforeInference) {
     if(!deviceId || !model) GTEST_SKIP() << "Set DEPTHAI_ROTATION_TEST_DEVICE and DEPTHAI_ROTATION_TEST_MODEL";
     for(int degrees : {90, 180, 270}) {
         std::this_thread::sleep_for(std::chrono::seconds(3));
-        auto device = std::make_shared<dai::Device>(dai::DeviceInfo(deviceId));
+        auto device = openDevice(deviceId);
         auto pipeline = std::make_shared<dai::Pipeline>(device);
         auto camera = pipeline->create<dai::node::Camera>()->build(dai::CameraBoardSocket::CAM_A);
         auto network = pipeline->create<dai::node::DetectionNetwork>();
@@ -143,7 +203,7 @@ TEST_F(OutputRotationDevice, RotatesBeforeInference) {
 TEST_F(OutputRotationDevice, NativeNodesProduceRotatedGeometry) {
     const auto* deviceId = std::getenv("DEPTHAI_ROTATION_TEST_DEVICE");
     if(!deviceId) GTEST_SKIP() << "Set DEPTHAI_ROTATION_TEST_DEVICE";
-    auto device = std::make_shared<dai::Device>(dai::DeviceInfo(deviceId));
+    auto device = openDevice(deviceId);
     auto pipeline = std::make_shared<dai::Pipeline>(device);
     auto depthSource = pipeline->create<dai::node::ImageManip>();
     auto colorSource = pipeline->create<dai::node::ImageManip>();
@@ -248,7 +308,7 @@ TEST_F(OutputRotationDevice, TracksRotatedImages) {
     if(!deviceId) GTEST_SKIP() << "Set DEPTHAI_ROTATION_TEST_DEVICE";
     for(int degrees : {90, 180, 270}) {
         SCOPED_TRACE(degrees);
-        auto device = std::make_shared<dai::Device>(dai::DeviceInfo(deviceId));
+        auto device = openDevice(deviceId);
         auto pipeline = std::make_shared<dai::Pipeline>(device);
         depthai_ros_driver::dai_nodes::sensor_helpers::OutputRotation rotation(pipeline, degrees);
         rotation.configure(640, 384);
