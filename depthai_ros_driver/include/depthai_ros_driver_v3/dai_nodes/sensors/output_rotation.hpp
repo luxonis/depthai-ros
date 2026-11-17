@@ -111,15 +111,6 @@ while True:
 )");
         }
     }
-    // Publication-only branches already transfer pixels to the host. Running their
-    // warps here avoids competing with RVC2 stereo/NN/feature processing resources.
-    // Device consumers must select the device path before configure().
-    void setRunOnHost(bool enabled) {
-        if(enabled && opticalIntrinsics) throw std::invalid_argument("Optical metadata correction requires device rotation");
-        host = enabled;
-        warp->setRunOnHost(enabled);
-        crop->setRunOnHost(enabled);
-    }
     void configure(int width, int height, int encoderHeightMultiple = 0) {
         if(width <= 0 || height <= 0) throw std::invalid_argument("Output rotation requires an explicit stream width and height");
         const int ow = rotation.swapsAxes() ? height : width;
@@ -195,14 +186,13 @@ while True:
 
    private:
     int correctionX() const {
-        return rvc2 && !host && (degrees == 90 || degrees == 180) ? 1 : 0;
+        return rvc2 && (degrees == 90 || degrees == 180) ? 1 : 0;
     }
     int correctionY() const {
-        return rvc2 && !host && (degrees == 180 || degrees == 270) ? 1 : 0;
+        return rvc2 && (degrees == 180 || degrees == 270) ? 1 : 0;
     }
     int degrees;
     bool rvc2;
-    bool host = false;
     std::shared_ptr<dai::node::ImageManip> warp, crop;
     std::shared_ptr<dai::node::Script> control, metadata;
     std::shared_ptr<dai::MessageQueue> calibration;

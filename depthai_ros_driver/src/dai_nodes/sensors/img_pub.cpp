@@ -38,7 +38,6 @@ ImagePublisher::ImagePublisher(std::shared_ptr<rclcpp::Node> node,
     const int degrees = node->get_parameter("driver.i_output_rotation_deg").as_int();
     if(degrees && !inputRotated) {
         rotation = std::make_shared<OutputRotation>(pipeline, *out, degrees);
-        rotation->setRunOnHost(pipeline->getDefaultDevice()->getPlatform() == dai::Platform::RVC2 && !encoderConfig.enabled);
         // A slow publication branch must not exhaust the native camera/depth pool.
         rotation->input().setBlocking(false);
         rotation->input().setMaxSize(1);
@@ -168,13 +167,9 @@ void ImagePublisher::closeQueue() {
     }
 }
 void ImagePublisher::linkImage(dai::Node::Input& in) {
-    // Feature trackers consume this stream on-device; do not send their inputs
-    // through a device-host-device round trip.
-    if(rotation) rotation->setRunOnHost(false);
     out->link(in);
 }
 void ImagePublisher::link(dai::Node::Input& in) {
-    if(rotation) rotation->setRunOnHost(false);
     (encoder ? encoder->out : *out).link(in);
 }
 std::shared_ptr<dai::MessageQueue> ImagePublisher::getQueue() {

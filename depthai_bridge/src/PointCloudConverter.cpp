@@ -1,6 +1,5 @@
 #include "depthai_bridge/PointCloudConverter.hpp"
 
-#include "depthai_bridge/OutputRotation.hpp"
 #include "sensor_msgs/msg/point_field.hpp"
 
 namespace depthai_bridge {
@@ -37,11 +36,6 @@ double PointCloudConverter::getScaleFactor() const {
     return scaleFactor;
 }
 void PointCloudConverter::toRosMsg(std::shared_ptr<dai::PointCloudData> inPcl, std::deque<sensor_msgs::msg::PointCloud2>& pclMsgs) {
-    toRosMsgRotated(std::move(inPcl), pclMsgs, 0);
-}
-void PointCloudConverter::toRosMsgRotated(std::shared_ptr<dai::PointCloudData> inPcl, std::deque<sensor_msgs::msg::PointCloud2>& pclMsgs, int rotationDegrees) {
-    const OutputRotation rotation(rotationDegrees);
-    const bool rotateGrid = rotation.enabled() && inPcl->isOrganized();
     sensor_msgs::msg::PointCloud2 msg;
     bool isColored = inPcl->isColor();
     unsigned int width = inPcl->getWidth();
@@ -50,8 +44,6 @@ void PointCloudConverter::toRosMsgRotated(std::shared_ptr<dai::PointCloudData> i
     msg.width = width;
     msg.height = height;
     msg.is_dense = inPcl->isOrganized();
-    msg.header.frame_id = rotation.frame(msg.header.frame_id);
-    if(rotateGrid && rotation.swapsAxes()) std::swap(msg.width, msg.height);
 
     msg.fields.clear();
     sensor_msgs::msg::PointField field_x;
@@ -89,19 +81,13 @@ void PointCloudConverter::toRosMsgRotated(std::shared_ptr<dai::PointCloudData> i
     msg.row_step = msg.point_step * msg.width;
     msg.data.resize(msg.row_step * msg.height);
 
-    const auto outputIndex = [&](size_t index) {
-        if(!rotateGrid) return index;
-        const auto pixel = rotation.pixel(index % width, index / width, size_t(width), size_t(height));
-        return pixel.second * msg.width + pixel.first;
-    };
     if(isColored) {
         auto points = inPcl->getPointsRGB();
         for(size_t i = 0; i < points.size(); ++i) {
-            float* ptr = reinterpret_cast<float*>(&msg.data[outputIndex(i) * pointStep]);
+            float* ptr = reinterpret_cast<float*>(&msg.data[i * pointStep]);
             const auto& pt = points[i];
-            const auto xy = rotation.vector(pt.x, pt.y);
-            ptr[0] = xy.first * scaleFactor;
-            ptr[1] = xy.second * scaleFactor;
+            ptr[0] = pt.x * scaleFactor;
+            ptr[1] = pt.y * scaleFactor;
             ptr[2] = pt.z * scaleFactor;
             uint32_t rgb = (pt.r << 16) | (pt.g << 8) | pt.b;
             float rgb_float;
@@ -111,11 +97,10 @@ void PointCloudConverter::toRosMsgRotated(std::shared_ptr<dai::PointCloudData> i
     } else {
         auto points = inPcl->getPoints();
         for(size_t i = 0; i < points.size(); ++i) {
-            float* ptr = reinterpret_cast<float*>(&msg.data[outputIndex(i) * pointStep]);
+            float* ptr = reinterpret_cast<float*>(&msg.data[i * pointStep]);
             const auto& pt = points[i];
-            const auto xy = rotation.vector(pt.x, pt.y);
-            ptr[0] = xy.first * scaleFactor;
-            ptr[1] = xy.second * scaleFactor;
+            ptr[0] = pt.x * scaleFactor;
+            ptr[1] = pt.y * scaleFactor;
             ptr[2] = pt.z * scaleFactor;
         }
     }

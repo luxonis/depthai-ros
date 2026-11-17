@@ -74,7 +74,6 @@ class RGBD : public BaseNode {
     std::unique_ptr<param_handlers::RGBDParamHandler> ph;
     std::shared_ptr<dai::MessageQueue> pclQ;
     int cbID;
-    int hostRotation = 0;
 };
 
 }  // namespace dai_nodes

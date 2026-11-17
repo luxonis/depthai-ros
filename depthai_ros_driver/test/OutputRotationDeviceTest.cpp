@@ -112,55 +112,6 @@ TEST_F(OutputRotationDevice, PreservesDepthAndOutputGeometry) {
     }
 }
 
-// Host publication must preserve full pixel precision and adapt to actual frame
-// sizes, without modifying a frame still used by a native device consumer.
-TEST_F(OutputRotationDevice, PreservesPublishedPixelsOnHost) {
-    const auto* deviceId = std::getenv("DEPTHAI_ROTATION_TEST_DEVICE");
-    if(!deviceId) GTEST_SKIP() << "Set DEPTHAI_ROTATION_TEST_DEVICE";
-    auto device = openDevice(deviceId);
-    auto pipeline = std::make_shared<dai::Pipeline>(device);
-    auto source = pipeline->create<dai::node::ImageManip>();
-    source->setRunOnHost(false);
-    source->setMaxOutputFrameSize(640 * 400 * 4);
-    auto input = source->inputImage.createInputQueue();
-    auto native = source->out.createOutputQueue();
-    std::vector<std::shared_ptr<dai::MessageQueue>> outputs;
-    for(int degrees : {90, 180, 270}) {
-        depthai_ros_driver::dai_nodes::sensor_helpers::OutputRotation rotation(pipeline, source->out, degrees);
-        rotation.setRunOnHost(true);
-        rotation.configure(640, 400);
-        outputs.push_back(rotation.out().createOutputQueue());
-    }
-    pipeline->start();
-    int sequence = 0;
-    for(auto type : {dai::ImgFrame::Type::GRAY8, dai::ImgFrame::Type::RAW16, dai::ImgFrame::Type::BGR888i, dai::ImgFrame::Type::RGB888p}) {
-        for(auto size : {cv::Size(640, 400), cv::Size(320, 200), cv::Size(512, 384)}) {
-            cv::Mat pixels(size, type == dai::ImgFrame::Type::RAW16 ? CV_16UC1 : type == dai::ImgFrame::Type::GRAY8 ? CV_8UC1 : CV_8UC3);
-            cv::RNG rng(++sequence);
-            rng.fill(pixels, cv::RNG::UNIFORM, 0, type == dai::ImgFrame::Type::RAW16 ? 65536 : 256);
-            auto frame = std::make_shared<dai::ImgFrame>();
-            frame->setCvFrame(pixels, type);
-            frame->setSequenceNum(sequence);
-            frame->setTimestamp(std::chrono::steady_clock::now());
-            input->send(frame);
-            auto original = native->get<dai::ImgFrame>();
-            for(int i = 0; i < 3; ++i) {
-                auto result = outputs[i]->get<dai::ImgFrame>();
-                cv::Mat expected;
-                cv::rotate(original->getCvFrame(), expected, i == 0 ? cv::ROTATE_90_CLOCKWISE : i == 1 ? cv::ROTATE_180 : cv::ROTATE_90_COUNTERCLOCKWISE);
-                EXPECT_EQ(result->getSequenceNum(), sequence);
-                EXPECT_EQ(result->getTimestamp(), original->getTimestamp());
-                EXPECT_EQ(result->getType(), type);
-                ASSERT_EQ(result->getWidth(), expected.cols);
-                ASSERT_EQ(result->getHeight(), expected.rows);
-                EXPECT_EQ(cv::norm(expected, result->getCvFrame(), cv::NORM_INF), 0);
-            }
-        }
-    }
-    pipeline->stop();
-    pipeline->wait();
-}
-
 // Compare the actual NN input with its passthrough: rotating only publication
 // would leave the model consuming the native orientation and fail these checks.
 TEST_F(OutputRotationDevice, RotatesBeforeInference) {

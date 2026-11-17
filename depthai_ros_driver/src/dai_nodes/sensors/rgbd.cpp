@@ -117,10 +117,7 @@ void RGBD::createNode(std::shared_ptr<dai::Pipeline> pipeline, std::shared_ptr<d
     ph = std::make_unique<param_handlers::RGBDParamHandler>(getROSNode(), getName(), device->getDeviceName(), rsCompatibilityMode());
     ph->declareParams(rgbdNode, camera.getSocketID());
     const int degrees = getROSNode()->get_parameter("driver.i_output_rotation_deg").as_int();
-    // RGBD is already computed on the host. Rotate its finished cloud on RVC2
-    // instead of adding two device image warps and a per-frame metadata round trip.
-    hostRotation = device->getPlatform() == dai::Platform::RVC2 ? degrees : 0;
-    if(degrees && !hostRotation) {
+    if(degrees) {
         const int width = ph->getOtherNodeParam<int>(camera.getName(), "i_width");
         const int height = ph->getOtherNodeParam<int>(camera.getName(), "i_height");
         colorRotation = std::make_shared<sensor_helpers::OutputRotation>(pipeline, degrees, true);
@@ -152,7 +149,7 @@ void RGBD::setInOut(std::shared_ptr<dai::Pipeline> /* pipeline */) {}
 void RGBD::setupQueues(std::shared_ptr<dai::Device> /* device */) {
     using ParamNames = param_handlers::ParamNames;
     pclQ = rgbdNode->pcl.createOutputQueue(ph->getParam<int>(ParamNames::MAX_Q_SIZE), false);
-    auto tfPrefix = depthai_bridge::OutputRotation(hostRotation ? 0 : getROSNode()->get_parameter("driver.i_output_rotation_deg").as_int())
+    auto tfPrefix = depthai_bridge::OutputRotation(getROSNode()->get_parameter("driver.i_output_rotation_deg").as_int())
                         .frame(getOpticalFrameName(getSocketName(ph->getSocketID())));
     rclcpp::PublisherOptions options;
     options.qos_overriding_options = rclcpp::QosOverridingOptions();
@@ -172,7 +169,7 @@ void RGBD::closeQueues() {
 void RGBD::pclCB(const std::string& /*name*/, const std::shared_ptr<dai::ADatatype>& data) {
     auto pclData = std::dynamic_pointer_cast<dai::PointCloudData>(data);
     std::deque<sensor_msgs::msg::PointCloud2> deq;
-    pclConv->toRosMsgRotated(pclData, deq, hostRotation);
+    pclConv->toRosMsg(pclData, deq);
     while(deq.size() > 0) {
         auto currMsg = deq.front();
         pclPub->publish(currMsg);
