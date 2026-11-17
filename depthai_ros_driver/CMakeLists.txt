@@ -151,6 +151,9 @@ if(BUILD_TESTING AND TEST_DEPTHAI_ROS_DRIVER)
   find_package(ament_cmake_gtest REQUIRED)
   ament_add_gtest(output_rotation_device_test test/OutputRotationDeviceTest.cpp TIMEOUT 180)
   target_link_libraries(output_rotation_device_test ${PROJECT_NAME})
+  # Standalone, opt-in RVC2 rectification/throughput experiment (not a CTest).
+  add_executable(stereo_half_turn_prototype test/stereo_half_turn_prototype.cpp)
+  target_link_libraries(stereo_half_turn_prototype ${PROJECT_NAME})
   # Integration tests
   find_package(ament_cmake_ros REQUIRED)
   find_package(launch_testing_ament_cmake REQUIRED)
