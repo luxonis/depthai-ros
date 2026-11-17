@@ -13,8 +13,8 @@ SegmentationOverlay::SegmentationOverlay(const rclcpp::NodeOptions& options) : r
     onInit();
 }
 void SegmentationOverlay::onInit() {
-    previewSub.subscribe(this, "rgb/preview/image_raw");
-    segSub.subscribe(this, "nn/image_raw");
+    previewSub.subscribe(this, "rgb/preview/image_raw", rclcpp::QoS(10));
+    segSub.subscribe(this, "nn/image_raw", rclcpp::QoS(10));
     sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), previewSub, segSub);
     sync->registerCallback(std::bind(&SegmentationOverlay::overlayCB, this, std::placeholders::_1, std::placeholders::_2));
     overlayPub = this->create_publisher<sensor_msgs::msg::Image>("overlay", 10);

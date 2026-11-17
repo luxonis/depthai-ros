@@ -1,5 +1,7 @@
 #include "depthai_filters/features_3d.hpp"
 
+#include <limits>
+
 #if __has_include("cv_bridge/cv_bridge.hpp")
     #include "cv_bridge/cv_bridge.hpp"
 #else
@@ -16,9 +18,9 @@ Features3D::Features3D(const rclcpp::NodeOptions& options) : rclcpp::Node("featu
     onInit();
 }
 void Features3D::onInit() {
-    depthSub.subscribe(this, "stereo/image_raw");
-    infoSub.subscribe(this, "stereo/camera_info");
-    featureSub.subscribe(this, "feature_tracker/tracked_features");
+    depthSub.subscribe(this, "stereo/image_raw", rclcpp::QoS(10));
+    infoSub.subscribe(this, "stereo/camera_info", rclcpp::QoS(10));
+    featureSub.subscribe(this, "feature_tracker/tracked_features", rclcpp::QoS(10));
     sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), depthSub, infoSub, featureSub);
     sync->registerCallback(std::bind(&Features3D::overlayCB, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     pclPub = this->create_publisher<sensor_msgs::msg::PointCloud2>("features", 10);
@@ -27,6 +29,7 @@ void Features3D::onInit() {
 }
 float Features3D::getDepthAt(int x, int y, const sensor_msgs::msg::Image::ConstSharedPtr& depth_image) {
     // Assuming depth image is of encoding type 16UC1 (16-bit depth, unsigned)
+    if(x < 0 || y < 0 || x >= int(depth_image->width) || y >= int(depth_image->height)) return std::numeric_limits<float>::quiet_NaN();
     int row_step = depth_image->step;        // bytes per row
     int pixel_index = y * row_step + x * 2;  // 2 bytes per pixel for 16-bit image
 
@@ -44,7 +47,7 @@ void Features3D::overlayCB(const sensor_msgs::msg::Image::ConstSharedPtr& depth,
                            const depthai_ros_msgs_v3::msg::TrackedFeatures::ConstSharedPtr& features) {
     sensor_msgs::msg::PointCloud2 cloud;
     cloud.header.frame_id = info->header.frame_id;  // Set this to your camera's frame
-    cloud.header.stamp = this->get_clock()->now();
+    cloud.header.stamp = depth->header.stamp;
     cloud.height = 1;
     cloud.width = features->features.size();  // assuming features is your vector of 2D points
     sensor_msgs::PointCloud2Modifier pcd_modifier(cloud);

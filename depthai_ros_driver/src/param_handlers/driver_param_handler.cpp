@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include <stdexcept>
+
 #include "depthai/common/UsbSpeed.hpp"
 #include "depthai_ros_driver_v3/utils.hpp"
 #include "rclcpp/logger.hpp"
@@ -38,6 +40,11 @@ std::string DriverParamHandler::getPipelineAutoCalibrationMode() {
     throw std::invalid_argument("Invalid driver.i_pipeline_auto_calibration_mode parameter type. Use OFF, ON_START, CONTINUOUS, empty, true, or false.");
 }
 void DriverParamHandler::declareParams() {
+    auto rotationDescriptor = getRangedIntDescriptor(0, 270);
+    rotationDescriptor.integer_range.front().step = 90;
+    rotationDescriptor.read_only = true;
+    rotationDescriptor.description = "Clockwise output image rotation in degrees; stereo and IMU inputs stay native.";
+    declareAndLogParam<int>("i_output_rotation_deg", 0, rotationDescriptor);
     declareAndLogParam<bool>("i_enable_ir", true);
     declareAndLogParam<std::string>("i_usb_speed", "SUPER");
     declareAndLogParam<std::string>("i_device_id", "");
@@ -69,6 +76,14 @@ void DriverParamHandler::declareParams() {
     declareAndLogParam<std::string>("i_tf_cam_pitch", "0.0");
     declareAndLogParam<std::string>("i_tf_cam_yaw", "0.0");
     declareAndLogParam<std::string>("i_tf_imu_from_descr", "false");
+    declareAndLogParam<std::string>("i_tf_imu_sensor", "");
+    declareAndLogParam<std::string>("i_tf_imu_frame", "auto");
+    // DEPRECATED legacy poses/model aliases are migration defaults for existing models.
+    declareAndLogParam<std::string>("i_tf_pose_source", "legacy");
+    declareAndLogParam<std::string>("i_tf_model_selection", "auto");
+    declareAndLogParam<std::string>("i_tf_fallback_model", "");
+    declareAndLogParam<std::string>("i_tf_mesh_model", "");
+    declareAndLogParam<std::string>("i_tf_legacy_frame_aliases", "true");
     declareAndLogParam<std::string>("i_tf_custom_urdf_location", "");
     declareAndLogParam<std::string>("i_tf_custom_xacro_args", "");
 }

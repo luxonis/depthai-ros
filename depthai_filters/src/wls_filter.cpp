@@ -1,5 +1,6 @@
 #include "depthai_filters/wls_filter.hpp"
 
+#include <cmath>
 #include <memory>
 
 #if __has_include("cv_bridge/cv_bridge.hpp")
@@ -15,9 +16,9 @@ WLSFilter::WLSFilter(const rclcpp::NodeOptions& options) : rclcpp::Node("wls_fil
     onInit();
 }
 void WLSFilter::onInit() {
-    disparityImgSub.subscribe(this, "stereo/image_raw");
-    leftImgSub.subscribe(this, "left/image_raw");
-    disparityInfoSub.subscribe(this, "stereo/camera_info");
+    disparityImgSub.subscribe(this, "stereo/image_raw", rclcpp::QoS(10));
+    leftImgSub.subscribe(this, "left/image_raw", rclcpp::QoS(10));
+    disparityInfoSub.subscribe(this, "stereo/camera_info", rclcpp::QoS(10));
     sync = std::make_unique<message_filters::Synchronizer<syncPolicy>>(syncPolicy(10), disparityImgSub, disparityInfoSub, leftImgSub);
     sync->registerCallback(std::bind(&WLSFilter::wlsCB, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     filter = cv::ximgproc::createDisparityWLSFilterGeneric(false);
@@ -54,7 +55,8 @@ void WLSFilter::wlsCB(const sensor_msgs::msg::Image::ConstSharedPtr& disp,
     sensor_msgs::msg::CameraInfo depthInfo = *disp_info;
     filter->filter(dispFrame, leftFrame, dispFiltered);
     sensor_msgs::msg::Image depth;
-    auto factor = abs(depthInfo.p[3]) * 100.0;
+    // The native disparity scale is unchanged when the image/baseline rotates.
+    auto factor = std::hypot(depthInfo.p[3], depthInfo.p[7]) * 100.0;
     // set distortion to 0
     if(disp->encoding == sensor_msgs::image_encodings::MONO8) {
         auto dispMultiplier = 255.0 / maxDisparity;

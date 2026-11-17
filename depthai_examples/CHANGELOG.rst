@@ -2,6 +2,10 @@
 Changelog for package depthai_examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.4.0 (2026-08-18)
+------------------
+* Bringing to parity with develop-old
+
 3.3.0 (2026-06-10)
 ------------------
 * Require DepthAI 3.7.1 packages.

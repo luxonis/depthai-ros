@@ -43,8 +43,14 @@ void Camera::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
     auto height = ph->getParam<int>(ParamNames::HEIGHT);
     auto fps = ph->getParam<float>(ParamNames::FPS);
     dai::ImgFrame::Type type = dai::ImgFrame::Type::NV12;
+    if(camNode->getDevice()->getPlatform() == dai::Platform::RVC2 && getROSNode()->get_parameter("driver.i_output_rotation_deg").as_int()) {
+        camNode->setIspNumFramesPool(8);
+        camNode->setOutputsNumFramesPool(8);
+    }
     if(ph->getParam<bool>(ParamNames::PUBLISH_TOPIC)) {
         if(ph->getParam<bool>("i_publish_full_resolution")) {
+            if(getROSNode()->get_parameter("driver.i_output_rotation_deg").as_int() != 0)
+                throw std::invalid_argument("Output rotation requires explicit i_width/i_height; disable i_publish_full_resolution");
             defaultOut = camNode->requestFullResolutionOutput(type, fps, ph->getParam<bool>("i_use_max_resolution_possible"));
         } else {
             defaultOut = camNode->requestOutput(std::pair<int, int>(width, height),
