@@ -1,6 +1,12 @@
 #include "depthai_filters/features_3d.hpp"
 
-#include "cv_bridge/cv_bridge.hpp"
+#include <limits>
+
+#if __has_include("cv_bridge/cv_bridge.hpp")
+    #include "cv_bridge/cv_bridge.hpp"
+#else
+    #include "cv_bridge/cv_bridge.h"
+#endif
 #include "depthai_filters/utils.hpp"
 #include "geometry_msgs/msg/point32.hpp"
 #include "opencv2/opencv.hpp"
@@ -23,6 +29,7 @@ void Features3D::onInit() {
 }
 float Features3D::getDepthAt(int x, int y, const sensor_msgs::msg::Image::ConstSharedPtr& depth_image) {
     // Assuming depth image is of encoding type 16UC1 (16-bit depth, unsigned)
+    if(x < 0 || y < 0 || x >= int(depth_image->width) || y >= int(depth_image->height)) return std::numeric_limits<float>::quiet_NaN();
     int row_step = depth_image->step;        // bytes per row
     int pixel_index = y * row_step + x * 2;  // 2 bytes per pixel for 16-bit image
 
@@ -40,7 +47,7 @@ void Features3D::overlayCB(const sensor_msgs::msg::Image::ConstSharedPtr& depth,
                            const depthai_ros_msgs_v3::msg::TrackedFeatures::ConstSharedPtr& features) {
     sensor_msgs::msg::PointCloud2 cloud;
     cloud.header.frame_id = info->header.frame_id;  // Set this to your camera's frame
-    cloud.header.stamp = this->get_clock()->now();
+    cloud.header.stamp = depth->header.stamp;
     cloud.height = 1;
     cloud.width = features->features.size();  // assuming features is your vector of 2D points
     sensor_msgs::PointCloud2Modifier pcd_modifier(cloud);

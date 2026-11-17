@@ -85,6 +85,9 @@ TEST(ImuConverterTest, ToRosDaiMsg) {
     converter.toRosDaiMsg(inData, outImuMsgs);
 
     ASSERT_EQ(outImuMsgs.size(), 1);
+    EXPECT_EQ(outImuMsgs[0].header.frame_id, "test_frame");
+    EXPECT_EQ(outImuMsgs[0].imu.header, outImuMsgs[0].header);
+    EXPECT_EQ(outImuMsgs[0].field.header, outImuMsgs[0].header);
     EXPECT_DOUBLE_EQ(outImuMsgs[0].imu.linear_acceleration.x, 1.0);
     EXPECT_DOUBLE_EQ(outImuMsgs[0].imu.linear_acceleration.y, 2.0);
     EXPECT_DOUBLE_EQ(outImuMsgs[0].imu.linear_acceleration.z, 3.0);

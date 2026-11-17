@@ -43,7 +43,7 @@ void PointCloudConverter::toRosMsg(std::shared_ptr<dai::PointCloudData> inPcl, s
     msg.header = getRosHeader(inPcl);
     msg.width = width;
     msg.height = height;
-    msg.is_dense = !inPcl->isSparse();
+    msg.is_dense = inPcl->isOrganized();
 
     msg.fields.clear();
     sensor_msgs::msg::PointField field_x;

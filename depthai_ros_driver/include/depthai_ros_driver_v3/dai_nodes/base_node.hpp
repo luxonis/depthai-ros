@@ -25,6 +25,7 @@ namespace depthai_ros_driver {
 namespace dai_nodes {
 namespace sensor_helpers {
 class ImagePublisher;
+class OutputRotation;
 struct VideoEncoderConfig;
 }  // namespace sensor_helpers
 class BaseNode {
@@ -63,7 +64,8 @@ class BaseNode {
                                                                 const std::string& qName,
                                                                 dai::Node::Output* out,
                                                                 bool isSynced = false,
-                                                                const utils::VideoEncoderConfig& encoderConfig = {});
+                                                                const utils::VideoEncoderConfig& encoderConfig = {},
+                                                                std::shared_ptr<sensor_helpers::OutputRotation> inputRotation = nullptr);
     virtual void closeQueues() = 0;
 
     void setNodeName(const std::string& daiNodeName);
@@ -81,13 +83,13 @@ class BaseNode {
      */
     std::string getName();
     /**
-     * @brief    Append ROS node name to the frameName given.
+     * @brief    Append the configured TF prefix to frameName.
      *
      * @param[in]  frameName  The frame name
      */
     std::string getFrameName(const std::string& frameName = "");
     /**
-     * @brief    Append ROS node name to the frameName given and append optical frame suffix to it.
+     * @brief    Append the configured frame prefix and optical frame suffix to frameName.
      *
      * @param[in]  frameName  The frame name
      */
@@ -99,6 +101,8 @@ class BaseNode {
     rclcpp::Logger getLogger();
 
    private:
+    std::string getFramePrefix();
+
     std::shared_ptr<rclcpp::Node> baseNode;
 
     std::shared_ptr<dai::Pipeline> pipeline;

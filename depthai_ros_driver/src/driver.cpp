@@ -1,13 +1,18 @@
 #include "depthai_ros_driver_v3/driver.hpp"
 
+#include <cstdlib>
 #include <fstream>
+#include <stdexcept>
 
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
+#include "depthai_bridge/OutputRotation.hpp"
 #include "depthai_bridge/TFPublisher.hpp"
+#include "depthai_bridge/depthaiUtility.hpp"
 #include "depthai_ros_driver_v3/pipeline/pipeline_generator.hpp"
 #include "depthai_ros_driver_v3/utils.hpp"
 #include "diagnostic_msgs/msg/diagnostic_array.hpp"
+#include "rclcpp/version.h"
 
 namespace depthai_ros_driver {
 
@@ -22,6 +27,7 @@ Driver::Driver(const rclcpp::NodeOptions& options) : rclcpp::Node("driver", opti
             srvGroup = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
 
             paramCBHandle = this->add_on_set_parameters_callback(std::bind(&Driver::parameterCB, this, std::placeholders::_1));
+#if RCLCPP_VERSION_MAJOR >= 28
             startSrv = this->create_service<Trigger>(
                 "~/start_driver", std::bind(&Driver::startCB, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS(), srvGroup);
             stopSrv = this->create_service<Trigger>(
@@ -30,6 +36,24 @@ Driver::Driver(const rclcpp::NodeOptions& options) : rclcpp::Node("driver", opti
                 "~/save_pipeline", std::bind(&Driver::savePipelineCB, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS(), srvGroup);
             saveCalibSrv = this->create_service<Trigger>(
                 "~/save_calibration", std::bind(&Driver::saveCalibCB, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS(), srvGroup);
+#else
+            startSrv = this->create_service<Trigger>("~/start_driver",
+                                                     std::bind(&Driver::startCB, this, std::placeholders::_1, std::placeholders::_2),
+                                                     rclcpp::ServicesQoS().get_rmw_qos_profile(),
+                                                     srvGroup);
+            stopSrv = this->create_service<Trigger>("~/stop_driver",
+                                                    std::bind(&Driver::stopCB, this, std::placeholders::_1, std::placeholders::_2),
+                                                    rclcpp::ServicesQoS().get_rmw_qos_profile(),
+                                                    srvGroup);
+            savePipelineSrv = this->create_service<Trigger>("~/save_pipeline",
+                                                            std::bind(&Driver::savePipelineCB, this, std::placeholders::_1, std::placeholders::_2),
+                                                            rclcpp::ServicesQoS().get_rmw_qos_profile(),
+                                                            srvGroup);
+            saveCalibSrv = this->create_service<Trigger>("~/save_calibration",
+                                                         std::bind(&Driver::saveCalibCB, this, std::placeholders::_1, std::placeholders::_2),
+                                                         rclcpp::ServicesQoS().get_rmw_qos_profile(),
+                                                         srvGroup);
+#endif
 
             diagSub =
                 this->create_subscription<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10, std::bind(&Driver::diagCB, this, std::placeholders::_1));
@@ -52,6 +76,9 @@ void Driver::onConfigure() {
     }
 
     if(ph->getParam<bool>("i_publish_tf_from_calibration")) {
+        const auto imuSensor = ph->getParam<std::string>("i_tf_imu_sensor");
+        auto detectedImu = ph->getParam<std::string>("i_tf_imu_from_descr") == "true" && imuSensor.empty() ? device->getConnectedIMU() : "";
+        if(detectedImu == "NONE") detectedImu = "";
         tfPub = std::make_unique<depthai_bridge::TFPublisher>(shared_from_this(),
                                                               device->readCalibration(),
                                                               device->getConnectedCameraFeatures(),
@@ -68,12 +95,36 @@ void Driver::onConfigure() {
                                                               ph->getParam<std::string>("i_tf_imu_from_descr"),
                                                               ph->getParam<std::string>("i_tf_custom_urdf_location"),
                                                               ph->getParam<std::string>("i_tf_custom_xacro_args"),
-                                                              ph->getParam<bool>("i_rs_compat"));
+                                                              ph->getParam<bool>("i_rs_compat"),
+                                                              ph->getParam<std::string>("i_tf_prefix"),
+                                                              detectedImu,
+                                                              imuSensor,
+                                                              ph->getParam<std::string>("i_tf_imu_frame"),
+                                                              ph->getParam<std::string>("i_tf_pose_source"),
+                                                              ph->getParam<std::string>("i_tf_model_selection"),
+                                                              ph->getParam<std::string>("i_tf_fallback_model"),
+                                                              ph->getParam<std::string>("i_tf_mesh_model"),
+                                                              ph->getParam<std::string>("i_tf_legacy_frame_aliases"));
+    }
+    depthai_bridge::OutputRotation rotation(ph->getParam<int>("i_output_rotation_deg"));
+    if(rotation.enabled()) {
+        rotationTfPub = std::make_unique<tf2_ros::StaticTransformBroadcaster>(shared_from_this());
+        std::vector<geometry_msgs::msg::TransformStamped> transforms;
+        auto prefix = depthai_bridge::resolveFramePrefix(ph->getParam<std::string>("i_tf_prefix"), get_name());
+        for(const auto& camera : device->getConnectedCameraFeatures()) {
+            auto socket = depthai_bridge::getSocketName(camera.socket, device->getDeviceName(), ph->getParam<bool>("i_rs_compat"));
+            auto tf = rotation.transform(depthai_bridge::getOpticalFrameName(prefix, socket, ph->getParam<bool>("i_rs_compat")));
+            tf.header.stamp = now();
+            transforms.push_back(tf);
+        }
+        rotationTfPub->sendTransform(transforms);
     }
     pipeline->start();
+    const auto* rosDistro = std::getenv("ROS_DISTRO");
     RCLCPP_WARN(get_logger(),
-                "If you detect any issues with Kilted release, please report "
-                "issues to GH: https://github.com/luxonis/depthai-ros/issues/719");
+                "If you detect any issues with %s release, please report "
+                "issues to GH: https://github.com/luxonis/depthai-ros/issues/719",
+                rosDistro != nullptr ? rosDistro : "the current ROS");
 }
 
 void Driver::diagCB(const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg) {
@@ -104,7 +155,11 @@ void Driver::stop() {
     }
     if(camRunning) {
         pipeline->stop();
+        // stop() signals host nodes and closes queues; their callbacks may still
+        // be running. Join them before destroying the publishers they capture.
+        pipeline->wait();
         generator.reset();
+        rotationTfPub.reset();
         camRunning = false;
         if(rclcpp::ok()) {
             RCLCPP_INFO(get_logger(), "Driver stopped!");
@@ -113,6 +168,13 @@ void Driver::stop() {
         if(rclcpp::ok()) {
             RCLCPP_INFO(get_logger(), "Driver already stopped!");
         }
+    }
+    if(!rclcpp::ok(get_node_base_interface()->get_context())) {
+        // Host nodes have been joined, but dynamic calibration also owns
+        // asynchronous workers that live until its nodes are destroyed. Release
+        // them before process-wide OpenCV state is torn down. Keep the stopped
+        // pipeline available to services while the ROS context is still alive.
+        pipeline.reset();
     }
 }
 
@@ -128,6 +190,9 @@ void Driver::restart() {
 }
 
 void Driver::saveCalib() {
+    if(!device || device->isClosed()) {
+        throw std::runtime_error("Cannot save calibration: device is not connected");
+    }
     auto calibHandler = device->readCalibration();
     std::stringstream savePath;
     savePath << "/tmp/" << device->getDeviceId().c_str() << "_calibration.json";
@@ -142,22 +207,44 @@ void Driver::loadCalib(const std::string& path) {
 }
 
 void Driver::saveCalibCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res) {
-    saveCalib();
-    res->success = true;
+    try {
+        saveCalib();
+        res->success = true;
+    } catch(const std::exception& error) {
+        res->success = false;
+        res->message = error.what();
+        RCLCPP_ERROR(get_logger(), "Saving calibration failed: %s", error.what());
+    }
 }
 
 void Driver::savePipeline() {
+    if(!device || !pipeline) {
+        throw std::runtime_error("Cannot save pipeline: no pipeline has been configured");
+    }
+    if(device->isClosed()) {
+        throw std::runtime_error("Cannot save pipeline: device is not connected; start the driver before saving");
+    }
     std::stringstream savePath;
-    savePath << "/tmp/" << device->getDeviceId().c_str() << "_pipeline.json";
+    // Use the cached identity; serialization itself still needs a live device.
+    savePath << "/tmp/" << device->getDeviceInfo().getDeviceId() << "_pipeline.json";
+    const auto schema = pipeline->serializeToJson()["pipeline"];
     RCLCPP_INFO(get_logger(), "Saving pipeline schema to: %s", savePath.str().c_str());
-    std::ofstream file(savePath.str());
-    file << pipeline->serializeToJson()["pipeline"];
+    std::ofstream file;
+    file.exceptions(std::ios::failbit | std::ios::badbit);
+    file.open(savePath.str());
+    file << schema;
     file.close();
 }
 
 void Driver::savePipelineCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res) {
-    savePipeline();
-    res->success = true;
+    try {
+        savePipeline();
+        res->success = true;
+    } catch(const std::exception& error) {
+        res->success = false;
+        res->message = error.what();
+        RCLCPP_ERROR(get_logger(), "Saving pipeline failed: %s", error.what());
+    }
 }
 
 void Driver::startCB(const Trigger::Request::SharedPtr /*req*/, Trigger::Response::SharedPtr res) {

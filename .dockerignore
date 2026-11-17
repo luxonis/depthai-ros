@@ -1,0 +1,10 @@
+build
+install
+log
+devel
+.cache
+.git
+.vscode
+__pycache__
+.DS_Store
+*.blob

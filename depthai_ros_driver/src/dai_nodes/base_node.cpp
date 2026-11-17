@@ -49,11 +49,16 @@ bool BaseNode::rsCompatibilityMode() {
 }
 
 std::string BaseNode::getFrameName(const std::string& frameName) {
-    return depthai_bridge::getFrameName(getROSNode()->get_name(), frameName);
+    return depthai_bridge::getFrameName(getFramePrefix(), frameName);
 }
 
 std::string BaseNode::getOpticalFrameName(const std::string& frameName) {
-    return depthai_bridge::getOpticalFrameName(getROSNode()->get_name(), frameName, rsCompat);
+    return depthai_bridge::getOpticalFrameName(getFramePrefix(), frameName, rsCompat);
+}
+
+std::string BaseNode::getFramePrefix() {
+    auto tfPrefix = getROSNode()->get_parameter("driver.i_tf_prefix").as_string();
+    return depthai_bridge::resolveFramePrefix(tfPrefix, getROSNode()->get_name());
 }
 dai::Node::Input& BaseNode::getInput(int /*linkType = 0*/) {
     throw(std::runtime_error("getInput() not implemented"));
@@ -67,9 +72,13 @@ void BaseNode::closeQueues() {
     throw(std::runtime_error("closeQueues() not implemented"));
 };
 
-std::shared_ptr<sensor_helpers::ImagePublisher> BaseNode::setupOutput(
-    std::shared_ptr<dai::Pipeline> pipeline, const std::string& qName, dai::Node::Output* out, bool isSynced, const utils::VideoEncoderConfig& encoderConfig) {
-    return std::make_shared<sensor_helpers::ImagePublisher>(getROSNode(), pipeline, qName, out, isSynced, ipcEnabled(), encoderConfig);
+std::shared_ptr<sensor_helpers::ImagePublisher> BaseNode::setupOutput(std::shared_ptr<dai::Pipeline> pipeline,
+                                                                      const std::string& qName,
+                                                                      dai::Node::Output* out,
+                                                                      bool isSynced,
+                                                                      const utils::VideoEncoderConfig& encoderConfig,
+                                                                      std::shared_ptr<sensor_helpers::OutputRotation> inputRotation) {
+    return std::make_shared<sensor_helpers::ImagePublisher>(getROSNode(), pipeline, qName, out, isSynced, ipcEnabled(), encoderConfig, inputRotation);
 };
 
 void BaseNode::setNames() {

@@ -4,9 +4,15 @@
 #include <depthai/common/CameraBoardSocket.hpp>
 #include <depthai/modelzoo/Zoo.hpp>
 #include <depthai/nn_archive/NNArchive.hpp>
+#include <filesystem>
+#include <stdexcept>
 
 #include "camera_info_manager/camera_info_manager.hpp"
-#include "cv_bridge/cv_bridge.hpp"
+#if __has_include("cv_bridge/cv_bridge.hpp")
+    #include "cv_bridge/cv_bridge.hpp"
+#else
+    #include "cv_bridge/cv_bridge.h"
+#endif
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/MessageQueue.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
@@ -37,12 +43,23 @@ Segmentation::Segmentation(const std::string& daiNodeName,
                            const dai::CameraBoardSocket& socket)
     : BaseNode(daiNodeName, node, pipeline, deviceName, rsCompat) {
     RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
+    if(node->get_parameter("driver.i_output_rotation_deg").as_int() != 0)
+        throw std::invalid_argument("Output rotation is not supported by the host segmentation decoder");
     setNames();
     ph = std::make_unique<param_handlers::NNParamHandler>(node, daiNodeName, deviceName, rsCompat, socket);
     ph->declareParams(segNode);
-    description = std::make_shared<dai::NNModelDescription>();
-    description->model = ph->getParam<std::string>("i_nn_model");
-    segNode = pipeline->create<dai::node::NeuralNetwork>()->build(camNode.getUnderlyingNode(), *description);
+    auto nnArchivePath = ph->getParam<std::string>("i_nn_archive");
+    if(!nnArchivePath.empty()) {
+        if(!std::filesystem::exists(nnArchivePath)) {
+            throw std::runtime_error("i_nn_archive path does not exist: " + nnArchivePath);
+        }
+        dai::NNArchive archive(nnArchivePath);
+        segNode = pipeline->create<dai::node::NeuralNetwork>()->build(camNode.getUnderlyingNode(), archive);
+    } else {
+        dai::NNModelDescription description;
+        description.model = ph->getParam<std::string>("i_nn_model");
+        segNode = pipeline->create<dai::node::NeuralNetwork>()->build(camNode.getUnderlyingNode(), description);
+    }
     imageManip = pipeline->create<dai::node::ImageManip>();
     RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
     imageManip->out.link(segNode->input);
@@ -90,8 +107,12 @@ void Segmentation::segmentationCB(const std::string& /* name */, const std::shar
     auto layers = seg->getAllLayerNames();
     auto outputName = layers[0];
     auto nnFrame = seg->getTensor<int32_t>(outputName, true);
+    if(!seg->transformation) {
+        RCLCPP_WARN(getROSNode()->get_logger(), "Segmentation output has no image transformation; skipping publication.");
+        return;
+    }
     auto [width, height] = seg->transformation->getSize();
-    nnFrame.reshape({width, height});
+    nnFrame.reshape({height, width});
     cv::Mat nn_mat = cv::Mat(nnFrame.shape()[0], nnFrame.shape()[1], CV_32SC1, nnFrame.data());
     auto classNum = seg->getTensor<int32_t>(layers[1], true).shape()[1];
     cv::Mat cv_frame = decodeDeeplab(nn_mat, classNum);
@@ -102,6 +123,7 @@ void Segmentation::segmentationCB(const std::string& /* name */, const std::shar
     header.stamp = getROSNode()->get_clock()->now();
     auto tfPrefix = getOpticalFrameName(getSocketName(static_cast<dai::CameraBoardSocket>(ph->getParam<int>("i_board_socket_id"))));
     header.frame_id = tfPrefix;
+    auto nnInfo = depthai_bridge::ImageConverter::transformationToCameraInfo(*seg->transformation);
     nnInfo.header = header;
     imgBridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, cv_frame);
     imgBridge.toImageMsg(img_msg);

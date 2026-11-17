@@ -14,7 +14,6 @@ TEST(PointCloudConverterTest, ToRosMsgColoredPointsTest) {
     pclData.setWidth(2);
     pclData.setHeight(1);
     pclData.setColor(true);
-    pclData.setSparse(false);
 
     std::vector<dai::Point3fRGBA> pointsRGB = {{1.0f, 2.0f, 3.0f, 255, 0, 0}, {4.0f, 5.0f, 6.0f, 0, 255, 0}};
     pclData.setPointsRGB(pointsRGB);
@@ -56,7 +55,6 @@ TEST(PointCloudConverterTest, ToRosMsgNonColoredPointsTest) {
     pclData.setWidth(2);
     pclData.setHeight(1);
     pclData.setColor(false);
-    pclData.setSparse(false);
 
     std::vector<dai::Point3f> points = {{1.0f, 2.0f, 3.0f}, {4.0f, 5.0f, 6.0f}};
     pclData.setPoints(points);
@@ -118,7 +116,6 @@ TEST(PointCloudConverterTest, ToRosMsgColoredPointsWithDepthUnitsTest) {
     pclData.setWidth(2);
     pclData.setHeight(1);
     pclData.setColor(true);
-    pclData.setSparse(false);
 
     std::vector<dai::Point3fRGBA> pointsRGB = {{1.0f, 2.0f, 3.0f, 255, 0, 0}, {4.0f, 5.0f, 6.0f, 0, 255, 0}};
     pclData.setPointsRGB(pointsRGB);
@@ -215,7 +212,6 @@ TEST(PointCloudConverterTest, ToRosMsgNonColoredPointsWithDepthUnitsTest) {
     pclData.setWidth(2);
     pclData.setHeight(1);
     pclData.setColor(false);
-    pclData.setSparse(false);
 
     std::vector<dai::Point3f> points = {{1.0f, 2.0f, 3.0f}, {4.0f, 5.0f, 6.0f}};
     pclData.setPoints(points);

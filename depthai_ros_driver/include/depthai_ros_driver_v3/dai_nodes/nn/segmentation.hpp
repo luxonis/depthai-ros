@@ -4,7 +4,11 @@
 #include <string>
 #include <vector>
 
-#include "cv_bridge/cv_bridge.hpp"
+#if __has_include("cv_bridge/cv_bridge.hpp")
+    #include "cv_bridge/cv_bridge.hpp"
+#else
+    #include "cv_bridge/cv_bridge.h"
+#endif
 #include "depthai/common/CameraBoardSocket.hpp"
 #include "depthai_ros_driver_v3/dai_nodes/base_node.hpp"
 #include "image_transport/camera_publisher.hpp"
@@ -15,7 +19,6 @@ namespace dai {
 class Pipeline;
 class Device;
 class ADatatype;
-class NNModelDescription;
 namespace node {
 class NeuralNetwork;
 class ImageManip;
@@ -63,12 +66,10 @@ class Segmentation : public BaseNode {
     std::shared_ptr<depthai_bridge::ImageConverter> imageConverter;
     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
     image_transport::CameraPublisher nnPub, ptPub;
-    sensor_msgs::msg::CameraInfo nnInfo;
     std::shared_ptr<dai::node::NeuralNetwork> segNode;
     std::shared_ptr<dai::node::ImageManip> imageManip;
     std::unique_ptr<param_handlers::NNParamHandler> ph;
     std::shared_ptr<dai::MessageQueue> nnQ, ptQ;
-    std::shared_ptr<dai::NNModelDescription> description;
     std::string nnQName, ptQName;
 };
 

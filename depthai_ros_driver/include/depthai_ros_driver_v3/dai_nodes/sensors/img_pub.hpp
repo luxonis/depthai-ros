@@ -1,5 +1,7 @@
 #pragma once
 
+#include <mutex>
+#include <optional>
 #include <string>
 
 #include "depthai/pipeline/Node.hpp"
@@ -36,6 +38,8 @@ namespace depthai_ros_driver {
 namespace dai_nodes {
 
 namespace sensor_helpers {
+class OutputRotation;
+
 /**
  * @brief Image struct
  *
@@ -66,7 +70,8 @@ class ImagePublisher {
                    dai::Node::Output* out,
                    bool synced = false,
                    bool ipcEnabled = false,
-                   const utils::VideoEncoderConfig& encoderConfig = {});
+                   const utils::VideoEncoderConfig& encoderConfig = {},
+                   std::shared_ptr<OutputRotation> inputRotation = nullptr);
 
     ~ImagePublisher();
     /**
@@ -82,6 +87,7 @@ class ImagePublisher {
     bool isSynced();
     std::shared_ptr<dai::MessageQueue> getQueue();
     void link(dai::Node::Input& in);
+    void linkImage(dai::Node::Input& in);
     std::string getQueueName();
     void publish(const std::shared_ptr<dai::ADatatype>& data);
     void publish(std::shared_ptr<Image> img);
@@ -91,6 +97,10 @@ class ImagePublisher {
 
    private:
     std::shared_ptr<rclcpp::Node> node;
+    std::shared_ptr<OutputRotation> rotation;
+    std::mutex rotatedInfoMutex;
+    std::optional<std::pair<sensor_msgs::msg::CameraInfo, sensor_msgs::msg::CameraInfo>> rotatedInfo;
+    bool inputRotated;
     utils::VideoEncoderConfig encConfig;
     utils::ImgPublisherConfig pubConfig;
     utils::ImgConverterConfig convConfig;

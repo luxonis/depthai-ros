@@ -137,6 +137,10 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
     if(declareAndLogParam<bool>("i_set_disparity_to_depth_use_spec_translation", false)) {
         stereo->setDisparityToDepthUseSpecTranslation(true);
     }
+    float focalLength = declareAndLogParam<float>("i_focal_length", 0.0f);
+    if(focalLength > 0.0f) {
+        stereo->setFocalLength(focalLength);
+    }
     //
     stereo->initialConfig->setBilateralFilterSigma(declareAndLogParam<int>("i_bilateral_sigma", 0));
     stereo->initialConfig->setLeftRightCheckThreshold(declareAndLogParam<int>("i_lrc_threshold", 10));
@@ -193,8 +197,9 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
         config->postProcessing.decimationFilter.decimationMode =
             utils::getValFromMap(declareAndLogParam<std::string>("i_decimation_filter_decimation_mode", "PIXEL_SKIPPING"), decimationModeMap);
         config->postProcessing.decimationFilter.decimationFactor = declareAndLogParam<int>("i_decimation_filter_decimation_factor", 1);
-        int decimatedWidth = width / config->postProcessing.decimationFilter.decimationFactor;
+        int decimatedWidth = ((width / config->postProcessing.decimationFilter.decimationFactor + 15) / 16) * 16;
         int decimatedHeight = height / config->postProcessing.decimationFilter.decimationFactor;
+        if(stereo->getDevice()->getPlatform() != dai::Platform::RVC4) decimatedHeight = ((decimatedHeight + 1) / 2) * 2;
         RCLCPP_INFO(getROSNode()->get_logger(),
                     "Decimation filter enabled with decimation factor %d. Previous width and height: %d x %d, after decimation: %d x %d",
                     config->postProcessing.decimationFilter.decimationFactor,
@@ -202,7 +207,7 @@ void StereoParamHandler::declareParams(std::shared_ptr<dai::node::StereoDepth> s
                     height,
                     decimatedWidth,
                     decimatedHeight);
-        stereo->setOutputSize(decimatedWidth, decimatedHeight);
+        if(stereo->getDevice()->getPlatform() != dai::Platform::RVC4) stereo->setOutputSize(decimatedWidth, decimatedHeight);
     }
     declareAndLogParam(ParamNames::WIDTH, width, true);
     declareAndLogParam(ParamNames::HEIGHT, height, true);

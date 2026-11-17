@@ -36,13 +36,12 @@ void Imu::setInOut(std::shared_ptr<dai::Pipeline> /* pipeline */) {}
 
 void Imu::setupQueues(std::shared_ptr<dai::Device> /* device */) {
     imuQ = imuNode->out.createOutputQueue(ph->getParam<int>("i_max_q_size"), false);
-    auto tfPrefix = std::string(getROSNode()->get_name()) + "_" + getName();
     auto imuMode = ph->getSyncMethod();
     rclcpp::PublisherOptions options;
     options.qos_overriding_options = rclcpp::QosOverridingOptions();
     param_handlers::imu::ImuMsgType msgType = ph->getMsgType();
     bool enableMagn = msgType == param_handlers::imu::ImuMsgType::IMU_WITH_MAG || msgType == param_handlers::imu::ImuMsgType::IMU_WITH_MAG_SPLIT;
-    imuConverter = std::make_unique<depthai_bridge::ImuConverter>(tfPrefix + "_frame",
+    imuConverter = std::make_unique<depthai_bridge::ImuConverter>(getFrameName(getName() + "_frame"),
                                                                   imuMode,
                                                                   ph->getParam<float>("i_acc_cov"),
                                                                   ph->getParam<float>("i_gyro_cov"),

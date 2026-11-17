@@ -4,3 +4,8 @@ __pycache__
 build
 .DS_Store
 *.blob
+log
+install
+.cache
+.github
+colcon_defaults.yaml

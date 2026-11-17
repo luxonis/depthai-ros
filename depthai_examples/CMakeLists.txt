@@ -39,7 +39,8 @@ set(dependencies
     ${std_msgs_TARGETS}
     ${vision_msgs_TARGETS})
 
-include_directories(include ${ament_INCLUDE_DIRS})
+# Prefer v3 bridge headers when the v2 package also exports the underlay include root.
+include_directories(include ${depthai_bridge_v3_INCLUDE_DIRS} ${ament_INCLUDE_DIRS})
 
 macro(add_example node_name node_src)
     add_executable("${node_name}" "${node_src}")

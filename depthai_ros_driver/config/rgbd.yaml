@@ -6,6 +6,8 @@
       i_pipeline_type: rgbd
     stereo:
       i_depth_preset: DEFAULT
+      # Optional disparity-to-depth override in pixels. Leave at default to use calibration.
+      # i_focal_length: 860.0
     # uncomment for better performance in RVC2 PoE devices
     #   i_publish_topic: false
     # rgb:
