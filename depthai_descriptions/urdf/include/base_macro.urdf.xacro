@@ -2,7 +2,7 @@
 <robot name="base"
 	xmlns:xacro="http://ros.org/wiki/xacro">
 
-	<xacro:include filename="$(find depthai_descriptions)/urdf/include/model_config.urdf.xacro" />
+	<xacro:include filename="$(find depthai_descriptions_v3)/urdf/include/model_config.urdf.xacro" />
 
 	<xacro:macro name="base"
 		params="camera_name camera_model parent base_frame 

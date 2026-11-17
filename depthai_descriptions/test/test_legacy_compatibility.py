@@ -18,7 +18,10 @@ class LegacyCompatibilityTest(unittest.TestCase):
         share = DESCRIPTION / 'test/fixtures/develop' if fixture else DESCRIPTION
         path = share / 'urdf' / ('base_descr.urdf.xacro' if base else 'depthai_descr.urdf.xacro')
         with patch('ament_index_python.packages.get_package_share_directory', return_value=str(share)):
-            return ET.fromstring(xacro.process_file(str(path), mappings=dict(camera_model=model, **args)).toxml())
+            xml = xacro.process_file(str(path), mappings=dict(camera_model=model, **args)).toxml()
+            if fixture:
+                xml = xml.replace('package://depthai_descriptions/', 'package://depthai_descriptions_v3/')
+            return ET.fromstring(xml)
 
     def test_all_develop_models_default_geometry_names_and_visuals(self):
         legacy = yaml.safe_load((DESCRIPTION / 'urdf/include/legacy_models.yaml').read_text())

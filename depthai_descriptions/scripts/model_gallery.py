@@ -21,7 +21,7 @@ def build_gallery(models='', pose_source='board', imu_frame='auto', columns=8, s
         raise ValueError('columns must be positive and spacing must be finite and positive')
     if pose_source not in ('board', 'legacy') or imu_frame not in ('auto', 'native', 'optical'):
         raise ValueError('Invalid pose_source or imu_frame')
-    share = Path(share or get_package_share_directory('depthai_descriptions'))
+    share = Path(share or get_package_share_directory('depthai_descriptions_v3'))
     boards = yaml.safe_load((share / 'urdf/include/board_models.yaml').read_text())
     legacy = yaml.safe_load((share / 'urdf/include/legacy_models.yaml').read_text())['models']
     selected = list(dict.fromkeys(models.replace(',', ' ').split())) if models.strip() else sorted(set(boards['models']) | set(legacy))

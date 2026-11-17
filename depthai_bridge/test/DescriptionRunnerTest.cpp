@@ -26,7 +26,7 @@ TEST(DescriptionRunner, RejectsEmptyOutput) {
 }
 
 TEST(DescriptionRunner, ResolvesInstalledDescriptionAndDetectedChip) {
-    const auto script = ament_index_cpp::get_package_share_directory("depthai_descriptions") + "/scripts/resolve_description.py";
+    const auto script = ament_index_cpp::get_package_share_directory("depthai_descriptions_v3") + "/scripts/resolve_description.py";
     const auto output = depthai_bridge::detail::runDescriptionCommand(
         {"python3", script, "--output=json", "--detected-imu=BMI270", "camera_model:=OAK-D-SR", "pose_source:=board", "use_base_descr:=true", "has_imu:=true"});
     const auto result = nlohmann::json::parse(output);
@@ -37,7 +37,7 @@ TEST(DescriptionRunner, ResolvesInstalledDescriptionAndDetectedChip) {
 }
 
 TEST(DescriptionRunner, CustomArgumentsReplaceDriverMappings) {
-    const auto share = ament_index_cpp::get_package_share_directory("depthai_descriptions");
+    const auto share = ament_index_cpp::get_package_share_directory("depthai_descriptions_v3");
     const auto arguments = depthai_bridge::detail::descriptionCommand(
         share, "", "camera_name:=custom", "UNSUPPORTED_IMU", {"camera_model:=UNKNOWN", "base_frame:=driver_override", "has_imu:=true", "pose_source:=board"});
     const auto result = nlohmann::json::parse(depthai_bridge::detail::runDescriptionCommand(arguments));

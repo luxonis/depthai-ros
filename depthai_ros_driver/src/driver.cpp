@@ -8,7 +8,7 @@
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai_bridge/OutputRotation.hpp"
 #include "depthai_bridge/TFPublisher.hpp"
-#include "depthai_bridge_v3/depthaiUtility.hpp"
+#include "depthai_bridge/depthaiUtility.hpp"
 #include "depthai_ros_driver_v3/pipeline/pipeline_generator.hpp"
 #include "depthai_ros_driver_v3/utils.hpp"
 #include "diagnostic_msgs/msg/diagnostic_array.hpp"
@@ -155,6 +155,9 @@ void Driver::stop() {
     }
     if(camRunning) {
         pipeline->stop();
+        // stop() signals host nodes and closes queues; their callbacks may still
+        // be running. Join them before destroying the publishers they capture.
+        pipeline->wait();
         generator.reset();
         rotationTfPub.reset();
         camRunning = false;
@@ -167,7 +170,7 @@ void Driver::stop() {
         }
     }
     if(!rclcpp::ok(get_node_base_interface()->get_context())) {
-        // Pipeline::stop joins node threads, but dynamic calibration also owns
+        // Host nodes have been joined, but dynamic calibration also owns
         // asynchronous workers that live until its nodes are destroyed. Release
         // them before process-wide OpenCV state is torn down. Keep the stopped
         // pipeline available to services while the ROS context is still alive.

@@ -2,8 +2,6 @@
 
 #include <stdexcept>
 
-#include <stdexcept>
-
 #include "depthai/common/UsbSpeed.hpp"
 #include "depthai_ros_driver_v3/utils.hpp"
 #include "rclcpp/logger.hpp"

@@ -57,12 +57,12 @@ def from_rpy(r, p, y):
 
 def description_share():
     candidates = (Path(__file__).resolve().parents[1],
-                  Path(__file__).absolute().parents[2] / 'share/depthai_descriptions')
+                  Path(__file__).absolute().parents[2] / 'share/depthai_descriptions_v3')
     for path in candidates:
         if (path / 'urdf/include/board_models.yaml').is_file():
             return path
     from ament_index_python.packages import get_package_share_directory
-    return Path(get_package_share_directory('depthai_descriptions'))
+    return Path(get_package_share_directory('depthai_descriptions_v3'))
 
 
 def urdf_rotation(xml, body_link, imu_link):
@@ -303,7 +303,7 @@ class RosImuSource:
         import rclpy
         from rclpy.qos import qos_profile_sensor_data
         from sensor_msgs.msg import Imu
-        from depthai_ros_msgs.msg import ImuWithMagneticField
+        from depthai_ros_msgs_v3.msg import ImuWithMagneticField
         rclpy.init()
         self.node = rclpy.create_node('imu_coordinate_check')
         deadline = time.monotonic() + timeout
@@ -311,7 +311,7 @@ class RosImuSource:
             topics = dict(self.node.get_topic_names_and_types())
             if self.topic in topics:
                 types = topics[self.topic]
-                if len(types) != 1 or types[0] not in ('sensor_msgs/msg/Imu', 'depthai_ros_msgs/msg/ImuWithMagneticField'):
+                if len(types) != 1 or types[0] not in ('sensor_msgs/msg/Imu', 'depthai_ros_msgs_v3/msg/ImuWithMagneticField'):
                     raise ValueError(f'Unsupported/ambiguous topic type: {types}')
                 topic_type = Imu if types[0] == 'sensor_msgs/msg/Imu' else ImuWithMagneticField
                 break

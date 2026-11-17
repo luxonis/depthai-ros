@@ -22,7 +22,8 @@ find_package(ament_cmake_auto REQUIRED)
 find_package(backward_ros REQUIRED)
 ament_auto_find_build_dependencies()
 
-include_directories(include)
+# Both bridge versions use depthai_bridge/ headers; keep the v3 overlay first.
+include_directories(include ${depthai_bridge_v3_INCLUDE_DIRS})
 
 set(COMMON_LIB_NAME ${PROJECT_NAME}_common)
 add_library(

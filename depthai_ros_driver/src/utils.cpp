@@ -2,8 +2,6 @@
 
 #include <stdexcept>
 
-#include <stdexcept>
-
 #include "depthai/pipeline/Pipeline.hpp"
 namespace depthai_ros_driver {
 namespace utils {

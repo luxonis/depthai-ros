@@ -15,7 +15,7 @@
 #include "depthai_ros_driver_v3/dai_nodes/nn/spatial_nn_wrapper.hpp"
 #include "depthai_ros_driver_v3/dai_nodes/sensors/feature_tracker.hpp"
 #include "depthai_ros_driver_v3/dai_nodes/sensors/img_pub.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/output_rotation.hpp"
+#include "depthai_ros_driver_v3/dai_nodes/sensors/output_rotation.hpp"
 #include "depthai_ros_driver_v3/dai_nodes/sensors/rgbd.hpp"
 #include "depthai_ros_driver_v3/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver_v3/dai_nodes/sensors/sensor_wrapper.hpp"

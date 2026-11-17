@@ -13,10 +13,19 @@
 #include "depthai/pipeline/node/FeatureTracker.hpp"
 #include "depthai/pipeline/node/SpatialLocationCalculator.hpp"
 #include "depthai/pipeline/node/host/RGBD.hpp"
-#include "depthai_ros_driver/dai_nodes/nn/rotated_input.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/output_rotation.hpp"
+#include "depthai_ros_driver_v3/dai_nodes/nn/rotated_input.hpp"
+#include "depthai_ros_driver_v3/dai_nodes/sensors/output_rotation.hpp"
 
-TEST(OutputRotationDevice, PreservesDepthAndOutputGeometry) {
+// Closing a USB pipeline reboots RVC2 asynchronously. Give the device time to
+// re-enumerate between test cases, just as the loops below do between pipelines.
+class OutputRotationDevice : public ::testing::Test {
+   protected:
+    void TearDown() override {
+        if(std::getenv("DEPTHAI_ROTATION_TEST_DEVICE")) std::this_thread::sleep_for(std::chrono::seconds(3));
+    }
+};
+
+TEST_F(OutputRotationDevice, PreservesDepthAndOutputGeometry) {
     const auto* deviceId = std::getenv("DEPTHAI_ROTATION_TEST_DEVICE");
     if(!deviceId) GTEST_SKIP() << "Set DEPTHAI_ROTATION_TEST_DEVICE to run the hardware rotation test";
     for(auto type : {dai::ImgFrame::Type::GRAY8, dai::ImgFrame::Type::RAW16, dai::ImgFrame::Type::BGR888i}) {
@@ -94,7 +103,7 @@ TEST(OutputRotationDevice, PreservesDepthAndOutputGeometry) {
 
 // Compare the actual NN input with its passthrough: rotating only publication
 // would leave the model consuming the native orientation and fail these checks.
-TEST(OutputRotationDevice, RotatesBeforeInference) {
+TEST_F(OutputRotationDevice, RotatesBeforeInference) {
     const auto* deviceId = std::getenv("DEPTHAI_ROTATION_TEST_DEVICE");
     const auto* model = std::getenv("DEPTHAI_ROTATION_TEST_MODEL");
     if(!deviceId || !model) GTEST_SKIP() << "Set DEPTHAI_ROTATION_TEST_DEVICE and DEPTHAI_ROTATION_TEST_MODEL";
@@ -131,7 +140,7 @@ TEST(OutputRotationDevice, RotatesBeforeInference) {
     }
 }
 
-TEST(OutputRotationDevice, NativeNodesProduceRotatedGeometry) {
+TEST_F(OutputRotationDevice, NativeNodesProduceRotatedGeometry) {
     const auto* deviceId = std::getenv("DEPTHAI_ROTATION_TEST_DEVICE");
     if(!deviceId) GTEST_SKIP() << "Set DEPTHAI_ROTATION_TEST_DEVICE";
     auto device = std::make_shared<dai::Device>(dai::DeviceInfo(deviceId));
@@ -234,7 +243,7 @@ TEST(OutputRotationDevice, NativeNodesProduceRotatedGeometry) {
 
 // Live feature counts depend on the scene. A textured input verifies that every
 // orientation produces features in the rotated pixel coordinate system.
-TEST(OutputRotationDevice, TracksRotatedImages) {
+TEST_F(OutputRotationDevice, TracksRotatedImages) {
     const auto* deviceId = std::getenv("DEPTHAI_ROTATION_TEST_DEVICE");
     if(!deviceId) GTEST_SKIP() << "Set DEPTHAI_ROTATION_TEST_DEVICE";
     for(int degrees : {90, 180, 270}) {

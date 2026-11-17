@@ -23,7 +23,7 @@
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>visualization_msgs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>depthai_ros_msgs</exec_depend>
+  <exec_depend>depthai_ros_msgs_v3</exec_depend>
   <test_depend>ament_cmake_pytest</test_depend>
 
   <export>

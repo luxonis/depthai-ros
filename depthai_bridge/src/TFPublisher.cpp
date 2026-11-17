@@ -307,7 +307,7 @@ std::vector<std::string> TFPublisher::prepareXacroArgs() {
 }
 
 std::string TFPublisher::getURDF() {
-    const auto share = ament_index_cpp::get_package_share_directory("depthai_descriptions");
+    const auto share = ament_index_cpp::get_package_share_directory("depthai_descriptions_v3");
     auto policy = nlohmann::json::parse(descriptionPolicy);
     const auto arguments = detail::descriptionCommand(share,
                                                       customURDFLocation,

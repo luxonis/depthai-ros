@@ -49,7 +49,7 @@ def generate_test_description():
         return launch.LaunchDescription([launch_testing.actions.ReadyToTest()])
     return launch.LaunchDescription([ComposableNodeContainer(
         name='sizes', namespace='', package='rclcpp_components', executable='component_container',
-        composable_node_descriptions=[ComposableNode(package='depthai_ros_driver',
+        composable_node_descriptions=[ComposableNode(package='depthai_ros_driver_v3',
             plugin='depthai_ros_driver::Driver', name='oak', parameters=[params])], output='screen'),
         launch_testing.actions.ReadyToTest()])
 

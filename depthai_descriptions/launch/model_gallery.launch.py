@@ -17,7 +17,7 @@ from launch_ros.parameter_descriptions import ParameterValue
 
 
 def launch_setup(context):
-    share = Path(get_package_share_directory('depthai_descriptions'))
+    share = Path(get_package_share_directory('depthai_descriptions_v3'))
     spec = importlib.util.spec_from_file_location('model_gallery', share / 'scripts/model_gallery.py')
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -38,7 +38,7 @@ def launch_setup(context):
         Node(package='robot_state_publisher', executable='robot_state_publisher', name='model_gallery_state_publisher',
              parameters=[{'robot_description': ParameterValue(gallery.pop('urdf'), value_type=str)}],
              remappings=[('robot_description', '/model_gallery/robot_description')]),
-        Node(package='depthai_descriptions', executable='model_gallery.py', name='model_gallery_markers',
+        Node(package='depthai_descriptions_v3', executable='model_gallery.py', name='model_gallery_markers',
              parameters=[{'manifest': ParameterValue(json.dumps(gallery), value_type=str),
                           'axis_length': ParameterValue(LaunchConfiguration('axis_length'), value_type=float)}]),
         Node(package='rviz2', executable='rviz2', name='model_gallery_rviz',

@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:macro name="depthai_model_config" params="camera_model imu_sensor:='' imu_frame:='auto' pose_source:='legacy' mesh_model:=''">
-    <xacro:property name="configs" value="${xacro.load_yaml('$(find depthai_descriptions)/urdf/include/model_config.yaml')}" />
-    <xacro:property name="boards" value="${xacro.load_yaml('$(find depthai_descriptions)/urdf/include/board_models.yaml')}" />
+    <xacro:property name="configs" value="${xacro.load_yaml('$(find depthai_descriptions_v3)/urdf/include/model_config.yaml')}" />
+    <xacro:property name="boards" value="${xacro.load_yaml('$(find depthai_descriptions_v3)/urdf/include/board_models.yaml')}" />
     <!-- DEPRECATED: frozen develop poses preserve existing installations. Opt into pose_source=board. -->
-    <xacro:property name="legacy" value="${xacro.load_yaml('$(find depthai_descriptions)/urdf/include/legacy_models.yaml')['models']}" />
+    <xacro:property name="legacy" value="${xacro.load_yaml('$(find depthai_descriptions_v3)/urdf/include/legacy_models.yaml')['models']}" />
     <xacro:property name="resolved_model" value="${camera_model if camera_model in boards['models'] or camera_model in legacy else configs.get('aliases', dict()).get(camera_model, camera_model)}" />
     <xacro:if value="${pose_source not in ['legacy', 'board'] or imu_frame not in ['auto', 'native', 'optical']}">
       <xacro:property name="invalid" lazy_eval="false" value="${xacro.fatal('Invalid pose_source or imu_frame')}" />

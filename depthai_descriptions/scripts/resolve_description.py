@@ -54,7 +54,7 @@ def expand(mappings, description=None, detected_imu='', share=None):
     warnings = []
     effective_source = 'custom'
     if description is None:
-        share = Path(share or get_package_share_directory('depthai_descriptions'))
+        share = Path(share or get_package_share_directory('depthai_descriptions_v3'))
         boards = yaml.safe_load((share / 'urdf/include/board_models.yaml').read_text())
         overrides = yaml.safe_load((share / 'urdf/include/model_config.yaml').read_text())
         legacy = yaml.safe_load((share / 'urdf/include/legacy_models.yaml').read_text())

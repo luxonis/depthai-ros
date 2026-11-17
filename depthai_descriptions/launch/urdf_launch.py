@@ -34,7 +34,7 @@ def launch_setup(context, *args, **kwargs):
         raise RuntimeError(f"Unable to generate robot description: {result.stderr}")
     if result.stderr.strip():
         from launch.logging import get_logger
-        get_logger("depthai_descriptions").warning(result.stderr.strip())
+        get_logger("depthai_descriptions_v3").warning(result.stderr.strip())
     robot_description = {"robot_description": ParameterValue(result.stdout, value_type=str)}
     return [
         Node(
@@ -68,11 +68,6 @@ def generate_launch_description():
         DeclareLaunchArgument("fallback_model", default_value=""),
         DeclareLaunchArgument("mesh_model", default_value=""),
         DeclareLaunchArgument("legacy_frame_aliases", default_value="true"),
-        DeclareLaunchArgument(
-            "rsp_name",
-            default_value="",
-            description="Robot state publisher node and container name. Defaults to tf_prefix.",
-        ),
         DeclareLaunchArgument(
             "rsp_name",
             default_value="",

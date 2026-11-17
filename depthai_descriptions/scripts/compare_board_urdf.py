@@ -81,7 +81,7 @@ def expand(descriptions, model, sensor, mode):
         raise ValueError('Install xacro (python3 -m pip install xacro), or source your ROS environment') from exc
     # Resolve this source package without requiring an installed ROS workspace.
     original_find = xacro.substitution_args._eval_find
-    xacro.substitution_args._eval_find = lambda name: str(descriptions) if name == 'depthai_descriptions' else original_find(name)
+    xacro.substitution_args._eval_find = lambda name: str(descriptions) if name == 'depthai_descriptions_v3' else original_find(name)
     try:
         xml = xacro.process_file(str(descriptions / 'urdf/depthai_descr.urdf.xacro'), mappings={
             'camera_model': model, 'pose_source': 'board', 'legacy_frame_aliases': 'false',

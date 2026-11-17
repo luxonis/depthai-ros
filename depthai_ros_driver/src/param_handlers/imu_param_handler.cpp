@@ -2,8 +2,6 @@
 
 #include <depthai/device/Platform.hpp>
 
-#include <depthai/device/Platform.hpp>
-
 #include "depthai/pipeline/node/IMU.hpp"
 #include "depthai_bridge/ImuConverter.hpp"
 #include "depthai_ros_driver_v3/utils.hpp"

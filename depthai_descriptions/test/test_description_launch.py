@@ -37,7 +37,7 @@ class DescriptionLaunchTest(unittest.TestCase):
                 with self.subTest(filename=filename, calibration=calibration), tempfile.TemporaryDirectory() as logs:
                     module = load_launch('depthai_ros_driver', filename)
                     with patch.dict(os.environ, ROS_LOG_DIR=logs), \
-                         patch.object(module, 'get_package_share_directory', side_effect=lambda package: str(ROOT / package)), \
+                         patch.object(module, 'get_package_share_directory', side_effect=lambda package: str(ROOT / package.removesuffix('_v3'))), \
                          patch.object(module, 'ComposableNode') as node, \
                          patch.object(module, 'ComposableNodeContainer'), \
                          patch.object(module, 'LoadComposableNodes'), \
@@ -74,7 +74,7 @@ class DescriptionLaunchTest(unittest.TestCase):
                                     ('native', 'native'), ('optical', 'optical')):
             with self.subTest(imu_frame=requested), tempfile.TemporaryDirectory() as logs, \
                  patch.dict(os.environ, ROS_LOG_DIR=logs), \
-                 patch.object(module, 'get_package_share_directory', side_effect=lambda package: str(ROOT / package)), \
+                 patch.object(module, 'get_package_share_directory', side_effect=lambda package: str(ROOT / package.removesuffix('_v3'))), \
                  patch.object(module, 'ComposableNode'), \
                  patch.object(module, 'ComposableNodeContainer'), \
                  patch.object(module, 'IncludeLaunchDescription') as include:

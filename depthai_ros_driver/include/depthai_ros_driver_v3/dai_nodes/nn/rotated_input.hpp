@@ -5,7 +5,7 @@
 #include "depthai/pipeline/node/Camera.hpp"
 #include "depthai/pipeline/node/NeuralNetwork.hpp"
 #include "depthai/pipeline/node/SpatialDetectionNetwork.hpp"
-#include "depthai_ros_driver/dai_nodes/sensors/output_rotation.hpp"
+#include "depthai_ros_driver_v3/dai_nodes/sensors/output_rotation.hpp"
 
 namespace depthai_ros_driver::dai_nodes::nn_helpers {
 

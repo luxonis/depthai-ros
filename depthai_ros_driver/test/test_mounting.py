@@ -14,7 +14,7 @@ import rclpy
 from rclpy.qos import QoSProfile, DurabilityPolicy, qos_profile_sensor_data
 from sensor_msgs.msg import CameraInfo, Image, Imu, PointCloud2
 from tf2_msgs.msg import TFMessage
-from depthai_ros_msgs.msg import TrackedFeatures
+from depthai_ros_msgs_v3.msg import TrackedFeatures
 from rcl_interfaces.msg import Parameter, ParameterValue, ParameterType
 from rcl_interfaces.srv import SetParameters
 
@@ -47,7 +47,7 @@ def generate_test_description():
             name="mounting_container", namespace="", package="rclcpp_components",
             executable="component_container",
             composable_node_descriptions=[ComposableNode(
-                package="depthai_ros_driver", plugin="depthai_ros_driver::Driver",
+                package="depthai_ros_driver_v3", plugin="depthai_ros_driver::Driver",
                 name="oak", parameters=[params]), ComposableNode(
                 package="depth_image_proc", plugin="depth_image_proc::PointCloudXyzNode",
                 name="depth_cloud", remappings=[("image_rect", "/oak/stereo/image_raw"),
