@@ -78,8 +78,9 @@ workload. The device was capped at 30 FPS, so depth-only headroom was not measur
 sampling offset, rectified images match their expected half turns at >0.9999
 correlation. Feature-triangulated depths agree well, but the dense depth gate
 still fails: the 90th-percentile difference from native depth is about 23.5%,
-versus 4.3% in a native repeat control. The root cause is unresolved; discrepancies
-concentrate in weakly textured regions. ROS CameraInfo/TF, RGB alignment, RGBD and
+versus 4.3% in a native repeat control. Frozen-input replay isolates directional
+vertical cost aggregation as a cause (see below); weakly textured regions are
+most affected. ROS CameraInfo/TF, RGB alignment, RGBD and
 spatial-NN metadata have not been integrated. Custom meshes define a different
 rectification camera from the SDK's automatic maps, so geometry comparisons use
 `mesh-native` as their reference. The emitted JSON records that reference camera;
@@ -104,3 +105,53 @@ The analyzer intentionally returns nonzero when its geometry/depth agreement
 criteria fail. Run a separate benchmark with `--streams depth` to measure the
 single-output case. The runner requires a new output directory for each run and
 retains raw depth/rectified PNG snapshots, frame counts, sequence gaps and results.
+
+
+### Frozen-input diagnosis of the stereo depth difference
+
+The RVC2 stereo matcher is not invariant to reversing image rows when vertical
+cost aggregation is enabled. On two independently captured, frozen rectified
+pairs at 640×400:
+
+- Horizontal reflection plus swapping cameras produces bit-identical disparity
+  and depth after undoing the reflection.
+- Vertical reflection alone reproduces the discrepancy; a half turn produces
+  the same normalized result as the vertical reflection.
+- The discrepancy remains with rectification, post-filters, LR check and
+  subpixel interpolation all disabled.
+- Setting only `costAggregation.verticalPenaltyCostP1` and
+  `verticalPenaltyCostP2` from 250/500 to zero restores full-raster bit identity,
+  including with the full FAST_ACCURACY preset, LR check and subpixel enabled.
+- Disabling horizontal penalties instead does not restore invariance.
+
+The firmware streams rows in increasing order and loads separate horizontal and
+vertical aggregation penalty tables into the stereo accelerator. Reversing image
+rows changes the physical direction in which vertical matching context is
+accumulated. Ambiguous low-texture matches are therefore resolved differently.
+The firmware checkout was inspected read-only; no firmware was changed/flashed.
+This identifies an algorithmic direction dependency, not a ground-truth accuracy
+ranking of the two orientations. Zeroing vertical penalties changes the matcher
+and is a diagnostic intervention, not a validated production accuracy fix.
+
+`stereo_half_turn_replay` is another opt-in test executable. It feeds the exact
+same frozen pixel arrays into on-device stereo with no rectification and logs
+pre/post-LR debug disparity, confidence, disparity, depth and the full config.
+Calibration is virtual and pipeline-local. Supply a fixture directory containing
+`left.png`, `right.png` and `configuration.json` from a `mesh-native` capture.
+For example, copy matching `left-15.png` / `right-15.png` and its configuration,
+then run after sourcing the same ROS/SDK environment as the benchmark above:
+
+```bash
+python3 depthai_ros_driver/test/diagnose_stereo_half_turn.py run \
+  --binary build/sandbox/depthai_ros_driver/stereo_half_turn_replay \
+  --device 1944301071834D1300 --fixture /tmp/frozen-pair \
+  --output /tmp/stereo-cause-example
+python3 depthai_ros_driver/test/diagnose_stereo_half_turn.py analyze \
+  /tmp/stereo-cause-example --require-isolated \
+  --output /tmp/stereo-cause-example/cause.json
+```
+
+The runner preserves fixture hashes, commands, configs and captures. Analysis
+checks exact input normalization, repeatability, full-raster output equality,
+configuration isolation and the horizontal-aggregation negative control.
+It rejects a causal confirmation if inputs differ or other settings change.
