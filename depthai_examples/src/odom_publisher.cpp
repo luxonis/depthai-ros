@@ -3,6 +3,7 @@
 #include "depthai/basalt/BasaltVIO.hpp"
 #include "depthai/device/Device.hpp"
 #include "depthai/pipeline/Pipeline.hpp"
+#include "depthai/pipeline/datatype/Odometry.hpp"
 #include "depthai/pipeline/node/Camera.hpp"
 #include "depthai/pipeline/node/IMU.hpp"
 #include "depthai_bridge/BridgePublisher.hpp"
@@ -47,11 +48,11 @@ int main(int argc, char** argv) {
     auto tfPub =
         std::make_unique<depthai_bridge::TFPublisher>(node, calibrationHandler, device->getConnectedCameraFeatures(), tfPrefix, device->getDeviceName());
 
-    auto odomPub = std::make_unique<depthai_bridge::BridgePublisher<nav_msgs::msg::Odometry, dai::TransformData>>(
+    auto odomPub = std::make_unique<depthai_bridge::BridgePublisher<nav_msgs::msg::Odometry, dai::Odometry>>(
         odomQ,
         node,
         "odom",
-        [odomConv](std::shared_ptr<dai::TransformData> msg, std::deque<nav_msgs::msg::Odometry>& rosMsgs) { odomConv->toRosMsg(msg, rosMsgs); },
+        [odomConv](std::shared_ptr<dai::Odometry> msg, std::deque<nav_msgs::msg::Odometry>& rosMsgs) { odomConv->toRosMsg(msg, rosMsgs); },
         30,
         false);
 

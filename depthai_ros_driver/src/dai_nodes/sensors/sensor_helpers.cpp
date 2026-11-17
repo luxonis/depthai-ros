@@ -69,8 +69,8 @@ void basicCameraPub(const std::string& /*name*/,
                     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager) {
     if(rclcpp::ok() && (pub.getNumSubscribers() > 0)) {
         auto img = std::dynamic_pointer_cast<dai::ImgFrame>(data);
-        auto info = infoManager->getCameraInfo();
-        auto rawMsg = converter.toRosMsgRawPtr(img);
+        auto info = depthai_bridge::ImageConverter::transformationToCameraInfo(img->transformation, infoManager->getCameraInfo());
+        auto rawMsg = converter.toRosMsgRawPtr(img, info);
         info.header = rawMsg.header;
         pub.publish(rawMsg, info);
     }

@@ -39,6 +39,13 @@ def launch_setup(context, *args, **kwargs):
     use_composition = LaunchConfiguration("rsp_use_composition", default="false")
     camera_model = LaunchConfiguration("camera_model", default="OAK-D")
     imu_from_descr = LaunchConfiguration("imu_from_descr", default="false")
+    imu_sensor = LaunchConfiguration("imu_sensor", default="")
+    imu_frame = LaunchConfiguration("imu_frame", default="auto")
+    pose_source = LaunchConfiguration("pose_source", default="legacy")
+    model_selection = LaunchConfiguration("model_selection", default="auto")
+    fallback_model = LaunchConfiguration("fallback_model", default="")
+    mesh_model = LaunchConfiguration("mesh_model", default="")
+    legacy_frame_aliases = LaunchConfiguration("legacy_frame_aliases", default="true")
     publish_tf_from_calibration = LaunchConfiguration(
         "publish_tf_from_calibration", default="true"
     )
@@ -63,6 +70,13 @@ def launch_setup(context, *args, **kwargs):
                 "i_tf_cam_pitch": cam_pitch.perform(context),
                 "i_tf_cam_yaw": cam_yaw.perform(context),
                 "i_tf_imu_from_descr": imu_from_descr.perform(context),
+                "i_tf_imu_sensor": imu_sensor.perform(context),
+                "i_tf_imu_frame": imu_frame.perform(context),
+                "i_tf_pose_source": pose_source.perform(context),
+                "i_tf_model_selection": model_selection.perform(context),
+                "i_tf_fallback_model": fallback_model.perform(context),
+                "i_tf_mesh_model": mesh_model.perform(context),
+                "i_tf_legacy_frame_aliases": legacy_frame_aliases.perform(context),
             }
         )
     else:
@@ -116,6 +130,13 @@ def generate_launch_description():
             default_value="false",
             description="Enables TF publishing from camera calibration file.",
         ),
+        DeclareLaunchArgument("imu_sensor", default_value="", description="IMU key or chip name; detected from hardware in calibration TF mode."),
+        DeclareLaunchArgument("pose_source", default_value="legacy"),
+        DeclareLaunchArgument("model_selection", default_value="auto"),
+        DeclareLaunchArgument("fallback_model", default_value=""),
+        DeclareLaunchArgument("mesh_model", default_value=""),
+        DeclareLaunchArgument("legacy_frame_aliases", default_value="true"),
+        DeclareLaunchArgument("imu_frame", default_value="auto", choices=["auto", "optical", "native"]),
         DeclareLaunchArgument(
             "imu_from_descr",
             default_value="false",

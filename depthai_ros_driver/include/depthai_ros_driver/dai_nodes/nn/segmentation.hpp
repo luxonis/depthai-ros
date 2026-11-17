@@ -66,7 +66,6 @@ class Segmentation : public BaseNode {
     std::shared_ptr<depthai_bridge::ImageConverter> imageConverter;
     std::shared_ptr<camera_info_manager::CameraInfoManager> infoManager;
     image_transport::CameraPublisher nnPub, ptPub;
-    sensor_msgs::msg::CameraInfo nnInfo;
     std::shared_ptr<dai::node::NeuralNetwork> segNode;
     std::shared_ptr<dai::node::ImageManip> imageManip;
     std::unique_ptr<param_handlers::NNParamHandler> ph;
