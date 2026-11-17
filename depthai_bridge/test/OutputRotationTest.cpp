@@ -22,6 +22,10 @@ TEST(OutputRotation, ProjectionAndDistortionAgreeInRotatedFrame) {
         info.r = {1, 0, 0, 0, 1, 0, 0, 0, 1};
         info.distortion_model = "rational_polynomial";
         info.d = {0.01, -0.02, 0.003, -0.004, 0.001, 0.002, 0.003, 0.004, 0.005, -0.006, 0.007, -0.008};
+        if(angle == 0 || angle == 180) {
+            info.d.push_back(0.013);
+            info.d.push_back(-0.027);
+        }
         info.header.frame_id = "optical";
         auto native = info;
         rotation.cameraInfo(info);

@@ -22,6 +22,10 @@ void SensorParamHandler::declareCommonParams(dai::CameraBoardSocket socket) {
     declareAndLogParam<std::string>(ParamNames::SIMULATED_TOPIC_NAME, "");
     declareAndLogParam<bool>(ParamNames::DISABLE_NODE, false);
     declareAndLogParam<bool>("i_enable_default_output", true);
+    // Override only the baseline used to compose a sensor half turn. AUTO keeps
+    // firmware defaults; unresolved board orientations retain downstream warps.
+    const auto orientation = declareAndLogParam<std::string>("i_native_sensor_orientation", "AUTO");
+    utils::getValFromMap(orientation, dai_nodes::sensor_helpers::cameraImageOrientationMap);
     declareAndLogParam<bool>("i_publish_full_resolution", false);
     declareAndLogParam<bool>("i_use_max_resolution_possible", false);
     socketID = static_cast<dai::CameraBoardSocket>(declareAndLogParam<int>(ParamNames::BOARD_SOCKET_ID, static_cast<int>(socket)));

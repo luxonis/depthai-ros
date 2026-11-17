@@ -6,6 +6,7 @@
 #include "depthai/pipeline/node/Camera.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/img_pub.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_rotation.hpp"
 #include "depthai_ros_driver/param_handlers/sensor_param_handler.hpp"
 #include "rclcpp/node.hpp"
 
@@ -16,14 +17,34 @@ Camera::Camera(const std::string& daiNodeName,
                std::shared_ptr<dai::Pipeline> pipeline,
                const std::string& deviceName,
                bool rsCompat,
-               dai::CameraBoardSocket socket = dai::CameraBoardSocket::CAM_A,
-               bool publish = true)
+               dai::CameraBoardSocket socket,
+               bool publish,
+               bool useSensorOrientation)
     : BaseNode(daiNodeName, node, pipeline, deviceName, rsCompat) {
     RCLCPP_DEBUG(getLogger(), "Creating node %s", daiNodeName.c_str());
     setNames();
     camNode = pipeline->create<dai::node::Camera>()->build(socket);
     ph = std::make_unique<param_handlers::SensorParamHandler>(node, daiNodeName, deviceName, rsCompat, socket);
     ph->declareParams(camNode, publish);
+    if(useSensorOrientation && pipeline->getDefaultDevice()->getPlatform() == dai::Platform::RVC2
+       && node->get_parameter("driver.i_output_rotation_deg").as_int() == 180) {
+        for(const auto& feature : pipeline->getDefaultDevice()->getConnectedCameraFeatures()) {
+            if(feature.socket != socket) continue;
+            const auto override = ph->getParam<std::string>("i_native_sensor_orientation");
+            const auto native = override == "AUTO" ? feature.orientation : utils::getValFromMap(override, sensor_helpers::cameraImageOrientationMap);
+            const auto orientation = sensor_helpers::halfTurnOrientation(native);
+            if(orientation) {
+                camNode->setImageOrientation(*orientation);
+                sensorRotated = true;
+                RCLCPP_INFO(getLogger(), "Using sensor readout for %s 180-degree output rotation", daiNodeName.c_str());
+            } else {
+                RCLCPP_WARN(
+                    getLogger(),
+                    "Unknown native readout orientation for %s; set i_native_sensor_orientation to enable sensor rotation; retaining downstream rotation",
+                    daiNodeName.c_str());
+            }
+        }
+    }
     setInOut(pipeline);
     RCLCPP_DEBUG(getLogger(), "Node %s created", daiNodeName.c_str());
 }
@@ -67,7 +88,8 @@ void Camera::setInOut(std::shared_ptr<dai::Pipeline> pipeline) {
         encConfig.quality = ph->getParam<int>(ParamNames::LOW_BANDWIDTH_QUALITY);
         encConfig.enabled = lowBandwidth;
 
-        rgbPub = setupOutput(pipeline, ispQName, defaultOut, ph->getParam<bool>(ParamNames::SYNCED), encConfig);
+        rgbPub = std::make_shared<sensor_helpers::ImagePublisher>(
+            getROSNode(), pipeline, ispQName, defaultOut, ph->getParam<bool>(ParamNames::SYNCED), ipcEnabled(), encConfig, nullptr, sensorRotated);
     }
 }
 

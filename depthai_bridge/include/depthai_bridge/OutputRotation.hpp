@@ -108,8 +108,14 @@ class OutputRotation {
                     info.d[10 + i] = s.second;
                 }
             }
-            if(info.d.size() >= 14 && (info.d[12] != 0 || info.d[13] != 0))
-                throw std::invalid_argument("Output rotation does not support tilted-sensor distortion; use undistorted output");
+            if(info.d.size() >= 14 && (info.d[12] != 0 || info.d[13] != 0)) {
+                // Conjugating the tilt rotation by a half turn negates both
+                // sensor tilt angles without changing their rotation order.
+                if(degrees != 180)
+                    throw std::invalid_argument("Quarter-turn output rotation does not support tilted-sensor distortion; use undistorted output");
+                info.d[12] = -info.d[12];
+                info.d[13] = -info.d[13];
+            }
         } else if(!info.d.empty() && info.distortion_model != "equidistant") {
             throw std::invalid_argument("Unsupported distortion model for output rotation: " + info.distortion_model);
         }

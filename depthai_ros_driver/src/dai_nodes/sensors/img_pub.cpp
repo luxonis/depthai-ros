@@ -9,6 +9,7 @@
 #include "depthai/pipeline/node/VideoEncoder.hpp"
 #include "depthai/properties/VideoEncoderProperties.hpp"
 #include "depthai_bridge/ImageConverter.hpp"
+#include "depthai_bridge/OutputRotation.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/output_rotation.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/sensor_helpers.hpp"
 #include "depthai_ros_driver/utils.hpp"
@@ -26,17 +27,19 @@ ImagePublisher::ImagePublisher(std::shared_ptr<rclcpp::Node> node,
                                bool synced,
                                bool ipcEnabled,
                                const utils::VideoEncoderConfig& encoderConfig,
-                               std::shared_ptr<OutputRotation> inputRotation)
+                               std::shared_ptr<OutputRotation> inputRotation,
+                               bool sensorRotated)
     : node(node),
       rotation(inputRotation),
       inputRotated(bool(inputRotation)),
+      sensorRotated(sensorRotated),
       encConfig(encoderConfig),
       out(out),
       qName(qName),
       ipcEnabled(ipcEnabled),
       synced(synced) {
     const int degrees = node->get_parameter("driver.i_output_rotation_deg").as_int();
-    if(degrees && !inputRotated) {
+    if(degrees && !inputRotated && !sensorRotated) {
         rotation = std::make_shared<OutputRotation>(pipeline, *out, degrees);
         // A slow publication branch must not exhaust the native camera/depth pool.
         rotation->input().setBlocking(false);
@@ -57,6 +60,7 @@ void ImagePublisher::setup(std::shared_ptr<dai::Device> device, const utils::Img
         if(!inputRotated) rotation->configure(pubConfig.width, pubConfig.height, encoderHeightMultiple);
         convConfig.tfPrefix = rotation->rotation.frame(convConfig.tfPrefix);
     }
+    if(sensorRotated) convConfig.tfPrefix = depthai_bridge::OutputRotation(180).frame(convConfig.tfPrefix);
     createImageConverter(device);
     createInfoManager(device);
     if(pubConfig.topicName.empty()) {
@@ -150,10 +154,10 @@ void ImagePublisher::createInfoManager(std::shared_ptr<dai::Device> device) {
     } else if(!infoManager->loadCameraInfo(pubConfig.calibrationFile)) {
         throw std::runtime_error("Failed to load camera calibration for " + pubConfig.topicName + " from " + pubConfig.calibrationFile);
     }
-    if(rotation) {
+    if(rotation || sensorRotated) {
         auto info = infoManager->getCameraInfo();
         if(pubConfig.undistorted) std::fill(info.d.begin(), info.d.end(), 0.0);
-        rotation->rotation.cameraInfo(info);  // Validate calibration before starting callback threads.
+        depthai_bridge::OutputRotation(node->get_parameter("driver.i_output_rotation_deg").as_int()).cameraInfo(info);
     }
 };
 ImagePublisher::~ImagePublisher() {
@@ -237,13 +241,20 @@ std::shared_ptr<Image> ImagePublisher::convertData(const std::shared_ptr<dai::AD
     if(pubConfig.undistorted) {
         std::fill(info.d.begin(), info.d.end(), 0.0);
     }
-    if(rotation) {
+    if(rotation || sensorRotated) {
         const auto header = info.header;
         info.header = std_msgs::msg::Header();
         std::lock_guard<std::mutex> lock(rotatedInfoMutex);
         if(!rotatedInfo || rotatedInfo->first != info) {
             auto native = info;
-            rotation->cameraInfo(info, pubConfig.calibrationFile.empty());
+            if(sensorRotated) {
+                // Sensor readout orientation does not add an ImageManip homography.
+                // Rotate the per-frame calibration, retaining its crop/resize,
+                // distortion model and full coefficient vector (or custom file).
+                depthai_bridge::OutputRotation(180).cameraInfo(info);
+            } else {
+                rotation->cameraInfo(info, pubConfig.calibrationFile.empty());
+            }
             rotatedInfo = std::make_pair(std::move(native), info);
         } else {
             info = rotatedInfo->second;

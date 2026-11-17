@@ -15,6 +15,9 @@
 #include "depthai/pipeline/node/host/RGBD.hpp"
 #include "depthai_ros_driver/dai_nodes/nn/rotated_input.hpp"
 #include "depthai_ros_driver/dai_nodes/sensors/output_rotation.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_rotation.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/sensor_wrapper.hpp"
+#include "depthai_ros_driver/dai_nodes/sensors/stereo.hpp"
 
 TEST(OutputRotationDevice, PreservesDepthAndOutputGeometry) {
     const auto* deviceId = std::getenv("DEPTHAI_ROTATION_TEST_DEVICE");
@@ -275,5 +278,55 @@ TEST(OutputRotationDevice, TracksRotatedImages) {
         EXPECT_GT(maxFeatures, 20);
         pipeline->stop();
         pipeline->wait();
+    }
+}
+
+TEST(SensorRotation, ComposesHalfTurnWithBoardOrientation) {
+    using Orientation = dai::CameraImageOrientation;
+    using depthai_ros_driver::dai_nodes::sensor_helpers::halfTurnOrientation;
+    EXPECT_EQ(halfTurnOrientation(Orientation::NORMAL), Orientation::ROTATE_180_DEG);
+    EXPECT_EQ(halfTurnOrientation(Orientation::ROTATE_180_DEG), Orientation::NORMAL);
+    EXPECT_EQ(halfTurnOrientation(Orientation::HORIZONTAL_MIRROR), Orientation::VERTICAL_FLIP);
+    EXPECT_EQ(halfTurnOrientation(Orientation::VERTICAL_FLIP), Orientation::HORIZONTAL_MIRROR);
+    EXPECT_FALSE(halfTurnOrientation(Orientation::AUTO));
+}
+
+TEST(OutputRotationDevice, StereoInputsKeepNativeOrientation) {
+    const auto* deviceId = std::getenv("DEPTHAI_ROTATION_TEST_DEVICE");
+    if(!deviceId) GTEST_SKIP() << "Select a device for native stereo graph validation";
+    rclcpp::init(0, nullptr);
+    struct Shutdown {
+        ~Shutdown() {
+            rclcpp::shutdown();
+        }
+    } shutdown;
+    auto device = std::make_shared<dai::Device>(dai::DeviceInfo(deviceId));
+    for(int angle : {0, 180}) {
+        SCOPED_TRACE(angle);
+        auto node =
+            std::make_shared<rclcpp::Node>("native_stereo_test",
+                                           rclcpp::NodeOptions().parameter_overrides({rclcpp::Parameter("left.i_native_sensor_orientation", "NORMAL"),
+                                                                                      rclcpp::Parameter("right.i_native_sensor_orientation", "NORMAL")}));
+        node->declare_parameter("driver.i_output_rotation_deg", angle);
+        node->declare_parameter("driver.i_tf_prefix", "");
+        auto pipeline = std::make_shared<dai::Pipeline>(device);
+        depthai_ros_driver::dai_nodes::Stereo stereo("stereo", node, pipeline, device, false);
+        auto left = stereo.getLeftSensor()->getUnderlyingNode();
+        auto right = stereo.getRightSensor()->getUnderlyingNode();
+        EXPECT_EQ(left->getImageOrientation(), dai::CameraImageOrientation::AUTO);
+        EXPECT_EQ(right->getImageOrientation(), dai::CameraImageOrientation::AUTO);
+        int nativeInputs = 0;
+        for(const auto& connection : pipeline->getConnections()) {
+            if(connection.inputId != stereo.getUnderlyingNode()->id) continue;
+            if(connection.inputName == "left") {
+                EXPECT_EQ(connection.outputId, left->id);
+                ++nativeInputs;
+            }
+            if(connection.inputName == "right") {
+                EXPECT_EQ(connection.outputId, right->id);
+                ++nativeInputs;
+            }
+        }
+        EXPECT_EQ(nativeInputs, 2);
     }
 }

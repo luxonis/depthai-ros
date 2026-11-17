@@ -71,7 +71,8 @@ class ImagePublisher {
                    bool synced = false,
                    bool ipcEnabled = false,
                    const utils::VideoEncoderConfig& encoderConfig = {},
-                   std::shared_ptr<OutputRotation> inputRotation = nullptr);
+                   std::shared_ptr<OutputRotation> inputRotation = nullptr,
+                   bool sensorRotated = false);
 
     ~ImagePublisher();
     /**
@@ -101,6 +102,7 @@ class ImagePublisher {
     std::mutex rotatedInfoMutex;
     std::optional<std::pair<sensor_msgs::msg::CameraInfo, sensor_msgs::msg::CameraInfo>> rotatedInfo;
     bool inputRotated;
+    bool sensorRotated;
     utils::VideoEncoderConfig encConfig;
     utils::ImgPublisherConfig pubConfig;
     utils::ImgConverterConfig convConfig;

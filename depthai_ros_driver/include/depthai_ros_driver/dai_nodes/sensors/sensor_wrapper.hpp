@@ -44,7 +44,8 @@ class SensorWrapper : public BaseNode {
                            const std::string& deviceName,
                            bool rsCompat,
                            dai::CameraBoardSocket socket,
-                           bool publish = true);
+                           bool publish = true,
+                           bool useSensorOrientation = false);
     ~SensorWrapper();
     void updateParams(const std::vector<rclcpp::Parameter>& params) override;
     void setupQueues(std::shared_ptr<dai::Device> device) override;

@@ -21,7 +21,8 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
                              const std::string& deviceName,
                              bool rsCompat,
                              dai::CameraBoardSocket socket,
-                             bool publish)
+                             bool publish,
+                             bool useSensorOrientation)
     : BaseNode(daiNodeName, node, pipeline, deviceName, rsCompat) {
     RCLCPP_DEBUG(node->get_logger(), "Creating node %s base", daiNodeName.c_str());
     ph = std::make_unique<param_handlers::SensorParamHandler>(node, daiNodeName, deviceName, rsCompat, socket);
@@ -45,7 +46,14 @@ SensorWrapper::SensorWrapper(const std::string& daiNodeName,
         if(ph->getParam<bool>("i_disable_node")) {
             RCLCPP_WARN(getROSNode()->get_logger(), "For node to be disabled, %s.i_simulate_from_topic must be set to true.", getName().c_str());
         }
-        sensorNode = std::make_unique<Camera>(daiNodeName, node, pipeline, deviceName, rsCompat, socket, publish);
+        sensorNode = std::make_unique<Camera>(daiNodeName,
+                                              node,
+                                              pipeline,
+                                              deviceName,
+                                              rsCompat,
+                                              socket,
+                                              publish,
+                                              useSensorOrientation && !ph->getParam<bool>("i_enable_feature_tracker") && !ph->getParam<bool>("i_enable_nn"));
     }
     if(ph->getParam<bool>("i_enable_feature_tracker")) {
         featureTrackerNode = std::make_unique<FeatureTracker>(daiNodeName + std::string("_feature_tracker"), node, pipeline, deviceName, rsCompat);

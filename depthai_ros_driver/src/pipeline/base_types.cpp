@@ -32,8 +32,14 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGB::createPipeline(std::share
                                                                       const std::string& nnType) {
     using namespace dai_nodes::sensor_helpers;
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
-    auto rgb =
-        std::make_unique<dai_nodes::SensorWrapper>(getNodeName(node, NodeNameEnum::RGB), node, pipeline, deviceName, rsCompat, dai::CameraBoardSocket::CAM_A);
+    auto rgb = std::make_unique<dai_nodes::SensorWrapper>(getNodeName(node, NodeNameEnum::RGB),
+                                                          node,
+                                                          pipeline,
+                                                          deviceName,
+                                                          rsCompat,
+                                                          dai::CameraBoardSocket::CAM_A,
+                                                          true,
+                                                          utils::getUpperCaseStr(nnType) == "NONE");
     addNnNode(daiNodes, node, pipeline, deviceName, rsCompat, *rgb, nnType);
     daiNodes.push_back(std::move(rgb));
     if(checkForImu(ph, device, node->get_logger())) {
@@ -95,12 +101,18 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> RGBStereo::createPipeline(std:
                                                                             const std::string& nnType) {
     using namespace dai_nodes::sensor_helpers;
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
-    auto rgb =
-        std::make_unique<dai_nodes::SensorWrapper>(getNodeName(node, NodeNameEnum::RGB), node, pipeline, deviceName, rsCompat, dai::CameraBoardSocket::CAM_A);
-    auto left =
-        std::make_unique<dai_nodes::SensorWrapper>(getNodeName(node, NodeNameEnum::Left), node, pipeline, deviceName, rsCompat, dai::CameraBoardSocket::CAM_B);
-    auto right =
-        std::make_unique<dai_nodes::SensorWrapper>(getNodeName(node, NodeNameEnum::Right), node, pipeline, deviceName, rsCompat, dai::CameraBoardSocket::CAM_C);
+    auto rgb = std::make_unique<dai_nodes::SensorWrapper>(getNodeName(node, NodeNameEnum::RGB),
+                                                          node,
+                                                          pipeline,
+                                                          deviceName,
+                                                          rsCompat,
+                                                          dai::CameraBoardSocket::CAM_A,
+                                                          true,
+                                                          utils::getUpperCaseStr(nnType) == "NONE");
+    auto left = std::make_unique<dai_nodes::SensorWrapper>(
+        getNodeName(node, NodeNameEnum::Left), node, pipeline, deviceName, rsCompat, dai::CameraBoardSocket::CAM_B, true, !ph->getParam<bool>("i_enable_vio"));
+    auto right = std::make_unique<dai_nodes::SensorWrapper>(
+        getNodeName(node, NodeNameEnum::Right), node, pipeline, deviceName, rsCompat, dai::CameraBoardSocket::CAM_C, true, !ph->getParam<bool>("i_enable_vio"));
     addNnNode(daiNodes, node, pipeline, deviceName, rsCompat, *rgb, nnType);
     if(checkForImu(ph, device, node->get_logger())) {
         auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device, rsCompat);
@@ -124,10 +136,10 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> Stereo::createPipeline(std::sh
                                                                          const std::string& /*nnType*/) {
     using namespace dai_nodes::sensor_helpers;
     std::vector<std::unique_ptr<dai_nodes::BaseNode>> daiNodes;
-    auto left =
-        std::make_unique<dai_nodes::SensorWrapper>(getNodeName(node, NodeNameEnum::Left), node, pipeline, deviceName, rsCompat, dai::CameraBoardSocket::CAM_B);
-    auto right =
-        std::make_unique<dai_nodes::SensorWrapper>(getNodeName(node, NodeNameEnum::Right), node, pipeline, deviceName, rsCompat, dai::CameraBoardSocket::CAM_C);
+    auto left = std::make_unique<dai_nodes::SensorWrapper>(
+        getNodeName(node, NodeNameEnum::Left), node, pipeline, deviceName, rsCompat, dai::CameraBoardSocket::CAM_B, true, !ph->getParam<bool>("i_enable_vio"));
+    auto right = std::make_unique<dai_nodes::SensorWrapper>(
+        getNodeName(node, NodeNameEnum::Right), node, pipeline, deviceName, rsCompat, dai::CameraBoardSocket::CAM_C, true, !ph->getParam<bool>("i_enable_vio"));
     if(checkForImu(ph, device, node->get_logger())) {
         auto imu = std::make_unique<dai_nodes::Imu>("imu", node, pipeline, device, rsCompat);
         if(ph->getParam<bool>("i_enable_vio")) {
@@ -185,7 +197,8 @@ std::vector<std::unique_ptr<dai_nodes::BaseNode>> CamArray::createPipeline(std::
 
     for(auto& feature : device->getConnectedCameraFeatures()) {
         auto name = depthai_bridge::getSocketName(feature.socket, deviceName, rsCompat, true);
-        auto daiNode = std::make_unique<dai_nodes::SensorWrapper>(name, node, pipeline, deviceName, rsCompat, feature.socket);
+        auto daiNode =
+            std::make_unique<dai_nodes::SensorWrapper>(name, node, pipeline, deviceName, rsCompat, feature.socket, true, !ph->getParam<bool>("i_enable_vio"));
         daiNodes.push_back(std::move(daiNode));
     };
     if(checkForImu(ph, device, node->get_logger())) {
