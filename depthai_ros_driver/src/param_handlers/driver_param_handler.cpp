@@ -4,6 +4,10 @@
 #include "depthai_ros_driver/utils.hpp"
 #include "rclcpp/logger.hpp"
 #include "rclcpp/node.hpp"
+#include "rclcpp/parameter.hpp"
+#include "rclcpp/parameter_value.hpp"
+
+#include <stdexcept>
 
 namespace depthai_ros_driver {
 namespace param_handlers {
@@ -22,6 +26,17 @@ DriverParamHandler::~DriverParamHandler() = default;
 dai::UsbSpeed DriverParamHandler::getUSBSpeed() {
     return utils::getValFromMap(getParam<std::string>("i_usb_speed"), usbSpeedMap);
 }
+std::string DriverParamHandler::getPipelineAutoCalibrationMode() {
+    rclcpp::Parameter param;
+    getROSNode()->get_parameter(getFullParamName("i_pipeline_auto_calibration_mode"), param);
+    if(param.get_type() == rclcpp::ParameterType::PARAMETER_STRING) {
+        return param.as_string();
+    }
+    if(param.get_type() == rclcpp::ParameterType::PARAMETER_BOOL) {
+        return param.as_bool() ? "ON_START" : "OFF";
+    }
+    throw std::invalid_argument("Invalid driver.i_pipeline_auto_calibration_mode parameter type. Use OFF, ON_START, CONTINUOUS, empty, true, or false.");
+}
 void DriverParamHandler::declareParams() {
     declareAndLogParam<bool>("i_enable_ir", true);
     declareAndLogParam<std::string>("i_usb_speed", "SUPER");
@@ -31,6 +46,11 @@ void DriverParamHandler::declareParams() {
     declareAndLogParam<bool>("i_pipeline_dump", false);
     declareAndLogParam<bool>("i_calibration_dump", false);
     declareAndLogParam<std::string>("i_external_calibration_path", "");
+    auto autoCalibrationDescriptor = rcl_interfaces::msg::ParameterDescriptor();
+    autoCalibrationDescriptor.dynamic_typing = true;
+    if(!getROSNode()->has_parameter(getFullParamName("i_pipeline_auto_calibration_mode"))) {
+        getROSNode()->declare_parameter(getFullParamName("i_pipeline_auto_calibration_mode"), rclcpp::ParameterValue(std::string()), autoCalibrationDescriptor);
+    }
     declareAndLogParam<float>("r_laser_dot_intensity", 0.6, getRangedFloatDescriptor(0.0, 1.0));
     declareAndLogParam<float>("r_floodlight_intensity", 0.6, getRangedFloatDescriptor(0.0, 1.0));
     declareAndLogParam<bool>("i_restart_on_diagnostics_error", false);

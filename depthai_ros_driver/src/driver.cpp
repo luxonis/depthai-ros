@@ -6,6 +6,7 @@
 #include "depthai/pipeline/Pipeline.hpp"
 #include "depthai_bridge/TFPublisher.hpp"
 #include "depthai_ros_driver/pipeline/pipeline_generator.hpp"
+#include "depthai_ros_driver/utils.hpp"
 #include "diagnostic_msgs/msg/diagnostic_array.hpp"
 
 namespace depthai_ros_driver {
@@ -191,6 +192,10 @@ void Driver::getDeviceType() {
 
 void Driver::createPipeline() {
     generator = std::make_unique<pipeline_gen::PipelineGenerator>();
+    const auto autoCalibrationMode = ph->getPipelineAutoCalibrationMode();
+    if(!autoCalibrationMode.empty()) {
+        pipeline->setAutoCalibrationMode(utils::parsePipelineAutoCalibrationMode(autoCalibrationMode));
+    }
     if(!ph->getParam<std::string>("i_external_calibration_path").empty()) {
         loadCalib(ph->getParam<std::string>("i_external_calibration_path"));
     }
@@ -234,26 +239,26 @@ void Driver::startDevice() {
                 for(const auto& info : availableDevices) {
                     if(!deviceId.empty() && info.getDeviceId() == deviceId) {
                         RCLCPP_INFO(get_logger(), "Connecting to the device using ID: %s", deviceId.c_str());
-                        if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
+                        if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER || info.state == X_LINK_GATE) {
                             device = std::make_shared<dai::Device>(info, speed);
                             camRunning = true;
-                        } else if(info.state == X_LINK_BOOTED) {
+                        } else if(info.state == X_LINK_BOOTED || info.state == X_LINK_GATE_BOOTED) {
                             throw std::runtime_error("Device is already booted in different process.");
                         }
                     } else if(!ip.empty() && info.name == ip) {
                         RCLCPP_INFO(get_logger(), "Connecting to the device using ip: %s", ip.c_str());
-                        if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
+                        if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER || info.state == X_LINK_GATE) {
                             device = std::make_shared<dai::Device>(info);
                             camRunning = true;
-                        } else if(info.state == X_LINK_BOOTED) {
+                        } else if(info.state == X_LINK_BOOTED || info.state == X_LINK_GATE_BOOTED) {
                             throw std::runtime_error("Device is already booted in different process...");
                         }
                     } else if(!usb_id.empty() && info.name == usb_id) {
                         RCLCPP_INFO(get_logger(), "Connecting to the device using USB ID: %s", usb_id.c_str());
-                        if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER) {
+                        if(info.state == X_LINK_UNBOOTED || info.state == X_LINK_BOOTLOADER || info.state == X_LINK_GATE) {
                             device = std::make_shared<dai::Device>(info, speed);
                             camRunning = true;
-                        } else if(info.state == X_LINK_BOOTED) {
+                        } else if(info.state == X_LINK_BOOTED || info.state == X_LINK_GATE_BOOTED) {
                             throw std::runtime_error("Device is already booted in different process.");
                         }
                     } else {

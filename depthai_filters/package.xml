@@ -1,11 +1,10 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>depthai_filters</name>
-  <version>3.1.0</version>
+  <version>3.3.0</version>
   <description>Depthai filters package</description>
   <author>Adam Serafin</author>
-  <!-- temporary -->
-  <maintainer email="matevz.morato@luxonis.com">Matevz Morato</maintainer>
+  <maintainer email="sebastjan.ahtik@luxonis.com">Aljaž Sebastjan Ahtik</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>

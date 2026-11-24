@@ -2,5 +2,6 @@
   ros__parameters:
     driver:
       i_enable_ir: true
+      i_pipeline_auto_calibration_mode: ''
     pipeline_gen:
       i_pipeline_type: RGBD

@@ -1,4 +1,5 @@
 #include "depthai_ros_driver/param_handlers/imu_param_handler.hpp"
+#include <depthai/device/Platform.hpp>
 
 #include "depthai/pipeline/node/IMU.hpp"
 #include "depthai_bridge/ImuConverter.hpp"
@@ -23,6 +24,7 @@ ImuParamHandler::ImuParamHandler(std::shared_ptr<rclcpp::Node> node, const std::
                              {"ARVR_STABILIZED_ROTATION_VECTOR", dai::IMUSensor::ARVR_STABILIZED_ROTATION_VECTOR},
                              {"ARVR_STABILIZED_GAME_ROTATION_VECTOR", dai::IMUSensor::ARVR_STABILIZED_GAME_ROTATION_VECTOR}};
     accelerometerModeMap = {{"ACCELEROMETER_RAW", dai::IMUSensor::ACCELEROMETER_RAW},
+                            {"ACCELEROMETER_UNCALIBRATED", dai::IMUSensor::ACCELEROMETER_UNCALIBRATED},
                             {"ACCELEROMETER", dai::IMUSensor::ACCELEROMETER},
                             {"LINEAR_ACCELERATION", dai::IMUSensor::LINEAR_ACCELERATION},
                             {"GRAVITY", dai::IMUSensor::GRAVITY}};
@@ -45,7 +47,7 @@ void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const s
     declareAndLogParam<float>("i_mag_cov", 0.0);
     declareAndLogParam<float>("i_rot_cov", 0.0);
     if(declareAndLogParam<bool>("i_enable_acc", true)) {
-        const std::string accelerometerModeName = utils::getUpperCaseStr(declareAndLogParam<std::string>("i_acc_mode", "ACCELEROMETER_RAW"));
+        const std::string accelerometerModeName = utils::getUpperCaseStr(declareAndLogParam<std::string>("i_acc_mode", "ACCELEROMETER_UNCALIBRATED"));
         const dai::IMUSensor accelerometerMode = utils::getValFromMap(accelerometerModeName, accelerometerModeMap);
         const int accelerometerFreq = declareAndLogParam<int>("i_acc_freq", 480);
 
@@ -53,17 +55,18 @@ void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const s
     }
 
     if(declareAndLogParam<bool>("i_enable_gyro", true)) {
-        const std::string gyroscopeModeName = utils::getUpperCaseStr(declareAndLogParam<std::string>("i_gyro_mode", "GYROSCOPE_RAW"));
+        const std::string gyroscopeModeName = utils::getUpperCaseStr(declareAndLogParam<std::string>("i_gyro_mode", "GYROSCOPE_UNCALIBRATED"));
         const dai::IMUSensor gyroscopeMode = utils::getValFromMap(gyroscopeModeName, gyroscopeModeMap);
         const int gyroscopeFreq = declareAndLogParam<int>("i_gyro_freq", 400);
 
         imu->enableIMUSensor(gyroscopeMode, gyroscopeFreq);
     }
-
-    const bool magnetometerAvailable = imuType == "BNO086";
+    const auto platform = imu->getParentPipeline().getDefaultDevice()->getPlatform();
+    // Magnetometer is only available on BNO086 on RVC2 and on all IMUs on RVC4
+    const bool magnetometerAvailable = imuType == "BNO086" || platform == dai::Platform::RVC4;
     if(declareAndLogParam<bool>("i_enable_mag", magnetometerAvailable)) {
         if(magnetometerAvailable) {
-            const std::string magnetometerModeName = utils::getUpperCaseStr(declareAndLogParam<std::string>("i_mag_mode", "MAGNETOMETER_RAW"));
+            const std::string magnetometerModeName = utils::getUpperCaseStr(declareAndLogParam<std::string>("i_mag_mode", "MAGNETOMETER_UNCALIBRATED"));
             const dai::IMUSensor magnetometerMode = utils::getValFromMap(magnetometerModeName, magnetometerModeMap);
             const int magnetometerFreq = declareAndLogParam<int>("i_mag_freq", 100);
 
@@ -74,7 +77,7 @@ void ImuParamHandler::declareParams(std::shared_ptr<dai::node::IMU> imu, const s
         }
     }
 
-    const bool rotationAvailable = imuType == "BNO086";
+    const bool rotationAvailable = (imuType == "BNO086" && platform == dai::Platform::RVC2) || platform == dai::Platform::RVC4;
     if(declareAndLogParam<bool>("i_enable_rotation", rotationAvailable)) {
         if(rotationAvailable) {
             const std::string rotationModeName = utils::getUpperCaseStr(declareAndLogParam<std::string>("i_rot_mode", "ROTATION_VECTOR"));

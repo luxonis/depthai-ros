@@ -1,11 +1,10 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>depthai_ros_driver</name>
-  <version>3.1.0</version>
+  <version>3.3.0</version>
   <description>Depthai ROS Monolithic node.</description>
   <author>Adam Serafin</author>
-  <!-- temporary -->
-  <maintainer email="matevz.morato@luxonis.com">Matevz Morato</maintainer>
+  <maintainer email="sebastjan.ahtik@luxonis.com">Aljaž Sebastjan Ahtik</maintainer>
 
   <license>MIT</license>
 
@@ -28,7 +27,7 @@
   <depend>image_transport</depend>
   <depend>image_transport_plugins</depend>
   <depend>image_pipeline</depend>
-  <depend>depthai</depend>
+  <depend version_gte="3.7.1">depthai</depend>
   <depend>depthai_bridge</depend>
   <depend>depthai_descriptions</depend>
   <depend>depthai_ros_msgs</depend>

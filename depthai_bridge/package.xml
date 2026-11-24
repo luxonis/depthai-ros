@@ -1,14 +1,13 @@
 <?xml version="1.0"?>
 <package format="3">
     <name>depthai_bridge</name>
-    <version>3.1.0</version>
+    <version>3.3.0</version>
     <description>The depthai_bridge package</description>
 
     <author>Sachin Guruswamy</author>
     <author>Adam Serafin</author>
 
-    <!-- temporary -->
-    <maintainer email="matevz.morato@luxonis.com">Matevz Morato</maintainer>
+    <maintainer email="sebastjan.ahtik@luxonis.com">Aljaž Sebastjan Ahtik</maintainer>
 
     <license>MIT</license>
 
@@ -20,7 +19,7 @@
     <test_depend>ament_cmake_gtest</test_depend>
     <depend>cv_bridge</depend>
     <depend>camera_info_manager</depend>
-    <depend>depthai</depend>
+    <depend version_gte="3.7.1">depthai</depend>
     <depend>depthai_ros_msgs</depend>
     <depend>image_transport</depend>
     <depend>libopencv-dev</depend>

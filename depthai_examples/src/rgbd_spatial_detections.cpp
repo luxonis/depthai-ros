@@ -66,8 +66,8 @@ OutputQueues createPipeline(dai::Pipeline& pipeline, PipelineOpts opts) {
     stereo->setSubpixel(opts.subpixel);
 
     // Imu
-    imu->enableIMUSensor(dai::IMUSensor::ACCELEROMETER_RAW, 480);
-    imu->enableIMUSensor(dai::IMUSensor::GYROSCOPE_RAW, 400);
+    imu->enableIMUSensor(dai::IMUSensor::ACCELEROMETER_UNCALIBRATED, 480);
+    imu->enableIMUSensor(dai::IMUSensor::GYROSCOPE_UNCALIBRATED, 400);
     imu->setBatchReportThreshold(5);
     imu->setMaxBatchReports(10);
 

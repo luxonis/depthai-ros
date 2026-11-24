@@ -22,6 +22,7 @@ class DriverParamHandler : public BaseParamHandler {
     explicit DriverParamHandler(std::shared_ptr<rclcpp::Node> node, const std::string& name, const std::string& deviceName = "", bool rsCompat = false);
     ~DriverParamHandler();
     void declareParams();
+    std::string getPipelineAutoCalibrationMode();
     dai::UsbSpeed getUSBSpeed();
 
    private:

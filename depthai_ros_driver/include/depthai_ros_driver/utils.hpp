@@ -7,6 +7,7 @@
 
 #include "depthai/common/CameraBoardSocket.hpp"
 #include "depthai/common/CameraExposureOffset.hpp"
+#include "depthai/pipeline/Pipeline.hpp"
 #include "depthai/pipeline/datatype/ImgFrame.hpp"
 #include "depthai/properties/VideoEncoderProperties.hpp"
 
@@ -31,6 +32,7 @@ T getValFromMap(const std::string& name, const std::unordered_map<std::string, T
     }
 }
 std::string getUpperCaseStr(const std::string& string);
+dai::PipelineAutoCalibrationMode parsePipelineAutoCalibrationMode(const std::string& mode);
 struct VideoEncoderConfig {
     bool enabled = false;
     int quality = 50;

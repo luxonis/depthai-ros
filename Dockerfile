@@ -14,7 +14,7 @@ RUN sh -c "$(wget https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh
 ENV WS=/ws
 RUN mkdir -p $WS/src
 COPY ./ $WS/src/depthai-ros
-RUN cd .${WS}/src && git clone --branch ros-v3.2.1 https://github.com/luxonis/depthai-core.git && cd depthai-core && git submodule update --init --recursive
+RUN cd .${WS}/src && git clone --branch kilted https://github.com/luxonis/depthai-core.git && cd depthai-core && git submodule update --init --recursive
 RUN cd $WS/ && rosdep install --from-paths src --ignore-src  -y
 
 RUN cd $WS/ && . /opt/ros/${ROS_DISTRO}/setup.sh && ./src/depthai-ros/build.sh -s $BUILD_SEQUENTIAL -r 1 -m 1 -t $BUILD_TESTS
@@ -24,4 +24,4 @@ RUN echo 'eval "$(register-python-argcomplete3 ros2)"' >> $HOME/.zshrc
 RUN echo 'eval "$(register-python-argcomplete3 colcon)"' >> $HOME/.zshrc
 RUN echo "if [ -f ${WS}/install/setup.bash ]; then source ${WS}/install/setup.bash; fi" >> $HOME/.bashrc
 ENTRYPOINT [ "/ws/src/depthai-ros/entrypoint.sh" ]
-CMD ["zsh"]
+CMD ["bash"]

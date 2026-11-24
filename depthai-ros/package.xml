@@ -1,19 +1,19 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>depthai-ros</name>
-  <version>3.1.0</version>
+  <version>3.3.0</version>
   <description>The depthai-ros package</description>
 
   <author>Sachin Guruswamy</author>
   <author>Adam Serafin</author>
 
   <!-- temporary -->
-  <maintainer email="matevz.morato@luxonis.com">Matevz Morato</maintainer>
+  <maintainer email="sebastjan.ahtik@luxonis.com">Aljaž Sebastjan Ahtik</maintainer>
 
   <license>MIT</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
-  
-  <exec_depend>depthai</exec_depend>
+
+  <exec_depend version_gte="3.7.1">depthai</exec_depend>
   <exec_depend>depthai_ros_msgs</exec_depend>
   <exec_depend>depthai_bridge</exec_depend>
   <exec_depend>depthai_examples</exec_depend>

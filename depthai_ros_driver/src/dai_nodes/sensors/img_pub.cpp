@@ -212,11 +212,12 @@ void ImagePublisher::publish(std::shared_ptr<Image> img) {
         }
         infoPub->publish(std::move(img->info));
     } else {
-        if(ipcEnabled && (!pubConfig.lazyPub || detectSubscription(imgPub, infoPub))) {
-            imgPub->publish(std::move(img->image));
-            infoPub->publish(std::move(img->info));
-        } else {
-            if(!pubConfig.lazyPub || imgPubIT.getNumSubscribers() > 0) imgPubIT.publish(*img->image, *img->info);
+        if(!pubConfig.lazyPub || imgPubIT.getNumSubscribers() > 0) {
+            if(ipcEnabled) {
+                imgPubIT.publish(std::move(img->image), std::move(img->info));
+            } else {
+                imgPubIT.publish(*img->image, *img->info);
+            }
         }
     }
 }
@@ -239,12 +240,6 @@ void ImagePublisher::publish(const std::shared_ptr<dai::ADatatype>& data) {
         auto img = convertData(data);
         publish(img);
     }
-}
-
-bool ImagePublisher::detectSubscription(const rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr& pub,
-                                        const rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr& infoPub) {
-    return (pub->get_subscription_count() > 0 || pub->get_intra_process_subscription_count() > 0 || infoPub->get_subscription_count() > 0
-            || infoPub->get_intra_process_subscription_count() > 0);
 }
 }  // namespace sensor_helpers
 }  // namespace dai_nodes
